@@ -284,39 +284,6 @@ h1, h2, h3, h4, .brand-font, .serif {
   margin-top: 3px;
 }
 
-.accessibility-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 12px;
-  color: #BFDCD1;
-}
-
-.font-size-btns {
-  display: flex;
-  gap: 4px;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 2px;
-  border-radius: var(--radius-xs);
-}
-
-.font-btn {
-  all: unset;
-  cursor: pointer;
-  padding: 2px 7px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 4px;
-  color: #9FC6B7;
-}
-
-.font-btn.active {
-  background: var(--teal-300);
-  color: var(--teal-950);
-}
-
 /* ==========================================================================
    MAIN CONTENT WRAPPER
    ========================================================================= */
@@ -2064,6 +2031,281 @@ input:checked + .toggle-slider:before {
     padding: 9px;
     border-radius: var(--radius-xs);
   }
+}
+
+/* ==========================================================================
+   FOODVISOR-STYLE DIAGNOSTIC QUIZ & PROFILE
+   ========================================================================== */
+.quiz-modal-box {
+  max-width: 580px;
+}
+
+.quiz-stepper-header {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.quiz-step-badge {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--teal-700);
+  background: var(--teal-50);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--teal-100);
+}
+
+.quiz-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-subtle);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal-300), var(--teal-500));
+  border-radius: 4px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quiz-step-pane {
+  display: none;
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.quiz-step-pane.active {
+  display: block;
+}
+
+.quiz-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.quiz-subtitle {
+  font-size: var(--font-xs);
+  color: var(--ink-mute);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.gender-radio-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.quiz-card-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: all 0.15s ease;
+}
+
+.quiz-card-btn.active {
+  border-color: var(--teal-500);
+  background: var(--teal-50);
+  color: var(--teal-900);
+  font-weight: 600;
+}
+
+.quiz-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.quiz-choice-card {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.quiz-choice-card.compact {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 11px;
+}
+
+.quiz-choice-card:hover, .quiz-choice-card.active {
+  border-color: var(--teal-500);
+  background: var(--teal-25);
+}
+
+.quiz-choice-card.active b {
+  color: var(--teal-900);
+}
+
+.quiz-choice-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quiz-choice-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.quiz-choice-text b {
+  font-size: var(--font-sm);
+  color: var(--ink);
+  display: block;
+}
+
+.quiz-choice-text span {
+  font-size: var(--font-xs);
+  color: var(--ink-mute);
+  display: block;
+  margin-top: 2px;
+}
+
+.quiz-chips-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quiz-chip-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: var(--font-xs);
+  color: var(--ink-soft);
+  transition: all 0.15s ease;
+}
+
+.quiz-chip-btn.active {
+  background: var(--teal-500);
+  color: #FFFFFF;
+  border-color: var(--teal-500);
+}
+
+.quiz-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.quiz-actions-row button {
+  flex: 1;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.diagnostic-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.diag-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.diag-label {
+  font-size: 10.5px;
+  color: var(--ink-mute);
+  font-weight: 500;
+}
+
+.diag-val {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.diag-sub {
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+/* ==========================================================================
+   AUTH (LOGIN & REGISTER) MODAL
+   ========================================================================== */
+.auth-modal-box {
+  max-width: 480px;
+}
+
+.auth-pane {
+  display: none;
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.auth-pane.active {
+  display: block;
+}
+
+.demo-login-chip {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.demo-login-chip:hover {
+  border-color: var(--teal-300);
+  background: var(--teal-25);
+  transform: translateX(2px);
+}
+
+.demo-login-chip b {
+  font-size: var(--font-xs);
+  color: var(--ink);
+}
+
+.demo-login-chip span {
+  font-size: 10px;
+  color: var(--ink-mute);
+  margin-top: 1px;
 }
 
 @media (max-width: 380px) {

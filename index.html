@@ -70,23 +70,15 @@
         <span class="nav-icon"><i data-lucide="trending-up"></i></span>
         <span>Tren Progres</span>
       </button>
+      <button class="nav-item" data-sec="profile">
+        <span class="nav-icon"><i data-lucide="user"></i></span>
+        <span>Profil & Diagnostik</span>
+      </button>
     </nav>
 
-    <!-- Sidebar Active Patient Status -->
-    <div class="sidebar-patient-box">
-      <span>Mode Pemulihan Aktif:</span>
-      <b class="user-condition-placeholder">Pasca-Operasi · Minggu ke-2</b>
-      <div style="margin-top:6px;font-size:11px;color:#BFDCD1;">Target Protein: <b>75g / hari</b></div>
-    </div>
-
-    <!-- Elderly & Accessibility Controls (PRD Non-Functional Requirement) -->
-    <div class="accessibility-panel">
-      <span>Ukuran Teks:</span>
-      <div class="font-size-btns">
-        <button class="font-btn active" data-size="normal" onclick="app.setFontSize('normal')" title="Ukuran teks normal">A</button>
-        <button class="font-btn" data-size="large" onclick="app.setFontSize('large')" title="Ukuran teks besar (ramah lansia)">A+</button>
-        <button class="font-btn" data-size="xl" onclick="app.setFontSize('xl')" title="Ukuran teks sangat besar">A++</button>
-      </div>
+    <!-- Sidebar Dedicated Patient Profile Widget -->
+    <div class="sidebar-patient-box" id="sidebar-profile-card">
+      <!-- Diisi secara dinamis oleh updateProfileUI() -->
     </div>
   </aside>
 
@@ -98,7 +90,7 @@
     <!-- Topbar Header -->
     <header class="topbar">
       <div class="topbar-greeting">
-        <h1>Selamat siang, <span class="user-name-placeholder">Rangga</span></h1>
+        <h1>Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span></h1>
         <p>
           <span>Gambaran asupan gizi pemulihan harian</span>
           <span class="date-badge"><i data-lucide="calendar" class="btn-icon-sm"></i> Sabtu, 29 Agustus 2026</span>
@@ -111,13 +103,9 @@
           <i data-lucide="download" class="btn-icon-sm"></i> Install Aplikasi
         </button>
 
-        <!-- Profile Chip Button -->
-        <button class="profile-chip-btn" onclick="app.openModal('onboarding-modal')" title="Ubah profil pemulihan & target gizi">
-          <div class="profile-avatar user-avatar-placeholder">R</div>
-          <div class="profile-meta">
-            <b class="user-name-placeholder">Rangga P.</b>
-            <span class="user-condition-placeholder">Pasca-operasi · Mg ke-2</span>
-          </div>
+        <!-- Dedicated Masuk / Login Button (Hanya tampil saat BELUM login) -->
+        <button class="btn-outline-glass" id="topbar-login-btn" style="color:var(--teal-700);border-color:var(--teal-200);background:var(--teal-50);padding:7px 13px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" onclick="app.openAuthModal('login')" title="Masuk ke Akun Pasien">
+          <i data-lucide="log-in" class="btn-icon-sm"></i> <span>Masuk / Login</span>
         </button>
       </div>
     </header>
@@ -493,6 +481,122 @@
           </button>
         </div>
       </div>
+    <!-- =========================================================================
+         VIEW 7: PROFIL PASIEN & DIAGNOSTIK GIZI (FOODVISOR STYLE)
+         ========================================================================= -->
+    <div class="view-section" id="view-profile">
+      <div class="card" style="margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div class="profile-avatar-lg user-avatar-placeholder" style="width:58px;height:58px;border-radius:var(--radius-circle);background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;box-shadow:var(--shadow-md);flex-shrink:0;">
+            RP
+          </div>
+          <div style="flex:1;min-width:180px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <h2 style="font-size:19px;font-weight:700;color:var(--ink);" class="user-name-placeholder">Rangga Pratama</h2>
+              <span class="badge teal"><i data-lucide="shield-check" class="btn-icon-sm"></i> Akun Terverifikasi</span>
+            </div>
+            <p style="font-size:var(--font-sm);color:var(--ink-mute);margin-top:2px;" id="profile-email-phone">rangga.pratama@email.com · +62 812-3456-7890</p>
+            <div style="font-size:var(--font-xs);color:var(--teal-700);font-weight:600;margin-top:4px;" class="user-condition-placeholder">
+              Pasca-Operasi Usus Buntu · Minggu ke-2 (Fase Proliferasi)
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-primary-coral" style="font-size:13px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openQuizModal(1)">
+              <i data-lucide="refresh-cw" class="btn-icon-sm"></i> Hitung Ulang Diagnostik
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Foodvisor-style Biometric & Recovery Nutrition Card Grid -->
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Metrik Fisik & Indeks Massa Tubuh (BMI)</h2>
+              <div class="card-subtitle">Kalkulasi biometrik berdasarkan standar klinis</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div style="background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
+              <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;">Berat & Tinggi Badan</span>
+              <b style="font-size:15px;color:var(--ink);" id="profile-stat-weight-height">65 kg · 170 cm</b>
+            </div>
+            <div style="background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
+              <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;">Indeks Massa Tubuh (BMI)</span>
+              <b style="font-size:15px;color:var(--teal-700);" id="profile-stat-bmi">22.5 (Normal)</b>
+            </div>
+          </div>
+
+          <div style="background:var(--teal-50);border:1px solid var(--teal-100);padding:10px 12px;border-radius:var(--radius-sm);font-size:var(--font-xs);color:var(--teal-700);line-height:1.5;">
+            <i data-lucide="info" class="btn-icon-sm"></i> <b>Kebutuhan Kalori Harian (TDEE):</b> Diestimasikan <b><span id="profile-stat-calories">1.850</span> kkal/hari</b> untuk mendukung proses perbaikan jaringan tanpa memicu kelebihan lemak saat gerak fisik terbatas.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Sasaran Makronutrisi Harian</h2>
+              <div class="card-subtitle">Formula gizi ERAS (Enhanced Recovery After Surgery)</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
+              <span style="font-size:var(--font-sm);font-weight:500;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--coral-400);"></span> Target Protein</span>
+              <b style="font-size:var(--font-sm);color:var(--coral-600);" id="profile-target-protein">75 g / hari (1.5g/kg)</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
+              <span style="font-size:var(--font-sm);font-weight:500;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--amber-400);"></span> Target Karbohidrat</span>
+              <b style="font-size:var(--font-sm);color:var(--amber-600);" id="profile-target-carbs">240 g / hari</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
+              <span style="font-size:var(--font-sm);font-weight:500;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--teal-300);"></span> Target Lemak Sehat</span>
+              <b style="font-size:var(--font-sm);color:var(--teal-700);" id="profile-target-fat">55 g / hari</b>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pantangan Makanan & Deklarasi Medis -->
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Pantangan Makanan & Gejala Klinis Pasien</h2>
+              <div class="card-subtitle">Data adaptasi filter resep dan panduan piring makan</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink-mute);display:block;margin-bottom:4px;">Pantangan & Alergi Deklarasi Mandiri:</span>
+              <div style="background:var(--amber-50);border:1px solid var(--amber-200);padding:9px 12px;border-radius:var(--radius-sm);font-size:var(--font-xs);color:var(--amber-700);line-height:1.45;" id="profile-stat-restrictions">
+                Alergi makanan pedas pekat, hindari gorengan keras
+              </div>
+            </div>
+            <div>
+              <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink-mute);display:block;margin-bottom:4px;">Tingkat Aktivitas & Terapi:</span>
+              <div style="background:var(--bg);border:1px solid var(--line);padding:9px 12px;border-radius:var(--radius-sm);font-size:var(--font-xs);color:var(--ink-soft);line-height:1.45;" id="profile-stat-activity">
+        <!-- Akun & Manajemen Sesi Login -->
+        <div class="card" style="grid-column: 1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:var(--bg-subtle);">
+          <div>
+            <b style="font-size:var(--font-sm);color:var(--ink);display:flex;align-items:center;gap:6px;">
+              <i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> Status Sesi Login Aktif
+            </b>
+            <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;margin-top:2px;">
+              Terhubung sebagai <span class="user-name-placeholder" style="font-weight:600;color:var(--ink-soft);">Rangga Pratama</span> (<span id="profile-auth-email">rangga.pratama@email.com</span>)
+            </span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
+              <i data-lucide="user-check" class="btn-icon-sm"></i> Ganti Akun Pasien
+            </button>
+            <button class="btn-outline-glass" style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;" onclick="app.logout()">
+              <i data-lucide="log-out" class="btn-icon-sm"></i> Keluar (Logout)
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -521,6 +625,10 @@
   <button class="bottom-nav-btn" data-sec="progress" onclick="app.navigate('progress')">
     <span class="nav-icon"><i data-lucide="trending-up"></i></span>
     <span>Progres</span>
+  </button>
+  <button class="bottom-nav-btn" data-sec="profile" onclick="app.navigate('profile')">
+    <span class="nav-icon"><i data-lucide="user"></i></span>
+    <span>Profil</span>
   </button>
 </nav>
 
@@ -605,77 +713,244 @@
 </div>
 
 <!-- =========================================================================
-     MODAL 2: ONBOARDING & SHARED RESPONSIBILITY CONSENT (FR-04, FR-06)
+     MODAL 2: ONBOARDING & DIAGNOSTIK GIZI MULTI-STEP (FOODVISOR STYLE)
      ========================================================================= -->
 <div class="modal-overlay" id="onboarding-modal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3 style="display:flex;align-items:center;gap:8px;">
-        <i data-lucide="activity" style="color:var(--teal-500);"></i> Profil Pemulihan & Sasaran Gizi
-      </h3>
-      <button class="modal-close-btn" onclick="app.closeModal('onboarding-modal')"><i data-lucide="x"></i></button>
+  <div class="modal-box quiz-modal-box">
+    
+    <!-- Stepper Top Header -->
+    <div class="quiz-stepper-header">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="quiz-step-badge" id="quiz-step-indicator">Langkah 1 dari 5</span>
+        <span style="font-size:var(--font-xs);color:var(--ink-mute);font-weight:600;" id="quiz-step-title">Identitas & Akun Pasien</span>
+        <button class="modal-close-btn" onclick="app.closeModal('onboarding-modal')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="quiz-progress-track">
+        <div class="quiz-progress-fill" id="quiz-progress-bar" style="width: 20%;"></div>
+      </div>
     </div>
 
-    <form class="onboarding-wizard" onsubmit="event.preventDefault(); app.saveOnboardingProfile();">
-      <div class="form-group">
-        <label for="onboard-name">Nama Pasien / Pengguna</label>
-        <input type="text" id="onboard-name" class="form-control" value="Rangga Pratama" required>
+    <!-- Step 1: Identitas & Info Dasar (Login / Registrasi) -->
+    <div class="quiz-step-pane active" id="quiz-step-1">
+      <h3 class="quiz-title">Mari berkenalan & siapkan profil pemulihanmu</h3>
+      <p class="quiz-subtitle">Data dasar ini digunakan untuk mengkalibrasi algoritma energi basal dan metabolisme tubuh.</p>
+
+      <div class="form-group" style="margin-bottom:10px;">
+        <label for="onboard-name">Nama Lengkap Pasien / Pengguna</label>
+        <input type="text" id="onboard-name" class="form-control" value="Rangga Pratama" placeholder="Contoh: Rangga Pratama" required>
       </div>
 
-      <div class="form-group">
-        <label>Pilih Kategori Kondisi Pemulihan:</label>
-        <div class="form-radio-cards">
-          <label class="radio-card selected" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected')); this.classList.add('selected');">
-            <input type="radio" name="onboard-condition" value="post-surgery" checked style="display:none;">
-            <b>Pasca-Operasi</b>
-            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">Penyembuhan luka & jaringan</div>
-          </label>
-
-          <label class="radio-card" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected')); this.classList.add('selected');">
-            <input type="radio" name="onboard-condition" value="rehab" style="display:none;">
-            <b>Fisioterapi / Cedera</b>
-            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">Rehabilitasi sendi & otot</div>
-          </label>
-
-          <label class="radio-card" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected')); this.classList.add('selected');">
-            <input type="radio" name="onboard-condition" value="gym" style="display:none;">
-            <b>Gym Recovery</b>
-            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">Perbaikan mikrorobekan otot</div>
-          </label>
-        </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label for="onboard-contact">Email / No. WhatsApp (Untuk Laporan Medis)</label>
+        <input type="text" id="onboard-contact" class="form-control" value="rangga.pratama@email.com" placeholder="email@domain.com atau +62 812-xxxx">
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
         <div class="form-group">
-          <label for="onboard-phase">Fase Pemulihan Saat Ini</label>
-          <input type="text" id="onboard-phase" class="form-control" value="Minggu ke-2 (Fase Proliferasi)">
+          <label>Jenis Kelamin</label>
+          <div class="gender-radio-group">
+            <button type="button" class="quiz-card-btn active" id="gender-btn-male" onclick="app.selectGender('male')">
+              <i data-lucide="user" class="btn-icon-sm"></i> Laki-laki
+            </button>
+            <button type="button" class="quiz-card-btn" id="gender-btn-female" onclick="app.selectGender('female')">
+              <i data-lucide="user" class="btn-icon-sm"></i> Perempuan
+            </button>
+          </div>
         </div>
+        <div class="form-group">
+          <label for="onboard-age">Usia (Tahun)</label>
+          <input type="number" id="onboard-age" class="form-control" value="28" min="10" max="110">
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary-coral" style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;" onclick="app.nextQuizStep()">
+        Lanjut ke Sasaran <i data-lucide="arrow-right" class="btn-icon-sm"></i>
+      </button>
+    </div>
+
+    <!-- Step 2: Tujuan & Sasaran Pemulihan (Goal Track) -->
+    <div class="quiz-step-pane" id="quiz-step-2">
+      <h3 class="quiz-title">Apa fokus jalur pemulihanmu saat ini?</h3>
+      <p class="quiz-subtitle">NutriVision AI akan menyesuaikan rasio asam amino dan target protein harian berdasarkan pedoman ERAS/ESPEN.</p>
+
+      <div class="quiz-options-list">
+        <button type="button" class="quiz-choice-card active" data-condition="post-surgery" onclick="app.selectCondition('post-surgery', this)">
+          <div class="quiz-choice-icon" style="background:var(--teal-50);color:var(--teal-700);"><i data-lucide="activity"></i></div>
+          <div class="quiz-choice-text">
+            <b>Pasca-Operasi & Pembedahan</b>
+            <span>Sintesis kolagen, percepatan penutupan luka, dan pencegahan infeksi</span>
+          </div>
+        </button>
+
+        <button type="button" class="quiz-choice-card" data-condition="rehab" onclick="app.selectCondition('rehab', this)">
+          <div class="quiz-choice-icon" style="background:var(--coral-50);color:var(--coral-600);"><i data-lucide="crosshair"></i></div>
+          <div class="quiz-choice-text">
+            <b>Fisioterapi & Rehabilitasi Cedera</b>
+            <span>Pemulihan fraktur, ligamen, sendi, dan pencegahan atrofi otot</span>
+          </div>
+        </button>
+
+        <button type="button" class="quiz-choice-card" data-condition="gym" onclick="app.selectCondition('gym', this)">
+          <div class="quiz-choice-icon" style="background:var(--amber-50);color:var(--amber-600);"><i data-lucide="zap"></i></div>
+          <div class="quiz-choice-text">
+            <b>Gym & Muscle Recovery</b>
+            <span>Perbaikan mikrorobekan serat otot, sintesis protein, dan pengisian glikogen</span>
+          </div>
+        </button>
+
+        <button type="button" class="quiz-choice-card" data-condition="wellness" onclick="app.selectCondition('wellness', this)">
+          <div class="quiz-choice-icon" style="background:var(--teal-50);color:var(--teal-700);"><i data-lucide="heart"></i></div>
+          <div class="quiz-choice-text">
+            <b>Pemeliharaan Gizi Medis Umum</b>
+            <span>Pola makan sehat seimbang untuk stabilitas vitalitas dan metabolisme</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="quiz-actions-row">
+        <button type="button" class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);" onclick="app.prevQuizStep()">Kembali</button>
+        <button type="button" class="btn-primary-coral" onclick="app.nextQuizStep()">Lanjut <i data-lucide="arrow-right" class="btn-icon-sm"></i></button>
+      </div>
+    </div>
+
+    <!-- Step 3: Biometrik & Tingkat Aktivitas Fisik -->
+    <div class="quiz-step-pane" id="quiz-step-3">
+      <h3 class="quiz-title">Berapa ukuran tubuh dan tingkat aktivitasmu?</h3>
+      <p class="quiz-subtitle">Digunakan untuk menghitung BMR & TDEE (Total Daily Energy Expenditure) secara presisi.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
         <div class="form-group">
           <label for="onboard-weight">Berat Badan (kg)</label>
-          <input type="number" id="onboard-weight" class="form-control" value="65" min="30" max="250">
+          <input type="number" id="onboard-weight" class="form-control" value="65" min="25" max="250" oninput="app.updateLiveBMIDisplay()">
+        </div>
+        <div class="form-group">
+          <label for="onboard-height">Tinggi Badan (cm)</label>
+          <input type="number" id="onboard-height" class="form-control" value="170" min="100" max="230" oninput="app.updateLiveBMIDisplay()">
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="onboard-restrictions">Pantangan Makan / Alergi Medis (Deklarasi Mandiri)</label>
-        <input type="text" id="onboard-restrictions" class="form-control" value="Alergi makanan pedas pekat, hindari gorengan keras" placeholder="Misal: alergi seafood, batasi garam, intoleransi laktosa">
+      <div id="quiz-live-bmi-box" style="background:var(--bg);padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);margin-bottom:12px;font-size:var(--font-xs);color:var(--ink-soft);display:flex;justify-content:space-between;align-items:center;">
+        <span>Estimasi Indeks Massa Tubuh (BMI):</span>
+        <b style="color:var(--teal-700);font-size:13.5px;" id="quiz-live-bmi-val">22.5 (Normal)</b>
       </div>
 
-      <!-- Mandatory Disclaimer & Consent Checkbox (FR-06) -->
-      <div class="disclaimer-consent-box">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Tingkat Aktivitas Harian Saat Ini:</label>
+        <div class="quiz-options-list">
+          <button type="button" class="quiz-choice-card compact active" data-activity="bedrest" onclick="app.selectActivity('bedrest', this)">
+            <b><i data-lucide="bed" class="btn-icon-sm"></i> Bedrest Total / Tirah Baring</b>
+            <span>Aktivitas minimal dalam masa pemulihan awal (Faktor 1.15)</span>
+          </button>
+          <button type="button" class="quiz-choice-card compact" data-activity="light" onclick="app.selectActivity('light', this)">
+            <b><i data-lucide="footprints" class="btn-icon-sm"></i> Mobilisasi Ringan</b>
+            <span>Bergerak mandiri di rumah atau dengan alat bantu (Faktor 1.25)</span>
+          </button>
+          <button type="button" class="quiz-choice-card compact" data-activity="therapy" onclick="app.selectActivity('therapy', this)">
+            <b><i data-lucide="heart-pulse" class="btn-icon-sm"></i> Terapi Fisik Teratur</b>
+            <span>Sesi fisioterapi 2-3 kali per minggu (Faktor 1.35)</span>
+          </button>
+          <button type="button" class="quiz-choice-card compact" data-activity="active" onclick="app.selectActivity('active', this)">
+            <b><i data-lucide="zap" class="btn-icon-sm"></i> Latihan Fisik Aktif / Gym</b>
+            <span>Olahraga rutin pasca-fase rehabilitasi (Faktor 1.55)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="quiz-actions-row">
+        <button type="button" class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);" onclick="app.prevQuizStep()">Kembali</button>
+        <button type="button" class="btn-primary-coral" onclick="app.nextQuizStep()">Lanjut <i data-lucide="arrow-right" class="btn-icon-sm"></i></button>
+      </div>
+    </div>
+
+    <!-- Step 4: Gejala Pencernaan & Pantangan Makanan -->
+    <div class="quiz-step-pane" id="quiz-step-4">
+      <h3 class="quiz-title">Gejala pencernaan & pantangan makanan</h3>
+      <p class="quiz-subtitle">NutriVision AI akan memfilter resep dan menyarankan tekstur makanan yang ramah lambung.</p>
+
+      <div class="form-group" style="margin-bottom:10px;">
+        <label for="onboard-phase">Fase Pemulihan Saat Ini</label>
+        <select id="onboard-phase" class="form-control">
+          <option value="Minggu ke-1 (Fase Inflamasi Akut)">Minggu ke-1 (Fase Inflamasi Akut)</option>
+          <option value="Minggu ke-2 (Fase Proliferasi & Jaringan)" selected>Minggu ke-2 (Fase Proliferasi & Jaringan)</option>
+          <option value="Minggu ke-3 s/d ke-4 (Fase Remodeling)">Minggu ke-3 s/d ke-4 (Fase Remodeling)</option>
+          <option value="Bulan ke-2+ (Fase Penguatan Lanjutan)">Bulan ke-2+ (Fase Penguatan Lanjutan)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>Gejala yang Sering Dialami Saat Ini:</label>
+        <div class="quiz-chips-selector">
+          <button type="button" class="quiz-chip-btn" data-symptom="mual" onclick="this.classList.toggle('active')"><i data-lucide="waves" class="btn-icon-sm"></i> Mual / Enek</button>
+          <button type="button" class="quiz-chip-btn active" data-symptom="disfagia" onclick="this.classList.toggle('active')"><i data-lucide="droplet" class="btn-icon-sm"></i> Sulit Menelan (Disfagia)</button>
+          <button type="button" class="quiz-chip-btn" data-symptom="konstipasi" onclick="this.classList.toggle('active')"><i data-lucide="shield-alert" class="btn-icon-sm"></i> Konstipasi / Sembelit</button>
+          <button type="button" class="quiz-chip-btn" data-symptom="nafsu" onclick="this.classList.toggle('active')"><i data-lucide="trending-down" class="btn-icon-sm"></i> Nafsu Makan Rendah</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label for="onboard-restrictions">Pantangan / Alergi Makanan Medis (Deklarasi Mandiri)</label>
+        <input type="text" id="onboard-restrictions" class="form-control" value="Alergi makanan pedas pekat, hindari gorengan keras" placeholder="Misal: alergi seafood, hindari susu sapi, pantang garam tinggi">
+      </div>
+
+      <div class="quiz-actions-row">
+        <button type="button" class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);" onclick="app.prevQuizStep()">Kembali</button>
+        <button type="button" class="btn-primary-coral" onclick="app.calculateDiagnosticResults(); app.nextQuizStep();">Lihat Hasil Diagnostik <i data-lucide="sparkles" class="btn-icon-sm"></i></button>
+      </div>
+    </div>
+
+    <!-- Step 5: Hasil Diagnostik Gizi Presisi (Foodvisor Algorithm Screen) -->
+    <div class="quiz-step-pane" id="quiz-step-5">
+      <div style="text-align:center;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:var(--radius-circle);background:var(--teal-50);color:var(--teal-700);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;">
+          <i data-lucide="check-circle" style="width:24px;height:24px;"></i>
+        </div>
+        <h3 class="quiz-title">Rencana Gizi Pemulihan Berhasil Dihitung!</h3>
+        <p class="quiz-subtitle">Berikut adalah target nutrisi harian yang disesuaikan secara presisi dengan kondisi klinis dan fisikmu.</p>
+      </div>
+
+      <!-- Live Calculation Cards -->
+      <div class="diagnostic-summary-grid">
+        <div class="diag-card">
+          <span class="diag-label">Target Protein</span>
+          <b class="diag-val" style="color:var(--coral-600);" id="diag-res-protein">75 g</b>
+          <span class="diag-sub" id="diag-res-protein-sub">1.5g / kg BB</span>
+        </div>
+        <div class="diag-card">
+          <span class="diag-label">Kebutuhan Kalori</span>
+          <b class="diag-val" style="color:var(--teal-700);" id="diag-res-cals">1.850 kkal</b>
+          <span class="diag-sub">Total Daily Energy</span>
+        </div>
+        <div class="diag-card">
+          <span class="diag-label">Karbohidrat Sehat</span>
+          <b class="diag-val" style="color:var(--amber-600);" id="diag-res-carbs">240 g</b>
+          <span class="diag-sub">Energi Sel & Jaringan</span>
+        </div>
+        <div class="diag-card">
+          <span class="diag-label">Lemak Sehat</span>
+          <b class="diag-val" style="color:var(--teal-700);" id="diag-res-fat">55 g</b>
+          <span class="diag-sub">Asam Lemak Esensial</span>
+        </div>
+      </div>
+
+      <!-- Mandatory Consent Box (FR-06) -->
+      <div class="disclaimer-consent-box" style="margin: 12px 0;">
         <strong>Pernyataan Tanggung Jawab Bersama (Shared Responsibility):</strong>
-        NutriVision AI adalah alat bantu digital pendukung keputusan berbasis computer vision dan estimasi gizi pangan. Sistem tidak melakukan diagnosis medis mandiri. Keputusan akhir pola makan dan kepatuhan terhadap anjuran dokter tetap menjadi tanggung jawab pengguna.
+        Hasil diagnostik ini merupakan estimasi gizi pendukung keputusan (*decision-support*). Keputusan akhir pola makan dan kepatuhan terhadap anjuran dokter tetap menjadi tanggung jawab pengguna.
         
         <label class="consent-checkbox-row">
           <input type="checkbox" id="onboard-consent-check" checked required>
-          <span>Saya memahami dan menyetujui pernyataan disclaimer ini serta menyatakan bahwa data pantangan diisi sesuai anjuran medis yang saya ketahui.</span>
+          <span>Saya menyetujui pernyataan disclaimer dan siap menerapkan target gizi ini ke aplikasi.</span>
         </label>
       </div>
 
-      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;margin-top:6px;display:inline-flex;align-items:center;gap:6px;">
-        <i data-lucide="check" class="btn-icon-sm"></i> Simpan Profil Pemulihan
-      </button>
-    </form>
+      <div class="quiz-actions-row">
+        <button type="button" class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);" onclick="app.prevQuizStep()">Ubah Data</button>
+        <button type="button" class="btn-primary-coral" style="flex:2;justify-content:center;" onclick="app.saveOnboardingProfile()">
+          <i data-lucide="check" class="btn-icon-sm"></i> Terapkan ke Dasbor
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -711,9 +986,136 @@
       </div>
 
       <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;">
-        <i data-lucide="send" class="btn-icon-sm"></i> Terbitkan Tips ke Komunitas
+<!-- =========================================================================
+     MODAL 4: AUTH & LOGIN / REGISTER (AKUN PASIEN & DEMO ACCESS)
+     ========================================================================= -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal-box auth-modal-box">
+    <div class="modal-header" style="border-bottom:none;padding-bottom:0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="brand-mark" style="width:34px;height:34px;">
+          <i data-lucide="leaf" style="width:18px;height:18px;"></i>
+        </div>
+        <div>
+          <h3 style="font-size:17px;font-weight:700;color:var(--ink);">NutriVision AI</h3>
+          <span style="font-size:10.5px;color:var(--teal-700);font-weight:600;">Akses Masuk & Registrasi Pasien</span>
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="app.closeModal('auth-modal')"><i data-lucide="x"></i></button>
+    </div>
+
+    <!-- Auth Tabs Switcher -->
+    <div class="toggle-tab-group" style="margin: 14px 0 16px;">
+      <button type="button" class="toggle-tab-btn active" id="tab-auth-login" onclick="app.switchAuthTab('login')">
+        <i data-lucide="log-in" class="btn-icon-sm"></i> Masuk (Login)
       </button>
-    </form>
+      <button type="button" class="toggle-tab-btn" id="tab-auth-register" onclick="app.switchAuthTab('register')">
+        <i data-lucide="user-plus" class="btn-icon-sm"></i> Daftar Baru (Register)
+      </button>
+    </div>
+
+    <!-- PANE 1: LOGIN FORM -->
+    <div id="auth-pane-login" class="auth-pane active">
+      <form onsubmit="event.preventDefault(); app.handleLogin();">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label for="login-email">Email / Nomor WhatsApp</label>
+          <div style="position:relative;">
+            <input type="text" id="login-email" class="form-control" style="padding-left:36px;" value="rangga.pratama@email.com" placeholder="email@domain.com atau 0812xxxx" required>
+            <i data-lucide="mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <label for="login-password">Kata Sandi / PIN Medis</label>
+            <a href="javascript:void(0)" onclick="alert('Petunjuk pemulihan kata sandi telah dikirim ke email/WhatsApp terdaftar.')" style="font-size:11px;color:var(--teal-700);text-decoration:none;">Lupa Sandi?</a>
+          </div>
+          <div style="position:relative;">
+            <input type="password" id="login-password" class="form-control" style="padding-left:36px;" value="••••••••" placeholder="Masukkan kata sandi..." required>
+            <i data-lucide="lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;padding:10px 14px;margin-bottom:14px;display:inline-flex;align-items:center;gap:6px;">
+          <i data-lucide="log-in" class="btn-icon-sm"></i> Masuk ke Dasbor Pemulihan
+        </button>
+      </form>
+
+      <!-- Social Logins Mockup -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <span style="flex:1;height:1px;background:var(--line);"></span>
+        <span style="font-size:11px;color:var(--ink-mute);">atau masuk cepat dengan</span>
+        <span style="flex:1;height:1px;background:var(--line);"></span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <button type="button" class="quiz-card-btn" onclick="app.loginWithSocial('Google')">
+          <i data-lucide="globe" class="btn-icon-sm" style="color:#EA4335;"></i> Google
+        </button>
+        <button type="button" class="quiz-card-btn" onclick="app.loginWithSocial('Apple')">
+          <i data-lucide="smartphone" class="btn-icon-sm"></i> Apple ID
+        </button>
+      </div>
+
+      <!-- Quick 1-Click Demo Profiles for Jury / Testing -->
+      <div style="background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);padding:12px;">
+        <span style="font-size:11px;font-weight:600;color:var(--teal-800);display:flex;align-items:center;gap:4px;margin-bottom:8px;">
+          <i data-lucide="sparkles" class="btn-icon-sm"></i> 1-Click Profil Pasien Demo (Untuk Juri/Penguji):
+        </span>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button type="button" class="demo-login-chip" onclick="app.loginAsDemo('post-surgery')">
+            <b><i data-lucide="activity" class="btn-icon-sm" style="color:var(--teal-700);"></i> Rangga Pratama</b>
+            <span>Pasca-Operasi Usus Buntu · Target 75g Protein (1.5g/kg)</span>
+          </button>
+          <button type="button" class="demo-login-chip" onclick="app.loginAsDemo('rehab')">
+            <b><i data-lucide="crosshair" class="btn-icon-sm" style="color:var(--coral-600);"></i> Siti Rahmawati</b>
+            <span>Fisioterapi Cedera ACL · Target 80g Protein (1.6g/kg)</span>
+          </button>
+          <button type="button" class="demo-login-chip" onclick="app.loginAsDemo('gym')">
+            <b><i data-lucide="dumbbell" class="btn-icon-sm" style="color:var(--amber-600);"></i> Budi Santoso</b>
+            <span>Gym & Muscle Recovery · Target 110g Protein (1.8g/kg)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANE 2: REGISTER FORM -->
+    <div id="auth-pane-register" class="auth-pane" style="display:none;">
+      <form onsubmit="event.preventDefault(); app.handleRegister();">
+        <div class="form-group" style="margin-bottom:10px;">
+          <label for="reg-name">Nama Lengkap Pasien / Pengguna</label>
+          <div style="position:relative;">
+            <input type="text" id="reg-name" class="form-control" style="padding-left:36px;" placeholder="Contoh: Dimas Anggara" required>
+            <i data-lucide="user" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label for="reg-email">Email / Nomor WhatsApp</label>
+          <div style="position:relative;">
+            <input type="text" id="reg-email" class="form-control" style="padding-left:36px;" placeholder="email@domain.com atau 0812xxxx" required>
+            <i data-lucide="mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label for="reg-password">Buat Kata Sandi / PIN</label>
+          <div style="position:relative;">
+            <input type="password" id="reg-password" class="form-control" style="padding-left:36px;" placeholder="Minimal 6 karakter..." required>
+            <i data-lucide="lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
+          </div>
+        </div>
+
+        <div style="background:var(--teal-50);border:1px solid var(--teal-100);border-radius:var(--radius-sm);padding:10px 12px;font-size:var(--font-xs);color:var(--teal-700);line-height:1.45;margin-bottom:14px;">
+          <i data-lucide="info" class="btn-icon-sm"></i> Setelah mendaftar, kamu akan diarahkan ke <b>Kuesioner Diagnostik 5-Langkah (Foodvisor Style)</b> untuk mengkalibrasi target nutrisi pemulihanmu secara personal.
+        </div>
+
+        <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;padding:10px 14px;display:inline-flex;align-items:center;gap:6px;">
+          Daftar & Mulai Diagnostik Gizi <i data-lucide="arrow-right" class="btn-icon-sm"></i>
+        </button>
+      </form>
+    </div>
+
   </div>
 </div>
 

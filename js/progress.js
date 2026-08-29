@@ -4,20 +4,20 @@
 class NutriVisionProgress {
   constructor() {
     this.weeklyLogs = [
-      { day: 'Sen', date: '24 Agt', protein: 68, targetProt: 75, calories: 1720, targetCal: 1850, compliancePct: 91 },
-      { day: 'Sel', date: '25 Agt', protein: 74, targetProt: 75, calories: 1810, targetCal: 1850, compliancePct: 99 },
-      { day: 'Rab', date: '26 Agt', protein: 56, targetProt: 75, calories: 1540, targetCal: 1850, compliancePct: 75 },
-      { day: 'Kam', date: '27 Agt', protein: 76, targetProt: 75, calories: 1890, targetCal: 1850, compliancePct: 100 },
-      { day: 'Jum', date: '28 Agt', protein: 70, targetProt: 75, calories: 1780, targetCal: 1850, compliancePct: 93 },
-      { day: 'Sab', date: '29 Agt', protein: 78, targetProt: 75, calories: 1860, targetCal: 1850, compliancePct: 100 },
-      { day: 'Hari Ini', date: '30 Agt', protein: 58, targetProt: 75, calories: 1420, targetCal: 1850, compliancePct: 77, isToday: true }
+      { day: 'Sen', date: '24 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0 },
+      { day: 'Sel', date: '25 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0 },
+      { day: 'Rab', date: '26 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0 },
+      { day: 'Kam', date: '27 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0 },
+      { day: 'Jum', date: '28 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0 },
+      { day: 'Sab', date: '29 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0 },
+      { day: 'Hari Ini', date: '30 Agt', protein: 0, targetProt: 75, calories: 0, targetCal: 1850, compliancePct: 0, isToday: true }
     ];
 
     this.todayIntake = {
-      protein: 58,
-      carbs: 195,
-      fat: 42,
-      calories: 1420
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      calories: 0
     };
   }
 
@@ -38,7 +38,7 @@ class NutriVisionProgress {
     if (todayLog) {
       todayLog.protein = this.todayIntake.protein;
       todayLog.calories = this.todayIntake.calories;
-      todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / todayLog.targetProt) * 100));
+      todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / (todayLog.targetProt || 75)) * 100));
     }
   }
 
@@ -48,13 +48,13 @@ class NutriVisionProgress {
     const container2 = document.getElementById('weekly-bar-chart-box-full');
     if (!container1 && !container2) return;
 
-    const maxProt = Math.max(...this.weeklyLogs.map(l => l.targetProt * 1.15));
+    const maxProt = Math.max(100, ...this.weeklyLogs.map(l => (l.targetProt || 75) * 1.15));
 
     const html = this.weeklyLogs.map(log => {
       const heightPct = Math.min(100, Math.round((log.protein / maxProt) * 100));
       return `
         <div class="bar-column ${log.isToday ? 'today' : ''}">
-          <div class="bar-wrapper" title="${log.date}: ${log.protein}g / ${log.targetProt}g protein (${log.compliancePct}%)">
+          <div class="bar-wrapper" title="${log.date}: ${log.protein}g / ${log.targetProt || 75}g protein (${log.compliancePct}%)">
             <div class="bar-fill" style="height: ${heightPct}%"></div>
           </div>
           <span class="day-label">${log.day}</span>
@@ -68,15 +68,17 @@ class NutriVisionProgress {
 
   // Render Macro Progress Bars & Center Donut
   renderMacroDonut(currentTargets) {
-    const targets = currentTargets || { protein: 75, carbs: 240, fat: 55, calories: 1850 };
-    const protPct = Math.min(100, Math.round((this.todayIntake.protein / targets.protein) * 100));
-    const carbsPct = Math.min(100, Math.round((this.todayIntake.carbs / targets.carbs) * 100));
-    const fatPct = Math.min(100, Math.round((this.todayIntake.fat / targets.fat) * 100));
-    const calsPct = Math.min(100, Math.round((this.todayIntake.calories / targets.calories) * 100));
+    const isConfigured = currentTargets && currentTargets.protein > 0;
+    const targets = isConfigured ? currentTargets : { protein: 0, carbs: 0, fat: 0, calories: 0 };
+    
+    const protPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.protein / targets.protein) * 100)) : 0;
+    const carbsPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.carbs / targets.carbs) * 100)) : 0;
+    const fatPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.fat / targets.fat) * 100)) : 0;
+    const calsPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.calories / targets.calories) * 100)) : 0;
 
     // Update Donut Center Text
     const donutVal = document.getElementById('macro-donut-value');
-    if (donutVal) donutVal.textContent = `${protPct}%`;
+    if (donutVal) donutVal.textContent = isConfigured ? `${protPct}%` : `0%`;
 
     // Update Circle Stroke Dashoffset
     const donutCircle = document.getElementById('macro-donut-circle-prot');
@@ -88,16 +90,16 @@ class NutriVisionProgress {
 
     // Update Macro Numerical Labels
     const elProt = document.getElementById('macro-num-protein');
-    if (elProt) elProt.textContent = `${this.todayIntake.protein} / ${targets.protein} g`;
+    if (elProt) elProt.textContent = isConfigured ? `${this.todayIntake.protein} / ${targets.protein} g` : `${this.todayIntake.protein} / -- g`;
 
     const elCarbs = document.getElementById('macro-num-carbs');
-    if (elCarbs) elCarbs.textContent = `${this.todayIntake.carbs} / ${targets.carbs} g`;
+    if (elCarbs) elCarbs.textContent = isConfigured ? `${this.todayIntake.carbs} / ${targets.carbs} g` : `${this.todayIntake.carbs} / -- g`;
 
     const elFat = document.getElementById('macro-num-fat');
-    if (elFat) elFat.textContent = `${this.todayIntake.fat} / ${targets.fat} g`;
+    if (elFat) elFat.textContent = isConfigured ? `${this.todayIntake.fat} / ${targets.fat} g` : `${this.todayIntake.fat} / -- g`;
 
     const elCals = document.getElementById('macro-num-cals');
-    if (elCals) elCals.textContent = `${this.todayIntake.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kkal`;
+    if (elCals) elCals.textContent = isConfigured ? `${this.todayIntake.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kkal` : `${this.todayIntake.calories} / -- kkal`;
 
     // Update Macro Bar Tracks
     const barProt = document.getElementById('bar-fill-protein');
@@ -115,22 +117,33 @@ class NutriVisionProgress {
     // Update Recovery Recommendation Indicator (FR-05)
     const tipBox = document.getElementById('recovery-target-advice');
     if (tipBox) {
-      const remainingProt = targets.protein - this.todayIntake.protein;
-      if (remainingProt > 0) {
+      if (!isConfigured) {
         tipBox.innerHTML = `
-          <i data-lucide="lightbulb" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
+          <i data-lucide="sparkles" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
           <div>
-            <strong>Saran Gizi Pemulihan:</strong> Protein masih kurang <b>${remainingProt}g</b> untuk target hari ini. 
-            Disarankan menambah <i>2 butir telur rebus (14g)</i> atau <i>1 porsi tahu kukus (8g)</i> saat makan malam.
+            <strong>Profil Gizi Belum Diisi:</strong> Lengkapi 
+            <a href="javascript:void(0)" onclick="app.openQuizModal(1)" style="color:var(--teal-700);font-weight:700;text-decoration:underline;">Kuesioner Diagnostik (Foodvisor Style)</a> 
+            untuk mendapatkan target harian dan rekomendasi piring makan.
           </div>
         `;
       } else {
-        tipBox.innerHTML = `
-          <i data-lucide="party-popper" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
-          <div>
-            <strong>Luar biasa!</strong> Target protein pemulihan hari ini telah tercapai optimal (100%). Pertahankan hidrasi dan istirahat berkualitas.
-          </div>
-        `;
+        const remainingProt = targets.protein - this.todayIntake.protein;
+        if (remainingProt > 0) {
+          tipBox.innerHTML = `
+            <i data-lucide="lightbulb" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
+            <div>
+              <strong>Saran Gizi Pemulihan:</strong> Protein masih kurang <b>${remainingProt}g</b> untuk target hari ini. 
+              Disarankan menambah <i>2 butir telur rebus (14g)</i> atau <i>1 porsi tahu kukus (8g)</i> saat makan malam.
+            </div>
+          `;
+        } else {
+          tipBox.innerHTML = `
+            <i data-lucide="check-circle" style="color:var(--teal-500);width:20px;height:20px;flex-shrink:0;"></i>
+            <div>
+              <strong>Target Protein Tercapai!</strong> Kebutuhan asam amino hari ini telah terpenuhi optimal untuk proses regenerasi sel.
+            </div>
+          `;
+        }
       }
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
