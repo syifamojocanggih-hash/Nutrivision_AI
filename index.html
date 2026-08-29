@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#04342C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NutriVision AI">
+  <meta name="description" content="NutriVision AI — Platform Segmentasi & Panduan Gizi Makanan Berbasis Computer Vision untuk Pemulihan Pasca-Operasi, Rehabilitasi Medis, dan Gym Recovery">
+
+  <title>NutriVision AI — Panduan Gizi Pemulihan & Segmentasi Pangan</title>
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Modern Typography: Fraunces & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core Design System -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- =========================================================================
+       DESKTOP SIDEBAR NAVIGATION
+       ========================================================================= -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="brand-container">
+      <div class="brand-mark">N</div>
+      <div class="brand-text">
+        <span class="brand-name">NutriVision AI</span>
+        <span class="brand-tag">Public Service Edition</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-sec="overview">
+        <span class="nav-icon">📊</span>
+        <span>Ringkasan Dasbor</span>
+      </button>
+      <button class="nav-item" data-sec="planner">
+        <span class="nav-icon">🍽️</span>
+        <span>Meal Planner</span>
+      </button>
+      <button class="nav-item" data-sec="catalog">
+        <span class="nav-icon">📖</span>
+        <span>Katalog Pangan Lokal</span>
+      </button>
+      <button class="nav-item" data-sec="community">
+        <span class="nav-icon">👥</span>
+        <span>Ruang Komunitas</span>
+      </button>
+      <button class="nav-item" data-sec="caregiver">
+        <span class="nav-icon">🛡️</span>
+        <span>Portal Pendamping</span>
+      </button>
+      <button class="nav-item" data-sec="progress">
+        <span class="nav-icon">📈</span>
+        <span>Tren Progres</span>
+      </button>
+    </nav>
+
+    <!-- Sidebar Active Patient Status -->
+    <div class="sidebar-patient-box">
+      <span>Mode Pemulihan Aktif:</span>
+      <b class="user-condition-placeholder">Pasca-Operasi · Minggu ke-2</b>
+      <div style="margin-top:6px;font-size:11px;color:#BFDCD1;">Target Protein: <b>75g / hari</b></div>
+    </div>
+
+    <!-- Elderly & Accessibility Controls (PRD Non-Functional Requirement) -->
+    <div class="accessibility-panel">
+      <span>Ukuran Teks:</span>
+      <div class="font-size-btns">
+        <button class="font-btn active" data-size="normal" onclick="app.setFontSize('normal')" title="Ukuran teks normal">A</button>
+        <button class="font-btn" data-size="large" onclick="app.setFontSize('large')" title="Ukuran teks besar (ramah lansia)">A+</button>
+        <button class="font-btn" data-size="xl" onclick="app.setFontSize('xl')" title="Ukuran teks sangat besar">A++</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       MAIN CONTENT WRAPPER
+       ========================================================================= -->
+  <main class="main-wrapper" id="main-content">
+    
+    <!-- Topbar Header -->
+    <header class="topbar">
+      <div class="topbar-greeting">
+        <h1>Selamat siang, <span class="user-name-placeholder">Rangga</span></h1>
+        <p>
+          <span>Gambaran asupan gizi pemulihan harian</span>
+          <span class="date-badge">📅 Sabtu, 29 Agustus 2026</span>
+        </p>
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Install PWA Button (Visible if browser supports) -->
+        <button class="install-pwa-btn" id="btn-install-pwa" title="Install aplikasi NutriVision AI ke HP/Desktop">
+          <span>📲</span> Install Aplikasi
+        </button>
+
+        <!-- Profile Chip Button -->
+        <button class="profile-chip-btn" onclick="app.openModal('onboarding-modal')" title="Ubah profil pemulihan & target gizi">
+          <div class="profile-avatar user-avatar-placeholder">R</div>
+          <div class="profile-meta">
+            <b class="user-name-placeholder">Rangga P.</b>
+            <span class="user-condition-placeholder">Pasca-operasi · Mg ke-2</span>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Medical Disclaimer Banner (Mandatory PRD Section 8 & 10) -->
+    <section class="disclaimer-banner" role="alert">
+      <span class="disclaimer-icon">⚠️</span>
+      <div class="disclaimer-text">
+        <strong>Pemberitahuan Layanan Publik & Pendukung Keputusan:</strong>
+        Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (decision-support), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         VIEW 1: OVERVIEW DASHBOARD (Fitur Utama & Ringkasan Cepat)
+         ========================================================================= -->
+    <div class="view-section active-view" id="view-overview">
+      <div class="dashboard-grid">
+
+        <!-- HERO CARD: COMPUTER VISION FOOD SEGMENTATION (FR-01, FR-02, FR-03, FR-07) -->
+        <section class="card hero-scan-card">
+          <div class="hero-header">
+            <div>
+              <h2>Segmentasi Citra Makanan Berbasis AI</h2>
+              <p>Foto makananmu dari kamera atau galeri. Sistem menyekat bahan per segmen, mengestimasi rentang gizi, dan mencocokkannya dengan target fase pemulihanmu.</p>
+            </div>
+            <div class="hero-actions">
+              <button class="btn-primary-coral" onclick="app.openScanModal()">
+                <span>📷</span> Scan Makanan Baru
+              </button>
+              <button class="btn-outline-glass" onclick="app.navigate('catalog')">
+                <span>📖</span> Katalog Pangan
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Segmentation Plate Visualization -->
+          <div class="plate-segmentation-showcase">
+            <div class="plate-canvas-box">
+              <canvas id="overview-plate-canvas"></canvas>
+            </div>
+
+            <div class="segment-legend-grid">
+              <div id="overview-segment-legend">
+                <!-- Populated dynamically via JS -->
+              </div>
+              <div class="model-confidence-bar">
+                <span id="overview-conf-note">Tingkat keyakinan model: 88% · Format rentang gizi aktif.</span>
+                <button class="btn-sm-teal" style="font-size:10.5px;padding:3px 8px;" onclick="app.openScanModal()">Koreksi Manual ✎</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CARD 2: MACRONUTRIENT RING & COMPLIANCE (FR-05) -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Target Gizi Pemulihan Hari Ini</h2>
+              <div class="card-subtitle">Fase aktif: <span class="user-condition-placeholder">Pasca-Operasi Minggu ke-2</span></div>
+            </div>
+            <span class="badge teal">On Track</span>
+          </div>
+
+          <div class="macro-ring-container">
+            <div class="macro-donut-wrapper">
+              <svg class="macro-donut-svg" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#E1EAE5" stroke-width="12"/>
+                <circle id="macro-donut-circle-prot" cx="60" cy="60" r="48" fill="none" stroke="#0F6E56" stroke-width="12" stroke-dasharray="301.6" stroke-dashoffset="69.3" stroke-linecap="round"/>
+              </svg>
+              <div class="macro-donut-center">
+                <span class="val" id="macro-donut-value">77%</span>
+                <span class="lbl">protein harian</span>
+              </div>
+            </div>
+
+            <div class="macro-progress-list">
+              <div class="macro-item">
+                <div class="macro-item-head">
+                  <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#0F6E56;"></span>Protein</span>
+                  <span class="macro-num" id="macro-num-protein">58 / 75 g</span>
+                </div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-protein" style="width:77%;background:#0F6E56;"></div></div>
+              </div>
+
+              <div class="macro-item">
+                <div class="macro-item-head">
+                  <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#3FBE93;"></span>Karbohidrat</span>
+                  <span class="macro-num" id="macro-num-carbs">195 / 240 g</span>
+                </div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-carbs" style="width:81%;background:#3FBE93;"></div></div>
+              </div>
+
+              <div class="macro-item">
+                <div class="macro-item-head">
+                  <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#EF9F27;"></span>Lemak Sehat</span>
+                  <span class="macro-num" id="macro-num-fat">42 / 55 g</span>
+                </div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-fat" style="width:76%;background:#EF9F27;"></div></div>
+              </div>
+
+              <div class="macro-item">
+                <div class="macro-item-head">
+                  <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#8B968F;"></span>Kalori Total</span>
+                  <span class="macro-num" id="macro-num-cals">1.420 / 1.850 kkal</span>
+                </div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-cals" style="width:76%;background:#8B968F;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Recovery Context Advice Box -->
+          <div class="recovery-tip-box" id="recovery-target-advice">
+            <!-- Dynamic Advice populated via JS -->
+          </div>
+        </section>
+
+        <!-- CARD 3: RECOVERY MEAL PLANNER (FR-10: DUAL MODE STANDAR VS HEMAT) -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Recovery Meal Planner</h2>
+              <div class="card-subtitle">Rekomendasi menu adaptif gizi pemulihan</div>
+            </div>
+          </div>
+
+          <!-- Dual Mode Toggle Tab (Standar vs Hemat) -->
+          <div class="toggle-tab-group">
+            <button class="toggle-tab-btn active" id="tab-plan-standar" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('standar');">
+              ✨ Opsi Standar (Optimal)
+            </button>
+            <button class="toggle-tab-btn" id="tab-plan-hemat" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('hemat');">
+              💰 Opsi Hemat / Low-Budget
+            </button>
+          </div>
+
+          <!-- Meal Plan List -->
+          <div class="meal-plan-card-list" id="meal-plan-list">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </section>
+
+        <!-- CARD 4: SYMPTOM-AWARE FOOD FILTER (FR-11) -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Symptom-Aware Filter</h2>
+              <div class="card-subtitle">Tandai gejala yang dirasakan untuk penyesuaian tekstur</div>
+            </div>
+          </div>
+
+          <div class="symptom-chip-grid">
+            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('mual');">
+              <span>🤢</span> Mual
+            </button>
+            <button class="symptom-chip active" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('sulit-menelan');">
+              <span>🥄</span> Sulit Menelan / Disfagia
+            </button>
+            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('konstipasi');">
+              <span>🫄</span> Konstipasi / Sembelit
+            </button>
+            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('nafsu-rendah');">
+              <span>📉</span> Nafsu Makan Rendah
+            </button>
+          </div>
+
+          <div class="symptom-result-card" id="symptom-result-box">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </section>
+
+        <!-- CARD 5: PROGRESS & RECOVERY (FR-09) -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Tren Kepatuhan Gizi 7 Hari</h2>
+              <div class="card-subtitle">Konsistensi pencapaian protein pemulihan</div>
+            </div>
+            <span class="badge teal">Streak: 6 Hari 🔥</span>
+          </div>
+
+          <div class="progress-chart-container">
+            <div class="weekly-bar-chart" id="weekly-bar-chart-box">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <div class="streak-card-footer">
+            <span>Rata-rata mingguan: <b>92% tercapai</b></span>
+            <button class="btn-export-share" onclick="app.exportCaregiverReport()">
+              <span>📋</span> Bagikan ke Fisioterapis / Nakes
+            </button>
+          </div>
+        </section>
+
+        <!-- CARD 6: RUANG KOMUNITAS PEMULIHAN (FR-13) -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Ruang Komunitas Pemulihan</h2>
+              <div class="card-subtitle">Tips & pengalaman dari sesama pasien / pengguna</div>
+            </div>
+            <button class="btn-sm-teal" onclick="app.openModal('create-post-modal')">+ Bagikan Tips</button>
+          </div>
+
+          <div class="community-feed" id="community-feed-box">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- CARD 7: PORTAL PENDAMPING / CAREGIVER (FR-12) -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title-group">
+              <h2>Portal Pendamping (Caregiver View)</h2>
+              <div class="card-subtitle">Akses lihat-saja untuk keluarga atau perawat di rumah</div>
+            </div>
+          </div>
+
+          <div class="caregiver-card-content">
+            <div id="caregiver-list-box">
+              <!-- Populated via JS -->
+            </div>
+
+            <div class="caregiver-link-box">
+              <span>Bagikan tautan pemantauan pasien:</span>
+              <button class="btn-sm-teal" onclick="app.copyCaregiverShareLink()">🔗 Salin Link Akses</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 2: DEDICATED MEAL PLANNER FULL PAGE
+         ========================================================================= -->
+    <div class="view-section" id="view-planner">
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Recovery Meal Planner Adaptif</h2>
+            <div class="card-subtitle">Rencana menu harian terstruktur berdasarkan profil kondisi klinis</div>
+          </div>
+        </div>
+        <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">
+          Pilih antara opsi standar bergizi penuh atau opsi hemat biaya berbasis pangan lokal yang ramah anggaran namun tetap mencukupi target protein untuk regenerasi jaringan.
+        </p>
+
+        <div class="toggle-tab-group" style="max-width:420px;">
+          <button class="toggle-tab-btn active" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('standar');">
+            ✨ Opsi Standar (Optimal)
+          </button>
+          <button class="toggle-tab-btn" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('hemat');">
+            💰 Opsi Hemat / Low-Budget
+          </button>
+        </div>
+
+        <div class="meal-plan-card-list" id="meal-plan-list-full">
+          <!-- Synchronized with meal planner -->
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 3: KATALOG PANGAN LOKAL INDONESIA (FR-08)
+         ========================================================================= -->
+    <div class="view-section" id="view-catalog">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Katalog Bahan Pangan Lokal Indonesia</h2>
+            <div class="card-subtitle">Referensi komposisi gizi, porsi standar, dan perkiraan harga pasar</div>
+          </div>
+        </div>
+
+        <div class="catalog-search-bar">
+          <input type="text" class="input-search" id="food-catalog-search" placeholder="🔍 Cari bahan makanan (cth: ikan gabus, tahu, bayam, telur)...">
+        </div>
+
+        <div class="catalog-grid" id="food-catalog-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 4: RUANG KOMUNITAS PEMULIHAN FULL (FR-13)
+         ========================================================================= -->
+    <div class="view-section" id="view-community">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Ruang Komunitas Pemulihan NutriVision</h2>
+            <div class="card-subtitle">Saling berbagi ide makanan, strategi pemulihan, dan motivasi</div>
+          </div>
+          <button class="btn-primary-coral" style="padding:8px 16px;font-size:12px;" onclick="app.openModal('create-post-modal')">+ Tulis Tips Baru</button>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="preset-selector-row">
+          <button class="preset-chip active" onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('all');">Semua Topik</button>
+          <button class="preset-chip" onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('post-surgery');">Pasca-Operasi</button>
+          <button class="preset-chip" onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('rehab');">Fisioterapi / Cedera</button>
+          <button class="preset-chip" onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('gym');">Gym Recovery</button>
+        </div>
+
+        <div class="community-feed" id="community-feed-box-full" style="margin-top:16px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 5: PORTAL PENDAMPING FULL (FR-12)
+         ========================================================================= -->
+    <div class="view-section" id="view-caregiver">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Portal Pendamping (Caregiver Access)</h2>
+            <div class="card-subtitle">Kelola izin pantau jarak jauh untuk keluarga dan tenaga medis</div>
+          </div>
+        </div>
+        <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">
+          Pendamping dengan tautan khusus hanya dapat melihat rekapitulasi gizi dan riwayat piring makan tanpa izin mengubah pengaturan atau data rekam medis.
+        </p>
+
+        <div id="caregiver-list-box-full">
+          <!-- Dynamically synchronized -->
+        </div>
+
+        <div class="caregiver-link-box" style="margin-top:20px;">
+          <span>Tautan Akses Pendamping Terenkripsi:</span>
+          <button class="btn-sm-teal" onclick="app.copyCaregiverShareLink()">🔗 Salin Link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 6: TREN PROGRES & REKAM GIZI (FR-09)
+         ========================================================================= -->
+    <div class="view-section" id="view-progress">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Rekapitulasi Kepatuhan Gizi & Nutrisi Mingguan</h2>
+            <div class="card-subtitle">Analisis kepatuhan harian terhadap anjuran target gizi</div>
+          </div>
+        </div>
+
+        <div class="weekly-bar-chart" id="weekly-bar-chart-box-full" style="height:180px;margin-bottom:20px;">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div style="background:var(--bg);border-radius:var(--radius-md);padding:16px;border:1px solid var(--line);">
+          <h3 style="font-size:16px;margin-bottom:8px;color:var(--ink);">Ringkasan Telehealth Pasien</h3>
+          <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;">
+            Rata-rata kepatuhan protein 7 hari terakhir: <b>92%</b>. Pasien menunjukkan konsistensi tinggi pada asupan protein hewani dan nabati bertekstur lunak. Tidak dilaporkan adanya keluhan sembelit signifikan setelah penambahan serat sayur bening bayam.
+          </p>
+          <button class="btn-primary-coral" style="margin-top:12px;font-size:13px;padding:8px 16px;" onclick="app.exportCaregiverReport()">
+            📋 Salin Laporan Telehealth Lengkap
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- =========================================================================
+     MOBILE BOTTOM NAVIGATION BAR (PWA)
+     ========================================================================= -->
+<nav class="bottom-nav-pwa" aria-label="Navigasi Bawah Mobile">
+  <button class="bottom-nav-btn active" data-sec="overview" onclick="app.navigate('overview')">
+    <span class="nav-icon">🏠</span>
+    <span>Ringkasan</span>
+  </button>
+  <button class="bottom-nav-btn" data-sec="planner" onclick="app.navigate('planner')">
+    <span class="nav-icon">🍽️</span>
+    <span>Menu</span>
+  </button>
+  <button class="bottom-nav-btn" data-sec="catalog" onclick="app.navigate('catalog')">
+    <span class="nav-icon">📖</span>
+    <span>Katalog</span>
+  </button>
+  <button class="bottom-nav-btn" data-sec="community" onclick="app.navigate('community')">
+    <span class="nav-icon">👥</span>
+    <span>Komunitas</span>
+  </button>
+  <button class="bottom-nav-btn" data-sec="progress" onclick="app.navigate('progress')">
+    <span class="nav-icon">📈</span>
+    <span>Progres</span>
+  </button>
+</nav>
+
+<!-- Floating Action Button for Scan on Mobile -->
+<button class="fab-scan-btn" onclick="app.openScanModal()" title="Buka Kamera Scan Makanan">
+  📷
+</button>
+
+<!-- Toast Notification Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- =========================================================================
+     MODAL 1: COMPUTER VISION SCAN & CORRECTION (FR-01, FR-02, FR-03, FR-07)
+     ========================================================================= -->
+<div class="modal-overlay" id="scan-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>📷 Segmentasi & Pindai Makanan</h3>
+      <button class="modal-close-btn" onclick="app.closeModal('scan-modal')">✕</button>
+    </div>
+
+    <!-- Mode Uji Cepat Preset Demo -->
+    <div style="font-size:var(--font-xs);color:var(--ink-mute);margin-bottom:6px;">Pilih contoh piring makanan siap uji:</div>
+    <div class="preset-selector-row" id="scan-preset-chips">
+      <!-- Populated via JS -->
+    </div>
+
+    <!-- Live Camera Viewport (Hidden unless active) -->
+    <div class="camera-capture-viewport" id="camera-viewport-box" style="display:none;">
+      <video id="live-camera-feed" class="camera-video-stream" autoplay playsinline muted></video>
+      <div class="camera-scan-overlay">
+        <div class="camera-crosshair-box">
+          <div class="camera-scan-laser"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas Segment Viewport -->
+    <div class="scan-result-canvas-container" id="scan-canvas-view-box">
+      <canvas id="modal-scan-canvas"></canvas>
+    </div>
+
+    <!-- Camera Control Actions -->
+    <div class="camera-controls-bar">
+      <button class="btn-sm-teal" onclick="app.activateLiveCamera()">📹 Buka Kamera Langsung</button>
+      <button class="btn-primary-coral" id="btn-snap-photo" style="display:none;padding:6px 14px;font-size:12px;" onclick="app.captureLivePhoto()">📸 Jepret Foto</button>
+      <label class="btn-sm-teal" style="cursor:pointer;">
+        📁 Unggah Foto (JPEG/PNG)
+        <input type="file" accept="image/jpeg,image/png" style="display:none;" onchange="app.handleImageUpload(this)">
+      </label>
+    </div>
+
+    <!-- Aggregated Nutrient Result (Rentang Estimasi) -->
+    <div id="modal-aggregated-nutrients" style="margin-bottom:14px;"></div>
+
+    <!-- Human-in-the-Loop Editable Segment List (FR-07) -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink);">Koreksi Bahan Hasil Deteksi:</span>
+      <button class="btn-sm-teal" style="font-size:11px;" onclick="app.navigate('catalog'); app.closeModal('scan-modal');">+ Tambah dari Katalog</button>
+    </div>
+
+    <div class="segment-edit-list" id="modal-segment-edit-list">
+      <!-- Dynamically populated -->
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div style="display:flex;gap:10px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px;">
+      <button class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);flex:1;text-align:center;" onclick="app.closeModal('scan-modal')">Batal</button>
+      <button class="btn-primary-coral" style="flex:2;justify-content:center;" onclick="app.saveScanToDailyIntake()">✓ Simpan ke Asupan Harian</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 2: ONBOARDING & SHARED RESPONSIBILITY CONSENT (FR-04, FR-06)
+     ========================================================================= -->
+<div class="modal-overlay" id="onboarding-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🏥 Profil Pemulihan & Sasaran Gizi</h3>
+      <button class="modal-close-btn" onclick="app.closeModal('onboarding-modal')">✕</button>
+    </div>
+
+    <form class="onboarding-wizard" onsubmit="event.preventDefault(); app.saveOnboardingProfile();">
+      <div class="form-group">
+        <label for="onboard-name">Nama Pasien / Pengguna</label>
+        <input type="text" id="onboard-name" class="form-control" value="Rangga Pratama" required>
+      </div>
+
+      <div class="form-group">
+        <label>Pilih Kategori Kondisi Pemulihan:</label>
+        <div class="form-radio-cards">
+          <label class="radio-card selected" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected')); this.classList.add('selected');">
+            <input type="radio" name="onboard-condition" value="post-surgery" checked style="display:none;">
+            <b>Pasca-Operasi</b>
+            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">Penyembuhan luka & jaringan</div>
+          </label>
+
+          <label class="radio-card" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected')); this.classList.add('selected');">
+            <input type="radio" name="onboard-condition" value="rehab" style="display:none;">
+            <b>Fisioterapi / Cedera</b>
+            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">Rehabilitasi sendi & otot</div>
+          </label>
+
+          <label class="radio-card" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected')); this.classList.add('selected');">
+            <input type="radio" name="onboard-condition" value="gym" style="display:none;">
+            <b>Gym Recovery</b>
+            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">Perbaikan mikrorobekan otot</div>
+          </label>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group">
+          <label for="onboard-phase">Fase Pemulihan Saat Ini</label>
+          <input type="text" id="onboard-phase" class="form-control" value="Minggu ke-2 (Fase Proliferasi)">
+        </div>
+        <div class="form-group">
+          <label for="onboard-weight">Berat Badan (kg)</label>
+          <input type="number" id="onboard-weight" class="form-control" value="65" min="30" max="250">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="onboard-restrictions">Pantangan Makan / Alergi Medis (Deklarasi Mandiri)</label>
+        <input type="text" id="onboard-restrictions" class="form-control" value="Alergi makanan pedas pekat, hindari gorengan keras" placeholder="Misal: alergi seafood, batasi garam, intoleransi laktosa">
+      </div>
+
+      <!-- Mandatory Disclaimer & Consent Checkbox (FR-06) -->
+      <div class="disclaimer-consent-box">
+        <strong>Pernyataan Tanggung Jawab Bersama (Shared Responsibility):</strong>
+        NutriVision AI adalah alat bantu digital pendukung keputusan berbasis computer vision dan estimasi gizi pangan. Sistem tidak melakukan diagnosis medis mandiri. Keputusan akhir pola makan dan kepatuhan terhadap anjuran dokter tetap menjadi tanggung jawab pengguna.
+        
+        <label class="consent-checkbox-row">
+          <input type="checkbox" id="onboard-consent-check" checked required>
+          <span>Saya memahami dan menyetujui pernyataan disclaimer ini serta menyatakan bahwa data pantangan diisi sesuai anjuran medis yang saya ketahui.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;margin-top:6px;">
+        Simpan Profil Pemulihan
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL 3: BUAT POSTINGAN KOMUNITAS BARU (FR-13)
+     ========================================================================= -->
+<div class="modal-overlay" id="create-post-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>✍️ Bagikan Tips / Resep Pemulihan</h3>
+      <button class="modal-close-btn" onclick="app.closeModal('create-post-modal')">✕</button>
+    </div>
+
+    <form onsubmit="event.preventDefault(); const t = document.getElementById('post-content').value; const cat = document.getElementById('post-category').value; const res = communityHandler.createPost(app.userProfile.name, cat, cat === 'post-surgery' ? 'Pasca-Operasi' : cat === 'rehab' ? 'Fisioterapi' : 'Gym Recovery', t); if (res) { app.closeModal('create-post-modal'); app.showToast('Tips berhasil diterbitkan ke komunitas!'); }">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label for="post-category">Kategori Topik</label>
+        <select id="post-category" class="form-control">
+          <option value="post-surgery">Pasca-Operasi & Bedah</option>
+          <option value="rehab">Fisioterapi & Cedera Sendi</option>
+          <option value="gym">Gym & Muscle Recovery</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px;">
+        <label for="post-content">Tulis Pengalaman / Tips Makanan Sehat</label>
+        <textarea id="post-content" class="form-control" rows="4" placeholder="Ceritakan bagaimana kamu memenuhi kebutuhan protein, trik makan saat mual, atau resep makanan lembut bergizi..." required></textarea>
+      </div>
+
+      <div style="font-size:var(--font-xs);color:var(--teal-700);background:var(--teal-50);padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;">
+        🛡️ Sistem akan melakukan pengecekan gizi dasar otomatis sebelum menampilkan lencana terverifikasi.
+      </div>
+
+      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;">
+        Terbitkan Tips ke Komunitas
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Core JavaScript Application Scripts -->
+<script src="js/data.js"></script>
+<script src="js/cv-engine.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/community.js"></script>
+<script src="js/caregiver.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
