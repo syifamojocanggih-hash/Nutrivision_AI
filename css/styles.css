@@ -140,6 +140,33 @@ h1, h2, h3, h4, .brand-font, .serif {
   background: var(--teal-300);
 }
 
+/* SVG / Lucide Icons Styling */
+.lucide, .svg-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2px;
+  vertical-align: -3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.nav-icon .lucide, .nav-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.btn-icon-sm {
+  width: 15px;
+  height: 15px;
+  vertical-align: -2px;
+}
+
+.btn-icon-md {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+}
+
 /* App Shell Layout */
 .app-container {
   display: flex;

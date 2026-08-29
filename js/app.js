@@ -65,6 +65,11 @@ class NutriVisionApp {
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
 
+    // Inisialisasi ikon Lucide (Figma / Iconify standard)
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+
     // Jika pengguna belum menyetujui disclaimer medis / onboarding
     if (!this.userProfile.hasAcceptedConsent) {
       this.openModal('onboarding-modal');
@@ -165,6 +170,10 @@ class NutriVisionApp {
       btn.classList.toggle('active', btn.dataset.sec === sectionId);
     });
 
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+
     // Scroll to top smooth
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -199,6 +208,10 @@ class NutriVisionApp {
     const confNote = document.getElementById('overview-conf-note');
     if (confNote && cvEngine.currentScan) {
       confNote.textContent = `Tingkat keyakinan model: ${cvEngine.currentScan.confidenceOverall || 88}% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.`;
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
     }
   }
 
@@ -238,14 +251,19 @@ class NutriVisionApp {
           <div class="segment-edit-item ${seg.unrecognized ? 'unrecognized' : ''}">
             <span class="segment-color-dot" style="background: ${seg.color}"></span>
             <div class="segment-edit-info">
-              <div class="name">${seg.name} ${seg.unrecognized ? '⚠️ <span style="font-size:11px;color:var(--amber-600)">(Belum Yakin)</span>' : ''}</div>
+              <div class="name">
+                ${seg.name} 
+                ${seg.unrecognized ? '<span style="font-size:11px;color:var(--amber-600);display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-circle" class="btn-icon-sm"></i> Belum Yakin</span>' : ''}
+              </div>
               <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} kkal · Keyakinan: ${seg.confidence}%</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
               <input type="number" value="${seg.portionGrams}" min="10" max="800" step="10" 
                      style="width:60px;padding:4px 6px;font-size:12px;border:1px solid var(--line);border-radius:6px;"
                      onchange="app.updateSegmentGrams('${seg.id}', this.value)" title="Ubah porsi gram">
-              <button class="btn-remove-segment" onclick="app.removeSegment('${seg.id}')" title="Hapus bahan">✕</button>
+              <button class="btn-remove-segment" onclick="app.removeSegment('${seg.id}')" title="Hapus bahan" style="display:flex;align-items:center;">
+                <i data-lucide="trash-2" class="btn-icon-sm"></i>
+              </button>
             </div>
           </div>
         `;
@@ -263,6 +281,10 @@ class NutriVisionApp {
           <div><b>Kalori:</b> <span style="font-weight:600;">${agg.cals[0]} - ${agg.cals[1]} kkal</span></div>
         </div>
       `;
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
     }
   }
 
@@ -382,10 +404,16 @@ class NutriVisionApp {
           <div class="macros">
             ${food.proteinRange[0]}-${food.proteinRange[1]}g Prot · ${food.calsRange[0]}-${food.calsRange[1]} kkal
           </div>
-          <button class="btn-sm-teal" style="margin-top:6px;font-size:11px;">+ Tambah ke Piring</button>
+          <button class="btn-sm-teal" style="margin-top:6px;font-size:11px;display:inline-flex;align-items:center;gap:4px;">
+            <i data-lucide="plus" class="btn-icon-sm"></i> Tambah ke Piring
+          </button>
         </div>
       `;
     }).join('');
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   addCatalogItemToScan(foodId) {
@@ -405,6 +433,9 @@ class NutriVisionApp {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.add('open');
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
     }
   }
 
@@ -456,7 +487,7 @@ class NutriVisionApp {
     this.saveUserProfile();
     progressTracker.renderMacroDonut(this.userProfile.targets);
     this.closeModal('onboarding-modal');
-    this.showToast('✅ Profil pemulihan & target gizi berhasil disimpan!');
+    this.showToast('Profil pemulihan & target gizi berhasil disimpan!');
   }
 
   // =========================================================================
@@ -468,8 +499,12 @@ class NutriVisionApp {
 
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span>✨</span><span>${message}</span>`;
+    toast.innerHTML = `<i data-lucide="check-circle" style="color:var(--teal-300);width:18px;height:18px;flex-shrink:0;"></i><span>${message}</span>`;
     container.appendChild(toast);
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
 
     setTimeout(() => {
       toast.style.opacity = '0';
@@ -482,7 +517,7 @@ class NutriVisionApp {
   exportCaregiverReport() {
     const text = progressTracker.generateCaregiverReportText(this.userProfile);
     navigator.clipboard.writeText(text).then(() => {
-      this.showToast('📋 Ringkasan laporan gizi berhasil disalin ke clipboard!');
+      this.showToast('Ringkasan laporan gizi berhasil disalin ke clipboard!');
     }).catch(() => {
       alert(text);
     });
@@ -491,7 +526,7 @@ class NutriVisionApp {
   copyCaregiverShareLink() {
     const link = caregiverHandler.generateSharedLink();
     navigator.clipboard.writeText(link).then(() => {
-      this.showToast('🔗 Tautan akses pendamping (view-only) berhasil disalin!');
+      this.showToast('Tautan akses pendamping (view-only) berhasil disalin!');
     }).catch(() => {
       alert('Tautan akses: ' + link);
     });

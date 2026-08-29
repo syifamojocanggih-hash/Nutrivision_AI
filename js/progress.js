@@ -118,7 +118,7 @@ class NutriVisionProgress {
       const remainingProt = targets.protein - this.todayIntake.protein;
       if (remainingProt > 0) {
         tipBox.innerHTML = `
-          <span>💡</span>
+          <i data-lucide="lightbulb" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
           <div>
             <strong>Saran Gizi Pemulihan:</strong> Protein masih kurang <b>${remainingProt}g</b> untuk target hari ini. 
             Disarankan menambah <i>2 butir telur rebus (14g)</i> atau <i>1 porsi tahu kukus (8g)</i> saat makan malam.
@@ -126,11 +126,14 @@ class NutriVisionProgress {
         `;
       } else {
         tipBox.innerHTML = `
-          <span>🎉</span>
+          <i data-lucide="party-popper" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
           <div>
             <strong>Luar biasa!</strong> Target protein pemulihan hari ini telah tercapai optimal (100%). Pertahankan hidrasi dan istirahat berkualitas.
           </div>
         `;
+      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
   }

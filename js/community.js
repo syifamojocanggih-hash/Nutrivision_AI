@@ -110,16 +110,16 @@ class NutriVisionCommunity {
             
             ${post.verified ? `
               <div class="comm-verified-badge">
-                <span>🛡️</span> Lolos verifikasi gizi dasar sistem
+                <i data-lucide="shield-check" class="btn-icon-sm"></i> Lolos verifikasi gizi dasar sistem
               </div>
             ` : ''}
 
             <div class="comm-actions">
               <button class="comm-action-btn ${post.userLiked ? 'liked' : ''}" onclick="communityHandler.toggleLike('${post.id}')">
-                <span>${post.userLiked ? '❤️' : '🤍'}</span> <b>${post.likes}</b> Suka
+                <i data-lucide="heart" class="btn-icon-sm" style="${post.userLiked ? 'fill:var(--coral-400);stroke:var(--coral-400);' : ''}"></i> <b>${post.likes}</b> Suka
               </button>
               <button class="comm-action-btn" onclick="communityHandler.promptComment('${post.id}')">
-                <span>💬</span> <b>${post.comments ? post.comments.length : 0}</b> Komentar
+                <i data-lucide="message-square" class="btn-icon-sm"></i> <b>${post.comments ? post.comments.length : 0}</b> Komentar
               </button>
             </div>
 
@@ -137,6 +137,10 @@ class NutriVisionCommunity {
 
     if (container1) container1.innerHTML = html;
     if (container2) container2.innerHTML = html;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   promptComment(postId) {

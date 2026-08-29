@@ -21,6 +21,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Lucide Icons (Figma / Iconify standard) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <!-- Core Design System -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -33,7 +36,9 @@
        ========================================================================= -->
   <aside class="sidebar" aria-label="Sidebar Navigasi">
     <div class="brand-container">
-      <div class="brand-mark">N</div>
+      <div class="brand-mark">
+        <i data-lucide="leaf" style="width:22px;height:22px;"></i>
+      </div>
       <div class="brand-text">
         <span class="brand-name">NutriVision AI</span>
         <span class="brand-tag">Public Service Edition</span>
@@ -42,27 +47,27 @@
 
     <nav class="sidebar-nav">
       <button class="nav-item active" data-sec="overview">
-        <span class="nav-icon">📊</span>
+        <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
         <span>Ringkasan Dasbor</span>
       </button>
       <button class="nav-item" data-sec="planner">
-        <span class="nav-icon">🍽️</span>
+        <span class="nav-icon"><i data-lucide="utensils"></i></span>
         <span>Meal Planner</span>
       </button>
       <button class="nav-item" data-sec="catalog">
-        <span class="nav-icon">📖</span>
+        <span class="nav-icon"><i data-lucide="book-open"></i></span>
         <span>Katalog Pangan Lokal</span>
       </button>
       <button class="nav-item" data-sec="community">
-        <span class="nav-icon">👥</span>
+        <span class="nav-icon"><i data-lucide="users"></i></span>
         <span>Ruang Komunitas</span>
       </button>
       <button class="nav-item" data-sec="caregiver">
-        <span class="nav-icon">🛡️</span>
+        <span class="nav-icon"><i data-lucide="shield-plus"></i></span>
         <span>Portal Pendamping</span>
       </button>
       <button class="nav-item" data-sec="progress">
-        <span class="nav-icon">📈</span>
+        <span class="nav-icon"><i data-lucide="trending-up"></i></span>
         <span>Tren Progres</span>
       </button>
     </nav>
@@ -96,14 +101,14 @@
         <h1>Selamat siang, <span class="user-name-placeholder">Rangga</span></h1>
         <p>
           <span>Gambaran asupan gizi pemulihan harian</span>
-          <span class="date-badge">📅 Sabtu, 29 Agustus 2026</span>
+          <span class="date-badge"><i data-lucide="calendar" class="btn-icon-sm"></i> Sabtu, 29 Agustus 2026</span>
         </p>
       </div>
 
       <div class="topbar-actions">
         <!-- Install PWA Button (Visible if browser supports) -->
         <button class="install-pwa-btn" id="btn-install-pwa" title="Install aplikasi NutriVision AI ke HP/Desktop">
-          <span>📲</span> Install Aplikasi
+          <i data-lucide="download" class="btn-icon-sm"></i> Install Aplikasi
         </button>
 
         <!-- Profile Chip Button -->
@@ -119,7 +124,7 @@
 
     <!-- Medical Disclaimer Banner (Mandatory PRD Section 8 & 10) -->
     <section class="disclaimer-banner" role="alert">
-      <span class="disclaimer-icon">⚠️</span>
+      <span class="disclaimer-icon"><i data-lucide="alert-triangle"></i></span>
       <div class="disclaimer-text">
         <strong>Pemberitahuan Layanan Publik & Pendukung Keputusan:</strong>
         Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (decision-support), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.
@@ -141,10 +146,10 @@
             </div>
             <div class="hero-actions">
               <button class="btn-primary-coral" onclick="app.openScanModal()">
-                <span>📷</span> Scan Makanan Baru
+                <i data-lucide="camera" class="btn-icon-md"></i> Scan Makanan Baru
               </button>
               <button class="btn-outline-glass" onclick="app.navigate('catalog')">
-                <span>📖</span> Katalog Pangan
+                <i data-lucide="book-open" class="btn-icon-md"></i> Katalog Pangan
               </button>
             </div>
           </div>
@@ -161,7 +166,9 @@
               </div>
               <div class="model-confidence-bar">
                 <span id="overview-conf-note">Tingkat keyakinan model: 88% · Format rentang gizi aktif.</span>
-                <button class="btn-sm-teal" style="font-size:10.5px;padding:3px 8px;" onclick="app.openScanModal()">Koreksi Manual ✎</button>
+                <button class="btn-sm-teal" style="font-size:10.5px;padding:3px 8px;display:inline-flex;align-items:center;gap:4px;" onclick="app.openScanModal()">
+                  <i data-lucide="edit-3" class="btn-icon-sm"></i> Koreksi Manual
+                </button>
               </div>
             </div>
           </div>
@@ -174,7 +181,7 @@
               <h2>Target Gizi Pemulihan Hari Ini</h2>
               <div class="card-subtitle">Fase aktif: <span class="user-condition-placeholder">Pasca-Operasi Minggu ke-2</span></div>
             </div>
-            <span class="badge teal">On Track</span>
+            <span class="badge teal"><i data-lucide="check-circle-2" class="btn-icon-sm"></i> On Track</span>
           </div>
 
           <div class="macro-ring-container">
@@ -242,10 +249,10 @@
           <!-- Dual Mode Toggle Tab (Standar vs Hemat) -->
           <div class="toggle-tab-group">
             <button class="toggle-tab-btn active" id="tab-plan-standar" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('standar');">
-              ✨ Opsi Standar (Optimal)
+              <i data-lucide="sparkles" class="btn-icon-sm"></i> Opsi Standar (Optimal)
             </button>
             <button class="toggle-tab-btn" id="tab-plan-hemat" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('hemat');">
-              💰 Opsi Hemat / Low-Budget
+              <i data-lucide="coins" class="btn-icon-sm"></i> Opsi Hemat / Low-Budget
             </button>
           </div>
 
@@ -266,16 +273,16 @@
 
           <div class="symptom-chip-grid">
             <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('mual');">
-              <span>🤢</span> Mual
+              <i data-lucide="waves" class="btn-icon-sm"></i> Mual
             </button>
             <button class="symptom-chip active" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('sulit-menelan');">
-              <span>🥄</span> Sulit Menelan / Disfagia
+              <i data-lucide="droplet" class="btn-icon-sm"></i> Sulit Menelan / Disfagia
             </button>
             <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('konstipasi');">
-              <span>🫄</span> Konstipasi / Sembelit
+              <i data-lucide="shield-alert" class="btn-icon-sm"></i> Konstipasi / Sembelit
             </button>
             <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('nafsu-rendah');">
-              <span>📉</span> Nafsu Makan Rendah
+              <i data-lucide="sparkles" class="btn-icon-sm"></i> Nafsu Makan Rendah
             </button>
           </div>
 
@@ -291,7 +298,7 @@
               <h2>Tren Kepatuhan Gizi 7 Hari</h2>
               <div class="card-subtitle">Konsistensi pencapaian protein pemulihan</div>
             </div>
-            <span class="badge teal">Streak: 6 Hari 🔥</span>
+            <span class="badge teal"><i data-lucide="flame" class="btn-icon-sm"></i> Streak: 6 Hari</span>
           </div>
 
           <div class="progress-chart-container">
@@ -303,7 +310,7 @@
           <div class="streak-card-footer">
             <span>Rata-rata mingguan: <b>92% tercapai</b></span>
             <button class="btn-export-share" onclick="app.exportCaregiverReport()">
-              <span>📋</span> Bagikan ke Fisioterapis / Nakes
+              <i data-lucide="clipboard-check" class="btn-icon-sm"></i> Bagikan ke Fisioterapis / Nakes
             </button>
           </div>
         </section>
@@ -315,7 +322,9 @@
               <h2>Ruang Komunitas Pemulihan</h2>
               <div class="card-subtitle">Tips & pengalaman dari sesama pasien / pengguna</div>
             </div>
-            <button class="btn-sm-teal" onclick="app.openModal('create-post-modal')">+ Bagikan Tips</button>
+            <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openModal('create-post-modal')">
+              <i data-lucide="plus-circle" class="btn-icon-sm"></i> Bagikan Tips
+            </button>
           </div>
 
           <div class="community-feed" id="community-feed-box">
@@ -339,7 +348,9 @@
 
             <div class="caregiver-link-box">
               <span>Bagikan tautan pemantauan pasien:</span>
-              <button class="btn-sm-teal" onclick="app.copyCaregiverShareLink()">🔗 Salin Link Akses</button>
+              <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.copyCaregiverShareLink()">
+                <i data-lucide="link-2" class="btn-icon-sm"></i> Salin Link Akses
+              </button>
             </div>
           </div>
         </section>
@@ -364,10 +375,10 @@
 
         <div class="toggle-tab-group" style="max-width:420px;">
           <button class="toggle-tab-btn active" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('standar');">
-            ✨ Opsi Standar (Optimal)
+            <i data-lucide="sparkles" class="btn-icon-sm"></i> Opsi Standar (Optimal)
           </button>
           <button class="toggle-tab-btn" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('hemat');">
-            💰 Opsi Hemat / Low-Budget
+            <i data-lucide="coins" class="btn-icon-sm"></i> Opsi Hemat / Low-Budget
           </button>
         </div>
 
@@ -390,7 +401,7 @@
         </div>
 
         <div class="catalog-search-bar">
-          <input type="text" class="input-search" id="food-catalog-search" placeholder="🔍 Cari bahan makanan (cth: ikan gabus, tahu, bayam, telur)...">
+          <input type="text" class="input-search" id="food-catalog-search" placeholder="Cari bahan makanan (cth: ikan gabus, tahu, bayam, telur)...">
         </div>
 
         <div class="catalog-grid" id="food-catalog-grid">
@@ -409,7 +420,9 @@
             <h2>Ruang Komunitas Pemulihan NutriVision</h2>
             <div class="card-subtitle">Saling berbagi ide makanan, strategi pemulihan, dan motivasi</div>
           </div>
-          <button class="btn-primary-coral" style="padding:8px 16px;font-size:12px;" onclick="app.openModal('create-post-modal')">+ Tulis Tips Baru</button>
+          <button class="btn-primary-coral" style="padding:8px 16px;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openModal('create-post-modal')">
+            <i data-lucide="plus" class="btn-icon-sm"></i> Tulis Tips Baru
+          </button>
         </div>
 
         <!-- Category Filters -->
@@ -447,7 +460,9 @@
 
         <div class="caregiver-link-box" style="margin-top:20px;">
           <span>Tautan Akses Pendamping Terenkripsi:</span>
-          <button class="btn-sm-teal" onclick="app.copyCaregiverShareLink()">🔗 Salin Link</button>
+          <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.copyCaregiverShareLink()">
+            <i data-lucide="link-2" class="btn-icon-sm"></i> Salin Link
+          </button>
         </div>
       </div>
     </div>
@@ -473,8 +488,8 @@
           <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;">
             Rata-rata kepatuhan protein 7 hari terakhir: <b>92%</b>. Pasien menunjukkan konsistensi tinggi pada asupan protein hewani dan nabati bertekstur lunak. Tidak dilaporkan adanya keluhan sembelit signifikan setelah penambahan serat sayur bening bayam.
           </p>
-          <button class="btn-primary-coral" style="margin-top:12px;font-size:13px;padding:8px 16px;" onclick="app.exportCaregiverReport()">
-            📋 Salin Laporan Telehealth Lengkap
+          <button class="btn-primary-coral" style="margin-top:12px;font-size:13px;padding:8px 16px;display:inline-flex;align-items:center;gap:6px;" onclick="app.exportCaregiverReport()">
+            <i data-lucide="clipboard-check" class="btn-icon-sm"></i> Salin Laporan Telehealth Lengkap
           </button>
         </div>
       </div>
@@ -488,30 +503,30 @@
      ========================================================================= -->
 <nav class="bottom-nav-pwa" aria-label="Navigasi Bawah Mobile">
   <button class="bottom-nav-btn active" data-sec="overview" onclick="app.navigate('overview')">
-    <span class="nav-icon">🏠</span>
+    <span class="nav-icon"><i data-lucide="home"></i></span>
     <span>Ringkasan</span>
   </button>
   <button class="bottom-nav-btn" data-sec="planner" onclick="app.navigate('planner')">
-    <span class="nav-icon">🍽️</span>
+    <span class="nav-icon"><i data-lucide="utensils"></i></span>
     <span>Menu</span>
   </button>
   <button class="bottom-nav-btn" data-sec="catalog" onclick="app.navigate('catalog')">
-    <span class="nav-icon">📖</span>
+    <span class="nav-icon"><i data-lucide="book-open"></i></span>
     <span>Katalog</span>
   </button>
   <button class="bottom-nav-btn" data-sec="community" onclick="app.navigate('community')">
-    <span class="nav-icon">👥</span>
+    <span class="nav-icon"><i data-lucide="users"></i></span>
     <span>Komunitas</span>
   </button>
   <button class="bottom-nav-btn" data-sec="progress" onclick="app.navigate('progress')">
-    <span class="nav-icon">📈</span>
+    <span class="nav-icon"><i data-lucide="trending-up"></i></span>
     <span>Progres</span>
   </button>
 </nav>
 
 <!-- Floating Action Button for Scan on Mobile -->
 <button class="fab-scan-btn" onclick="app.openScanModal()" title="Buka Kamera Scan Makanan">
-  📷
+  <i data-lucide="camera" style="width:24px;height:24px;"></i>
 </button>
 
 <!-- Toast Notification Container -->
@@ -523,8 +538,10 @@
 <div class="modal-overlay" id="scan-modal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>📷 Segmentasi & Pindai Makanan</h3>
-      <button class="modal-close-btn" onclick="app.closeModal('scan-modal')">✕</button>
+      <h3 style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="scan-line" style="color:var(--teal-500);"></i> Segmentasi & Pindai Makanan
+      </h3>
+      <button class="modal-close-btn" onclick="app.closeModal('scan-modal')"><i data-lucide="x"></i></button>
     </div>
 
     <!-- Mode Uji Cepat Preset Demo -->
@@ -550,10 +567,14 @@
 
     <!-- Camera Control Actions -->
     <div class="camera-controls-bar">
-      <button class="btn-sm-teal" onclick="app.activateLiveCamera()">📹 Buka Kamera Langsung</button>
-      <button class="btn-primary-coral" id="btn-snap-photo" style="display:none;padding:6px 14px;font-size:12px;" onclick="app.captureLivePhoto()">📸 Jepret Foto</button>
-      <label class="btn-sm-teal" style="cursor:pointer;">
-        📁 Unggah Foto (JPEG/PNG)
+      <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:6px;" onclick="app.activateLiveCamera()">
+        <i data-lucide="video" class="btn-icon-sm"></i> Buka Kamera Langsung
+      </button>
+      <button class="btn-primary-coral" id="btn-snap-photo" style="display:none;padding:6px 14px;font-size:12px;align-items:center;gap:6px;" onclick="app.captureLivePhoto()">
+        <i data-lucide="aperture" class="btn-icon-sm"></i> Jepret Foto
+      </button>
+      <label class="btn-sm-teal" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
+        <i data-lucide="upload" class="btn-icon-sm"></i> Unggah Foto
         <input type="file" accept="image/jpeg,image/png" style="display:none;" onchange="app.handleImageUpload(this)">
       </label>
     </div>
@@ -564,7 +585,9 @@
     <!-- Human-in-the-Loop Editable Segment List (FR-07) -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink);">Koreksi Bahan Hasil Deteksi:</span>
-      <button class="btn-sm-teal" style="font-size:11px;" onclick="app.navigate('catalog'); app.closeModal('scan-modal');">+ Tambah dari Katalog</button>
+      <button class="btn-sm-teal" style="font-size:11px;display:inline-flex;align-items:center;gap:4px;" onclick="app.navigate('catalog'); app.closeModal('scan-modal');">
+        <i data-lucide="plus" class="btn-icon-sm"></i> Tambah dari Katalog
+      </button>
     </div>
 
     <div class="segment-edit-list" id="modal-segment-edit-list">
@@ -574,7 +597,9 @@
     <!-- Modal Footer Actions -->
     <div style="display:flex;gap:10px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px;">
       <button class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);flex:1;text-align:center;" onclick="app.closeModal('scan-modal')">Batal</button>
-      <button class="btn-primary-coral" style="flex:2;justify-content:center;" onclick="app.saveScanToDailyIntake()">✓ Simpan ke Asupan Harian</button>
+      <button class="btn-primary-coral" style="flex:2;justify-content:center;display:inline-flex;align-items:center;gap:6px;" onclick="app.saveScanToDailyIntake()">
+        <i data-lucide="check" class="btn-icon-sm"></i> Simpan ke Asupan Harian
+      </button>
     </div>
   </div>
 </div>
@@ -585,8 +610,10 @@
 <div class="modal-overlay" id="onboarding-modal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>🏥 Profil Pemulihan & Sasaran Gizi</h3>
-      <button class="modal-close-btn" onclick="app.closeModal('onboarding-modal')">✕</button>
+      <h3 style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="activity" style="color:var(--teal-500);"></i> Profil Pemulihan & Sasaran Gizi
+      </h3>
+      <button class="modal-close-btn" onclick="app.closeModal('onboarding-modal')"><i data-lucide="x"></i></button>
     </div>
 
     <form class="onboarding-wizard" onsubmit="event.preventDefault(); app.saveOnboardingProfile();">
@@ -645,8 +672,8 @@
         </label>
       </div>
 
-      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;margin-top:6px;">
-        Simpan Profil Pemulihan
+      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;margin-top:6px;display:inline-flex;align-items:center;gap:6px;">
+        <i data-lucide="check" class="btn-icon-sm"></i> Simpan Profil Pemulihan
       </button>
     </form>
   </div>
@@ -658,8 +685,10 @@
 <div class="modal-overlay" id="create-post-modal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>✍️ Bagikan Tips / Resep Pemulihan</h3>
-      <button class="modal-close-btn" onclick="app.closeModal('create-post-modal')">✕</button>
+      <h3 style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="pen-tool" style="color:var(--teal-500);"></i> Bagikan Tips / Resep Pemulihan
+      </h3>
+      <button class="modal-close-btn" onclick="app.closeModal('create-post-modal')"><i data-lucide="x"></i></button>
     </div>
 
     <form onsubmit="event.preventDefault(); const t = document.getElementById('post-content').value; const cat = document.getElementById('post-category').value; const res = communityHandler.createPost(app.userProfile.name, cat, cat === 'post-surgery' ? 'Pasca-Operasi' : cat === 'rehab' ? 'Fisioterapi' : 'Gym Recovery', t); if (res) { app.closeModal('create-post-modal'); app.showToast('Tips berhasil diterbitkan ke komunitas!'); }">
@@ -677,12 +706,12 @@
         <textarea id="post-content" class="form-control" rows="4" placeholder="Ceritakan bagaimana kamu memenuhi kebutuhan protein, trik makan saat mual, atau resep makanan lembut bergizi..." required></textarea>
       </div>
 
-      <div style="font-size:var(--font-xs);color:var(--teal-700);background:var(--teal-50);padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;">
-        🛡️ Sistem akan melakukan pengecekan gizi dasar otomatis sebelum menampilkan lencana terverifikasi.
+      <div style="font-size:var(--font-xs);color:var(--teal-700);background:var(--teal-50);padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="shield-check" class="btn-icon-sm"></i> Sistem akan melakukan pengecekan gizi dasar otomatis sebelum menampilkan lencana terverifikasi.
       </div>
 
-      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;">
-        Terbitkan Tips ke Komunitas
+      <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;">
+        <i data-lucide="send" class="btn-icon-sm"></i> Terbitkan Tips ke Komunitas
       </button>
     </form>
   </div>
@@ -700,3 +729,4 @@
 
 </body>
 </html>
+
