@@ -167,7 +167,7 @@
           <div class="card-head">
             <div class="card-title-group">
               <h2>Target Gizi Pemulihan Hari Ini</h2>
-              <div class="card-subtitle">Fase aktif: <span class="user-condition-placeholder">Pasca-Operasi Minggu ke-2</span></div>
+              <div class="card-subtitle">Fase aktif: <span class="user-condition-placeholder">Pasca-Operasi & Bedah · Minggu ke-2 (Fase Proliferasi & Jaringan)</span></div>
             </div>
             <span class="badge teal"><i data-lucide="check-circle-2" class="btn-icon-sm"></i> On Track</span>
           </div>
@@ -179,7 +179,7 @@
                 <circle id="macro-donut-circle-prot" cx="60" cy="60" r="48" fill="none" stroke="#0F6E56" stroke-width="12" stroke-dasharray="301.6" stroke-dashoffset="69.3" stroke-linecap="round"/>
               </svg>
               <div class="macro-donut-center">
-                <span class="val" id="macro-donut-value">77%</span>
+                <span class="val" id="macro-donut-value">0%</span>
                 <span class="lbl">protein harian</span>
               </div>
             </div>
@@ -188,98 +188,48 @@
               <div class="macro-item">
                 <div class="macro-item-head">
                   <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#0F6E56;"></span>Protein</span>
-                  <span class="macro-num" id="macro-num-protein">58 / 75 g</span>
+                  <span class="macro-num" id="macro-num-protein">0 / 98 g</span>
                 </div>
-                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-protein" style="width:77%;background:#0F6E56;"></div></div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-protein" style="width:0%;background:#0F6E56;"></div></div>
               </div>
 
               <div class="macro-item">
                 <div class="macro-item-head">
                   <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#3FBE93;"></span>Karbohidrat</span>
-                  <span class="macro-num" id="macro-num-carbs">195 / 240 g</span>
+                  <span class="macro-num" id="macro-num-carbs">0 / 271 g</span>
                 </div>
-                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-carbs" style="width:81%;background:#3FBE93;"></div></div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-carbs" style="width:0%;background:#3FBE93;"></div></div>
               </div>
 
               <div class="macro-item">
                 <div class="macro-item-head">
                   <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#EF9F27;"></span>Lemak Sehat</span>
-                  <span class="macro-num" id="macro-num-fat">42 / 55 g</span>
+                  <span class="macro-num" id="macro-num-fat">0 / 55 g</span>
                 </div>
-                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-fat" style="width:76%;background:#EF9F27;"></div></div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-fat" style="width:0%;background:#EF9F27;"></div></div>
               </div>
 
               <div class="macro-item">
                 <div class="macro-item-head">
                   <span class="macro-name"><span style="width:8px;height:8px;border-radius:2px;background:#8B968F;"></span>Kalori Total</span>
-                  <span class="macro-num" id="macro-num-cals">1.420 / 1.850 kkal</span>
+                  <span class="macro-num" id="macro-num-cals">0 / 1.972 kkal</span>
                 </div>
-                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-cals" style="width:76%;background:#8B968F;"></div></div>
+                <div class="macro-bar-track"><div class="macro-bar-fill" id="bar-fill-cals" style="width:0%;background:#8B968F;"></div></div>
               </div>
             </div>
           </div>
 
           <!-- Dynamic Recovery Context Advice Box -->
           <div class="recovery-tip-box" id="recovery-target-advice">
-            <!-- Dynamic Advice populated via JS -->
-          </div>
-        </section>
-
-        <!-- CARD 3: RECOVERY MEAL PLANNER (FR-10: DUAL MODE STANDAR VS HEMAT) -->
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2>Recovery Meal Planner</h2>
-              <div class="card-subtitle">Rekomendasi menu adaptif gizi pemulihan</div>
+            <i data-lucide="lightbulb" class="btn-icon-md" style="color:var(--teal-700);flex-shrink:0;margin-top:2px;"></i>
+            <div>
+              <strong>Saran Gizi Pemulihan:</strong>
+              <span>Isi data diagnostik atau scan makananmu untuk menerima rekomendasi asupan spesifik fase pemulihan jaringan.</span>
             </div>
           </div>
-
-          <!-- Dual Mode Toggle Tab (Standar vs Hemat) -->
-          <div class="toggle-tab-group">
-            <button class="toggle-tab-btn active" id="tab-plan-standar" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('standar');">
-              <i data-lucide="sparkles" class="btn-icon-sm"></i> Opsi Standar (Optimal)
-            </button>
-            <button class="toggle-tab-btn" id="tab-plan-hemat" onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('hemat');">
-              <i data-lucide="coins" class="btn-icon-sm"></i> Opsi Hemat / Low-Budget
-            </button>
-          </div>
-
-          <!-- Meal Plan List -->
-          <div class="meal-plan-card-list" id="meal-plan-list">
-            <!-- Populated dynamically via JS -->
-          </div>
         </section>
 
-        <!-- CARD 4: SYMPTOM-AWARE FOOD FILTER (FR-11) -->
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2>Symptom-Aware Filter</h2>
-              <div class="card-subtitle">Tandai gejala yang dirasakan untuk penyesuaian tekstur</div>
-            </div>
-          </div>
-
-          <div class="symptom-chip-grid">
-            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('mual');">
-              <i data-lucide="waves" class="btn-icon-sm"></i> Mual
-            </button>
-            <button class="symptom-chip active" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('sulit-menelan');">
-              <i data-lucide="droplet" class="btn-icon-sm"></i> Sulit Menelan / Disfagia
-            </button>
-            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('konstipasi');">
-              <i data-lucide="shield-alert" class="btn-icon-sm"></i> Konstipasi / Sembelit
-            </button>
-            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('nafsu-rendah');">
-              <i data-lucide="sparkles" class="btn-icon-sm"></i> Nafsu Makan Rendah
-            </button>
-          </div>
-
-          <div class="symptom-result-card" id="symptom-result-box">
-            <!-- Populated dynamically via JS -->
-          </div>
-        </section>
-
-        <!-- CARD 5: PROGRESS & RECOVERY (FR-09) -->
+        <!-- CARD 3: PROGRESS & RECOVERY (FR-09) -->
         <section class="card">
           <div class="card-head">
             <div class="card-title-group">
@@ -303,46 +253,6 @@
           </div>
         </section>
 
-        <!-- CARD 6: RUANG KOMUNITAS PEMULIHAN (FR-13) -->
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2>Ruang Komunitas Pemulihan</h2>
-              <div class="card-subtitle">Tips & pengalaman dari sesama pasien / pengguna</div>
-            </div>
-            <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openModal('create-post-modal')">
-              <i data-lucide="plus-circle" class="btn-icon-sm"></i> Bagikan Tips
-            </button>
-          </div>
-
-          <div class="community-feed" id="community-feed-box">
-            <!-- Populated via JS -->
-          </div>
-        </section>
-
-        <!-- CARD 7: PORTAL PENDAMPING / CAREGIVER (FR-12) -->
-        <section class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2>Portal Pendamping (Caregiver View)</h2>
-              <div class="card-subtitle">Akses lihat-saja untuk keluarga atau perawat di rumah</div>
-            </div>
-          </div>
-
-          <div class="caregiver-card-content">
-            <div id="caregiver-list-box">
-              <!-- Populated via JS -->
-            </div>
-
-            <div class="caregiver-link-box">
-              <span>Bagikan tautan pemantauan pasien:</span>
-              <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.copyCaregiverShareLink()">
-                <i data-lucide="link-2" class="btn-icon-sm"></i> Salin Link Akses
-              </button>
-            </div>
-          </div>
-        </section>
-
       </div>
     </div>
 
@@ -350,6 +260,35 @@
          VIEW 2: DEDICATED MEAL PLANNER FULL PAGE
          ========================================================================= -->
     <div class="view-section" id="view-planner">
+      <!-- Symptom-Aware Filter on Dedicated Planner -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Symptom-Aware Texture & Food Filter</h2>
+            <div class="card-subtitle">Tandai keluhan/gejala saat ini untuk penyesuaian tekstur menu</div>
+          </div>
+        </div>
+
+        <div class="symptom-chip-grid">
+          <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('mual');">
+            <i data-lucide="waves" class="btn-icon-sm"></i> Mual
+          </button>
+          <button class="symptom-chip active" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('sulit-menelan');">
+            <i data-lucide="droplet" class="btn-icon-sm"></i> Sulit Menelan / Disfagia
+          </button>
+          <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('konstipasi');">
+            <i data-lucide="shield-alert" class="btn-icon-sm"></i> Konstipasi / Sembelit
+          </button>
+          <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('nafsu-rendah');">
+            <i data-lucide="sparkles" class="btn-icon-sm"></i> Nafsu Makan Rendah
+          </button>
+        </div>
+
+        <div class="symptom-result-card" id="symptom-result-box" style="margin-top:12px;">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
       <div class="card" style="margin-bottom:20px;">
         <div class="card-head">
           <div class="card-title-group">
@@ -408,7 +347,7 @@
             <h2>Ruang Komunitas Pemulihan NutriVision</h2>
             <div class="card-subtitle">Saling berbagi ide makanan, strategi pemulihan, dan motivasi</div>
           </div>
-          <button class="btn-primary-coral" style="padding:8px 16px;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openModal('create-post-modal')">
+          <button class="btn-primary-coral" style="padding:8px 16px;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openCreatePostModal()">
             <i data-lucide="plus" class="btn-icon-sm"></i> Tulis Tips Baru
           </button>
         </div>

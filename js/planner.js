@@ -21,7 +21,7 @@ class NutriVisionPlanner {
     this.renderSymptomFilter();
   }
 
-  // Render Meal Planner UI
+  // Render Meal Planner UI (Concise preview on Dashboard vs Full Page with actions)
   renderPlanner() {
     const container1 = document.getElementById('meal-plan-list');
     const container2 = document.getElementById('meal-plan-list-full');
@@ -30,29 +30,86 @@ class NutriVisionPlanner {
     const plans = NUTRIVISION_DATA.mealPlans[this.currentMode] || [];
     const isSoftTextureRequired = this.activeSymptoms.has('sulit-menelan');
 
-    const html = plans.map(item => {
-      const isSoftItem = item.name.toLowerCase().includes('bubur') || 
-                         item.name.toLowerCase().includes('halus') || 
-                         item.name.toLowerCase().includes('kukus') ||
-                         item.name.toLowerCase().includes('tim');
+    // Render for Dashboard (Concise Top 2 Preview)
+    if (container1) {
+      const previewPlans = plans.slice(0, 2);
+      container1.innerHTML = previewPlans.map(item => {
+        const isSoftItem = item.name.toLowerCase().includes('bubur') || 
+                           item.name.toLowerCase().includes('halus') || 
+                           item.name.toLowerCase().includes('kukus') ||
+                           item.name.toLowerCase().includes('tim');
 
-      return `
-        <div class="meal-plan-item">
-          <div class="meal-plan-info">
-            <div class="name">${item.name}</div>
-            <div class="macro">${item.macro} · <span style="color:var(--teal-700)">${item.suitableFor}</span></div>
-            ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">✓ Ramah Menelan</span>` : ''}
+        return `
+          <div class="meal-plan-item">
+            <div class="meal-plan-info">
+              <div class="name">${item.name}</div>
+              <div class="macro">${item.macro} · <span style="color:var(--teal-700)">${item.suitableFor}</span></div>
+              ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">✓ Ramah Menelan</span>` : ''}
+            </div>
+            <div class="meal-plan-meta">
+              <div class="meal-plan-price">${item.price}</div>
+              <span class="meal-plan-tag">${item.badge}</span>
+            </div>
           </div>
-          <div class="meal-plan-meta">
-            <div class="meal-plan-price">${item.price}</div>
-            <span class="meal-plan-tag">${item.badge}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
+    }
 
-    if (container1) container1.innerHTML = html;
-    if (container2) container2.innerHTML = html;
+    // Render for Dedicated Full Page
+    if (container2) {
+      container2.innerHTML = plans.map(item => {
+        const isSoftItem = item.name.toLowerCase().includes('bubur') || 
+                           item.name.toLowerCase().includes('halus') || 
+                           item.name.toLowerCase().includes('kukus') ||
+                           item.name.toLowerCase().includes('tim');
+
+        return `
+          <div class="meal-plan-item" style="padding:14px;">
+            <div class="meal-plan-info">
+              <div class="name" style="font-size:15px;font-weight:600;">${item.name}</div>
+              <div class="macro" style="margin-top:2px;">${item.macro} · <span style="color:var(--teal-700);font-weight:500;">${item.suitableFor}</span></div>
+              <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+                <span class="meal-plan-tag">${item.badge}</span>
+                <span style="font-size:12px;color:var(--ink-soft);font-weight:600;">Est. Biaya: ${item.price}</span>
+                ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="font-size:10.5px;">✓ Tekstur Lunak / Ramah Disfagia</span>` : ''}
+              </div>
+            </div>
+            <div class="meal-plan-meta">
+              <button class="btn-sm-teal" style="font-size:11.5px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;" onclick="mealPlanner.logMeal('${item.name}', '${item.macro}')">
+                <i data-lucide="plus-circle" class="btn-icon-sm"></i> Catat Asupan
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  logMeal(mealName, macroStr) {
+    app.requireAuth(() => {
+      // Parse protein and calories from macroStr e.g. "28g Protein · 420 kkal"
+      let prot = 25;
+      let cals = 380;
+      const protMatch = macroStr.match(/(\d+)g Protein/i);
+      const calsMatch = macroStr.match(/(\d+) kkal/i);
+      if (protMatch) prot = parseInt(protMatch[1], 10);
+      if (calsMatch) cals = parseInt(calsMatch[1], 10);
+
+      progressTracker.addLoggedMeal({
+        protein: [prot, prot],
+        carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
+        fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
+        cals: [cals, cals]
+      });
+
+      progressTracker.renderMacroDonut(app.userProfile.targets);
+      progressTracker.renderWeeklyBarChart();
+      app.showToast(`Menu "${mealName}" berhasil dicatat ke progres asupan harian!`);
+    }, `mencatat menu "${mealName}"`);
   }
 
   // Render Symptom-Aware Feedback

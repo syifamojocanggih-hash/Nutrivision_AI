@@ -114,7 +114,6 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, .brand-font, .serif {
@@ -149,10 +148,11 @@ h1, h2, h3, h4, .brand-font, .serif {
   display: flex;
   min-height: 100vh;
   background: var(--bg);
+  padding-left: 260px; /* Offset for fixed desktop sidebar */
 }
 
 /* ==========================================================================
-   DESKTOP SIDEBAR
+   DESKTOP SIDEBAR (FIXED VIEWPORT STABLE)
    ========================================================================== */
 .sidebar {
   width: 260px;
@@ -164,11 +164,13 @@ h1, h2, h3, h4, .brand-font, .serif {
   flex-direction: column;
   gap: 22px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  bottom: 0;
   height: 100vh;
   overflow-y: auto;
-  z-index: 30;
+  z-index: 100;
 }
 
 .brand-container {
@@ -1793,6 +1795,10 @@ input:checked + .toggle-slider:before {
 }
 
 @media (max-width: 768px) {
+  .app-container {
+    padding-left: 0;
+  }
+
   /* Hide desktop sidebar */
   .sidebar {
     display: none;

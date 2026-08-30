@@ -46,33 +46,39 @@ class NutriVisionCommunity {
   }
 
   toggleLike(postId) {
-    const post = this.posts.find(p => p.id === postId);
-    if (!post) return;
+    app.requireAuth(() => {
+      const post = this.posts.find(p => p.id === postId);
+      if (!post) return;
 
-    if (post.userLiked) {
-      post.likes = Math.max(0, post.likes - 1);
-      post.userLiked = false;
-    } else {
-      post.likes += 1;
-      post.userLiked = true;
-    }
+      if (post.userLiked) {
+        post.likes = Math.max(0, post.likes - 1);
+        post.userLiked = false;
+      } else {
+        post.likes += 1;
+        post.userLiked = true;
+      }
 
-    this.savePosts();
-    this.renderCommunityFeed();
+      this.savePosts();
+      this.renderCommunityFeed();
+    }, 'menyukai postingan');
   }
 
-  addComment(postId, commentText, author = 'Rangga P.') {
-    if (!commentText || commentText.trim().length === 0) return;
-    const post = this.posts.find(p => p.id === postId);
-    if (!post) return;
+  addComment(postId, commentText, author) {
+    app.requireAuth(() => {
+      if (!commentText || commentText.trim().length === 0) return;
+      const post = this.posts.find(p => p.id === postId);
+      if (!post) return;
 
-    post.comments.push({
-      author: author,
-      text: commentText.trim()
-    });
+      const commenterName = author || app.userProfile.name || 'Pengguna NutriVision';
+      post.comments.push({
+        author: commenterName,
+        text: commentText.trim()
+      });
 
-    this.savePosts();
-    this.renderCommunityFeed();
+      this.savePosts();
+      this.renderCommunityFeed();
+      app.showToast('Komentar berhasil ditambahkan!');
+    }, 'menulis komentar');
   }
 
   savePosts() {
@@ -88,14 +94,7 @@ class NutriVisionCommunity {
       ? this.posts
       : this.posts.filter(p => p.category === this.activeFilter);
 
-    if (filtered.length === 0) {
-      const emptyHtml = `<div style="text-align:center;padding:24px;color:var(--ink-mute);">Belum ada tips pada kategori ini. Jadilah yang pertama berbagi!</div>`;
-      if (container1) container1.innerHTML = emptyHtml;
-      if (container2) container2.innerHTML = emptyHtml;
-      return;
-    }
-
-    const html = filtered.map(post => {
+    const renderPostItem = (post, isFullView = false) => {
       return `
         <div class="community-post">
           <div class="comm-avatar">${post.initials}</div>
@@ -118,13 +117,15 @@ class NutriVisionCommunity {
               <button class="comm-action-btn ${post.userLiked ? 'liked' : ''}" onclick="communityHandler.toggleLike('${post.id}')">
                 <i data-lucide="heart" class="btn-icon-sm" style="${post.userLiked ? 'fill:var(--coral-400);stroke:var(--coral-400);' : ''}"></i> <b>${post.likes}</b> Suka
               </button>
-              <button class="comm-action-btn" onclick="communityHandler.promptComment('${post.id}')">
-                <i data-lucide="message-square" class="btn-icon-sm"></i> <b>${post.comments ? post.comments.length : 0}</b> Komentar
-              </button>
+              ${isFullView ? `
+                <button class="comm-action-btn" onclick="const f = document.getElementById('comm-comm-${post.id}'); if(f) f.style.display = f.style.display==='none'?'block':'none';">
+                  <i data-lucide="message-circle" class="btn-icon-sm"></i> <b>${post.comments?.length || 0}</b> Komentar
+                </button>
+              ` : ''}
             </div>
 
-            ${post.comments && post.comments.length > 0 ? `
-              <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:12px;">
+            ${isFullView && post.comments && post.comments.length > 0 ? `
+              <div class="comm-comments-list" style="margin-top:10px;padding:8px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
                 ${post.comments.map(c => `
                   <div style="margin-top:4px;"><b style="color:var(--teal-900);">${c.author}:</b> <span style="color:var(--ink-soft);">${c.text}</span></div>
                 `).join('')}

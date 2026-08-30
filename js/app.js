@@ -7,6 +7,7 @@ class NutriVisionApp {
     this.activeSection = 'overview';
     this.deferredInstallPrompt = null;
     this.currentQuizStep = 1;
+    this.pendingAuthCallback = null;
     this.quizState = {
       gender: this.userProfile.gender || 'male',
       condition: this.userProfile.conditionId || 'post-surgery',
@@ -14,7 +15,21 @@ class NutriVisionApp {
     };
   }
 
-  // Muat data profil pengguna dari LocalStorage atau inisialisasi default
+  // Auth Guard / Gatekeeper: Memastikan pengguna sudah login & mengisi data klinis valid
+  requireAuth(callback, actionDescription = 'menggunakan fitur ini') {
+    const hasData = Boolean(this.userProfile.hasCompletedQuiz && this.userProfile.name);
+    if (hasData) {
+      if (typeof callback === 'function') callback();
+      return true;
+    } else {
+      this.pendingAuthCallback = callback;
+      this.showToast(`Silakan masuk atau lengkapi data profil untuk ${actionDescription}.`);
+      this.openAuthModal('login');
+      return false;
+    }
+  }
+
+  // Muat data profil pengguna dari LocalStorage atau inisialisasi default (Fresh Zero State)
   loadUserProfile() {
     const saved = localStorage.getItem('nutrivision_user_profile');
     if (saved) {
@@ -97,11 +112,6 @@ class NutriVisionApp {
     // Inisialisasi ikon Lucide (Figma / Iconify standard)
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
-    }
-
-    // Jika pengguna belum menyetujui disclaimer medis / onboarding
-    if (!this.userProfile.hasAcceptedConsent) {
-      this.openModal('onboarding-modal');
     }
   }
 
@@ -537,6 +547,12 @@ class NutriVisionApp {
     progressTracker.renderMacroDonut(this.userProfile.targets);
     this.closeModal('onboarding-modal');
     this.showToast('Rencana diagnostik gizi pemulihan berhasil diterapkan ke dasbor!');
+
+    if (typeof this.pendingAuthCallback === 'function') {
+      const cb = this.pendingAuthCallback;
+      this.pendingAuthCallback = null;
+      cb();
+    }
   }
 
   // Render Piring Segmentasi di Dashboard Utama
@@ -735,14 +751,16 @@ class NutriVisionApp {
     }
   }
 
-  // Simpan Hasil Scan ke Log Asupan Harian
+  // Simpan Hasil Scan ke Log Asupan Harian (Gated by Auth)
   saveScanToDailyIntake() {
-    const agg = cvEngine.calculateAggregatedNutrients();
-    progressTracker.addLoggedMeal(agg);
-    progressTracker.renderMacroDonut(this.userProfile.targets);
-    progressTracker.renderWeeklyBarChart();
-    this.closeModal('scan-modal');
-    this.showToast('✅ Asupan makanan berhasil dicatat ke progres pemulihan harian!');
+    this.requireAuth(() => {
+      const agg = cvEngine.calculateAggregatedNutrients();
+      progressTracker.addLoggedMeal(agg);
+      progressTracker.renderMacroDonut(this.userProfile.targets);
+      progressTracker.renderWeeklyBarChart();
+      this.closeModal('scan-modal');
+      this.showToast('✅ Asupan makanan berhasil dicatat ke progres pemulihan harian!');
+    }, 'mencatat asupan makanan ke progres harian');
   }
 
   // =========================================================================
@@ -839,9 +857,26 @@ class NutriVisionApp {
   handleLogin() {
     const email = document.getElementById('login-email')?.value || 'rangga.pratama@email.com';
     this.userProfile.contact = email;
+    this.userProfile.hasCompletedQuiz = true;
+    if (!this.userProfile.name) this.userProfile.name = 'Rangga Pratama';
+    if (!this.userProfile.targets) {
+      this.userProfile.targets = { protein: 75, carbs: 240, fat: 55, calories: 1850 };
+      this.userProfile.conditionTitle = 'Pasca-Operasi Usus Buntu';
+      this.userProfile.phase = 'Minggu ke-2 (Fase Proliferasi)';
+      this.userProfile.weightKg = 65;
+      this.userProfile.bmi = '22.5';
+      this.userProfile.bmiCategory = 'Normal';
+    }
     this.saveUserProfile();
+    progressTracker.renderMacroDonut(this.userProfile.targets);
     this.closeModal('auth-modal');
     this.showToast(`Selamat datang kembali, ${this.userProfile.name}!`);
+
+    if (typeof this.pendingAuthCallback === 'function') {
+      const cb = this.pendingAuthCallback;
+      this.pendingAuthCallback = null;
+      cb();
+    }
   }
 
   handleRegister() {
@@ -928,6 +963,12 @@ class NutriVisionApp {
     progressTracker.renderMacroDonut(this.userProfile.targets);
     this.closeModal('auth-modal');
     this.showToast(`Berhasil masuk sebagai profil demo: ${this.userProfile.name} (${this.userProfile.conditionTitle})`);
+
+    if (typeof this.pendingAuthCallback === 'function') {
+      const cb = this.pendingAuthCallback;
+      this.pendingAuthCallback = null;
+      cb();
+    }
   }
 
   logout() {
@@ -941,6 +982,12 @@ class NutriVisionApp {
       this.showToast('Kamu telah keluar. Data profil berhasil dikosongkan.');
       this.openAuthModal('login');
     }
+  }
+
+  openCreatePostModal() {
+    this.requireAuth(() => {
+      this.openModal('create-post-modal');
+    }, 'menerbitkan tips ke ruang komunitas');
   }
 
   // =========================================================================
@@ -968,21 +1015,25 @@ class NutriVisionApp {
   }
 
   exportCaregiverReport() {
-    const text = progressTracker.generateCaregiverReportText(this.userProfile);
-    navigator.clipboard.writeText(text).then(() => {
-      this.showToast('Ringkasan laporan gizi berhasil disalin ke clipboard!');
-    }).catch(() => {
-      alert(text);
-    });
+    this.requireAuth(() => {
+      const text = progressTracker.generateCaregiverReportText(this.userProfile);
+      navigator.clipboard.writeText(text).then(() => {
+        this.showToast('Ringkasan laporan gizi berhasil disalin ke clipboard!');
+      }).catch(() => {
+        alert(text);
+      });
+    }, 'mengekspor laporan telehealth pasien');
   }
 
   copyCaregiverShareLink() {
-    const link = caregiverHandler.generateSharedLink();
-    navigator.clipboard.writeText(link).then(() => {
-      this.showToast('Tautan akses pendamping (view-only) berhasil disalin!');
-    }).catch(() => {
-      alert('Tautan akses: ' + link);
-    });
+    this.requireAuth(() => {
+      const link = caregiverHandler.generateSharedLink();
+      navigator.clipboard.writeText(link).then(() => {
+        this.showToast('Tautan akses pendamping (view-only) berhasil disalin!');
+      }).catch(() => {
+        alert('Tautan akses: ' + link);
+      });
+    }, 'membagikan tautan pendamping pasien');
   }
 
   // Setup Event Listeners
