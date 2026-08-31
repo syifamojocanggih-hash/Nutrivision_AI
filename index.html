@@ -107,6 +107,12 @@
         <button class="btn-outline-glass" id="topbar-login-btn" style="color:var(--teal-700);border-color:var(--teal-200);background:var(--teal-50);padding:7px 13px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" onclick="app.openAuthModal('login')" title="Masuk ke Akun Pasien">
           <i data-lucide="log-in" class="btn-icon-sm"></i> <span>Masuk / Login</span>
         </button>
+
+        <!-- Topbar Profile Chip (Hanya tampil saat SUDAH login) -->
+        <div id="topbar-profile-chip" style="display:none;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);padding:4px 10px 4px 6px;border-radius:var(--radius-pill);cursor:pointer;" onclick="app.navigate('profile')" title="Buka Profil Pasien">
+          <div class="profile-avatar user-avatar-placeholder" style="width:26px;height:26px;font-size:11px;background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;">+</div>
+          <span style="font-size:12.5px;font-weight:600;color:var(--ink);" class="user-name-placeholder">Profil Pasien</span>
+        </div>
       </div>
     </header>
 
@@ -424,24 +430,51 @@
          VIEW 7: PROFIL PASIEN & DIAGNOSTIK GIZI (FOODVISOR STYLE)
          ========================================================================= -->
     <div class="view-section" id="view-profile">
+
+      <!-- Zero State Guest Notice Banner (Visible if NOT logged in / hasCompletedQuiz is false) -->
+      <div id="profile-empty-banner" style="display:none;background:linear-gradient(135deg,rgba(63,190,147,0.12),rgba(4,52,44,0.06));border:1px solid var(--teal-200);border-radius:var(--radius-md);padding:18px 20px;margin-bottom:18px;position:relative;">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+          <div style="width:42px;height:42px;border-radius:var(--radius-sm);background:var(--teal-500);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="user-plus" style="width:22px;height:22px;"></i>
+          </div>
+          <div style="flex:1;min-width:220px;">
+            <h3 style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px;">Profil Pasien Belum Dikonfigurasi</h3>
+            <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.5;margin-bottom:12px;">
+              Kamu saat ini berada dalam <b>Mode Tamu</b>. Masuk ke akun pasien atau mulai kuesioner diagnostik gizi 5-langkah untuk menghitung kebutuhan kalori dan target protein pemulihanmu secara personal.
+            </p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn-primary-coral" style="font-size:12.5px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openQuizModal(1)">
+                <i data-lucide="sparkles" class="btn-icon-sm"></i> Mulai Diagnostik Gizi (5 Langkah)
+              </button>
+              <button class="btn-outline-glass" style="font-size:12.5px;padding:8px 14px;color:var(--teal-800);border-color:var(--teal-300);background:var(--card);display:inline-flex;align-items:center;gap:6px;" onclick="app.openAuthModal('login')">
+                <i data-lucide="log-in" class="btn-icon-sm"></i> Masuk ke Akun Pasien
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Profile Header Card -->
       <div class="card" style="margin-bottom:18px;">
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           <div class="profile-avatar-lg user-avatar-placeholder" style="width:58px;height:58px;border-radius:var(--radius-circle);background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;box-shadow:var(--shadow-md);flex-shrink:0;">
-            RP
+            +
           </div>
           <div style="flex:1;min-width:180px;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <h2 style="font-size:19px;font-weight:700;color:var(--ink);" class="user-name-placeholder">Rangga Pratama</h2>
-              <span class="badge teal"><i data-lucide="shield-check" class="btn-icon-sm"></i> Akun Terverifikasi</span>
+              <h2 style="font-size:19px;font-weight:700;color:var(--ink);" class="user-name-placeholder">Profil Pasien</h2>
+              <span class="badge" id="profile-badge-status" style="background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200);">
+                <i data-lucide="shield-check" class="btn-icon-sm"></i> <span id="profile-badge-text">Mode Tamu</span>
+              </span>
             </div>
-            <p style="font-size:var(--font-sm);color:var(--ink-mute);margin-top:2px;" id="profile-email-phone">rangga.pratama@email.com · +62 812-3456-7890</p>
+            <p style="font-size:var(--font-sm);color:var(--ink-mute);margin-top:2px;" id="profile-email-phone">Belum masuk akun</p>
             <div style="font-size:var(--font-xs);color:var(--teal-700);font-weight:600;margin-top:4px;" class="user-condition-placeholder">
-              Pasca-Operasi Usus Buntu · Minggu ke-2 (Fase Proliferasi)
+              Belum dikonfigurasi (Mulai Diagnostik Gizi)
             </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn-primary-coral" style="font-size:13px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openQuizModal(1)">
-              <i data-lucide="refresh-cw" class="btn-icon-sm"></i> Hitung Ulang Diagnostik
+            <button class="btn-primary-coral" id="btn-quiz-recalc" style="font-size:13px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;" onclick="app.openQuizModal(1)">
+              <i data-lucide="refresh-cw" class="btn-icon-sm"></i> <span id="btn-quiz-recalc-label">Hitung Ulang Diagnostik</span>
             </button>
           </div>
         </div>
@@ -460,16 +493,16 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
             <div style="background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
               <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;">Berat & Tinggi Badan</span>
-              <b style="font-size:15px;color:var(--ink);" id="profile-stat-weight-height">65 kg · 170 cm</b>
+              <b style="font-size:15px;color:var(--ink);" id="profile-stat-weight-height">-- kg · -- cm</b>
             </div>
             <div style="background:var(--bg);padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);">
               <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;">Indeks Massa Tubuh (BMI)</span>
-              <b style="font-size:15px;color:var(--teal-700);" id="profile-stat-bmi">22.5 (Normal)</b>
+              <b style="font-size:15px;color:var(--teal-700);" id="profile-stat-bmi">-- (Belum dihitung)</b>
             </div>
           </div>
 
           <div style="background:var(--teal-50);border:1px solid var(--teal-100);padding:10px 12px;border-radius:var(--radius-sm);font-size:var(--font-xs);color:var(--teal-700);line-height:1.5;">
-            <i data-lucide="info" class="btn-icon-sm"></i> <b>Kebutuhan Kalori Harian (TDEE):</b> Diestimasikan <b><span id="profile-stat-calories">1.850</span> kkal/hari</b> untuk mendukung proses perbaikan jaringan tanpa memicu kelebihan lemak saat gerak fisik terbatas.
+            <i data-lucide="info" class="btn-icon-sm"></i> <b>Kebutuhan Kalori Harian (TDEE):</b> Diestimasikan <b><span id="profile-stat-calories">--</span> kkal/hari</b> untuk mendukung proses perbaikan jaringan tanpa memicu kelebihan lemak saat gerak fisik terbatas.
           </div>
         </div>
 
@@ -484,15 +517,15 @@
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
               <span style="font-size:var(--font-sm);font-weight:500;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--coral-400);"></span> Target Protein</span>
-              <b style="font-size:var(--font-sm);color:var(--coral-600);" id="profile-target-protein">75 g / hari (1.5g/kg)</b>
+              <b style="font-size:var(--font-sm);color:var(--coral-600);" id="profile-target-protein">-- g / hari</b>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
               <span style="font-size:var(--font-sm);font-weight:500;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--amber-400);"></span> Target Karbohidrat</span>
-              <b style="font-size:var(--font-sm);color:var(--amber-600);" id="profile-target-carbs">240 g / hari</b>
+              <b style="font-size:var(--font-sm);color:var(--amber-600);" id="profile-target-carbs">-- g / hari</b>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg);border-radius:var(--radius-xs);border:1px solid var(--line);">
               <span style="font-size:var(--font-sm);font-weight:500;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--teal-300);"></span> Target Lemak Sehat</span>
-              <b style="font-size:var(--font-sm);color:var(--teal-700);" id="profile-target-fat">55 g / hari</b>
+              <b style="font-size:var(--font-sm);color:var(--teal-700);" id="profile-target-fat">-- g / hari</b>
             </div>
           </div>
         </div>
@@ -510,23 +543,29 @@
             <div>
               <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink-mute);display:block;margin-bottom:4px;">Pantangan & Alergi Deklarasi Mandiri:</span>
               <div style="background:var(--amber-50);border:1px solid var(--amber-200);padding:9px 12px;border-radius:var(--radius-sm);font-size:var(--font-xs);color:var(--amber-700);line-height:1.45;" id="profile-stat-restrictions">
-                Alergi makanan pedas pekat, hindari gorengan keras
+                Belum mengisi deklarasi pantangan
               </div>
             </div>
             <div>
               <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink-mute);display:block;margin-bottom:4px;">Tingkat Aktivitas & Terapi:</span>
               <div style="background:var(--bg);border:1px solid var(--line);padding:9px 12px;border-radius:var(--radius-sm);font-size:var(--font-xs);color:var(--ink-soft);line-height:1.45;" id="profile-stat-activity">
+                Belum mengisi tingkat aktivitas
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Akun & Manajemen Sesi Login -->
-        <div class="card" style="grid-column: 1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:var(--bg-subtle);">
+        <div class="card" id="profile-session-card" style="grid-column: 1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:var(--bg-subtle);">
           <div>
-            <b style="font-size:var(--font-sm);color:var(--ink);display:flex;align-items:center;gap:6px;">
+            <b style="font-size:var(--font-sm);color:var(--ink);display:flex;align-items:center;gap:6px;" id="profile-session-status-title">
               <i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> Status Sesi Login Aktif
             </b>
-            <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;margin-top:2px;">
-              Terhubung sebagai <span class="user-name-placeholder" style="font-weight:600;color:var(--ink-soft);">Rangga Pratama</span> (<span id="profile-auth-email">rangga.pratama@email.com</span>)
+            <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;margin-top:2px;" id="profile-session-status-desc">
+              Terhubung sebagai <span class="user-name-placeholder" style="font-weight:600;color:var(--ink-soft);">Profil Pasien</span> (<span id="profile-auth-email">Belum terhubung</span>)
             </span>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="profile-session-actions">
             <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
               <i data-lucide="user-check" class="btn-icon-sm"></i> Ganti Akun Pasien
             </button>
@@ -535,6 +574,7 @@
             </button>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -676,12 +716,12 @@
 
       <div class="form-group" style="margin-bottom:10px;">
         <label for="onboard-name">Nama Lengkap Pasien / Pengguna</label>
-        <input type="text" id="onboard-name" class="form-control" value="Rangga Pratama" placeholder="Contoh: Rangga Pratama" required>
+        <input type="text" id="onboard-name" class="form-control" value="" placeholder="Contoh: Dimas Anggara / Nama Pasien" required>
       </div>
 
       <div class="form-group" style="margin-bottom:10px;">
         <label for="onboard-contact">Email / No. WhatsApp (Untuk Laporan Medis)</label>
-        <input type="text" id="onboard-contact" class="form-control" value="rangga.pratama@email.com" placeholder="email@domain.com atau +62 812-xxxx">
+        <input type="text" id="onboard-contact" class="form-control" value="" placeholder="email@domain.com atau 0812xxxx">
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -925,6 +965,12 @@
       </div>
 
       <button type="submit" class="btn-primary-coral" style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;">
+        <i data-lucide="send" class="btn-icon-sm"></i> Terbitkan ke Komunitas
+      </button>
+    </form>
+  </div>
+</div>
+
 <!-- =========================================================================
      MODAL 4: AUTH & LOGIN / REGISTER (AKUN PASIEN & DEMO ACCESS)
      ========================================================================= -->
@@ -959,7 +1005,7 @@
         <div class="form-group" style="margin-bottom:10px;">
           <label for="login-email">Email / Nomor WhatsApp</label>
           <div style="position:relative;">
-            <input type="text" id="login-email" class="form-control" style="padding-left:36px;" value="rangga.pratama@email.com" placeholder="email@domain.com atau 0812xxxx" required>
+            <input type="text" id="login-email" class="form-control" style="padding-left:36px;" value="" placeholder="email@domain.com atau 0812xxxx" required>
             <i data-lucide="mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
           </div>
         </div>
@@ -967,10 +1013,10 @@
         <div class="form-group" style="margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <label for="login-password">Kata Sandi / PIN Medis</label>
-            <a href="javascript:void(0)" onclick="alert('Petunjuk pemulihan kata sandi telah dikirim ke email/WhatsApp terdaftar.')" style="font-size:11px;color:var(--teal-700);text-decoration:none;">Lupa Sandi?</a>
+            <a href="javascript:void(0)" onclick="alert('Petunjuk pemulihan kata sandi telah dikirim ke kontak terdaftar.')" style="font-size:11px;color:var(--teal-700);text-decoration:none;">Lupa Sandi?</a>
           </div>
           <div style="position:relative;">
-            <input type="password" id="login-password" class="form-control" style="padding-left:36px;" value="••••••••" placeholder="Masukkan kata sandi..." required>
+            <input type="password" id="login-password" class="form-control" style="padding-left:36px;" value="" placeholder="Masukkan kata sandi..." required>
             <i data-lucide="lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-mute);"></i>
           </div>
         </div>

@@ -32,7 +32,10 @@ class NutriVisionCaregiver {
 
   generateSharedLink() {
     const token = Math.random().toString(36).substring(2, 9).toUpperCase();
-    return `https://nutrivision.ai/view?patient=rangga&token=NV-${token}`;
+    const patientSlug = (typeof app !== 'undefined' && app.userProfile && app.userProfile.name)
+      ? encodeURIComponent(app.userProfile.name.toLowerCase().replace(/\s+/g, '-'))
+      : 'pasien';
+    return `https://nutrivision.ai/view?patient=${patientSlug}&token=NV-${token}`;
   }
 
   renderCaregiverList() {

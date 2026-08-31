@@ -194,15 +194,15 @@ class NutriVisionApp {
       topbarLoginBtn.style.display = hasData ? 'none' : 'inline-flex';
     }
     if (topbarProfileChip) {
-      topbarProfileChip.style.display = hasData ? 'flex' : 'none';
+      topbarProfileChip.style.display = hasData ? 'inline-flex' : 'none';
     }
 
     // 3. Update Profile Data Placeholders
     const nameEls = document.querySelectorAll('.user-name-placeholder');
-    nameEls.forEach(el => el.textContent = hasData ? this.userProfile.name : 'Buat Profil Pasien');
+    nameEls.forEach(el => el.textContent = hasData ? this.userProfile.name : 'Profil Pasien');
 
     const conditionEls = document.querySelectorAll('.user-condition-placeholder');
-    conditionEls.forEach(el => el.textContent = hasData ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : 'Mulai diagnostik gizi');
+    conditionEls.forEach(el => el.textContent = hasData ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : 'Belum dikonfigurasi (Mulai Diagnostik Gizi)');
 
     const avatarEls = document.querySelectorAll('.user-avatar-placeholder');
     avatarEls.forEach(el => el.textContent = initials);
@@ -233,15 +233,41 @@ class NutriVisionApp {
       }
     }
 
-    // 4. Update Profile View Metrics
+    // 5. Update Profile View Elements & Banner
+    const emptyBanner = document.getElementById('profile-empty-banner');
+    if (emptyBanner) {
+      emptyBanner.style.display = hasData ? 'none' : 'block';
+    }
+
+    const badgeText = document.getElementById('profile-badge-text');
+    const badgeStatus = document.getElementById('profile-badge-status');
+    if (badgeText && badgeStatus) {
+      if (hasData) {
+        badgeText.textContent = 'Akun Terverifikasi';
+        badgeStatus.style.background = 'var(--teal-50)';
+        badgeStatus.style.color = 'var(--teal-700)';
+        badgeStatus.style.borderColor = 'var(--teal-200)';
+      } else {
+        badgeText.textContent = 'Mode Tamu';
+        badgeStatus.style.background = 'var(--bg-subtle)';
+        badgeStatus.style.color = 'var(--ink-mute)';
+        badgeStatus.style.borderColor = 'var(--line)';
+      }
+    }
+
+    const btnRecalcLabel = document.getElementById('btn-quiz-recalc-label');
+    if (btnRecalcLabel) {
+      btnRecalcLabel.textContent = hasData ? 'Hitung Ulang Diagnostik' : 'Mulai Diagnostik Gizi';
+    }
+
     const elEmail = document.getElementById('profile-email-phone');
-    if (elEmail) elEmail.textContent = hasData ? `${this.userProfile.contact || 'Belum diisi'}` : 'Profil belum dikonfigurasi';
+    if (elEmail) elEmail.textContent = hasData ? `${this.userProfile.contact || 'Belum diisi'}` : 'Belum masuk akun';
 
     const elStatWH = document.getElementById('profile-stat-weight-height');
     if (elStatWH) elStatWH.textContent = hasData ? `${this.userProfile.weightKg} kg · ${this.userProfile.heightCm || 170} cm` : '-- kg · -- cm';
 
     const elStatBMI = document.getElementById('profile-stat-bmi');
-    if (elStatBMI) elStatBMI.textContent = hasData ? `${this.userProfile.bmi || '22.5'} (${this.userProfile.bmiCategory || 'Normal'})` : '-- (Belum dihitung)';
+    if (elStatBMI) elStatBMI.textContent = hasData ? `${this.userProfile.bmi || '--'} (${this.userProfile.bmiCategory || '--'})` : '-- (Belum dihitung)';
 
     const elStatCals = document.getElementById('profile-stat-calories');
     if (elStatCals) elStatCals.textContent = hasData && this.userProfile.targets ? `${this.userProfile.targets.calories.toLocaleString()}` : '--';
@@ -277,6 +303,33 @@ class NutriVisionApp {
         elStatAct.innerHTML = actMap[this.userProfile.activityLevel] || '<i data-lucide="footprints" class="btn-icon-sm"></i> Mobilisasi Ringan';
       } else {
         elStatAct.textContent = 'Belum mengisi tingkat aktivitas';
+      }
+    }
+
+    // 6. Update Session Status in Profile
+    const sessTitle = document.getElementById('profile-session-status-title');
+    const sessDesc = document.getElementById('profile-session-status-desc');
+    const sessActions = document.getElementById('profile-session-actions');
+    if (sessTitle && sessDesc && sessActions) {
+      if (hasData) {
+        sessTitle.innerHTML = `<i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> Status Sesi Login Aktif`;
+        sessDesc.innerHTML = `Terhubung sebagai <span class="user-name-placeholder" style="font-weight:600;color:var(--ink-soft);">${this.userProfile.name}</span> (<span id="profile-auth-email">${this.userProfile.contact || 'Email terdaftar'}</span>)`;
+        sessActions.innerHTML = `
+          <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
+            <i data-lucide="user-check" class="btn-icon-sm"></i> Ganti Akun Pasien
+          </button>
+          <button class="btn-outline-glass" style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;" onclick="app.logout()">
+            <i data-lucide="log-out" class="btn-icon-sm"></i> Keluar (Logout)
+          </button>
+        `;
+      } else {
+        sessTitle.innerHTML = `<i data-lucide="shield-alert" class="btn-icon-sm" style="color:var(--amber-600);"></i> Status Sesi: Mode Tamu (Belum Login)`;
+        sessDesc.innerHTML = `Masuk atau buat akun baru untuk menyimpan riwayat asupan dan target gizi personal.`;
+        sessActions.innerHTML = `
+          <button class="btn-primary-coral" style="font-size:12px;padding:6px 14px;display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
+            <i data-lucide="log-in" class="btn-icon-sm"></i> Masuk / Daftar Akun
+          </button>
+        `;
       }
     }
 
@@ -320,6 +373,14 @@ class NutriVisionApp {
   // FOODVISOR-STYLE DIAGNOSTIC QUIZ METHODS
   // =========================================================================
   openQuizModal(step = 1) {
+    const onboardName = document.getElementById('onboard-name');
+    const onboardContact = document.getElementById('onboard-contact');
+    if (onboardName && this.userProfile.name && !onboardName.value) {
+      onboardName.value = this.userProfile.name;
+    }
+    if (onboardContact && this.userProfile.contact && !onboardContact.value) {
+      onboardContact.value = this.userProfile.contact;
+    }
     this.openModal('onboarding-modal');
     this.goToQuizStep(step);
   }
@@ -359,6 +420,14 @@ class NutriVisionApp {
   }
 
   nextQuizStep() {
+    if (this.currentQuizStep === 1) {
+      const nameVal = document.getElementById('onboard-name')?.value?.trim();
+      if (!nameVal) {
+        alert('Mohon masukkan nama lengkap pasien/pengguna terlebih dahulu.');
+        document.getElementById('onboard-name')?.focus();
+        return;
+      }
+    }
     if (this.currentQuizStep < 5) {
       this.goToQuizStep(this.currentQuizStep + 1);
     }
@@ -855,46 +924,75 @@ class NutriVisionApp {
   }
 
   handleLogin() {
-    const email = document.getElementById('login-email')?.value || 'rangga.pratama@email.com';
-    this.userProfile.contact = email;
-    this.userProfile.hasCompletedQuiz = true;
-    if (!this.userProfile.name) this.userProfile.name = 'Rangga Pratama';
-    if (!this.userProfile.targets) {
-      this.userProfile.targets = { protein: 75, carbs: 240, fat: 55, calories: 1850 };
-      this.userProfile.conditionTitle = 'Pasca-Operasi Usus Buntu';
-      this.userProfile.phase = 'Minggu ke-2 (Fase Proliferasi)';
-      this.userProfile.weightKg = 65;
-      this.userProfile.bmi = '22.5';
-      this.userProfile.bmiCategory = 'Normal';
+    const emailInput = document.getElementById('login-email');
+    const email = emailInput?.value?.trim();
+    if (!email) {
+      this.showToast('Mohon masukkan email atau nomor WhatsApp terlebih dahulu.');
+      if (emailInput) emailInput.focus();
+      return;
     }
-    this.saveUserProfile();
-    progressTracker.renderMacroDonut(this.userProfile.targets);
-    this.closeModal('auth-modal');
-    this.showToast(`Selamat datang kembali, ${this.userProfile.name}!`);
 
-    if (typeof this.pendingAuthCallback === 'function') {
-      const cb = this.pendingAuthCallback;
-      this.pendingAuthCallback = null;
-      cb();
+    // Cek jika login menggunakan profil demo 1-click
+    if (email.toLowerCase().includes('rangga')) {
+      this.loginAsDemo('post-surgery');
+      return;
+    } else if (email.toLowerCase().includes('siti')) {
+      this.loginAsDemo('rehab');
+      return;
+    } else if (email.toLowerCase().includes('budi')) {
+      this.loginAsDemo('gym');
+      return;
+    }
+
+    // Akun Mandiri: set kontak & nama turunan
+    const derivedName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Pasien';
+    this.userProfile.contact = email;
+    if (!this.userProfile.name) {
+      this.userProfile.name = derivedName;
+    }
+
+    this.closeModal('auth-modal');
+
+    // Jika belum menyelesaikan kuesioner, buka kuesioner langkah 1 agar mengisi data klinis
+    if (!this.userProfile.hasCompletedQuiz || !this.userProfile.targets) {
+      const onboardName = document.getElementById('onboard-name');
+      const onboardContact = document.getElementById('onboard-contact');
+      if (onboardName) onboardName.value = this.userProfile.name;
+      if (onboardContact) onboardContact.value = email;
+
+      this.openQuizModal(1);
+      this.showToast(`Selamat datang! Silakan lengkapi diagnostik gizi untuk mengaktifkan target pemulihan.`);
+    } else {
+      this.saveUserProfile();
+      progressTracker.renderMacroDonut(this.userProfile.targets);
+      this.showToast(`Selamat datang kembali, ${this.userProfile.name}!`);
+
+      if (typeof this.pendingAuthCallback === 'function') {
+        const cb = this.pendingAuthCallback;
+        this.pendingAuthCallback = null;
+        cb();
+      }
     }
   }
 
   handleRegister() {
-    const name = document.getElementById('reg-name')?.value || 'Pasien Baru';
-    const email = document.getElementById('reg-email')?.value || 'pasien.baru@email.com';
+    const nameInput = document.getElementById('reg-name');
+    const emailInput = document.getElementById('reg-email');
+    const name = nameInput?.value?.trim() || 'Pasien Baru';
+    const email = emailInput?.value?.trim() || 'pasien@email.com';
     
     this.userProfile.name = name;
     this.userProfile.contact = email;
     this.closeModal('auth-modal');
     
-    // Buka Foodvisor Diagnostic Quiz langsung dari langkah 1
+    // Buka Foodvisor Diagnostic Quiz langsung dari langkah 1 dengan nama & email terisi otomatis
     const onboardName = document.getElementById('onboard-name');
     const onboardContact = document.getElementById('onboard-contact');
     if (onboardName) onboardName.value = name;
     if (onboardContact) onboardContact.value = email;
 
     this.openQuizModal(1);
-    this.showToast(`Akun berhasil dibuat! Silakan lengkapi kuesioner diagnostik gizi.`);
+    this.showToast(`Akun ${name} berhasil dibuat! Silakan lengkapi kuesioner diagnostik gizi.`);
   }
 
   loginWithSocial(provider) {
@@ -979,8 +1077,7 @@ class NutriVisionApp {
       progressTracker.todayIntake = { protein: 0, carbs: 0, fat: 0, calories: 0 };
       progressTracker.renderMacroDonut(null);
       this.updateProfileUI();
-      this.showToast('Kamu telah keluar. Data profil berhasil dikosongkan.');
-      this.openAuthModal('login');
+      this.showToast('Kamu telah keluar. Data profil dikosongkan ke Mode Tamu.');
     }
   }
 

@@ -134,10 +134,14 @@ class NutriVisionCommunity {
           </div>
         </div>
       `;
-    }).join('');
+    };
 
-    if (container1) container1.innerHTML = html;
-    if (container2) container2.innerHTML = html;
+    if (container1) {
+      container1.innerHTML = filtered.slice(0, 3).map(p => renderPostItem(p, false)).join('');
+    }
+    if (container2) {
+      container2.innerHTML = filtered.map(p => renderPostItem(p, true)).join('');
+    }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
