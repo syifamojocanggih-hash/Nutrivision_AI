@@ -94,13 +94,37 @@ class NutriVisionApp {
   }
 
   // Inisialisasi Aplikasi
-  init() {
+  async init() {
     console.log('🚀 Initializing NutriVision AI PWA...');
     this.registerServiceWorker();
     this.setupPWAInstallPrompt();
     this.setupEventListeners();
     this.applyAccessibilitySettings();
     this.updateProfileUI();
+
+    // Inisialisasi Database Engine (IndexedDB)
+    if (window.nutriVisionDB) {
+      try {
+        await window.nutriVisionDB.init();
+        const activeSession = window.nutriVisionDB.getCurrentSession();
+        if (activeSession && activeSession.email && !this.userProfile.contact) {
+          const dbUser = await window.nutriVisionDB.getUserByEmail(activeSession.email);
+          if (dbUser) {
+            this.userProfile = {
+              ...this.userProfile,
+              ...dbUser,
+              contact: dbUser.email
+            };
+            this.saveUserProfile();
+            this.updateProfileUI();
+          }
+        }
+      } catch (e) {
+        console.warn('DB Init notice:', e);
+      }
+    }
+
+    this.renderAuthUI();
 
     // Inisialisasi CV Engine dengan preset default
     cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
@@ -126,6 +150,17 @@ class NutriVisionApp {
     } else {
       this.goToLanding();
     }
+
+    // Tutup dropdown notifikasi pintar saat klik di luar
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('smart-notif-dropdown');
+      const notifWrapper = document.querySelector('.topbar-notif-wrapper');
+      if (dropdown && dropdown.style.display === 'block') {
+        if (notifWrapper && !notifWrapper.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      }
+    });
 
     // Inisialisasi ikon Lucide (Figma / Iconify standard)
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -225,27 +260,37 @@ class NutriVisionApp {
     const avatarEls = document.querySelectorAll('.user-avatar-placeholder');
     avatarEls.forEach(el => el.textContent = initials);
 
-    // 4. Update Dedicated Sidebar Profile Card (Clean & Simple)
+    // 4. Update Dedicated Sidebar Profile Card (Clean & Simple with Integrated Logout)
     const sidebarProfileCard = document.getElementById('sidebar-profile-card');
     if (sidebarProfileCard) {
       if (hasData) {
         sidebarProfileCard.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="app.navigate('profile')" title="Buka Profil & Diagnostik">
-            <div class="profile-avatar" style="background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;flex-shrink:0;">${initials}</div>
-            <div style="min-width:0;flex:1;">
-              <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.name}</b>
-              <span style="font-size:10.5px;color:#BFDCD1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.conditionTitle}</span>
+          <div class="sidebar-profile-flex">
+            <div class="sidebar-profile-info" onclick="app.navigate('profile')" title="Buka Profil & Diagnostik">
+              <div class="profile-avatar" style="background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;flex-shrink:0;">${initials}</div>
+              <div style="min-width:0;flex:1;">
+                <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.name}</b>
+                <span style="font-size:10.5px;color:#BFDCD1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.conditionTitle}</span>
+              </div>
             </div>
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout & Kembali ke Landing Page" aria-label="Keluar / Logout">
+              <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+            </button>
           </div>
         `;
       } else {
         sidebarProfileCard.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="app.openAuthModal('login')" title="Masuk atau Daftar Akun">
-            <div class="profile-avatar" style="background:rgba(255,255,255,0.15);color:#fff;font-weight:700;flex-shrink:0;">?</div>
-            <div style="min-width:0;flex:1;">
-              <b style="color:#fff;font-size:13px;display:block;">Masuk / Daftar</b>
-              <span style="font-size:10.5px;color:#BFDCD1;display:block;">Klik untuk mulai</span>
+          <div class="sidebar-profile-flex">
+            <div class="sidebar-profile-info" onclick="app.openAuthModal('login')" title="Masuk atau Daftar Akun">
+              <div class="profile-avatar" style="background:rgba(255,255,255,0.15);color:#fff;font-weight:700;flex-shrink:0;">?</div>
+              <div style="min-width:0;flex:1;">
+                <b style="color:#fff;font-size:13px;display:block;">Masuk / Daftar</b>
+                <span style="font-size:10.5px;color:#BFDCD1;display:block;">Klik untuk mulai</span>
+              </div>
             </div>
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.openAuthModal('login');" title="Masuk" aria-label="Masuk">
+              <i data-lucide="log-in" style="width:15px;height:15px;"></i>
+            </button>
           </div>
         `;
       }
@@ -388,11 +433,66 @@ class NutriVisionApp {
   }
 
   // =========================================================================
+  // SMART CLINICAL NOTIFICATION CONTROLLERS
+  // =========================================================================
+  toggleSmartNotificationDropdown(forceState = null) {
+    const dropdown = document.getElementById('smart-notif-dropdown');
+    if (!dropdown) return;
+    const isShown = dropdown.style.display === 'block';
+    const nextState = forceState !== null ? forceState : !isShown;
+    dropdown.style.display = nextState ? 'block' : 'none';
+    if (nextState && window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  markAllNotifsRead() {
+    document.querySelectorAll('.smart-notif-item.unread').forEach(item => {
+      item.classList.remove('unread');
+    });
+    const badge = document.getElementById('notif-unread-count');
+    if (badge) badge.style.display = 'none';
+    this.showToast('✅ Seluruh notifikasi klinis telah ditandai sudah dibaca.');
+  }
+
+  // =========================================================================
   // LANDING PAGE ROUTING & INTERACTIVE CONTROLLERS
   // =========================================================================
 
-  // Pindah ke Mode Landing Page (Tampilan Awal)
-  goToLanding() {
+  // Pindah ke Mode Landing Page (Otomatis Logout Sesi Sesuai Kebijakan Keamanan)
+  goToLanding(showToast = false) {
+    const wasLoggedIn = Boolean(this.userProfile && this.userProfile.contact);
+
+    if (wasLoggedIn) {
+      if (window.nutriVisionDB) {
+        window.nutriVisionDB.logout();
+      }
+      localStorage.removeItem('nutrivision_user_profile');
+      this.userProfile = {
+        hasCompletedQuiz: false,
+        name: '',
+        contact: '',
+        gender: 'male',
+        age: 28,
+        heightCm: 170,
+        weightKg: 65,
+        activityLevel: 'light',
+        conditionId: '',
+        conditionTitle: 'Belum Diatur',
+        phase: 'Belum Diatur',
+        restrictions: '',
+        hasAcceptedConsent: false,
+        bmi: '--',
+        bmiCategory: '--',
+        targets: null
+      };
+      this.updateProfileUI();
+      this.renderAuthUI();
+      if (showToast) {
+        this.showToast('ℹ️ Kembali ke Beranda. Sesi akun Anda telah otomatis keluar (Logged Out).');
+      }
+    }
+
     this.isLanding = true;
     document.body.classList.add('is-landing-active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -975,14 +1075,51 @@ class NutriVisionApp {
     };
 
     this.saveUserProfile();
+    if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
+      window.nutriVisionDB.updateUserProfile(this.userProfile.contact, {
+        name: this.userProfile.name,
+        email: this.userProfile.contact,
+        gender: this.userProfile.gender,
+        age: this.userProfile.age,
+        height: this.userProfile.heightCm,
+        weight: this.userProfile.weightKg,
+        activity: this.userProfile.activityLevel,
+        condition: this.userProfile.conditionId,
+        conditionLabel: this.userProfile.conditionTitle,
+        recoveryPhase: this.userProfile.phase,
+        allergies: this.userProfile.restrictions,
+        targetProtein: this.userProfile.targets.protein,
+        targetCalories: this.userProfile.targets.calories,
+        targetCarbs: this.userProfile.targets.carbs,
+        targetFat: this.userProfile.targets.fat,
+        hasCompletedQuiz: true
+      }).catch(err => console.warn('DB update error:', err));
+    }
+
+    this.updateProfileUI();
+    this.renderAuthUI();
     progressTracker.renderMacroDonut(this.userProfile.targets);
     this.closeModal('onboarding-modal');
-    this.showToast('Rencana diagnostik gizi pemulihan berhasil diterapkan ke dasbor!');
+    this.showToast('✅ Rencana diagnostik gizi pemulihan berhasil disimpan & diterapkan ke dasbor!');
+    this.goToDashboard('overview');
 
     if (typeof this.pendingAuthCallback === 'function') {
       const cb = this.pendingAuthCallback;
       this.pendingAuthCallback = null;
       cb();
+    }
+  }
+
+  // Buka Alur Diagnostik Pasca-Login
+  openDiagnosticQuiz(step = 1) {
+    this.openModal('onboarding-modal');
+    this.goToQuizStep(step);
+
+    const onboardName = document.getElementById('onboard-name');
+    const onboardContact = document.getElementById('onboard-contact');
+    if (onboardName && this.userProfile.name) onboardName.value = this.userProfile.name;
+    if (onboardContact && (this.userProfile.contact || this.userProfile.email)) {
+      onboardContact.value = this.userProfile.contact || this.userProfile.email;
     }
   }
 
@@ -1260,7 +1397,7 @@ class NutriVisionApp {
   }
 
   // =========================================================================
-  // AUTH (LOGIN, REGISTER, DEMO ACCESS & LOGOUT)
+  // AUTH & DATABASE INTEGRATION (LOGIN, REGISTER, DEMO ACCESS & LOGOUT)
   // =========================================================================
   openAuthModal(tab = 'login') {
     this.openModal('auth-modal');
@@ -1273,173 +1410,306 @@ class NutriVisionApp {
     const paneLogin = document.getElementById('auth-pane-login');
     const paneReg = document.getElementById('auth-pane-register');
 
-    if (btnLogin && btnReg && paneLogin && paneReg) {
-      btnLogin.classList.toggle('active', tab === 'login');
-      btnReg.classList.toggle('active', tab === 'register');
-      paneLogin.style.display = (tab === 'login') ? 'block' : 'none';
-      paneReg.style.display = (tab === 'register') ? 'block' : 'none';
-    }
+    if (btnLogin) btnLogin.classList.toggle('active', tab === 'login');
+    if (btnReg) btnReg.classList.toggle('active', tab === 'register');
+    if (paneLogin) paneLogin.style.display = (tab === 'login') ? 'block' : 'none';
+    if (paneReg) paneReg.style.display = (tab === 'register') ? 'block' : 'none';
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
   }
 
-  handleLogin() {
+  async handleLogin() {
     const emailInput = document.getElementById('login-email');
+    const passInput = document.getElementById('login-password');
     const email = emailInput?.value?.trim();
+    const password = passInput?.value?.trim();
+
     if (!email) {
-      this.showToast('Mohon masukkan email atau nomor WhatsApp terlebih dahulu.');
+      this.showToast('⚠️ Mohon masukkan email atau nomor WhatsApp terlebih dahulu.');
       if (emailInput) emailInput.focus();
       return;
     }
 
-    // Cek jika login menggunakan profil demo 1-click
-    if (email.toLowerCase().includes('rangga')) {
-      this.loginAsDemo('post-surgery');
-      return;
-    } else if (email.toLowerCase().includes('siti')) {
-      this.loginAsDemo('rehab');
-      return;
-    } else if (email.toLowerCase().includes('budi')) {
-      this.loginAsDemo('gym');
-      return;
-    }
+    try {
+      let user;
+      if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
+        user = await window.nutriVisionDB.login(email, password);
+      } else {
+        // Fallback jika DB sedang proses ready
+        user = {
+          id: 'usr_' + Date.now(),
+          name: email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Pasien',
+          email: email,
+          role: 'patient',
+          hasCompletedQuiz: false
+        };
+      }
 
-    // Akun Mandiri: set kontak & nama turunan
-    const derivedName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Pasien';
-    this.userProfile.contact = email;
-    if (!this.userProfile.name) {
-      this.userProfile.name = derivedName;
-    }
+      const conditionTitles = {
+        'post-surgery': 'Pasca-Operasi & Bedah',
+        'rehab': 'Fisioterapi & Cedera Sendi',
+        'injury-rehab': 'Fisioterapi Cedera ACL',
+        'gym': 'Gym & Muscle Recovery',
+        'wellness': 'Pemeliharaan Gizi Medis',
+        'clinician': 'Spesialis Gizi Klinis RSUP',
+        'caregiver': 'Pendamping Pasien Lansia'
+      };
 
-    this.closeModal('auth-modal');
+      const hasQuiz = Boolean(user.hasCompletedQuiz && (user.targetProtein || user.weight));
 
-    // Jika belum menyelesaikan kuesioner, buka kuesioner langkah 1 agar mengisi data klinis
-    if (!this.userProfile.hasCompletedQuiz || !this.userProfile.targets) {
-      const onboardName = document.getElementById('onboard-name');
-      const onboardContact = document.getElementById('onboard-contact');
-      if (onboardName) onboardName.value = this.userProfile.name;
-      if (onboardContact) onboardContact.value = email;
+      this.userProfile = {
+        ...this.userProfile,
+        id: user.id,
+        name: user.name || this.userProfile.name,
+        contact: user.email,
+        gender: user.gender || 'male',
+        age: user.age || 28,
+        heightCm: user.height || 170,
+        weightKg: user.weight || 65,
+        activityLevel: user.activity || user.activityLevel || 'light',
+        conditionId: user.condition || 'post-surgery',
+        conditionTitle: user.conditionLabel || conditionTitles[user.condition] || 'Pasca-Operasi & Bedah',
+        phase: user.recoveryPhase || user.phase || 'Minggu ke-2 (Fase Proliferasi)',
+        restrictions: user.allergies || user.restrictions || 'Bebas pantangan khusus',
+        hasAcceptedConsent: true,
+        hasCompletedQuiz: hasQuiz,
+        targets: (hasQuiz && (user.targetProtein || user.targets)) ? {
+          protein: user.targetProtein || (user.targets && user.targets.protein) || 75,
+          carbs: user.targetCarbs || (user.targets && user.targets.carbs) || 220,
+          fat: user.targetFat || (user.targets && user.targets.fat) || 55,
+          calories: user.targetCalories || (user.targets && user.targets.calories) || 1850
+        } : null
+      };
 
-      this.openQuizModal(1);
-      this.showToast(`Selamat datang! Silakan lengkapi diagnostik gizi untuk mengaktifkan target pemulihan.`);
-    } else {
       this.saveUserProfile();
-      progressTracker.renderMacroDonut(this.userProfile.targets);
-      this.showToast(`Selamat datang kembali, ${this.userProfile.name}!`);
+      this.updateProfileUI();
+      this.renderAuthUI();
+      if (this.userProfile.targets) {
+        progressTracker.renderMacroDonut(this.userProfile.targets);
+      }
+      this.closeModal('auth-modal');
+      this.goToDashboard('overview');
+
+      if (!hasQuiz || !this.userProfile.targets) {
+        this.showToast(`✅ Login Berhasil! Silakan lengkapi data profil & diagnostik nutrisi untuk mengaktifkan dasbor Anda.`);
+        this.openDiagnosticQuiz(1);
+      } else {
+        this.showToast(`✅ Login Berhasil! Selamat datang kembali, ${this.userProfile.name}`);
+      }
 
       if (typeof this.pendingAuthCallback === 'function') {
         const cb = this.pendingAuthCallback;
         this.pendingAuthCallback = null;
         cb();
       }
+    } catch (err) {
+      console.warn('Login issue:', err);
+      this.showToast(`⚠️ ${err.message || 'Gagal login. Periksa email & kata sandi Anda.'}`);
     }
   }
 
-  handleRegister() {
+  async handleRegister() {
     const nameInput = document.getElementById('reg-name');
     const emailInput = document.getElementById('reg-email');
+    const passInput = document.getElementById('reg-password');
     const name = nameInput?.value?.trim() || 'Pasien Baru';
     const email = emailInput?.value?.trim() || 'pasien@email.com';
-    
-    this.userProfile.name = name;
-    this.userProfile.contact = email;
-    this.closeModal('auth-modal');
-    
-    // Buka Foodvisor Diagnostic Quiz langsung dari langkah 1 dengan nama & email terisi otomatis
-    const onboardName = document.getElementById('onboard-name');
-    const onboardContact = document.getElementById('onboard-contact');
-    if (onboardName) onboardName.value = name;
-    if (onboardContact) onboardContact.value = email;
+    const password = passInput?.value?.trim() || 'pasien123';
 
-    this.openQuizModal(1);
-    this.showToast(`Akun ${name} berhasil dibuat! Silakan lengkapi kuesioner diagnostik gizi.`);
+    try {
+      let newUser;
+      if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
+        newUser = await window.nutriVisionDB.register({
+          name,
+          email,
+          password,
+          role: 'patient',
+          condition: 'post-surgery',
+          hasCompletedQuiz: false
+        });
+      } else {
+        newUser = {
+          id: 'usr_' + Date.now(),
+          name,
+          email,
+          role: 'patient',
+          hasCompletedQuiz: false
+        };
+      }
+
+      this.userProfile = {
+        ...this.userProfile,
+        ...newUser,
+        contact: newUser.email,
+        name: newUser.name,
+        hasCompletedQuiz: false
+      };
+
+      this.saveUserProfile();
+      this.updateProfileUI();
+      this.renderAuthUI();
+      this.closeModal('auth-modal');
+      this.goToDashboard('overview');
+
+      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan lengkapi data kebutuhan dasbor Anda.`);
+
+      // Buka Diagnostik Quiz langkah 1
+      this.openDiagnosticQuiz(1);
+    } catch (err) {
+      console.warn('Register issue:', err);
+      this.showToast(`⚠️ ${err.message || 'Gagal mendaftar.'}`);
+    }
   }
 
   loginWithSocial(provider) {
     this.closeModal('auth-modal');
-    this.showToast(`Berhasil masuk dengan akun ${provider}!`);
+    this.userProfile = {
+      ...this.userProfile,
+      name: `Pengguna ${provider}`,
+      contact: `user@${provider.toLowerCase()}.com`,
+      hasCompletedQuiz: false
+    };
+    this.saveUserProfile();
+    this.updateProfileUI();
+    this.renderAuthUI();
+    this.goToDashboard('overview');
+    this.showToast(`✅ Berhasil masuk dengan akun ${provider}! Silakan lengkapi data dasbor Anda.`);
+    this.openDiagnosticQuiz(1);
   }
 
-  loginAsDemo(conditionKey) {
-    const presets = {
-      'post-surgery': {
-        hasCompletedQuiz: true,
-        name: 'Rangga Pratama',
-        contact: 'rangga.pratama@email.com',
-        gender: 'male',
-        age: 28,
-        heightCm: 170,
-        weightKg: 65,
-        activityLevel: 'light',
-        conditionId: 'post-surgery',
-        conditionTitle: 'Pasca-Operasi Usus Buntu',
-        phase: 'Minggu ke-2 (Fase Proliferasi)',
-        restrictions: 'Alergi makanan pedas pekat, hindari gorengan keras',
-        bmi: '22.5',
-        bmiCategory: 'Normal',
-        targets: { protein: 75, carbs: 240, fat: 55, calories: 1850 }
-      },
-      'rehab': {
-        hasCompletedQuiz: true,
-        name: 'Siti Rahmawati',
-        contact: 'siti.rahma@email.com',
-        gender: 'female',
-        age: 32,
-        heightCm: 162,
-        weightKg: 58,
-        activityLevel: 'therapy',
-        conditionId: 'rehab',
-        conditionTitle: 'Fisioterapi Cedera Lutut (ACL)',
-        phase: 'Bulan ke-1 (Fase Remodeling)',
-        restrictions: 'Bebas pantangan khusus, butuh kalsium & kolagen',
-        bmi: '22.1',
-        bmiCategory: 'Normal',
-        targets: { protein: 80, carbs: 260, fat: 60, calories: 2000 }
-      },
-      'gym': {
-        hasCompletedQuiz: true,
-        name: 'Budi Santoso',
-        contact: 'budi.santoso@email.com',
-        gender: 'male',
-        age: 25,
-        heightCm: 178,
-        weightKg: 74,
-        activityLevel: 'active',
-        conditionId: 'gym',
-        conditionTitle: 'Gym & Muscle Recovery',
-        phase: 'Fase Hipertrofi & Pemulihan Otot',
-        restrictions: 'Hindari minyak jenuh tinggi, perbanyak protein nabati/hewani',
-        bmi: '23.4',
-        bmiCategory: 'Normal',
-        targets: { protein: 110, carbs: 290, fat: 65, calories: 2300 }
-      }
+  async loginAsDemo(conditionKey) {
+    const demoMap = {
+      'post-surgery': { email: 'pasien@nutrivision.id', pass: 'pasien123' },
+      'rehab': { email: 'siti@nutrivision.id', pass: 'siti123' },
+      'gym': { email: 'pasien@nutrivision.id', pass: 'pasien123' },
+      'doctor': { email: 'dokter@nutrivision.id', pass: 'dokter123' },
+      'caregiver': { email: 'caregiver@nutrivision.id', pass: 'caregiver123' }
     };
 
-    const selected = presets[conditionKey] || presets['post-surgery'];
-    this.userProfile = Object.assign({}, this.userProfile, selected);
-    this.saveUserProfile();
-    progressTracker.renderMacroDonut(this.userProfile.targets);
-    this.closeModal('auth-modal');
-    this.showToast(`Berhasil masuk sebagai profil demo: ${this.userProfile.name} (${this.userProfile.conditionTitle})`);
+    const cred = demoMap[conditionKey] || demoMap['post-surgery'];
+    try {
+      let user;
+      if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
+        user = await window.nutriVisionDB.login(cred.email, cred.pass);
+      } else {
+        user = {
+          id: 'usr_demo',
+          name: 'Rangga Pratama',
+          email: cred.email,
+          role: 'patient',
+          targetProtein: 75,
+          hasCompletedQuiz: true
+        };
+      }
 
-    if (typeof this.pendingAuthCallback === 'function') {
-      const cb = this.pendingAuthCallback;
-      this.pendingAuthCallback = null;
-      cb();
+      this.userProfile = {
+        ...this.userProfile,
+        ...user,
+        contact: user.email,
+        hasCompletedQuiz: true,
+        targets: {
+          protein: user.targetProtein || 75,
+          carbs: 220,
+          fat: 55,
+          calories: user.targetCalories || 1850
+        }
+      };
+
+      this.saveUserProfile();
+      this.updateProfileUI();
+      this.renderAuthUI();
+      this.closeModal('auth-modal');
+
+      this.showToast(`✅ Masuk sebagai akun demo DB: ${this.userProfile.name}`);
+      this.goToDashboard('overview');
+    } catch (e) {
+      console.error(e);
+      this.showToast(`✅ Masuk sebagai profil demo ${conditionKey}`);
+      this.goToDashboard('overview');
     }
   }
 
-  logout() {
-    if (confirm('Apakah kamu yakin ingin keluar dan mengosongkan profil aktif?')) {
-      localStorage.removeItem('nutrivision_user_profile');
-      this.userProfile = this.loadUserProfile();
-      this.saveUserProfile();
-      progressTracker.todayIntake = { protein: 0, carbs: 0, fat: 0, calories: 0 };
-      progressTracker.renderMacroDonut(null);
-      this.updateProfileUI();
-      this.showToast('Kamu telah keluar. Data profil dikosongkan ke Mode Tamu.');
+  handleLogout() {
+    if (window.nutriVisionDB) {
+      window.nutriVisionDB.logout();
+    }
+    localStorage.removeItem('nutrivision_user_profile');
+    this.userProfile = {
+      hasCompletedQuiz: false,
+      name: '',
+      contact: '',
+      gender: 'male',
+      age: 28,
+      heightCm: 170,
+      weightKg: 65,
+      activityLevel: 'light',
+      conditionId: '',
+      conditionTitle: 'Belum Diatur',
+      phase: 'Belum Diatur',
+      restrictions: '',
+      hasAcceptedConsent: false,
+      bmi: '--',
+      bmiCategory: '--',
+      targets: null
+    };
+
+    this.updateProfileUI();
+    this.renderAuthUI();
+    this.showToast('ℹ️ Anda telah berhasil keluar dari akun (Logout).');
+    this.goToLanding();
+  }
+
+  renderAuthUI() {
+    const isLoggedIn = Boolean(this.userProfile && this.userProfile.name && this.userProfile.contact);
+
+    // 1. Landing Page Navbar Actions
+    const lpActions = document.getElementById('lp-nav-actions-container');
+    if (lpActions) {
+      if (isLoggedIn) {
+        const initials = (this.userProfile.name || 'P').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const firstName = this.userProfile.name.split(' ')[0];
+        lpActions.innerHTML = `
+          <button class="lp-btn-nav-primary" onclick="app.goToDashboard('overview')" title="Buka Dasbor Pasien" style="gap:7px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(255,255,255,0.25);color:#fff;border-radius:50%;font-size:11px;font-weight:700;">${initials}</span>
+            <span>Dasbor (${firstName})</span>
+          </button>
+          <button class="lp-btn-nav-outline" onclick="app.handleLogout()" title="Keluar / Logout" style="padding:0 10px;color:var(--coral-600);">
+            <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+          </button>
+          <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu" onclick="app.toggleLandingMobileMenu()">
+            <i data-lucide="menu" style="width:18px;height:18px;"></i>
+          </button>
+        `;
+      } else {
+        lpActions.innerHTML = `
+          <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')" title="Masuk ke Akun NutriVision AI">
+            <i data-lucide="log-in" style="width:15px;height:15px;"></i>
+            <span>Login</span>
+          </button>
+          <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu" onclick="app.toggleLandingMobileMenu()">
+            <i data-lucide="menu" style="width:18px;height:18px;"></i>
+          </button>
+        `;
+      }
+    }
+
+    // 2. Dashboard Topbar Action Buttons
+    const topbarLoginBtn = document.getElementById('topbar-login-btn');
+    const topbarChip = document.getElementById('topbar-profile-chip');
+    if (topbarLoginBtn && topbarChip) {
+      if (isLoggedIn) {
+        topbarLoginBtn.style.display = 'none';
+        topbarChip.style.display = 'inline-flex';
+      } else {
+        topbarLoginBtn.style.display = 'inline-flex';
+        topbarChip.style.display = 'none';
+      }
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
     }
   }
 
