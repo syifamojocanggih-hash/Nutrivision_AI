@@ -73,10 +73,10 @@ class NutriVisionCVEngine {
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fillStyle = this.currentScan.plateColor || '#073B30';
+    ctx.fillStyle = this.currentScan.plateColor || '#4A0E13';
     ctx.fill();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = 'rgba(63, 190, 147, 0.4)';
+    ctx.strokeStyle = 'rgba(250, 154, 144, 0.55)';
     ctx.stroke();
     ctx.clip(); // Clip di dalam lingkaran piring
 
