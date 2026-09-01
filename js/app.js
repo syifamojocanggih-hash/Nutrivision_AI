@@ -8,6 +8,12 @@ class NutriVisionApp {
     this.deferredInstallPrompt = null;
     this.currentQuizStep = 1;
     this.pendingAuthCallback = null;
+    this.isLanding = true;
+    this.calcState = {
+      condition: this.userProfile.conditionId || 'post-surgery',
+      weight: this.userProfile.weightKg || 65,
+      activity: this.userProfile.activityLevel || 'light'
+    };
     this.quizState = {
       gender: this.userProfile.gender || 'male',
       condition: this.userProfile.conditionId || 'post-surgery',
@@ -108,6 +114,18 @@ class NutriVisionApp {
     communityHandler.renderCommunityFeed();
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
+
+    // Inisialisasi Kalkulator Mini Landing Page
+    this.updateCalcUI();
+
+    // Router URL Hash Handling (Landing vs Dashboard)
+    const hash = window.location.hash.replace('#', '');
+    const validSections = ['overview', 'planner', 'catalog', 'community', 'caregiver', 'progress', 'profile'];
+    if (validSections.includes(hash) || hash === 'dashboard' || hash === 'app') {
+      this.goToDashboard(validSections.includes(hash) ? hash : 'overview');
+    } else {
+      this.goToLanding();
+    }
 
     // Inisialisasi ikon Lucide (Figma / Iconify standard)
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -367,6 +385,350 @@ class NutriVisionApp {
 
     // Scroll to top smooth
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // =========================================================================
+  // LANDING PAGE ROUTING & INTERACTIVE CONTROLLERS
+  // =========================================================================
+
+  // Pindah ke Mode Landing Page (Tampilan Awal)
+  goToLanding() {
+    this.isLanding = true;
+    document.body.classList.add('is-landing-active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.history.pushState) {
+      window.history.pushState(null, null, '#landing');
+    }
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Pindah ke Mode Dasbor Aplikasi
+  goToDashboard(sectionId = 'overview', triggerModal = null) {
+    this.isLanding = false;
+    document.body.classList.remove('is-landing-active');
+    this.navigate(sectionId);
+    if (window.history.pushState) {
+      window.history.pushState(null, null, `#${sectionId}`);
+    }
+    
+    if (triggerModal === 'quiz') {
+      setTimeout(() => this.openQuizModal(1), 120);
+    } else if (triggerModal === 'scan') {
+      setTimeout(() => this.openScanModal(), 120);
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // =========================================================================
+  // INTERACTIVE SIMULATOR: PRESET SCANNER SHOWCASE
+  // =========================================================================
+  selectLandingPreset(presetKey) {
+    document.querySelectorAll('.lp-meal-tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.preset === presetKey);
+    });
+
+    const presets = {
+      'preset-soft-bubur-gabus': {
+        conf: '96%',
+        targetProt: '32g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Tinggi Albumin)</span>',
+        cals: '385 kkal <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Tekstur Lunak)</span>',
+        advice: '<strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi & disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.',
+        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
+        tag2: '<i data-lucide="soup" style="width:13px;height:13px;color:#EB8D70;"></i><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
+        tag3: '<i data-lucide="egg" style="width:13px;height:13px;color:#EF9F27;"></i><span>Telur Tim Sutra (90g) · 6.8g Prot</span>',
+        polyColor: '#3FBE93'
+      },
+      'preset-standard-nasi-ayam': {
+        conf: '91%',
+        targetProt: '38g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Padat Gizi)</span>',
+        cals: '465 kkal <span style="font-size:11px;font-weight:500;color:var(--coral-500);">(Energi Seimbang)</span>',
+        advice: '<strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot & pembentukan enzim perbaikan jaringan.',
+        tag1: '<i data-lucide="drumstick" style="width:13px;height:13px;color:#3FBE93;"></i><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
+        tag2: '<i data-lucide="wheat" style="width:13px;height:13px;color:#EB8D70;"></i><span>Nasi Putih (175g) · 52g Karbo</span>',
+        tag3: '<i data-lucide="salad" style="width:13px;height:13px;color:#EF9F27;"></i><span>Tumis Kangkung &amp; Telur · Vit A/C</span>',
+        polyColor: '#D85A30'
+      },
+      'preset-fish-kembung': {
+        conf: '94%',
+        targetProt: '41g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Kaya Omega-3)</span>',
+        cals: '430 kkal <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Hemat &amp; Bergizi)</span>',
+        advice: '<strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.',
+        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
+        tag2: '<i data-lucide="leaf" style="width:13px;height:13px;color:#EB8D70;"></i><span>Tempe Kukus (80g) · 15g Prot</span>',
+        tag3: '<i data-lucide="salad" style="width:13px;height:13px;color:#EF9F27;"></i><span>Sayur Bening Bayam · Zat Besi</span>',
+        polyColor: '#3FBE93'
+      },
+      'preset-salmon-quinoa': {
+        conf: '95%',
+        targetProt: '36g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Antioksidan Tinggi)</span>',
+        cals: '420 kkal <span style="font-size:11px;font-weight:500;color:var(--coral-500);">(Densitas Tinggi)</span>',
+        advice: '<strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.',
+        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i><span>Fillet Salmon (130g) · 28g Prot</span>',
+        tag2: '<i data-lucide="salad" style="width:13px;height:13px;color:#EB8D70;"></i><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
+        tag3: '<i data-lucide="wheat" style="width:13px;height:13px;color:#EF9F27;"></i><span>Beras Merah (100g) · 23g Karbo</span>',
+        polyColor: '#D85A30'
+      }
+    };
+
+    const data = presets[presetKey] || presets['preset-soft-bubur-gabus'];
+
+    const confEl = document.getElementById('lp-showcase-conf');
+    if (confEl) confEl.textContent = `AI Confidence: ${data.conf}`;
+
+    const protEl = document.getElementById('lp-showcase-protein');
+    if (protEl) protEl.innerHTML = data.targetProt;
+
+    const calsEl = document.getElementById('lp-showcase-cals');
+    if (calsEl) calsEl.innerHTML = data.cals;
+
+    const adviceEl = document.getElementById('lp-showcase-advice');
+    if (adviceEl) adviceEl.innerHTML = data.advice;
+
+    const tag1 = document.getElementById('lp-showcase-tag-1');
+    if (tag1) tag1.innerHTML = data.tag1;
+
+    const tag2 = document.getElementById('lp-showcase-tag-2');
+    if (tag2) tag2.innerHTML = data.tag2;
+
+    const tag3 = document.getElementById('lp-showcase-tag-3');
+    if (tag3) tag3.innerHTML = data.tag3;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // =========================================================================
+  // INTERACTIVE PERSONA PATHWAYS CONTROLLER
+  // =========================================================================
+  selectLandingPersona(personaKey) {
+    document.querySelectorAll('.lp-persona-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.persona === personaKey);
+    });
+
+    const personas = {
+      'surgery': {
+        title: '🏥 Jalur Pasca-Operasi Bedah (Regenerasi Luka & Albumin)',
+        desc: 'Fokus klinis ditujukan untuk menstimulasi fibroblas luka, mencegah malnutrisi rumah sakit, dan mempercepat re-epitelisasi jaringan sayatan operasi.',
+        target: '1.5 g / kg Berat Badan (Contoh: 65kg = 98g Protein/hari)',
+        menu: 'Sup Ikan Gabus Bening, Telur Rebus, Bubur Halus, Sayur Labu Siam',
+        guideline: 'Pilih hidangan hangat non-lemak pada minggu pertama untuk menghindari mual pasca-anestesi.',
+        ctaTarget: 'post-surgery'
+      },
+      'elderly': {
+        title: '👵 Jalur Lansia & Pasca-Rawat Inap (Ramah Cerna & Bebas Malnutrisi)',
+        desc: 'Dirancang dengan densitas gizi tinggi dan tekstur lembut (*soft-diet*) untuk lansia yang mengalami penurunan nafsu makan, masalah gigi, atau disfagia.',
+        target: '1.2 - 1.4 g / kg Berat Badan (Porsi kecil sering / 5x sehari)',
+        menu: 'Bubur Tim Tahu Sutra, Sup Krim Wortel Kentang, Telur Orak-Arik Lunak',
+        guideline: 'Dukungan huruf besar & pendampingan keluarga via portal shared-link.',
+        ctaTarget: 'post-surgery'
+      },
+      'rehab': {
+        title: '🏃 Jalur Fisioterapi & Cedera Fisik (Ligamen, Tulang & Sendi)',
+        desc: 'Membantu meredakan pembengkakan inflamasi kronis serta memasok kalsium, Vitamin D, dan asam amino untuk pemulihan tendon dan mobilitas otot.',
+        target: '1.6 g / kg Berat Badan (Terdistribusi per 3-4 jam)',
+        menu: 'Pepes Ikan Kembung Omega-3, Dada Ayam Kukus, Sayur Kelor, Tempe Bacem',
+        guideline: 'Padukan asupan protein pasca-sesi terapi fisik untuk memicu sintesis protein otot maksimal.',
+        ctaTarget: 'injury-rehab'
+      },
+      'caregiver': {
+        title: '👨‍👩‍👧 Jalur Pendamping Pasien (Caregiver & Keluarga)',
+        desc: 'Memudahkan keluarga, anak, atau perawat memantau kepatuhan makan pasien dari jarak jauh melalui tautan view-only tanpa harus login akun rumit.',
+        target: 'Pemantauan Visual Piring & Rekap Ekspor Laporan Dokter 1-Klik',
+        menu: 'Rencana Menu Ramah Anggaran (Standar vs Opsi Hemat Pasar Lokal)',
+        guideline: 'Unduh rekap progres 7-30 hari dalam format WhatsApp untuk dikonsultasikan saat jadwal kontrol dokter.',
+        ctaTarget: 'caregiver'
+      }
+    };
+
+    const p = personas[personaKey] || personas['surgery'];
+
+    const titleEl = document.getElementById('lp-persona-detail-title');
+    if (titleEl) titleEl.textContent = p.title;
+
+    const descEl = document.getElementById('lp-persona-detail-desc');
+    if (descEl) descEl.textContent = p.desc;
+
+    const targetEl = document.getElementById('lp-persona-detail-target');
+    if (targetEl) targetEl.textContent = p.target;
+
+    const menuEl = document.getElementById('lp-persona-detail-menu');
+    if (menuEl) menuEl.textContent = p.menu;
+
+    const guideEl = document.getElementById('lp-persona-detail-guide');
+    if (guideEl) guideEl.textContent = p.guideline;
+
+    const btnEl = document.getElementById('lp-persona-detail-btn');
+    if (btnEl) {
+      btnEl.onclick = () => {
+        if (p.ctaTarget === 'caregiver') {
+          this.goToDashboard('caregiver');
+        } else {
+          this.quizState.condition = p.ctaTarget;
+          this.goToDashboard('overview', 'quiz');
+        }
+      };
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // =========================================================================
+  // INTERACTIVE SYMPTOM-AWARE SIMULATOR CONTROLLER
+  // =========================================================================
+  toggleLandingSymptom(symptomKey) {
+    document.querySelectorAll('.lp-symptom-chip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.symptom === symptomKey);
+    });
+
+    const data = {
+      'nausea': {
+        texture: 'Suhu ruang atau hangat suam-kuku, berkuah bening, tidak berminyak, tanpa aroma tajam.',
+        foods: 'Sup Bening Ikan Gabus, Air Jahe Hangat, Biskuit Tawar, Bubur Lembut.',
+        avoid: 'Gorengan berlemak jenuh, makanan bersantan kental, aroma rempah menyengat, asam pekat.'
+      },
+      'dysphagia': {
+        texture: 'Tekstur saring / lunak halus (*puree / smooth diet*), tidak mudah tersedak.',
+        foods: 'Bubur Tim Ikan Gabus Halus, Tahu Sutra Kukus, Sup Krim Wortel Labu, Puding Protein.',
+        avoid: 'Daging liat berserat kasar, kerupuk keras renyah, nasi kering, biji-bijian utuh.'
+      },
+      'bloating': {
+        texture: 'Makanan rendah gas (Low-FODMAP), mudah dicerna, porsi kecil hangat teratur.',
+        foods: 'Dada Ayam Rebus Suwir, Nasi Putih Tim, Sayur Labu Siam Bening, Tempe Kukus.',
+        avoid: 'Sayur kol, kubis, brokoli mentah, minuman bersoda, susu sapi murni laktosa tinggi.'
+      },
+      'appetite': {
+        texture: 'Hidangan padat energi dalam volume kecil (*nutrient-dense mini meals*).',
+        foods: 'Telur Rebus Setengah Matang / Tim, Kaldu Tulang Sapi/Ayam Kaya Kolagen, Smoothies Tempe.',
+        avoid: 'Minum air berlebih sesaat sebelum makan, makanan porsi besar yang membuat lelah mengunyah.'
+      }
+    };
+
+    const cur = data[symptomKey] || data['nausea'];
+
+    const texEl = document.getElementById('lp-sym-res-texture');
+    if (texEl) texEl.textContent = cur.texture;
+
+    const foodEl = document.getElementById('lp-sym-res-foods');
+    if (foodEl) foodEl.textContent = cur.foods;
+
+    const avoidEl = document.getElementById('lp-sym-res-avoid');
+    if (avoidEl) avoidEl.textContent = cur.avoid;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Pengatur Kondisi Kalkulator Mini Landing Page
+  setCalcCondition(cond) {
+    this.calcState.condition = cond;
+    document.querySelectorAll('.lp-calc-options-row button[data-condition]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.condition === cond);
+    });
+    this.updateCalcUI();
+  }
+
+  // Pengatur Berat Badan Slider Kalkulator Mini
+  updateCalcWeight(val) {
+    this.calcState.weight = parseInt(val, 10) || 65;
+    const display = document.getElementById('lp-calc-weight-display');
+    if (display) display.textContent = `${this.calcState.weight} kg`;
+    this.updateCalcUI();
+  }
+
+  // Pengatur Aktivitas Kalkulator Mini
+  setCalcActivity(act) {
+    this.calcState.activity = act;
+    document.querySelectorAll('.lp-calc-options-row button[data-act]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.act === act);
+    });
+    this.updateCalcUI();
+  }
+
+  // Kalkulasi & Render Hasil Kalkulator Mini secara Real-Time
+  updateCalcUI() {
+    const w = this.calcState.weight || 65;
+    let factor = 1.5;
+    let calFactor = 30;
+    let recomFood = '🐟 Ikan Gabus (150g) + 2 Butir Telur Rebus + Tempe';
+    let clinicalTip = 'Target 1.5 g/kg BB optimal untuk menstimulasi fibroblas dan sintesis kolagen penutupan luka.';
+
+    if (this.calcState.condition === 'post-surgery') {
+      factor = 1.5;
+      calFactor = this.calcState.activity === 'bedrest' ? 28 : (this.calcState.activity === 'active' ? 33 : 30);
+      recomFood = '🐟 Ikan Gabus (150g) + 2 Butir Telur Rebus + Tempe';
+      clinicalTip = 'Target 1.5 g/kg BB optimal untuk menstimulasi fibroblas dan sintesis kolagen penutupan luka.';
+    } else if (this.calcState.condition === 'injury-rehab') {
+      factor = 1.6;
+      calFactor = 32;
+      recomFood = '🐟 Ikan Kembung Panggang (Omega-3) + Dada Ayam + Sayur Kelor';
+      clinicalTip = 'Target 1.6 g/kg BB kaya EPA/DHA meredakan inflamasi sendi dan regenerasi jaringan tendon.';
+    } else if (this.calcState.condition === 'gym-recovery') {
+      factor = 1.8;
+      calFactor = 35;
+      recomFood = '🍗 Dada Ayam Kukus + Ikan Kembung + Telur + Tahu Tempe';
+      clinicalTip = 'Target 1.8 g/kg BB untuk hipertrofi otot dan pengisian glikogen pasca-latihan intensif.';
+    }
+
+    if (this.calcState.activity === 'bedrest') {
+      factor = Math.max(1.2, factor - 0.2);
+    } else if (this.calcState.activity === 'active') {
+      factor = factor + 0.2;
+    }
+
+    const protein = Math.round(w * factor);
+    const cals = Math.round(w * calFactor);
+
+    const elProt = document.getElementById('lp-calc-target-protein');
+    if (elProt) elProt.innerHTML = `${protein} <span>g Protein / hari</span>`;
+
+    const elCals = document.getElementById('lp-calc-target-cals');
+    if (elCals) elCals.textContent = `Total Energi: ~${cals.toLocaleString()} kkal/hari (${factor.toFixed(1)} g/kg BB)`;
+
+    const elRecom = document.getElementById('lp-calc-food-recom');
+    if (elRecom) elRecom.textContent = recomFood;
+
+    const elTip = document.getElementById('lp-calc-tip-text');
+    if (elTip) elTip.textContent = clinicalTip;
+  }
+
+  // Terapkan hasil kalkulator langsung ke Dasbor & Onboarding Quiz
+  applyCalcToDashboard() {
+    this.quizState.condition = this.calcState.condition;
+    this.quizState.activity = this.calcState.activity;
+    const weightInput = document.getElementById('onboard-weight');
+    if (weightInput) weightInput.value = this.calcState.weight;
+
+    this.goToDashboard('overview', 'quiz');
+  }
+
+  // FAQ Accordion Toggle
+  toggleFaq(btn) {
+    const item = btn.closest('.lp-faq-item');
+    if (item) {
+      const isActive = item.classList.contains('active');
+      document.querySelectorAll('.lp-faq-item').forEach(i => i.classList.remove('active'));
+      if (!isActive) item.classList.add('active');
+    }
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Mobile Menu Toggle di Landing Page
+  toggleLandingMobileMenu() {
+    const menu = document.getElementById('lp-nav-menu');
+    if (menu) {
+      menu.classList.toggle('mobile-open');
+    }
   }
 
   // =========================================================================
@@ -1165,6 +1527,22 @@ class NutriVisionApp {
         if (e.target === modal && modal.id !== 'onboarding-modal') {
           this.closeModal(modal.id);
         }
+      });
+    });
+
+    // Landing Page Navbar Scroll Shadow Effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.getElementById('lp-navbar');
+      if (navbar) {
+        navbar.classList.toggle('scrolled', window.scrollY > 20);
+      }
+    });
+
+    // Landing Page Links smooth scroll & auto-close mobile menu
+    document.querySelectorAll('#lp-nav-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        const menu = document.getElementById('lp-nav-menu');
+        if (menu) menu.classList.remove('mobile-open');
       });
     });
   }

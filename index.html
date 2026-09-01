@@ -27,7 +27,441 @@
   <!-- Core Design System -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="is-landing-active">
+
+  <!-- =========================================================================
+       LANDING PAGE CONTAINER (TAMPILAN AWAL NUTRIVISION AI — RAPI & INTERAKTIF)
+       ========================================================================= -->
+  <div id="landing-page-view" class="landing-page-wrapper">
+    
+    <!-- 1. STICKY NAVBAR -->
+    <header class="lp-navbar" id="lp-navbar">
+      <div class="lp-container">
+        <div class="lp-nav-inner">
+          <div class="lp-brand" onclick="app.goToLanding()" title="NutriVision AI — Beranda">
+            <div class="lp-brand-mark">
+              <i data-lucide="leaf" style="width:18px;height:18px;"></i>
+            </div>
+            <div class="lp-brand-title">NutriVision AI</div>
+          </div>
+
+          <nav class="lp-nav-links" id="lp-nav-menu">
+            <a href="#lp-main-feature" class="lp-nav-link">Simulasi AI</a>
+            <a href="#lp-support" class="lp-nav-link">Fitur Klinis</a>
+            <a href="#lp-superfoods" class="lp-nav-link">Pangan Lokal</a>
+            <a href="#lp-evidence" class="lp-nav-link">Bukti Riset</a>
+            <a href="#lp-calculator" class="lp-nav-link">Kalkulator</a>
+          </nav>
+
+          <div class="lp-nav-actions">
+            <button class="lp-btn-nav-outline" onclick="app.goToDashboard('overview')">
+              <i data-lucide="layout-dashboard" style="width:15px;height:15px;"></i>
+              <span>Masuk Dasbor</span>
+            </button>
+            <button class="lp-btn-nav-primary" onclick="app.goToDashboard('overview', 'quiz')">
+              <i data-lucide="sparkles" style="width:15px;height:15px;"></i>
+              <span>Mulai Diagnostik</span>
+            </button>
+            <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu" onclick="app.toggleLandingMobileMenu()">
+              <i data-lucide="menu" style="width:18px;height:18px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. HERO BAND (TEAL-900 DARK BAND, FULL-WIDTH) -->
+    <section class="lp-hero-band" id="lp-hero">
+      <div class="lp-container">
+        <div class="lp-hero-grid">
+          <!-- Left Column -->
+          <div class="lp-hero-content">
+            <h1 class="lp-hero-title">
+              Scan makanan, bukan tebak-tebak gizi <span class="highlight-coral">pemulihan</span>.
+            </h1>
+            <p class="lp-hero-desc">
+              Ketika baru melewati operasi, cedera fisik, atau merawat lansia pasca-rawat inap, takaran protein tubuh tidak boleh sekadar tebakan. NutriVision AI mengenali isi piring Anda melalui foto, menghitung rentang gizi instan, dan menyesuaikan menu ramah gejala dengan pangan lokal nusantara.
+            </p>
+
+            <div class="lp-hero-actions">
+              <button class="lp-btn-hero-primary" onclick="app.goToDashboard('overview', 'quiz')">
+                <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+                <span>Mulai Diagnostik Pasien (Gratis)</span>
+              </button>
+              <button class="lp-btn-hero-secondary" onclick="app.goToDashboard('overview')">
+                <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+                <span>Buka Dasbor Langsung →</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Real Dashboard Preview Card -->
+          <div class="lp-hero-preview-card">
+            <div class="lp-preview-head">
+              <span class="title">
+                <i data-lucide="scan" style="width:16px;height:16px;color:#3FBE93;"></i>
+                Hasil Segmentasi Piring AI
+              </span>
+              <span class="lp-preview-conf-badge">
+                <i data-lucide="check-circle" style="width:12px;height:12px;"></i> Keyakinan Model: 88%
+              </span>
+            </div>
+
+            <div class="lp-preview-plate-box">
+              <div class="lp-preview-circle">
+                <div class="lp-poly-protein" title="Segmen Protein: Ikan Gabus"></div>
+                <div class="lp-poly-carbs" title="Segmen Karbohidrat: Bubur Beras"></div>
+                <div class="lp-poly-veg" title="Segmen Lauk Nabati: Telur Tim"></div>
+              </div>
+            </div>
+
+            <div class="lp-preview-legend-list">
+              <div class="lp-legend-item">
+                <span><span class="dot" style="background:#3FBE93;"></span>Ikan Gabus Kukus (110g)</span>
+                <b>26g Protein [Albumin]</b>
+              </div>
+              <div class="lp-legend-item">
+                <span><span class="dot" style="background:#EB8D70;"></span>Bubur Beras Lembut (220g)</span>
+                <b>35g Karbohidrat</b>
+              </div>
+              <div class="lp-legend-item">
+                <span><span class="dot" style="background:#EF9F27;"></span>Telur Tim Sutra (90g)</span>
+                <b>6.8g Protein</b>
+              </div>
+            </div>
+
+            <div class="lp-preview-foot-bar">
+              <span>Target Harian: <b>32g / 98g Protein</b> (Fase 2)</span>
+              <span style="color:#3FBE93;cursor:pointer;" onclick="app.goToDashboard('overview', 'scan')">Coba Scan Sendiri →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. BANNER TRANSPARANSI (AMBER-100 PROMINENT BELOW HERO) -->
+    <section class="lp-transparency-banner" role="alert">
+      <div class="lp-container">
+        <div class="lp-banner-inner">
+          <div class="lp-banner-icon">
+            <i data-lucide="alert-triangle" style="width:20px;height:20px;"></i>
+          </div>
+          <div>
+            <strong>Pemberitahuan Layanan Publik &amp; Pendukung Keputusan:</strong>
+            Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (<em>clinical decision-support</em>), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. FITUR UTAMA — 1 KARTU BESAR TEAL-900 GELAP -->
+    <section class="lp-section" id="lp-main-feature">
+      <div class="lp-container">
+        <div class="lp-section-head-clean">
+          <h2>Segmentasi citra makanan berbasis AI</h2>
+          <p>Multi-segment computer vision menyekat komponen hidangan, menghitung estimasi gramatur, dan mencocokkannya dengan fase pemulihan jaringan.</p>
+        </div>
+
+        <div class="lp-main-feature-card">
+          <div class="lp-preset-pills-row">
+            <button type="button" class="lp-preset-btn active" data-preset="preset-soft-bubur-gabus" onclick="app.selectLandingPreset('preset-soft-bubur-gabus')">
+              🥣 Bubur Ikan Gabus (Disfagia)
+            </button>
+            <button type="button" class="lp-preset-btn" data-preset="preset-standard-nasi-ayam" onclick="app.selectLandingPreset('preset-standard-nasi-ayam')">
+              🍛 Nasi Dada Ayam &amp; Kangkung
+            </button>
+            <button type="button" class="lp-preset-btn" data-preset="preset-fish-kembung" onclick="app.selectLandingPreset('preset-fish-kembung')">
+              🐟 Pepes Ikan Kembung (Omega-3)
+            </button>
+            <button type="button" class="lp-preset-btn" data-preset="preset-salmon-quinoa" onclick="app.selectLandingPreset('preset-salmon-quinoa')">
+              🥗 Salmon &amp; Brokoli Kukus
+            </button>
+          </div>
+
+          <div class="lp-main-feature-grid">
+            <div class="lp-live-plate-canvas-box">
+              <div class="lp-live-plate-disc">
+                <div class="lp-poly-protein"></div>
+                <div class="lp-poly-carbs"></div>
+                <div class="lp-poly-veg"></div>
+              </div>
+
+              <div class="lp-live-tag lp-ltag-1" id="lp-showcase-tag-1">
+                <i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i>
+                <span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>
+              </div>
+              <div class="lp-live-tag lp-ltag-2" id="lp-showcase-tag-2">
+                <i data-lucide="soup" style="width:13px;height:13px;color:#EB8D70;"></i>
+                <span>Bubur Beras Lembut (220g) · 35g Karbo</span>
+              </div>
+              <div class="lp-live-tag lp-ltag-3" id="lp-showcase-tag-3">
+                <i data-lucide="egg" style="width:13px;height:13px;color:#EF9F27;"></i>
+                <span>Telur Tim Sutra (90g) · 6.8g Prot</span>
+              </div>
+            </div>
+
+            <div class="lp-main-metrics-column">
+              <div class="lp-ring-stats-box">
+                <div class="lp-ring-donut-mini">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="12"/>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#3FBE93" stroke-width="12" stroke-dasharray="251.2" stroke-dashoffset="80" stroke-linecap="round"/>
+                  </svg>
+                  <span class="center-val">68%</span>
+                </div>
+                <div class="lp-ring-text-meta">
+                  <h4 id="lp-showcase-protein">Target Protein: 32g / 98g</h4>
+                  <p id="lp-showcase-cals">Densitas Energi: 385 kkal (Tekstur Lunak · Fase 2 Pasca-Bedah)</p>
+                </div>
+              </div>
+
+              <div class="lp-advice-callout" id="lp-showcase-advice">
+                <i data-lucide="lightbulb" style="width:16px;height:16px;color:#3FBE93;flex-shrink:0;margin-top:2px;"></i>
+                <span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp; disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;">
+                <span style="font-size:11.5px;color:#A3D8C8;" id="lp-showcase-conf">
+                  <i data-lucide="check-circle" style="width:12px;height:12px;color:#3FBE93;"></i> Model Confidence: 96%
+                </span>
+                <button class="lp-btn-hero-secondary" style="height:36px;padding:0 14px;font-size:12px;" onclick="app.goToDashboard('overview', 'scan')">
+                  <i data-lucide="camera" style="width:14px;height:14px;"></i>
+                  <span>Coba Scan Foto Piring Sendiri →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. GRID FITUR PENDUKUNG (CARD PUTIH, BORDER TIPIS, DATA KONKRET) -->
+    <section class="lp-section" id="lp-support" style="background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+      <div class="lp-container">
+        <div class="lp-section-head-clean">
+          <h2>Fitur pendukung pemulihan klinis</h2>
+          <p>Dirancang sesuai standar nutrisi medis, terhubung dengan pangan lokal nusantara dan pendampingan keluarga.</p>
+        </div>
+
+        <div class="lp-support-grid">
+          <!-- Card 1: 3 Fase Adaptif -->
+          <div class="lp-support-card">
+            <div class="lp-scard-head">
+              <div class="lp-scard-icon"><i data-lucide="activity" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-title">3 fase protokol klinis adaptif</div>
+            </div>
+            <p class="lp-scard-desc">Menghitung target protein otomatis berdasarkan fase inflamasi akut hingga remodeling jaringan.</p>
+            <div class="lp-scard-data-box">
+              <div class="lp-data-row"><span class="lbl">Fase 1 Inflamasi</span><span class="val">1.2 – 1.5 g / kg BB</span></div>
+              <div class="lp-data-row"><span class="lbl">Fase 2 Proliferasi</span><span class="val">1.5 – 1.8 g / kg BB</span></div>
+              <div class="lp-data-row"><span class="lbl">Contoh BB 65 kg</span><span class="val">Target 98 g / hari</span></div>
+            </div>
+          </div>
+
+          <!-- Card 2: Symptom Filter -->
+          <div class="lp-support-card">
+            <div class="lp-scard-head">
+              <div class="lp-scard-icon"><i data-lucide="sliders" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-title">Symptom-aware texture filter</div>
+            </div>
+            <p class="lp-scard-desc">Menyaring rekomendasi hidangan berdasarkan keluhan mual pasca-anestesi, sulit menelan, atau perut kembung.</p>
+            <div class="lp-scard-data-box">
+              <div class="lp-data-row"><span class="lbl">Keluhan Mual</span><span class="val">Kuah Bening Suhu Ruang</span></div>
+              <div class="lp-data-row"><span class="lbl">Disfagia</span><span class="val">Tekstur Bubur Saring Halus</span></div>
+              <div class="lp-data-row"><span class="lbl">Pantangan</span><span class="val">Bebas Lemak Jenuh &amp; Santan</span></div>
+            </div>
+          </div>
+
+          <!-- Card 3: Pangan Super Nusantara -->
+          <div class="lp-support-card" id="lp-superfoods">
+            <div class="lp-scard-head">
+              <div class="lp-scard-icon"><i data-lucide="leaf" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-title">Ensiklopedia pangan super lokal</div>
+            </div>
+            <p class="lp-scard-desc">150+ database pangan Indonesia kaya albumin, omega-3, dan probiotik yang terjangkau di pasar tradisional.</p>
+            <div class="lp-scard-data-box">
+              <div class="lp-data-row"><span class="lbl">Ikan Gabus (Channa)</span><span class="val">Albumin Tinggi (6.2 g/dL)</span></div>
+              <div class="lp-data-row"><span class="lbl">Ikan Kembung</span><span class="val">Omega-3 EPA/DHA (2.2 g)</span></div>
+              <div class="lp-data-row"><span class="lbl">Tempe Kedelai</span><span class="val">19g Protein &amp; Probiotik</span></div>
+            </div>
+          </div>
+
+          <!-- Card 4: Kalkulator Gizi Mini -->
+          <div class="lp-support-card" id="lp-calculator">
+            <div class="lp-scard-head">
+              <div class="lp-scard-icon"><i data-lucide="calculator" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-title">Kalkulator target gizi instan</div>
+            </div>
+            <p class="lp-scard-desc">Hitung kebutuhan gramatur protein dan kalori harian pasien sesuai berat badan dan tingkat mobilisasi.</p>
+            <div class="lp-scard-data-box">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <input type="range" class="lp-weight-slider" id="lp-calc-weight-slider" min="40" max="110" value="65" oninput="app.updateCalcWeight(this.value)" style="flex:1;">
+                <span id="lp-calc-weight-display" style="font-weight:700;color:var(--teal-900);">65 kg</span>
+              </div>
+              <div class="lp-data-row"><span class="lbl">Target Protein</span><span class="val" id="lp-calc-target-protein">98 g / hari</span></div>
+              <div class="lp-data-row"><span class="lbl">Estimasi Energi</span><span class="val" id="lp-calc-target-cals">~1.950 kkal/hari</span></div>
+            </div>
+          </div>
+
+          <!-- Card 5: Portal Pendamping -->
+          <div class="lp-support-card">
+            <div class="lp-scard-head">
+              <div class="lp-scard-icon"><i data-lucide="shield-plus" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-title">Portal pendamping &amp; telehealth</div>
+            </div>
+            <p class="lp-scard-desc">Bagikan tautan view-only ke keluarga perawat dan unduh rekap kepatuhan 7 hari untuk dokter spesialis.</p>
+            <div class="lp-scard-data-box">
+              <div class="lp-data-row"><span class="lbl">Akses Keluarga</span><span class="val">Shared Link View-Only</span></div>
+              <div class="lp-data-row"><span class="lbl">Rekap Klinis</span><span class="val">Ekspor 1-Klik via WA/PDF</span></div>
+              <div class="lp-data-row"><span class="lbl">Privasi</span><span class="val">Data Lokal di Perangkat Pasien</span></div>
+            </div>
+          </div>
+
+          <!-- Card 6: Ramah Lansia & Offline-First -->
+          <div class="lp-support-card">
+            <div class="lp-scard-head">
+              <div class="lp-scard-icon"><i data-lucide="wifi-off" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-title">Ramah lansia &amp; siap offline</div>
+            </div>
+            <p class="lp-scard-desc">Arsitektur Progressive Web App (PWA) yang tetap berfungsi normal tanpa koneksi internet dengan mode kontras ramah mata.</p>
+            <div class="lp-scard-data-box">
+              <div class="lp-data-row"><span class="lbl">Penyimpanan</span><span class="val">Service Worker Local-First</span></div>
+              <div class="lp-data-row"><span class="lbl">Aksesibilitas</span><span class="val">Font Besar &amp; Kontras Teruji</span></div>
+              <div class="lp-data-row"><span class="lbl">Konektivitas</span><span class="val">100% Fungsional Offline</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. BUKTI / RISET JURNAL PENDUKUNG (BUKAN TESTIMONI PALSU) -->
+    <section class="lp-section" id="lp-evidence">
+      <div class="lp-container">
+        <div class="lp-section-head-clean">
+          <h2>Bukti riset klinis pendukung</h2>
+          <p>Pendekatan nutrisi NutriVision AI mengacu pada publikasi ilmiah gizi klinis dan protokol bedah terkini.</p>
+        </div>
+
+        <div class="lp-evidence-grid">
+          <div class="lp-evidence-card">
+            <div>
+              <span class="lp-evidence-source">Jurnal Gizi Klinis Indonesia</span>
+              <p class="lp-evidence-quote">
+                "Pemberian ekstrak albumin ikan gabus (<em>Channa striata</em>) terbukti secara signifikan meningkatkan kadar albumin serum dan mempercepat proses granulasi serta penutupan luka operasi pasca-laparotomi."
+              </p>
+            </div>
+            <div class="lp-evidence-citation">
+              Penelitian Uji Klinis Terkontrol Pasca-Bedah Bedah Digestif · 2023
+            </div>
+          </div>
+
+          <div class="lp-evidence-card">
+            <div>
+              <span class="lp-evidence-source">ESPEN Guidelines on Surgery</span>
+              <p class="lp-evidence-quote">
+                "Kebutuhan protein pasien pasca-trauma atau tindakan bedah mayor meningkat menjadi 1.5 – 2.0 g/kg berat badan per hari untuk meminimalkan kehilangan massa otot dan menstimulasi sintesis kolagen luka."
+              </p>
+            </div>
+            <div class="lp-evidence-citation">
+              European Society for Clinical Nutrition and Metabolism (ESPEN) · 2022
+            </div>
+          </div>
+
+          <div class="lp-evidence-card">
+            <div>
+              <span class="lp-evidence-source">Asean Journal of Rehabilitation</span>
+              <p class="lp-evidence-quote">
+                "Asam lemak Omega-3 EPA/DHA dari sumber hayati laut lokal (seperti ikan kembung) efektif menurunkan mediator inflamasi IL-6 dan mempercepat pemulihan mobilitas sendi pasca-cedera muskuloskeletal."
+              </p>
+            </div>
+            <div class="lp-evidence-citation">
+              Studi Intervensi Nutrisi Terapi Fisik &amp; Rehabilitasi Medik · 2024
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CTA PENUTUP (TEAL-900 BAND, 1 CORAL BUTTON) -->
+    <section class="lp-cta-band">
+      <div class="lp-container">
+        <h2 class="lp-cta-title">Mulai pantau gizi pemulihan hari ini</h2>
+        <p class="lp-cta-desc">
+          Gunakan segmentasi citra AI dan panduan pangan lokal nusantara — 100% gratis untuk layanan publik dan dapat digunakan offline di perangkat Anda.
+        </p>
+        <div class="lp-cta-actions">
+          <button class="lp-btn-hero-primary" onclick="app.goToDashboard('overview', 'quiz')">
+            <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+            <span>Mulai Diagnostik Pasien</span>
+          </button>
+          <button class="lp-btn-hero-secondary" onclick="app.goToDashboard('overview')">
+            <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
+            <span>Buka Dasbor Langsung</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. FOOTER (MINIMAL, TEAL-900, SMALL TEXT) -->
+    <footer class="lp-footer">
+      <div class="lp-container">
+        <div class="lp-footer-grid">
+          <div class="lp-footer-brand">
+            <div class="lp-brand" onclick="app.goToLanding()">
+              <div class="lp-brand-mark">
+                <i data-lucide="leaf" style="width:18px;height:18px;"></i>
+              </div>
+              <div class="lp-brand-title" style="color:#FFFFFF;">NutriVision AI</div>
+            </div>
+            <p>
+              Platform segmentasi pangan dan panduan gizi pemulihan berbasis Computer Vision untuk kemandirian pasien Indonesia.
+            </p>
+          </div>
+
+          <div class="lp-footer-col">
+            <h4>Fitur Aplikasi</h4>
+            <ul>
+              <li><a onclick="app.goToDashboard('overview')">Dasbor Gizi Harian</a></li>
+              <li><a onclick="app.goToDashboard('overview', 'scan')">Scan Makanan Baru</a></li>
+              <li><a onclick="app.goToDashboard('planner')">Meal Planner Klinis</a></li>
+              <li><a onclick="app.goToDashboard('catalog')">Katalog Pangan Lokal</a></li>
+            </ul>
+          </div>
+
+          <div class="lp-footer-col">
+            <h4>Kolaborasi &amp; Data</h4>
+            <ul>
+              <li><a onclick="app.goToDashboard('caregiver')">Portal Pendamping</a></li>
+              <li><a onclick="app.goToDashboard('community')">Ruang Komunitas</a></li>
+              <li><a onclick="app.goToDashboard('progress')">Laporan Telehealth</a></li>
+              <li><a onclick="app.goToDashboard('profile')">Profil &amp; Diagnostik</a></li>
+            </ul>
+          </div>
+
+          <div class="lp-footer-col">
+            <h4>Akses &amp; Layanan</h4>
+            <ul>
+              <li><a onclick="app.goToLanding()">Halaman Depan (Landing)</a></li>
+              <li><a href="#lp-calculator">Kalkulator Gizi Mini</a></li>
+              <li><a href="#lp-evidence">Bukti Riset Medis</a></li>
+              <li><a onclick="app.openAuthModal('login')">Masuk Akun Pasien</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="lp-footer-bottom">
+          <div>
+            © 2026 <strong>NutriVision AI</strong> — Inovasi Layanan Publik Gizi &amp; Pemulihan Kesehatan.
+          </div>
+          <div>
+            Decision-Support Only · Bukan pengganti saran diagnosis medis dokter profesional.
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+  <!-- /END LANDING PAGE CONTAINER -->
 
 <div class="app-container">
 
@@ -35,15 +469,20 @@
        DESKTOP SIDEBAR NAVIGATION
        ========================================================================= -->
   <aside class="sidebar" aria-label="Sidebar Navigasi">
-    <div class="brand-container">
+    <div class="brand-container" onclick="app.goToLanding()" style="cursor:pointer;" title="Kembali ke Beranda (Landing Page)">
       <div class="brand-mark">
         <i data-lucide="leaf" style="width:22px;height:22px;"></i>
       </div>
       <div class="brand-text">
         <span class="brand-name">NutriVision AI</span>
-        <span class="brand-tag">Public Service Edition</span>
       </div>
     </div>
+
+    <!-- Tombol Navigasi Cepat Kembali ke Landing Page -->
+    <button class="sidebar-back-landing-btn" onclick="app.goToLanding()" title="Kembali ke Halaman Landing Page">
+      <i data-lucide="arrow-left" class="btn-icon-sm"></i>
+      <span>Ke Beranda (Landing)</span>
+    </button>
 
     <nav class="sidebar-nav">
       <button class="nav-item active" data-sec="overview">
@@ -98,6 +537,11 @@
       </div>
 
       <div class="topbar-actions">
+        <!-- Tombol Kembali ke Landing Page di Topbar -->
+        <button class="btn-outline-glass" id="topbar-landing-btn" style="padding:7px 11px;font-size:12.5px;color:var(--teal-800);border-color:var(--teal-200);background:var(--teal-25);display:inline-flex;align-items:center;gap:5px;cursor:pointer;" onclick="app.goToLanding()" title="Kembali ke Beranda Landing Page">
+          <i data-lucide="home" class="btn-icon-sm"></i> <span>Beranda</span>
+        </button>
+
         <!-- Install PWA Button (Visible if browser supports) -->
         <button class="install-pwa-btn" id="btn-install-pwa" title="Install aplikasi NutriVision AI ke HP/Desktop">
           <i data-lucide="download" class="btn-icon-sm"></i> Install Aplikasi
