@@ -98,7 +98,7 @@ class NutriVisionCVEngine {
       ctx.closePath();
 
       // Warna Mask Transparan dengan highlight saat hover
-      ctx.fillStyle = this.hexToRgba(seg.color || '#556B2F', isHovered ? 0.92 : 0.72);
+      ctx.fillStyle = this.hexToRgba(seg.color || '#9EA76B', isHovered ? 0.92 : 0.72);
       ctx.fill();
 
       ctx.lineWidth = isHovered ? 3 : 1.5;

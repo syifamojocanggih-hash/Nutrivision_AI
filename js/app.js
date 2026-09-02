@@ -270,7 +270,7 @@ class NutriVisionApp {
               <div class="profile-avatar" style="background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;flex-shrink:0;">${initials}</div>
               <div style="min-width:0;flex:1;">
                 <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.name}</b>
-                <span style="font-size:10.5px;color:#FFFDD0;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.conditionTitle}</span>
+                <span style="font-size:10.5px;color:#EFE8CA;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.conditionTitle}</span>
               </div>
             </div>
             <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout & Kembali ke Landing Page" aria-label="Keluar / Logout">
@@ -285,7 +285,7 @@ class NutriVisionApp {
               <div class="profile-avatar" style="background:rgba(255,255,255,0.15);color:#fff;font-weight:700;flex-shrink:0;">?</div>
               <div style="min-width:0;flex:1;">
                 <b style="color:#fff;font-size:13px;display:block;">Masuk / Daftar</b>
-                <span style="font-size:10.5px;color:#FFFDD0;display:block;">Klik untuk mulai</span>
+                <span style="font-size:10.5px;color:#EFE8CA;display:block;">Klik untuk mulai</span>
               </div>
             </div>
             <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.openAuthModal('login');" title="Masuk" aria-label="Masuk">
