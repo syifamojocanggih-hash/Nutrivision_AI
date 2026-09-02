@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#04342C">
+  <meta name="theme-color" content="#2563EB">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NutriVision AI">
@@ -19,11 +19,11 @@
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-  <!-- Modern Typography: Fraunces & Inter -->
+  <!-- Modern Typography: Plus Jakarta Sans & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
   <!-- Lucide Icons (Figma / Iconify standard) -->
@@ -667,6 +667,155 @@
          VIEW 1: OVERVIEW DASHBOARD (Fitur Utama & Ringkasan Cepat)
          ========================================================================= -->
       <div class="view-section active-view" id="view-overview">
+
+        <!-- =======================================================================
+           MOBILE APP HOME LAYOUT (MATCHING HEALTHCARE MOCKUP DESIGN)
+           ======================================================================= -->
+        <div class="mobile-app-header-block">
+          <!-- Mobile Top Navigation Bar -->
+          <div class="mob-top-nav">
+            <button class="mob-menu-btn" onclick="app.navigate('overview')" aria-label="Menu" title="Menu">
+              <i data-lucide="menu" style="width:20px;height:20px;"></i>
+            </button>
+            <div class="mob-top-brand">NutriVision AI</div>
+            <button class="mob-notif-btn" onclick="app.toggleSmartNotificationDropdown()" title="Notifikasi">
+              <i data-lucide="bell" style="width:19px;height:19px;"></i>
+              <span class="mob-notif-dot"></span>
+            </button>
+          </div>
+
+          <!-- Mobile Hero Greeting with Doctor Portrait -->
+          <div class="mob-greeting-card">
+            <div class="mob-greeting-text">
+              <span class="mob-greet-sub">Good Morning,</span>
+              <h1 class="mob-greet-title">Take care of <br>your <span class="highlight-blue">health.</span></h1>
+            </div>
+            <div class="mob-doctor-avatar-box">
+              <img src="icons/doctor_avatar.jpg" alt="Doctor Consultation" class="mob-doctor-img" />
+              <div class="mob-doctor-glow"></div>
+            </div>
+          </div>
+
+          <!-- Mobile Search & Filter Pill -->
+          <div class="mob-search-container">
+            <div class="mob-search-bar" onclick="app.navigate('catalog')">
+              <i data-lucide="search" class="mob-search-icon"></i>
+              <input type="text" placeholder="Search doctors, nutrition, symptoms..." readonly class="mob-search-input" />
+              <button class="mob-filter-btn" onclick="event.stopPropagation(); app.navigate('planner');" title="Filter Menu">
+                <i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Blue Gradient Hero Card (Book Appointment / Scan Food AI) -->
+          <div class="mob-hero-banner" onclick="app.openScanModal()">
+            <div class="mob-banner-decor-circle"></div>
+            <div class="mob-banner-content">
+              <h3 class="mob-banner-title">Book Appointment</h3>
+              <p class="mob-banner-desc">Consult with trusted clinical nutritionists anytime.</p>
+              <button class="mob-banner-btn" type="button" onclick="event.stopPropagation(); app.openScanModal();">
+                <span>Book Now</span>
+                <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+              </button>
+            </div>
+            <div class="mob-banner-illustration">
+              <div class="mob-cal-card">
+                <div class="mob-cal-header">
+                  <span class="mob-cal-dot"></span>
+                  <span class="mob-cal-dot"></span>
+                </div>
+                <div class="mob-cal-grid">
+                  <span></span><span></span><span></span>
+                  <span></span><span></span><span></span>
+                </div>
+                <div class="mob-cal-badge">
+                  <i data-lucide="check" style="width:14px;height:14px;stroke-width:3;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile "Our Services" Grid -->
+          <div class="mob-section-head">
+            <h3>Our Services</h3>
+            <a onclick="app.navigate('catalog')" class="mob-view-all">View all <i data-lucide="chevron-right" style="width:14px;height:14px;"></i></a>
+          </div>
+
+          <div class="mob-services-grid">
+            <div class="mob-service-card" onclick="app.openScanModal()">
+              <div class="mob-service-icon-box blue">
+                <i data-lucide="heart" style="width:20px;height:20px;"></i>
+              </div>
+              <b class="mob-service-title">Consultation</b>
+              <span class="mob-service-sub">Talk to AI / doctor</span>
+            </div>
+
+            <div class="mob-service-card" onclick="app.openScanModal()">
+              <div class="mob-service-icon-box cyan">
+                <i data-lucide="flask-conical" style="width:20px;height:20px;"></i>
+              </div>
+              <b class="mob-service-title">Lab Tests</b>
+              <span class="mob-service-sub">Scan plate easily</span>
+            </div>
+
+            <div class="mob-service-card" onclick="app.navigate('planner')">
+              <div class="mob-service-icon-box indigo">
+                <i data-lucide="pill" style="width:20px;height:20px;"></i>
+              </div>
+              <b class="mob-service-title">Medication</b>
+              <span class="mob-service-sub">Get meal plans</span>
+            </div>
+
+            <div class="mob-service-card" onclick="app.navigate('progress')">
+              <div class="mob-service-icon-box emerald">
+                <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
+              </div>
+              <b class="mob-service-title">Health Checkup</b>
+              <span class="mob-service-sub">Full body tracking</span>
+            </div>
+          </div>
+
+          <!-- Mobile "Upcoming Appointment" Card -->
+          <div class="mob-section-head" style="margin-top:20px;">
+            <h3>Upcoming Appointment</h3>
+          </div>
+
+          <div class="mob-appointment-card" onclick="app.navigate('progress')">
+            <div class="mob-app-doctor-row">
+              <div class="mob-app-avatar">
+                <img src="icons/doctor_avatar.jpg" alt="Dr. James Carter" />
+              </div>
+              <div class="mob-app-info">
+                <b class="mob-app-name">Dr. James Carter</b>
+                <span class="mob-app-role">Cardiologist &amp; Clinical Nutrition</span>
+                <div class="mob-app-datetime">
+                  <span><i data-lucide="calendar" style="width:12px;height:12px;"></i> May 24, 2026</span>
+                  <span><i data-lucide="clock" style="width:12px;height:12px;"></i> 10:30 AM</span>
+                </div>
+              </div>
+              <span class="mob-status-pill">Confirmed</span>
+            </div>
+          </div>
+
+          <!-- Mobile "Health Insights" Section -->
+          <div class="mob-section-head" style="margin-top:20px;">
+            <h3>Health Insights</h3>
+            <a onclick="app.navigate('community')" class="mob-view-all">View all <i data-lucide="chevron-right" style="width:14px;height:14px;"></i></a>
+          </div>
+
+          <div class="mob-insight-card" onclick="app.navigate('community')">
+            <div class="mob-insight-content">
+              <h4 class="mob-insight-title">How to maintain a healthy heart &amp; muscle recovery</h4>
+              <span class="mob-insight-meta">5 min read</span>
+            </div>
+            <div class="mob-insight-img-box">
+              <img src="icons/heart_3d.jpg" alt="Healthy Heart" class="mob-insight-heart-img" />
+            </div>
+          </div>
+
+        </div>
+        <!-- /END MOBILE APP HOME LAYOUT -->
+
         <div class="dashboard-grid">
 
           <!-- HERO CARD: COMPUTER VISION FOOD SEGMENTATION (FR-01, FR-02, FR-03, FR-07) -->
@@ -687,20 +836,31 @@
               </div>
             </div>
 
-            <!-- Interactive Segmentation Plate Visualization -->
+            <!-- Interactive Segmentation Plate Visualization (Clean 2-Column Split) -->
             <div class="plate-segmentation-showcase">
-              <div class="plate-canvas-box">
-                <canvas id="overview-plate-canvas"></canvas>
-              </div>
-
-              <div class="segment-legend-grid">
-                <div id="overview-segment-legend">
+              <!-- BAGIAN KIRI: Visual Diagram Piring & Persentase Ringkas -->
+              <div class="plate-diagram-col">
+                <div class="plate-canvas-box">
+                  <canvas id="overview-plate-canvas"></canvas>
+                </div>
+                <div class="plate-diagram-stats" id="overview-diagram-stats">
                   <!-- Populated dynamically via JS -->
                 </div>
+              </div>
+
+              <!-- BAGIAN KANAN: List Persenan & Breakdown Segmen Pangan -->
+              <div class="segment-legend-grid">
+                <div class="segment-legend-header">
+                  <span class="legend-hdr-title">Breakdown Komposisi &amp; Keyakinan AI</span>
+                  <span class="legend-hdr-badge" id="overview-total-badge">4 Komponen</span>
+                </div>
+                <div id="overview-segment-legend">
+                  <!-- Populated dynamically via JS with percentage progress bars -->
+                </div>
                 <div class="model-confidence-bar">
-                  <span id="overview-conf-note">Tingkat keyakinan model: 88% · Format rentang gizi aktif.</span>
+                  <span id="overview-conf-note">Tingkat keyakinan model: 88% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.</span>
                   <button class="btn-sm-teal"
-                    style="font-size:10.5px;padding:3px 8px;display:inline-flex;align-items:center;gap:4px;"
+                    style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;"
                     onclick="app.openScanModal()">
                     <i data-lucide="edit-3" class="btn-icon-sm"></i> Koreksi Manual
                   </button>

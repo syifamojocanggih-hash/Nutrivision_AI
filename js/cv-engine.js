@@ -73,10 +73,10 @@ class NutriVisionCVEngine {
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fillStyle = this.currentScan.plateColor || '#4A0E13';
+    ctx.fillStyle = this.currentScan.plateColor || '#0F172A';
     ctx.fill();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = 'rgba(250, 154, 144, 0.55)';
+    ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
     ctx.stroke();
     ctx.clip(); // Clip di dalam lingkaran piring
 
@@ -98,7 +98,7 @@ class NutriVisionCVEngine {
       ctx.closePath();
 
       // Warna Mask Transparan dengan highlight saat hover
-      ctx.fillStyle = this.hexToRgba(seg.color || '#3FBE93', isHovered ? 0.92 : 0.72);
+      ctx.fillStyle = this.hexToRgba(seg.color || '#2563EB', isHovered ? 0.92 : 0.72);
       ctx.fill();
 
       ctx.lineWidth = isHovered ? 3 : 1.5;
@@ -120,20 +120,20 @@ class NutriVisionCVEngine {
 
     // 3. Lingkaran Fokus Tengah (Computer Vision Lens Core)
     ctx.beginPath();
-    ctx.arc(cx, cy, radius * 0.22, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(4, 52, 44, 0.92)';
+    ctx.arc(cx, cy, radius * 0.24, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(63, 190, 147, 0.6)';
+    ctx.strokeStyle = 'rgba(96, 165, 250, 0.7)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = '#EAF6F1';
-    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 11px Plus Jakarta Sans, Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('CV MASK', cx, cy - 2);
-    ctx.fillStyle = '#9FE1CB';
-    ctx.font = '8.5px Inter, sans-serif';
-    ctx.fillText(`${this.currentScan.confidenceOverall || 85}% Conf`, cx, cy + 10);
+    ctx.fillText(`${this.currentScan.confidenceOverall || 88}%`, cx, cy - 1);
+    ctx.fillStyle = '#93C5FD';
+    ctx.font = '8px Plus Jakarta Sans, Inter, sans-serif';
+    ctx.fillText('AI MATCH', cx, cy + 10);
 
     ctx.restore();
   }

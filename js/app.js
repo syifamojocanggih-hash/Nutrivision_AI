@@ -1123,27 +1123,64 @@ class NutriVisionApp {
     }
   }
 
-  // Render Piring Segmentasi di Dashboard Utama
+  // Render Piring Segmentasi di Dashboard Utama (Simple 2-Column Split)
   renderOverviewPlate() {
     const canvas = document.getElementById('overview-plate-canvas');
     if (canvas) {
       cvEngine.renderCanvas(canvas, 170, 170, true);
     }
 
-    // Render Legend
+    if (!cvEngine.currentScan) return;
+    const segments = cvEngine.currentScan.segments || [];
+    const totalGrams = segments.reduce((sum, s) => sum + (s.portionGrams || 0), 0) || 1;
+    const totalProtMin = segments.reduce((sum, s) => sum + (s.protein ? s.protein[0] : 0), 0);
+    const totalProtMax = segments.reduce((sum, s) => sum + (s.protein ? s.protein[1] : 0), 0);
+    const overallConf = cvEngine.currentScan.confidenceOverall || 88;
+
+    // 1. Render Left Column Diagram Stats
+    const diagramStatsBox = document.getElementById('overview-diagram-stats');
+    if (diagramStatsBox) {
+      diagramStatsBox.innerHTML = `
+        <div class="plate-stat-main">
+          <span class="stat-big-val">${overallConf}%</span>
+          <span class="stat-big-lbl">AI Detection Match</span>
+        </div>
+        <div class="plate-mini-pills">
+          <span class="p-pill"><i data-lucide="scale" style="width:12px;height:12px;"></i> ${totalGrams}g Total</span>
+          <span class="p-pill"><i data-lucide="zap" style="width:12px;height:12px;"></i> ${totalProtMin.toFixed(0)}-${totalProtMax.toFixed(0)}g Protein</span>
+        </div>
+      `;
+    }
+
+    const totalBadge = document.getElementById('overview-total-badge');
+    if (totalBadge) {
+      totalBadge.textContent = `${segments.length} Komponen`;
+    }
+
+    // 2. Render Right Column Segment Legend with Clean Percentage Bars
     const legendBox = document.getElementById('overview-segment-legend');
-    if (legendBox && cvEngine.currentScan) {
-      legendBox.innerHTML = cvEngine.currentScan.segments.map(seg => {
+    if (legendBox) {
+      legendBox.innerHTML = segments.map(seg => {
+        const portionPct = Math.round(((seg.portionGrams || 0) / totalGrams) * 100);
+        const isHovered = (cvEngine.activeHoverSegmentId === seg.id);
         return `
-          <div class="segment-row" 
+          <div class="segment-row ${isHovered ? 'hovered' : ''}" 
                onmouseenter="cvEngine.activeHoverSegmentId='${seg.id}'; app.renderOverviewPlate();" 
                onmouseleave="cvEngine.activeHoverSegmentId=null; app.renderOverviewPlate();">
-            <span class="segment-swatch" style="background: ${seg.color}"></span>
-            <span class="segment-name">
-              ${seg.name}
-              <span class="confidence-pill">${seg.confidence}%</span>
-            </span>
-            <span class="segment-values">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot</span>
+            <div class="segment-row-top">
+              <div class="segment-row-left">
+                <span class="segment-swatch" style="background: ${seg.color}"></span>
+                <span class="segment-name">${seg.name}</span>
+              </div>
+              <div class="segment-row-right">
+                <span class="segment-portion-pct">${portionPct}% Porsi</span>
+                <span class="confidence-pill">${seg.confidence}%</span>
+                <span class="segment-values">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot</span>
+              </div>
+            </div>
+            <div class="segment-bar-track">
+              <div class="segment-bar-fill" style="width: ${portionPct}%; background: ${seg.color};"></div>
+            </div>
           </div>
         `;
       }).join('');
@@ -1151,8 +1188,8 @@ class NutriVisionApp {
 
     // Update Confidence Note
     const confNote = document.getElementById('overview-conf-note');
-    if (confNote && cvEngine.currentScan) {
-      confNote.textContent = `Tingkat keyakinan model: ${cvEngine.currentScan.confidenceOverall || 88}% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.`;
+    if (confNote) {
+      confNote.textContent = `Tingkat keyakinan model: ${overallConf}% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.`;
     }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
