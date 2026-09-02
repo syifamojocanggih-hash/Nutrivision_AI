@@ -234,7 +234,7 @@ class NutriVisionApp {
     // 1. Update Topbar Greeting
     const greetingEl = document.querySelector('.topbar-greeting h1');
     if (greetingEl) {
-      greetingEl.innerHTML = hasData 
+      greetingEl.innerHTML = hasData
         ? `Selamat siang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`
         : `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>`;
     }
@@ -414,6 +414,10 @@ class NutriVisionApp {
       targetSection.classList.add('active-view');
     }
 
+    if (sectionId === 'catalog') {
+      this.renderFoodCatalog();
+    }
+
     // Update Desktop Nav Active State
     document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.sec === sectionId);
@@ -512,7 +516,7 @@ class NutriVisionApp {
     if (window.history.pushState) {
       window.history.pushState(null, null, `#${sectionId}`);
     }
-    
+
     if (triggerModal === 'quiz') {
       setTimeout(() => this.openQuizModal(1), 120);
     } else if (triggerModal === 'scan') {
@@ -849,12 +853,12 @@ class NutriVisionApp {
 
   goToQuizStep(step) {
     this.currentQuizStep = step;
-    
+
     // Update progress indicator
     const stepIndicator = document.getElementById('quiz-step-indicator');
     const stepTitle = document.getElementById('quiz-step-title');
     const progressBar = document.getElementById('quiz-progress-bar');
-    
+
     const titles = [
       'Identitas & Akun Pasien',
       'Sasaran Jalur Pemulihan',
@@ -931,7 +935,7 @@ class NutriVisionApp {
     const weight = parseFloat(document.getElementById('onboard-weight')?.value) || 65;
     const height = parseFloat(document.getElementById('onboard-height')?.value) || 170;
     const bmi = (weight / ((height / 100) * (height / 100))).toFixed(1);
-    
+
     let cat = 'Normal';
     if (bmi < 18.5) cat = 'Kurang (Underweight)';
     else if (bmi <= 24.9) cat = 'Ideal (Normal)';
@@ -1369,28 +1373,122 @@ class NutriVisionApp {
   }
 
   // =========================================================================
-  // KATALOG BAHAN MAKANAN LOKAL INDONESIA (FR-08)
+  // OUR POPULAR MENU / KATALOG GIZI MAKANAN MODERN (MATCHING MOCKUP)
   // =========================================================================
+  filterCatalogCategory(category, btnElement) {
+    this.activeCatalogCategory = category;
+    document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => b.classList.remove('active'));
+    if (btnElement) {
+      btnElement.classList.add('active');
+    }
+    const searchVal = document.getElementById('food-catalog-search')?.value || '';
+    this.renderFoodCatalog(searchVal);
+  }
+
+  scrollCatalogGrid(direction) {
+    const grid = document.getElementById('food-catalog-grid');
+    if (grid) {
+      grid.scrollBy({ left: direction * 320, behavior: 'smooth' });
+    }
+  }
+
+  toggleFavoriteFood(foodId, event) {
+    if (event) event.stopPropagation();
+    if (!this.favoriteFoods) this.favoriteFoods = new Set();
+    if (this.favoriteFoods.has(foodId)) {
+      this.favoriteFoods.delete(foodId);
+      this.showToast('Dihapus dari favorit.');
+    } else {
+      this.favoriteFoods.add(foodId);
+      this.showToast('Disimpan ke menu favorit!');
+    }
+    const searchVal = document.getElementById('food-catalog-search')?.value || '';
+    this.renderFoodCatalog(searchVal);
+  }
+
   renderFoodCatalog(searchTerm = '') {
     const grid = document.getElementById('food-catalog-grid');
     if (!grid) return;
 
+    if (!this.activeCatalogCategory) this.activeCatalogCategory = 'all';
+    if (!this.favoriteFoods) this.favoriteFoods = new Set();
+
     const term = searchTerm.toLowerCase().trim();
     const items = NUTRIVISION_DATA.indonesianFoodDatabase.filter(food => {
-      return food.name.toLowerCase().includes(term) || food.category.toLowerCase().includes(term);
+      const matchCat = (this.activeCatalogCategory === 'all') || (food.category === this.activeCatalogCategory);
+      const matchSearch = !term || food.name.toLowerCase().includes(term) || (food.subtitle && food.subtitle.toLowerCase().includes(term)) || (food.category && food.category.toLowerCase().includes(term));
+      return matchCat && matchSearch;
     });
 
+    if (items.length === 0) {
+      grid.innerHTML = `
+        <div class="catalog-empty-state">
+          <i data-lucide="search-x" style="width:40px;height:40px;color:#94A3B8;margin-bottom:8px;"></i>
+          <h4>Menu tidak ditemukan</h4>
+          <p>Coba kata kunci lain atau pilih kategori menu di atas.</p>
+        </div>
+      `;
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      return;
+    }
+
     grid.innerHTML = items.map(food => {
+      const isFav = this.favoriteFoods.has(food.id);
+      const rating = (food.rating || 5.0).toFixed(1);
+      const subtitle = food.subtitle || `${food.defaultPortionGrams}g · ${food.proteinRange[0]}-${food.proteinRange[1]}g Prot · ${food.calsRange[0]}-${food.calsRange[1]} kkal`;
+      const clinicalTag = food.clinicalIndication || 'Pemulihan Klinis';
+      const bappenasRef = food.bappenasRef || 'Bapanas RI';
+
       return `
-        <div class="catalog-card" onclick="app.addCatalogItemToScan('${food.id}')" title="Klik untuk tambahkan ke piring scan">
-          <div class="name">${food.name}</div>
-          <div class="portion">Porsi standar: ${food.defaultPortionGrams}g · ${food.price}</div>
-          <div class="macros">
-            ${food.proteinRange[0]}-${food.proteinRange[1]}g Prot · ${food.calsRange[0]}-${food.calsRange[1]} kkal
+        <div class="popular-food-card" onclick="app.addCatalogItemToScan('${food.id}')" title="Klik untuk tambahkan ke piring scan">
+          <!-- Floating Round Dish Image & Rating -->
+          <div class="food-card-top">
+            <div class="food-dish-plate-wrap">
+              <img src="${food.image}" alt="${food.name}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
+            </div>
+            <div class="food-rating-badge">
+              <span class="rating-num">${rating}</span>
+              <i data-lucide="star" class="star-icon"></i>
+            </div>
           </div>
-          <button class="btn-sm-teal" style="margin-top:6px;font-size:11px;display:inline-flex;align-items:center;gap:4px;">
-            <i data-lucide="plus" class="btn-icon-sm"></i> Tambah ke Piring
+
+          <!-- Favorite Heart Button -->
+          <button class="food-fav-btn ${isFav ? 'active' : ''}" 
+                  onclick="app.toggleFavoriteFood('${food.id}', event)" 
+                  title="${isFav ? 'Hapus favorit' : 'Favoritkan menu'}">
+            <i data-lucide="heart" class="fav-icon"></i>
           </button>
+
+          <!-- Card Content -->
+          <div class="food-card-body">
+            <div class="food-tag-row">
+              <span class="food-clinical-tag">
+                <i data-lucide="shield-check" style="width:11px;height:11px;"></i>
+                ${clinicalTag}
+              </span>
+            </div>
+            <h4 class="food-card-title">${food.name}</h4>
+            <p class="food-card-sub">${subtitle}</p>
+
+            <div class="food-macro-pills-row">
+              <span class="macro-pill-item prot">🥩 ${food.proteinRange[0]}-${food.proteinRange[1]}g Prot</span>
+              <span class="macro-pill-item cal">⚡ ${food.calsRange[0]}-${food.calsRange[1]} kkal</span>
+            </div>
+
+            <div class="food-card-footer">
+              <button class="food-cart-btn" 
+                      onclick="event.stopPropagation(); app.addCatalogItemToScan('${food.id}');" 
+                      title="Tambah ke Piring Scan">
+                <i data-lucide="plus" class="cart-icon"></i>
+              </button>
+              <div class="food-card-price-group">
+                <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
+                <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran">${bappenasRef}</span>
+              </div>
+            </div>
+          </div>
         </div>
       `;
     }).join('');
@@ -1407,7 +1505,7 @@ class NutriVisionApp {
     cvEngine.addSegment(food, food.defaultPortionGrams);
     this.renderScanModalUI();
     this.renderOverviewPlate();
-    this.showToast(`Ditambahkan: ${food.name} (${food.defaultPortionGrams}g)`);
+    this.showToast(`Ditambahkan ke piring: ${food.name} (${food.defaultPortionGrams}g)`);
   }
 
   // =========================================================================
@@ -1857,8 +1955,9 @@ class NutriVisionApp {
 
 // Inisialisasi Instance Aplikasi
 const app = new NutriVisionApp();
+window.app = app;
 
-window.refreshIcons = function() {
+window.refreshIcons = function () {
   if (window.lucide && typeof window.lucide.createIcons === 'function') {
     window.lucide.createIcons();
   }

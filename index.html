@@ -1047,21 +1047,67 @@
       <!-- =========================================================================
          VIEW 3: KATALOG PANGAN LOKAL INDONESIA (FR-08)
          ========================================================================= -->
+      <!-- =========================================================================
+         VIEW 3: OUR POPULAR MENU / KATALOG GIZI MAKANAN & HARGA BAPPENAS
+         ========================================================================= -->
       <div class="view-section" id="view-catalog">
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2>Katalog Bahan Pangan Lokal Indonesia</h2>
-              <div class="card-subtitle">Referensi komposisi gizi, porsi standar, dan perkiraan harga pasar</div>
+        <div class="card popular-menu-card">
+          <!-- Header Row: Title on Left, Category Icon Pills on Right -->
+          <div class="popular-menu-header">
+            <div class="popular-menu-title-group">
+              <div class="bappenas-source-badge">
+                <i data-lucide="badge-check" style="width:14px;height:14px;"></i>
+                <span>Standar TKPI Kemenkes RI · Acuan Harga Panel Pangan Bappenas / Bapanas</span>
+              </div>
+              <h2 class="popular-menu-heading">Rekomendasi Pangan &amp; Menu Pemulihan</h2>
+              <p class="popular-menu-sub">Pilihan bahan pangan lokal dan menu bernutrisi tinggi untuk pemulihan jaringan, pasca-operasi, fisioterapi, dan kebugaran dengan estimasi harga pasar eceran nasional.</p>
+            </div>
+
+            <!-- Category Icon Pills -->
+            <div class="popular-category-pills">
+              <button class="cat-pill-btn active" data-category="all" onclick="app.filterCatalogCategory('all', this)" title="Semua Menu">
+                <i data-lucide="layout-grid" style="width:16px;height:16px;"></i>
+                <span>Semua</span>
+              </button>
+              <button class="cat-pill-btn" data-category="protein-animal" onclick="app.filterCatalogCategory('protein-animal', this)" title="Lauk Hewani & Albumin">
+                <i data-lucide="fish" style="width:16px;height:16px;"></i>
+                <span>Lauk Hewani</span>
+              </button>
+              <button class="cat-pill-btn" data-category="plant-veg" onclick="app.filterCatalogCategory('plant-veg', this)" title="Lauk Nabati & Sayur">
+                <i data-lucide="leaf" style="width:16px;height:16px;"></i>
+                <span>Nabati &amp; Sayur</span>
+              </button>
+              <button class="cat-pill-btn" data-category="carbs" onclick="app.filterCatalogCategory('carbs', this)" title="Makanan Pokok / Karbo">
+                <i data-lucide="soup" style="width:16px;height:16px;"></i>
+                <span>Karbohidrat</span>
+              </button>
+              <button class="cat-pill-btn" data-category="drinks-fruits" onclick="app.filterCatalogCategory('drinks-fruits', this)" title="Minuman & Buah Vitamin C">
+                <i data-lucide="cup-soda" style="width:16px;height:16px;"></i>
+                <span>Minuman &amp; Buah</span>
+              </button>
             </div>
           </div>
 
-          <div class="catalog-search-bar">
-            <input type="text" class="input-search" id="food-catalog-search"
-              placeholder="Cari bahan makanan (cth: ikan gabus, tahu, bayam, telur)...">
+          <!-- Search Bar & Navigation Control Row -->
+          <div class="popular-menu-toolbar">
+            <div class="popular-search-box">
+              <i data-lucide="search" class="popular-search-icon"></i>
+              <input type="text" class="popular-search-input" id="food-catalog-search"
+                placeholder="Cari pangan pemulihan (ikan gabus, telur, tempe, bayam, jeruk, dada ayam)..."
+                oninput="app.renderFoodCatalog(this.value)">
+            </div>
+            <div class="popular-nav-arrows">
+              <button class="popular-arrow-btn" onclick="app.scrollCatalogGrid(-1)" title="Previous">
+                <i data-lucide="chevron-left" style="width:18px;height:18px;"></i>
+              </button>
+              <button class="popular-arrow-btn" onclick="app.scrollCatalogGrid(1)" title="Next">
+                <i data-lucide="chevron-right" style="width:18px;height:18px;"></i>
+              </button>
+            </div>
           </div>
 
-          <div class="catalog-grid" id="food-catalog-grid">
+          <!-- Catalog Cards Grid (Floating Dish Cutout Showcase) -->
+          <div class="popular-catalog-grid" id="food-catalog-grid">
             <!-- Populated dynamically via JS -->
           </div>
         </div>
