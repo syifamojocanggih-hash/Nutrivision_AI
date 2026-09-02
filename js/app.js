@@ -542,17 +542,17 @@ class NutriVisionApp {
         targetProt: '32g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Tinggi Albumin)</span>',
         cals: '385 kkal <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Tekstur Lunak)</span>',
         advice: '<strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi & disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.',
-        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
+        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
         tag2: '<i data-lucide="soup" style="width:13px;height:13px;color:#EB8D70;"></i><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
         tag3: '<i data-lucide="egg" style="width:13px;height:13px;color:#EF9F27;"></i><span>Telur Tim Sutra (90g) · 6.8g Prot</span>',
-        polyColor: '#3FBE93'
+        polyColor: '#9EA76B'
       },
       'preset-standard-nasi-ayam': {
         conf: '91%',
         targetProt: '38g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Padat Gizi)</span>',
         cals: '465 kkal <span style="font-size:11px;font-weight:500;color:var(--coral-500);">(Energi Seimbang)</span>',
         advice: '<strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot & pembentukan enzim perbaikan jaringan.',
-        tag1: '<i data-lucide="drumstick" style="width:13px;height:13px;color:#3FBE93;"></i><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
+        tag1: '<i data-lucide="drumstick" style="width:13px;height:13px;color:#9EA76B;"></i><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
         tag2: '<i data-lucide="wheat" style="width:13px;height:13px;color:#EB8D70;"></i><span>Nasi Putih (175g) · 52g Karbo</span>',
         tag3: '<i data-lucide="salad" style="width:13px;height:13px;color:#EF9F27;"></i><span>Tumis Kangkung &amp; Telur · Vit A/C</span>',
         polyColor: '#D85A30'
@@ -562,17 +562,17 @@ class NutriVisionApp {
         targetProt: '41g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Kaya Omega-3)</span>',
         cals: '430 kkal <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Hemat &amp; Bergizi)</span>',
         advice: '<strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.',
-        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
+        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
         tag2: '<i data-lucide="leaf" style="width:13px;height:13px;color:#EB8D70;"></i><span>Tempe Kukus (80g) · 15g Prot</span>',
         tag3: '<i data-lucide="salad" style="width:13px;height:13px;color:#EF9F27;"></i><span>Sayur Bening Bayam · Zat Besi</span>',
-        polyColor: '#3FBE93'
+        polyColor: '#9EA76B'
       },
       'preset-salmon-quinoa': {
         conf: '95%',
         targetProt: '36g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Antioksidan Tinggi)</span>',
         cals: '420 kkal <span style="font-size:11px;font-weight:500;color:var(--coral-500);">(Densitas Tinggi)</span>',
         advice: '<strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.',
-        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i><span>Fillet Salmon (130g) · 28g Prot</span>',
+        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i><span>Fillet Salmon (130g) · 28g Prot</span>',
         tag2: '<i data-lucide="salad" style="width:13px;height:13px;color:#EB8D70;"></i><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
         tag3: '<i data-lucide="wheat" style="width:13px;height:13px;color:#EF9F27;"></i><span>Beras Merah (100g) · 23g Karbo</span>',
         polyColor: '#D85A30'
@@ -1901,6 +1901,179 @@ class NutriVisionApp {
   }
 
   // Setup Event Listeners
+
+  // =========================================================================
+  // SUPABASE CLOUD & DATABASE INSPECTOR METHODS
+  // =========================================================================
+  openDatabaseSyncModal() {
+    const modal = document.getElementById('modal-db-sync');
+    if (!modal) return;
+
+    // Pre-fill existing config if any
+    const urlInput = document.getElementById('sb-url-input');
+    const keyInput = document.getElementById('sb-key-input');
+    if (urlInput) urlInput.value = window.SUPABASE_CONFIG?.url || '';
+    if (keyInput) keyInput.value = window.SUPABASE_CONFIG?.anonKey || '';
+
+    modal.classList.add('open');
+    this.updateSupabaseStatusUI();
+    if (window.refreshIcons) window.refreshIcons();
+  }
+
+  closeDatabaseSyncModal() {
+    const modal = document.getElementById('modal-db-sync');
+    if (modal) modal.classList.remove('open');
+  }
+
+  updateSupabaseStatusUI() {
+    const isConfigured = window.SUPABASE_CONFIG?.isConfigured;
+    const isConnected = this.db?.isSupabaseConnected;
+    const dot = document.getElementById('db-pulse-dot');
+    const text = document.getElementById('db-status-text');
+    const topbarDot = document.getElementById('topbar-db-dot');
+    const lpDot = document.getElementById('lp-db-dot');
+
+    // Helper: reset all pulse classes then apply one
+    const setPulse = (el, cls) => {
+      if (!el) return;
+      el.classList.remove('connected', 'checking');
+      if (cls) el.classList.add(cls);
+    };
+
+    if (isConnected && isConfigured) {
+      setPulse(dot, 'connected');
+      if (text) {
+        let host = '';
+        try { host = ' · ' + new URL(window.SUPABASE_CONFIG.url).hostname; } catch(e) {}
+        text.innerHTML = `<span style="color:#16A34A;font-weight:700;">Terhubung ke Supabase</span>${host}`;
+      }
+      if (topbarDot) { topbarDot.style.background = '#22C55E'; topbarDot.title = 'Supabase Cloud Aktif'; }
+      if (lpDot)     { lpDot.style.background = '#22C55E'; }
+    } else if (isConfigured) {
+      setPulse(dot, 'checking');
+      if (text) text.innerHTML = '<span style="color:#B45309;font-weight:700;">Kredensial Tersimpan</span> — Belum diverifikasi';
+      if (topbarDot) { topbarDot.style.background = '#F59E0B'; topbarDot.title = 'Supabase belum diverifikasi'; }
+      if (lpDot)     { lpDot.style.background = '#F59E0B'; }
+    } else {
+      setPulse(dot, null);
+      if (text) text.innerHTML = '<span style="color:#687346;font-weight:600;">Mode Offline</span> — IndexedDB Lokal Aktif';
+      if (topbarDot) { topbarDot.style.background = '#94A3B8'; topbarDot.title = 'Mode Offline (IndexedDB)'; }
+      if (lpDot)     { lpDot.style.background = '#94A3B8'; }
+    }
+  }
+
+  async saveSupabaseSettings(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const url = document.getElementById('sb-url-input')?.value?.trim();
+    const key = document.getElementById('sb-key-input')?.value?.trim();
+
+    if (!url || !key) {
+      this.showToast('Silakan isi Project URL dan Anon Key Supabase.');
+      return;
+    }
+
+    window.SUPABASE_CONFIG.save(url, key);
+    this.db.initSupabaseClient();
+    this.showToast('Menghubungkan ke Supabase...');
+
+    const res = await this.db.testSupabaseConnection(url, key);
+    if (res.success) {
+      this.db.isSupabaseConnected = true;
+      this.updateSupabaseStatusUI();
+      this.showToast('✅ Berhasil terhubung ke Supabase Cloud!');
+    } else {
+      this.db.isSupabaseConnected = false;
+      this.updateSupabaseStatusUI();
+      alert('⚠️ Peringatan Supabase:\n' + res.message + '\n\nTips: Pastikan SQL schema sudah dijalankan di Supabase SQL Editor.');
+    }
+  }
+
+  resetSupabaseConfig() {
+    if (confirm('Reset kredensial Supabase dan kembali ke IndexedDB lokal murni?')) {
+      window.SUPABASE_CONFIG.reset();
+      this.db.initSupabaseClient();
+      const urlInput = document.getElementById('sb-url-input');
+      const keyInput = document.getElementById('sb-key-input');
+      if (urlInput) urlInput.value = '';
+      if (keyInput) keyInput.value = '';
+      this.updateSupabaseStatusUI();
+      this.showToast('Kredensial Supabase di-reset. Kembali ke mode IndexedDB.');
+    }
+  }
+
+  async testSupabaseCloud(showAlert = true) {
+    const url = document.getElementById('sb-url-input')?.value?.trim() || window.SUPABASE_CONFIG?.url;
+    const key = document.getElementById('sb-key-input')?.value?.trim() || window.SUPABASE_CONFIG?.anonKey;
+
+    if (!url || !key) {
+      this.showToast('URL atau Anon Key Supabase belum diisi.');
+      return;
+    }
+
+    this.showToast('Menguji koneksi Supabase...');
+    const res = await this.db.testSupabaseConnection(url, key);
+
+    if (res.success) {
+      this.db.isSupabaseConnected = true;
+      this.updateSupabaseStatusUI();
+      if (showAlert) alert('✅ Sukses! Database Supabase siap menerima data dari localhost.');
+    } else {
+      this.db.isSupabaseConnected = false;
+      this.updateSupabaseStatusUI();
+      if (showAlert) alert('❌ Gagal terhubung:\n' + res.message);
+    }
+  }
+
+  async syncAllDataToSupabase() {
+    if (!window.SUPABASE_CONFIG?.isConfigured || !this.db.supabase) {
+      this.showToast('Silakan simpan kredensial Supabase terlebih dahulu.');
+      return;
+    }
+
+    const btn = document.getElementById('btn-sync-all-supabase');
+    if (btn) btn.disabled = true;
+    this.showToast('Mengunggah seluruh data lokal ke Supabase...');
+
+    try {
+      const res = await this.db.syncAllToSupabase();
+      this.showToast('✅ Berhasil upload ' + res.syncedUsers + ' akun & ' + res.syncedMeals + ' riwayat ke Supabase!');
+      alert('🎉 Sinkronisasi Selesai!\n\n- ' + res.syncedUsers + ' Akun Pengguna disinkronkan ke tabel "users"\n- ' + res.syncedMeals + ' Log Makanan disinkronkan ke tabel "meals"\n\nSilakan cek tabel di Supabase Dashboard (Table Editor).');
+    } catch (err) {
+      alert('Gagal sinkronisasi: ' + err.message);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  copySupabaseSqlSchema() {
+    const el = document.getElementById('db-sql-snippet');
+    const sql = el?.innerText || el?.textContent;
+    if (sql) {
+      navigator.clipboard.writeText(sql).then(() => {
+        const btnText = document.getElementById('copy-sql-text');
+        if (btnText) {
+          btnText.textContent = 'Tersalin ✓';
+          setTimeout(() => { btnText.textContent = 'Salin'; }, 2500);
+        }
+        this.showToast('✅ SQL Schema berhasil disalin ke clipboard!');
+      }).catch(() => {
+        this.showToast('Gagal menyalin otomatis, silakan copy manual teks SQL.');
+      });
+    }
+  }
+
+  toggleKeyVisibility() {
+    const input = document.getElementById('sb-key-input');
+    const icon = document.getElementById('db-key-eye-icon');
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    if (icon) {
+      icon.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
+      if (window.lucide) window.lucide.createIcons({ nodes: [icon.closest('.db-input-toggle-vis')] });
+    }
+  }
+
   setupEventListeners() {
     // Desktop Nav Items
     document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {

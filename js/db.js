@@ -1,7 +1,7 @@
 /**
  * ============================================================================
- * NutriVision AI — IndexedDB Database Engine (Local-First Offline Storage)
- * Manages users, credentials, food scans, meal plans, and clinical records.
+ * NutriVision AI — Hybrid Database Engine (IndexedDB + Supabase Cloud)
+ * Local-First Offline Storage with Real-Time Cloud PostgreSQL Sync
  * ============================================================================
  */
 
@@ -12,12 +12,18 @@ class NutriVisionDatabase {
     this.db = null;
     this.sessionKey = 'nutrivision_active_session';
     this.isReady = false;
+    this.supabase = null;
+    this.isSupabaseConnected = false;
   }
 
   /**
-   * Initialize IndexedDB with schema migrations & pre-seeded accounts
+   * Initialize IndexedDB & Supabase Cloud Connection
    */
   async init() {
+    // 1. Inisialisasi Supabase Client jika terkonfigurasi
+    this.initSupabaseClient();
+
+    // 2. Inisialisasi IndexedDB Lokal
     return new Promise((resolve) => {
       if (!window.indexedDB) {
         console.warn('IndexedDB tidak didukung pada peramban ini. Menggunakan LocalStorage fallback.');
@@ -70,6 +76,66 @@ class NutriVisionDatabase {
         resolve(this);
       };
     });
+  }
+
+  /**
+   * Inisialisasi Supabase JS Client
+   */
+  initSupabaseClient() {
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function' && window.SUPABASE_CONFIG?.isConfigured) {
+        this.supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+        this.isSupabaseConnected = true;
+        console.log('☁️ Supabase Cloud Client Connected:', window.SUPABASE_CONFIG.url);
+      } else {
+        this.supabase = null;
+        this.isSupabaseConnected = false;
+      }
+    } catch (e) {
+      console.warn('Supabase init notice:', e.message);
+      this.supabase = null;
+      this.isSupabaseConnected = false;
+    }
+  }
+
+  /**
+   * Test Koneksi ke Supabase Cloud
+   */
+  async testSupabaseConnection(customUrl, customKey) {
+    const url = customUrl || window.SUPABASE_CONFIG?.url;
+    const key = customKey || window.SUPABASE_CONFIG?.anonKey;
+
+    if (!url || !key) {
+      return { success: false, message: 'URL atau Anon Key Supabase belum diisi.' };
+    }
+
+    try {
+      if (!window.supabase) {
+        return { success: false, message: 'Library Supabase JS belum termuat di browser.' };
+      }
+
+      const client = window.supabase.createClient(url, key);
+      const { data, error } = await client.from('users').select('id').limit(1);
+
+      if (error && error.code !== 'PGRST116') {
+        // Jika tabel belum ada atau permission issue
+        return {
+          success: false,
+          error: error,
+          message: `Terhubung ke Supabase, namun ada kendala query tabel 'users': ${error.message}. Pastikan SQL schema sudah dijalankan.`
+        };
+      }
+
+      return {
+        success: true,
+        message: '✅ Berhasil terhubung ke Supabase Cloud Database!'
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: 'Gagal terhubung: ' + err.message
+      };
+    }
   }
 
   /**
@@ -181,32 +247,104 @@ class NutriVisionDatabase {
     return 'nv_hash_' + Math.abs(hash).toString(16) + '_sec';
   }
 
+  /**
+   * Helper: Konversi User JS object ke Supabase Database format
+   */
+  mapUserToSupabaseRow(user) {
+    return {
+      id: user.id,
+      name: user.name,
+      email: (user.email || '').toLowerCase(),
+      password_hash: user.passwordHash,
+      role: user.role || 'patient',
+      condition: user.condition,
+      condition_label: user.conditionLabel,
+      recovery_phase: user.recoveryPhase,
+      weight: user.weight,
+      height: user.height,
+      age: user.age,
+      gender: user.gender,
+      target_protein: user.targetProtein,
+      target_calories: user.targetCalories,
+      allergies: user.allergies,
+      symptoms: user.symptoms || [],
+      created_at: user.createdAt || new Date().toISOString()
+    };
+  }
+
+  /**
+   * Helper: Konversi Supabase row ke User JS object
+   */
+  mapSupabaseRowToUser(row) {
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      passwordHash: row.password_hash,
+      role: row.role,
+      condition: row.condition,
+      conditionLabel: row.condition_label,
+      recoveryPhase: row.recovery_phase,
+      weight: row.weight,
+      height: row.height,
+      age: row.age,
+      gender: row.gender,
+      targetProtein: row.target_protein,
+      targetCalories: row.target_calories,
+      allergies: row.allergies,
+      symptoms: row.symptoms || [],
+      createdAt: row.created_at,
+      avatarText: (row.name || 'P').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+      hasCompletedQuiz: true
+    };
+  }
+
+  /**
+   * Simpan user ke IndexedDB & Sync ke Supabase (jika aktif)
+   */
   async saveUserDirect(user) {
     if (!user.id) {
       const existing = await this.getUserByEmail(user.email);
       user.id = existing?.id || 'usr_' + Date.now().toString(36);
     }
 
+    // 1. Simpan Lokal (IndexedDB / LocalStorage)
     if (this.useFallback) {
       const users = JSON.parse(localStorage.getItem('nv_db_users') || '{}');
       users[user.id] = { ...(users[user.id] || {}), ...user };
       localStorage.setItem('nv_db_users', JSON.stringify(users));
-      return users[user.id];
+    } else {
+      await new Promise((resolve, reject) => {
+        const tx = this.db.transaction(['users'], 'readwrite');
+        const store = tx.objectStore('users');
+        const req = store.put(user);
+        req.onsuccess = () => resolve(user);
+        req.onerror = (e) => reject(e.target.error);
+      });
     }
 
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(['users'], 'readwrite');
-      const store = tx.objectStore('users');
-      const req = store.put(user);
-      req.onsuccess = () => resolve(user);
-      req.onerror = (e) => reject(e.target.error);
-    });
+    // 2. Background Sync ke Supabase Cloud (Non-blocking)
+    if (this.supabase) {
+      try {
+        const row = this.mapUserToSupabaseRow(user);
+        this.supabase.from('users').upsert(row).then(({ error }) => {
+          if (error) console.warn('Supabase user upsert notice:', error.message);
+          else console.log('☁️ User synced to Supabase:', user.email);
+        });
+      } catch (err) {
+        console.warn('Supabase sync error:', err.message);
+      }
+    }
+
+    return user;
   }
 
   async updateUserProfile(email, updates) {
     if (!email) return null;
     const cleanEmail = email.trim().toLowerCase();
     const existing = await this.getUserByEmail(cleanEmail);
+
     if (!existing) {
       const newUser = {
         id: 'usr_' + Date.now().toString(36),
@@ -234,6 +372,27 @@ class NutriVisionDatabase {
     if (!email) return null;
     const cleanEmail = email.trim().toLowerCase();
 
+    // 1. Cek dari Supabase jika online
+    if (this.supabase) {
+      try {
+        const { data, error } = await this.supabase
+          .from('users')
+          .select('*')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
+        if (data && !error) {
+          const mappedUser = this.mapSupabaseRowToUser(data);
+          // Cache ke IndexedDB lokal
+          this.saveLocalOnly(mappedUser);
+          return mappedUser;
+        }
+      } catch (e) {
+        console.warn('Supabase getUserByEmail fallback to local:', e.message);
+      }
+    }
+
+    // 2. Fallback Lokal
     if (this.useFallback) {
       const users = JSON.parse(localStorage.getItem('nv_db_users') || '{}');
       return Object.values(users).find(u => u.email.toLowerCase() === cleanEmail) || null;
@@ -252,6 +411,22 @@ class NutriVisionDatabase {
   async getUserById(id) {
     if (!id) return null;
 
+    if (this.supabase) {
+      try {
+        const { data, error } = await this.supabase
+          .from('users')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (data && !error) {
+          return this.mapSupabaseRowToUser(data);
+        }
+      } catch (e) {
+        console.warn('Supabase getUserById fallback to local:', e.message);
+      }
+    }
+
     if (this.useFallback) {
       const users = JSON.parse(localStorage.getItem('nv_db_users') || '{}');
       return users[id] || null;
@@ -267,6 +442,18 @@ class NutriVisionDatabase {
   }
 
   async getAllUsers() {
+    // Ambil dari Supabase jika ada
+    if (this.supabase) {
+      try {
+        const { data, error } = await this.supabase.from('users').select('*');
+        if (data && !error && data.length > 0) {
+          return data.map(r => this.mapSupabaseRowToUser(r));
+        }
+      } catch (e) {
+        console.warn('Supabase getAllUsers fallback to local:', e.message);
+      }
+    }
+
     if (this.useFallback) {
       const users = JSON.parse(localStorage.getItem('nv_db_users') || '{}');
       return Object.values(users);
@@ -279,6 +466,14 @@ class NutriVisionDatabase {
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => resolve([]);
     });
+  }
+
+  saveLocalOnly(user) {
+    if (!this.db || !user) return;
+    try {
+      const tx = this.db.transaction(['users'], 'readwrite');
+      tx.objectStore('users').put(user);
+    } catch (e) {}
   }
 
   async register(userData) {
@@ -373,27 +568,81 @@ class NutriVisionDatabase {
 
   async saveMeal(meal) {
     if (!meal.id) {
-      meal.id = 'meal_' + Date.now().toString(36);
+      meal.id = 'meal_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
     }
     meal.createdAt = meal.createdAt || new Date().toISOString();
 
+    // 1. Simpan Lokal
     if (this.useFallback) {
       const meals = JSON.parse(localStorage.getItem('nv_db_meals') || '[]');
       meals.unshift(meal);
       localStorage.setItem('nv_db_meals', JSON.stringify(meals.slice(0, 100)));
-      return meal;
+    } else {
+      await new Promise((resolve, reject) => {
+        const tx = this.db.transaction(['meals'], 'readwrite');
+        const store = tx.objectStore('meals');
+        const req = store.put(meal);
+        req.onsuccess = () => resolve(meal);
+        req.onerror = (e) => reject(e.target.error);
+      });
     }
 
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(['meals'], 'readwrite');
-      const store = tx.objectStore('meals');
-      const req = store.put(meal);
-      req.onsuccess = () => resolve(meal);
-      req.onerror = (e) => reject(e.target.error);
-    });
+    // 2. Background Sync ke Supabase
+    if (this.supabase) {
+      try {
+        const row = {
+          id: meal.id,
+          user_id: meal.userId,
+          meal_type: meal.mealType,
+          name: meal.name,
+          calories: meal.calories,
+          protein: meal.protein,
+          carbs: meal.carbs,
+          fat: meal.fat,
+          segments: meal.segments || [],
+          timestamp: meal.timestamp || meal.createdAt
+        };
+        this.supabase.from('meals').upsert(row).then(({ error }) => {
+          if (error) console.warn('Supabase meal upsert notice:', error.message);
+          else console.log('☁️ Meal synced to Supabase:', meal.name);
+        });
+      } catch (err) {
+        console.warn('Supabase meal sync error:', err.message);
+      }
+    }
+
+    return meal;
   }
 
   async getMealsByUser(userId) {
+    if (this.supabase) {
+      try {
+        const { data, error } = await this.supabase
+          .from('meals')
+          .select('*')
+          .eq('user_id', userId)
+          .order('timestamp', { ascending: false });
+
+        if (data && !error && data.length > 0) {
+          return data.map(r => ({
+            id: r.id,
+            userId: r.user_id,
+            mealType: r.meal_type,
+            name: r.name,
+            calories: r.calories,
+            protein: r.protein,
+            carbs: r.carbs,
+            fat: r.fat,
+            segments: r.segments,
+            timestamp: r.timestamp,
+            createdAt: r.timestamp
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase getMealsByUser fallback to local:', e.message);
+      }
+    }
+
     if (this.useFallback) {
       const meals = JSON.parse(localStorage.getItem('nv_db_meals') || '[]');
       return meals.filter(m => m.userId === userId);
@@ -407,6 +656,59 @@ class NutriVisionDatabase {
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => resolve([]);
     });
+  }
+
+  /**
+   * Upload seluruh data lokal (semua user & meal) ke Supabase dalam 1 klik
+   */
+  async syncAllToSupabase() {
+    if (!this.supabase) {
+      throw new Error('Supabase belum terhubung. Silakan masukkan Project URL & Anon Key terlebih dahulu.');
+    }
+
+    const allUsers = await this.getAllUsers();
+    let syncedUsers = 0;
+    let syncedMeals = 0;
+
+    for (const u of allUsers) {
+      const row = this.mapUserToSupabaseRow(u);
+      const { error } = await this.supabase.from('users').upsert(row);
+      if (!error) syncedUsers++;
+    }
+
+    // Ambil semua meals dari local IndexedDB
+    const allMeals = await new Promise((resolve) => {
+      if (this.useFallback) {
+        resolve(JSON.parse(localStorage.getItem('nv_db_meals') || '[]'));
+        return;
+      }
+      const tx = this.db.transaction(['meals'], 'readonly');
+      const req = tx.objectStore('meals').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+
+    for (const m of allMeals) {
+      const row = {
+        id: m.id,
+        user_id: m.userId,
+        meal_type: m.mealType,
+        name: m.name,
+        calories: m.calories,
+        protein: m.protein,
+        carbs: m.carbs,
+        fat: m.fat,
+        segments: m.segments || [],
+        timestamp: m.timestamp || m.createdAt
+      };
+      const { error } = await this.supabase.from('meals').upsert(row);
+      if (!error) syncedMeals++;
+    }
+
+    return {
+      syncedUsers,
+      syncedMeals
+    };
   }
 
   initLocalStorageFallback() {

@@ -29,6 +29,9 @@
   <!-- Lucide Icons (Figma / Iconify standard) -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Supabase Cloud JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <!-- Core Design System -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -60,6 +63,11 @@
           </nav>
 
           <div class="lp-nav-actions" id="lp-nav-actions-container">
+            <button class="lp-btn-nav-db" id="lp-nav-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database & Supabase Cloud">
+              <i data-lucide="database" style="width:14px;height:14px;"></i>
+              <span class="db-status-dot" id="lp-db-dot"></span>
+              <span>Database</span>
+            </button>
             <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')"
               title="Masuk ke Akun NutriVision AI">
               <i data-lucide="log-in" style="width:15px;height:15px;"></i>
@@ -122,7 +130,7 @@
           <div class="lp-hero-preview-card">
             <div class="lp-preview-head">
               <span class="title">
-                <i data-lucide="scan" style="width:16px;height:16px;color:#3FBE93;"></i>
+                <i data-lucide="scan" style="width:16px;height:16px;color:#9EA76B;"></i>
                 Hasil Segmentasi Piring AI
               </span>
               <span class="lp-preview-conf-badge">
@@ -140,7 +148,7 @@
 
             <div class="lp-preview-legend-list">
               <div class="lp-legend-item">
-                <span><span class="dot" style="background:#3FBE93;"></span>Ikan Gabus Kukus (110g)</span>
+                <span><span class="dot" style="background:#9EA76B;"></span>Ikan Gabus Kukus (110g)</span>
                 <b>26g Protein [Albumin]</b>
               </div>
               <div class="lp-legend-item">
@@ -155,7 +163,7 @@
 
             <div class="lp-preview-foot-bar">
               <span>Target Harian: <b>32g / 98g Protein</b> (Fase 2)</span>
-              <span style="color:#3FBE93;cursor:pointer;" onclick="app.goToDashboard('overview', 'scan')">Coba Scan
+              <span style="color:#9EA76B;cursor:pointer;" onclick="app.goToDashboard('overview', 'scan')">Coba Scan
                 Sendiri →</span>
             </div>
           </div>
@@ -201,7 +209,7 @@
               </div>
 
               <div class="lp-live-tag lp-ltag-1" id="lp-showcase-tag-1">
-                <i data-lucide="fish" style="width:13px;height:13px;color:#3FBE93;"></i>
+                <i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i>
                 <span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>
               </div>
               <div class="lp-live-tag lp-ltag-2" id="lp-showcase-tag-2">
@@ -219,7 +227,7 @@
                 <div class="lp-ring-donut-mini">
                   <svg viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="12" />
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#3FBE93" stroke-width="12"
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#9EA76B" stroke-width="12"
                       stroke-dasharray="251.2" stroke-dashoffset="80" stroke-linecap="round" />
                   </svg>
                   <span class="center-val">68%</span>
@@ -232,14 +240,14 @@
 
               <div class="lp-advice-callout" id="lp-showcase-advice">
                 <i data-lucide="lightbulb"
-                  style="width:16px;height:16px;color:#3FBE93;flex-shrink:0;margin-top:2px;"></i>
+                  style="width:16px;height:16px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></i>
                 <span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp;
                   disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>
               </div>
 
               <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;">
-                <span style="font-size:11.5px;color:#A3D8C8;" id="lp-showcase-conf">
-                  <i data-lucide="check-circle" style="width:12px;height:12px;color:#3FBE93;"></i> Model Confidence: 96%
+                <span style="font-size:11.5px;color:#EFE8CA;" id="lp-showcase-conf">
+                  <i data-lucide="check-circle" style="width:12px;height:12px;color:#9EA76B;"></i> Model Confidence: 96%
                 </span>
                 <button class="lp-btn-hero-secondary" style="height:36px;padding:0 14px;font-size:12px;"
                   onclick="app.goToDashboard('overview', 'scan')">
@@ -586,6 +594,13 @@
             <i data-lucide="log-in" class="btn-icon-sm"></i> <span>Masuk / Login</span>
           </button>
 
+          <!-- Supabase Cloud Database Status & Sync Modal Trigger -->
+          <button type="button" class="topbar-db-btn" id="topbar-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database & Cloud Sync">
+            <i data-lucide="database" style="width:16px;height:16px;"></i>
+            <span class="db-status-dot" id="topbar-db-dot"></span>
+            <span class="topbar-db-lbl">DB</span>
+          </button>
+
           <!-- Smart Clinical Notification Center -->
           <div class="topbar-notif-wrapper">
             <button class="topbar-notif-btn" id="topbar-notif-btn" onclick="app.toggleSmartNotificationDropdown()"
@@ -895,7 +910,7 @@
               <div class="macro-donut-wrapper">
                 <svg class="macro-donut-svg" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r="48" fill="none" stroke="#E1EAE5" stroke-width="12" />
-                  <circle id="macro-donut-circle-prot" cx="60" cy="60" r="48" fill="none" stroke="#0F6E56"
+                  <circle id="macro-donut-circle-prot" cx="60" cy="60" r="48" fill="none" stroke="#9EA76B"
                     stroke-width="12" stroke-dasharray="301.6" stroke-dashoffset="69.3" stroke-linecap="round" />
                 </svg>
                 <div class="macro-donut-center">
@@ -908,22 +923,22 @@
                 <div class="macro-item">
                   <div class="macro-item-head">
                     <span class="macro-name"><span
-                        style="width:8px;height:8px;border-radius:2px;background:#0F6E56;"></span>Protein</span>
+                        style="width:8px;height:8px;border-radius:2px;background:#9EA76B;"></span>Protein</span>
                     <span class="macro-num" id="macro-num-protein">0 / 98 g</span>
                   </div>
                   <div class="macro-bar-track">
-                    <div class="macro-bar-fill" id="bar-fill-protein" style="width:0%;background:#0F6E56;"></div>
+                    <div class="macro-bar-fill" id="bar-fill-protein" style="width:0%;background:#9EA76B;"></div>
                   </div>
                 </div>
 
                 <div class="macro-item">
                   <div class="macro-item-head">
                     <span class="macro-name"><span
-                        style="width:8px;height:8px;border-radius:2px;background:#3FBE93;"></span>Karbohidrat</span>
+                        style="width:8px;height:8px;border-radius:2px;background:#9EA76B;"></span>Karbohidrat</span>
                     <span class="macro-num" id="macro-num-carbs">0 / 271 g</span>
                   </div>
                   <div class="macro-bar-track">
-                    <div class="macro-bar-fill" id="bar-fill-carbs" style="width:0%;background:#3FBE93;"></div>
+                    <div class="macro-bar-fill" id="bar-fill-carbs" style="width:0%;background:#9EA76B;"></div>
                   </div>
                 </div>
 
@@ -1976,7 +1991,7 @@
           <div class="auth-visual-head">Welcome to</div>
 
           <div class="auth-visual-brand-circle">
-            <i data-lucide="sparkles" style="width:46px;height:46px;stroke-width:2.2;color:#0F6E56;"></i>
+            <i data-lucide="sparkles" style="width:46px;height:46px;stroke-width:2.2;color:#9EA76B;"></i>
           </div>
 
           <div class="auth-visual-brand-name">NutriVision AI</div>
@@ -2135,7 +2150,197 @@
     </div>
   </div>
 
+  
+  <!-- =========================================================================
+       DATABASE & SUPABASE CLOUD SYNC MODAL — PREMIUM REDESIGN
+       ========================================================================= -->
+  <div class="modal-overlay db-modal-overlay" id="modal-db-sync" onclick="app.closeDatabaseSyncModal()">
+    <div class="db-modal-sheet" onclick="event.stopPropagation()">
+
+      <!-- ── MODAL HEADER ── -->
+      <div class="db-modal-header">
+        <div class="db-modal-header-icon">
+          <i data-lucide="database" style="width:20px;height:20px;"></i>
+          <span class="db-modal-header-glow"></span>
+        </div>
+        <div class="db-modal-header-text">
+          <h3>Database &amp; Supabase Cloud</h3>
+          <p>Hubungkan, sinkronkan, dan pantau data PostgreSQL cloud Anda</p>
+        </div>
+        <button type="button" class="db-modal-close" onclick="app.closeDatabaseSyncModal()" aria-label="Tutup">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+
+      <!-- ── SCROLLABLE BODY ── -->
+      <div class="db-modal-body">
+
+        <!-- ① STATUS CARD -->
+        <div class="db-status-card" id="db-status-banner">
+          <div class="db-status-left">
+            <div class="db-status-indicator">
+              <span class="db-pulse-dot" id="db-pulse-dot"></span>
+            </div>
+            <div>
+              <div class="db-status-label">Status Koneksi</div>
+              <div id="db-status-text" class="db-status-value">Memeriksa database...</div>
+            </div>
+          </div>
+          <button type="button" class="db-test-btn" onclick="app.testSupabaseCloud(true)" id="db-test-conn-btn">
+            <i data-lucide="wifi" style="width:13px;height:13px;"></i>
+            <span>Test Koneksi</span>
+          </button>
+        </div>
+
+        <!-- ② CREDENTIALS FORM -->
+        <div class="db-section-card">
+          <div class="db-section-header">
+            <div class="db-section-badge">
+              <i data-lucide="key-round" style="width:15px;height:15px;"></i>
+            </div>
+            <div>
+              <div class="db-section-title">Kredensial Supabase</div>
+              <div class="db-section-desc">Salin dari <strong>Project Settings → API</strong> di dashboard Supabase</div>
+            </div>
+          </div>
+
+          <form id="supabase-config-form" onsubmit="app.saveSupabaseSettings(event)" class="db-form">
+            <div class="db-form-group">
+              <label class="db-label" for="sb-url-input">
+                <i data-lucide="globe" style="width:12px;height:12px;"></i> Project URL
+              </label>
+              <div class="db-input-wrapper">
+                <input type="url" id="sb-url-input" class="db-input" placeholder="https://xyzabcdef.supabase.co" required autocomplete="off">
+                <span class="db-input-prefix">https://</span>
+              </div>
+            </div>
+
+            <div class="db-form-group">
+              <label class="db-label" for="sb-key-input">
+                <i data-lucide="shield-check" style="width:12px;height:12px;"></i> Anon / Public API Key
+              </label>
+              <div class="db-input-wrapper">
+                <input type="password" id="sb-key-input" class="db-input db-key-input" placeholder="eyJhbGciOiJIUzI1NiIs..." required autocomplete="off">
+                <button type="button" class="db-input-toggle-vis" onclick="app.toggleKeyVisibility()" title="Tampilkan/sembunyikan key">
+                  <i data-lucide="eye" style="width:13px;height:13px;" id="db-key-eye-icon"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="db-form-actions">
+              <button type="submit" class="db-btn-connect">
+                <i data-lucide="plug-zap" style="width:15px;height:15px;"></i>
+                <span>Simpan &amp; Hubungkan</span>
+              </button>
+              <button type="button" class="db-btn-reset" onclick="app.resetSupabaseConfig()">
+                <i data-lucide="rotate-ccw" style="width:13px;height:13px;"></i>
+                Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ③ QUICK ACTIONS -->
+        <div class="db-section-title-standalone">
+          <i data-lucide="zap" style="width:14px;height:14px;color:var(--matcha-500);"></i>
+          Aksi Cepat
+        </div>
+        <div class="db-actions-grid">
+          <button type="button" class="db-action-card db-action-sync" onclick="app.syncAllDataToSupabase()" id="btn-sync-all-supabase">
+            <div class="db-action-icon-wrap db-action-icon-matcha">
+              <i data-lucide="upload-cloud" style="width:20px;height:20px;"></i>
+            </div>
+            <div class="db-action-text">
+              <span class="db-action-title">Upload ke Cloud</span>
+              <span class="db-action-sub">Sync semua akun &amp; log makan</span>
+            </div>
+            <i data-lucide="chevron-right" style="width:14px;height:14px;color:var(--ink-mute);margin-left:auto;flex-shrink:0;"></i>
+          </button>
+
+          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" class="db-action-card db-action-open">
+            <div class="db-action-icon-wrap db-action-icon-green">
+              <i data-lucide="layout-dashboard" style="width:20px;height:20px;"></i>
+            </div>
+            <div class="db-action-text">
+              <span class="db-action-title">Buka Table Editor</span>
+              <span class="db-action-sub">Lihat &amp; edit baris database</span>
+            </div>
+            <i data-lucide="external-link" style="width:14px;height:14px;color:var(--ink-mute);margin-left:auto;flex-shrink:0;"></i>
+          </a>
+        </div>
+
+        <!-- ④ SQL SCHEMA -->
+        <div class="db-sql-block">
+          <div class="db-sql-header">
+            <div class="db-sql-header-left">
+              <i data-lucide="terminal" style="width:14px;height:14px;color:#9EA76B;"></i>
+              <span>SQL Schema — Jalankan 1x di Supabase SQL Editor</span>
+            </div>
+            <button type="button" class="db-sql-copy-btn" onclick="app.copySupabaseSqlSchema()" id="btn-copy-sql">
+              <i data-lucide="copy" style="width:12px;height:12px;"></i>
+              <span id="copy-sql-text">Salin</span>
+            </button>
+          </div>
+          <pre class="db-sql-pre" id="db-sql-snippet"><code>-- 1. Tabel Users
+CREATE TABLE IF NOT EXISTS public.users (
+  id TEXT PRIMARY KEY,
+  name TEXT, email TEXT UNIQUE,
+  password_hash TEXT, role TEXT DEFAULT 'patient',
+  condition TEXT, condition_label TEXT,
+  recovery_phase TEXT, weight NUMERIC, height NUMERIC,
+  age INTEGER, gender TEXT, target_protein NUMERIC,
+  target_calories NUMERIC, allergies TEXT,
+  symptoms JSONB, created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Tabel Log Makanan &amp; Scan CV
+CREATE TABLE IF NOT EXISTS public.meals (
+  id TEXT PRIMARY KEY, user_id TEXT,
+  meal_type TEXT, name TEXT, calories NUMERIC,
+  protein NUMERIC, carbs NUMERIC, fat NUMERIC,
+  segments JSONB, timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Akses publik untuk demo client
+ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
+        </div>
+
+        <!-- ⑤ GUIDE STEPS -->
+        <div class="db-guide-steps">
+          <div class="db-guide-title">
+            <i data-lucide="list-ordered" style="width:14px;height:14px;color:var(--matcha-500);"></i>
+            Panduan Cepat 3 Langkah
+          </div>
+          <div class="db-step">
+            <span class="db-step-num">1</span>
+            <div class="db-step-content">
+              <b>Buat Project Gratis</b>
+              <span>Kunjungi <strong>supabase.com</strong> → New Project → Beri nama project Anda</span>
+            </div>
+          </div>
+          <div class="db-step">
+            <span class="db-step-num">2</span>
+            <div class="db-step-content">
+              <b>Jalankan SQL Schema</b>
+              <span>Salin SQL di atas → Paste di <strong>SQL Editor</strong> Supabase → Run</span>
+            </div>
+          </div>
+          <div class="db-step">
+            <span class="db-step-num">3</span>
+            <div class="db-step-content">
+              <b>Masukkan Kredensial di Sini</b>
+              <span>Copy URL &amp; Anon Key dari <strong>Project Settings → API</strong></span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /db-modal-body -->
+    </div><!-- /db-modal-sheet -->
+  </div>
+
   <!-- Core JavaScript Application Scripts -->
+  <script src="js/supabase-config.js"></script>
   <script src="js/db.js"></script>
   <script src="js/data.js"></script>
   <script src="js/cv-engine.js"></script>

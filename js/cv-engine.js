@@ -149,7 +149,7 @@ class NutriVisionCVEngine {
       foodId: foodItem.id,
       portionGrams: portionGrams,
       confidence: 100, // Manual input user memiliki keyakinan 100%
-      color: foodItem.color || '#3FBE93',
+      color: foodItem.color || '#9EA76B',
       cals: [Math.round(foodItem.calsRange[0] * ratio), Math.round(foodItem.calsRange[1] * ratio)],
       protein: [Math.round(foodItem.proteinRange[0] * ratio * 10) / 10, Math.round(foodItem.proteinRange[1] * ratio * 10) / 10],
       carbs: [Math.round(foodItem.carbsRange[0] * ratio * 10) / 10, Math.round(foodItem.carbsRange[1] * ratio * 10) / 10],
@@ -200,7 +200,7 @@ class NutriVisionCVEngine {
             foodId: 'nasi-putih',
             portionGrams: 160,
             confidence: 92,
-            color: '#3FBE93',
+            color: '#9EA76B',
             cals: [200, 230],
             protein: [3.8, 4.6],
             carbs: [44, 50],
