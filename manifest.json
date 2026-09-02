@@ -4,8 +4,8 @@
   "description": "Platform Segmentasi & Panduan Gizi Makanan Berbasis Computer Vision untuk Pemulihan Pasca-Operasi, Rehabilitasi Medis, dan Gym Recovery",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F5FBF8",
-  "theme_color": "#04342C",
+  "background_color": "#F7F5E8",
+  "theme_color": "#556B2F",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -26,6 +26,11 @@
       "type": "image/svg+xml"
     }
   ],
-  "categories": ["medical", "health", "lifestyle", "utilities"],
+  "categories": [
+    "medical",
+    "health",
+    "lifestyle",
+    "utilities"
+  ],
   "lang": "id"
 }

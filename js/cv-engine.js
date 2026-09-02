@@ -73,10 +73,10 @@ class NutriVisionCVEngine {
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.fillStyle = this.currentScan.plateColor || '#0F172A';
+    ctx.fillStyle = this.currentScan.plateColor || '#11180B';
     ctx.fill();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = 'rgba(96, 165, 250, 0.45)';
+    ctx.strokeStyle = 'rgba(255, 253, 208, 0.35)';
     ctx.stroke();
     ctx.clip(); // Clip di dalam lingkaran piring
 
@@ -98,7 +98,7 @@ class NutriVisionCVEngine {
       ctx.closePath();
 
       // Warna Mask Transparan dengan highlight saat hover
-      ctx.fillStyle = this.hexToRgba(seg.color || '#2563EB', isHovered ? 0.92 : 0.72);
+      ctx.fillStyle = this.hexToRgba(seg.color || '#556B2F', isHovered ? 0.92 : 0.72);
       ctx.fill();
 
       ctx.lineWidth = isHovered ? 3 : 1.5;
@@ -121,9 +121,9 @@ class NutriVisionCVEngine {
     // 3. Lingkaran Fokus Tengah (Computer Vision Lens Core)
     ctx.beginPath();
     ctx.arc(cx, cy, radius * 0.24, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+    ctx.fillStyle = 'rgba(22, 31, 14, 0.94)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(96, 165, 250, 0.7)';
+    ctx.strokeStyle = 'rgba(255, 253, 208, 0.6)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -131,7 +131,7 @@ class NutriVisionCVEngine {
     ctx.font = 'bold 11px Plus Jakarta Sans, Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`${this.currentScan.confidenceOverall || 88}%`, cx, cy - 1);
-    ctx.fillStyle = '#93C5FD';
+    ctx.fillStyle = '#FFFDD0';
     ctx.font = '8px Plus Jakarta Sans, Inter, sans-serif';
     ctx.fillText('AI MATCH', cx, cy + 10);
 
