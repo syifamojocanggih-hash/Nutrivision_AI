@@ -226,6 +226,27 @@ class NutriVisionDatabase {
         hasCompletedQuiz: true,
         allergies: 'Tidak ada',
         symptoms: []
+      },
+      {
+        id: 'usr_admin_master',
+        name: 'Administrator NutriVision',
+        email: 'admin@nutrivision.id',
+        passwordHash: this.hashPassword('admin123'),
+        role: 'admin',
+        condition: 'admin',
+        conditionLabel: 'Administrator Database & Cloud',
+        recoveryPhase: 'Akses Penuh',
+        weight: 70,
+        height: 175,
+        age: 30,
+        gender: 'male',
+        targetProtein: 90,
+        targetCalories: 2000,
+        createdAt: '2026-08-01T00:00:00.000Z',
+        avatarText: 'AD',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
       }
     ];
 
@@ -516,7 +537,32 @@ class NutriVisionDatabase {
   async login(email, password) {
     if (!email) throw new Error('Email atau nomor WhatsApp wajib diisi.');
     const cleanEmail = email.trim().toLowerCase();
-    const user = await this.getUserByEmail(cleanEmail);
+    let user = await this.getUserByEmail(cleanEmail);
+
+    if (!user && cleanEmail === 'admin@nutrivision.id') {
+      user = {
+        id: 'usr_admin_master',
+        name: 'Administrator NutriVision',
+        email: 'admin@nutrivision.id',
+        passwordHash: this.hashPassword('admin123'),
+        role: 'admin',
+        condition: 'admin',
+        conditionLabel: 'Administrator Database & Cloud',
+        recoveryPhase: 'Akses Penuh',
+        weight: 70,
+        height: 175,
+        age: 30,
+        gender: 'male',
+        targetProtein: 90,
+        targetCalories: 2000,
+        createdAt: new Date().toISOString(),
+        avatarText: 'AD',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
+      };
+      await this.saveUserDirect(user);
+    }
 
     if (!user) {
       throw new Error(`Akun dengan email "${email}" tidak ditemukan. Silakan klik "Daftar Baru" untuk membuat akun.`);

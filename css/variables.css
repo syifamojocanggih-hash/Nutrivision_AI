@@ -1,0 +1,229 @@
+/* ==========================================================================
+   NutriVision AI — 1. Design Tokens, Variables & Base Reset
+   ========================================================================== */
+/* ==========================================================================
+   NutriVision AI — Modern Design System & Mobile-First PWA Styles
+   Competition: GAYATAMA 5 — International Web Technology Competition
+   ========================================================================== */
+
+:root {
+  /* Primary Matcha Palette (Exact Hex: #9EA76B) */
+  --matcha-base: #9EA76B;
+  /* Exact MATCHA from image */
+  --matcha-50: #F7F9EC;
+  --matcha-100: #EEF1D8;
+  --matcha-200: #DDE2B9;
+  --matcha-300: #C6CE9C;
+  --matcha-400: #B1BB81;
+  --matcha-500: #9EA76B;
+  /* Base Matcha */
+  --matcha-600: #9EA76B;
+  --matcha-700: #9EA76B;
+  --matcha-800: #9EA76B;
+  --matcha-900: #3E4B24;
+  --matcha-950: #34421C;
+
+  /* Milky Palette (Exact Hex: #EFE8CA) */
+  --milky-base: #EFE8CA;
+  /* Exact MILKY from image */
+  --milky-50: #FDFAF2;
+  --milky-100: #F7F3DE;
+  --milky-200: #EFE8CA;
+  /* Base Milky */
+  --milky-300: #E5DCB2;
+  --milky-400: #D8CD98;
+  --milky-500: #C5B676;
+  --milky-600: #A89855;
+
+  /* Seamless token aliases for existing component compatibility */
+  --teal-25: #FDFAF2;
+  --teal-50: #F7F9EC;
+  --teal-100: #EEF1D8;
+  --teal-200: #DDE2B9;
+  --teal-300: #C6CE9C;
+  --teal-400: #B1BB81;
+  --teal-500: #9EA76B;
+  /* TRUE Base Matcha (#9EA76B) */
+  --teal-600: #9EA76B;
+  /* Hover / Active Matcha */
+  --teal-700: #9EA76B;
+  /* Deep Matcha */
+  --teal-800: #9EA76B;
+  --teal-900: #3E4B24;
+  --teal-950: #34421C;
+
+  /* Accent Milky & Matcha Interactive Tokens */
+  --coral-50: #F7F3DE;
+  --coral-100: #EFE8CA;
+  /* Base Milky */
+  --coral-300: #B1BB81;
+  --coral-400: #9EA76B;
+  /* True Matcha */
+  --coral-500: #9EA76B;
+  --coral-600: #9EA76B;
+
+  /* Accent Amber / Gold (Metrics & Alerts) */
+  --amber-50: #FFFBEB;
+  --amber-100: #FEF3C7;
+  --amber-300: #FCD34D;
+  --amber-400: #D97706;
+  --amber-600: #B45309;
+
+  /* Clean Organic Warm Milky & Matcha Canvas */
+  --ink: #1C200E;
+  --ink-soft: #3E4424;
+  --ink-mute: #687346;
+  --ink-light: #949D70;
+  --bg: #F7F3DE;
+  /* Warm Milky Canvas */
+  --bg-subtle: #EFE8CA;
+  /* Milky Subtle */
+  --card: #FFFFFF;
+  --card-glass: rgba(255, 255, 255, 0.96);
+  --line: #DDD4B0;
+  --line-focus: #9EA76B;
+
+  /* Geometry Tokens */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-circle: 50%;
+  --radius-pill: 50px;
+
+  --shadow-sm: 0 1px 3px rgba(28, 32, 14, 0.04);
+  --shadow-md: 0 4px 18px rgba(158, 167, 107, 0.18);
+  --shadow-lg: 0 12px 32px rgba(28, 32, 14, 0.08);
+  --shadow-float: 0 16px 40px rgba(158, 167, 107, 0.28);
+
+  /* Font Scaling */
+  --font-base: 15px;
+  --font-h1: 24px;
+  --font-h2: 17px;
+  --font-h3: 15px;
+  --font-sm: 13px;
+  --font-xs: 11.5px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Accessibility Modes */
+[data-font-size="large"] {
+  --font-base: 16.5px;
+  --font-h1: 26px;
+  --font-h2: 19px;
+  --font-h3: 17px;
+  --font-sm: 14px;
+  --font-xs: 12.5px;
+}
+
+[data-font-size="xl"] {
+  --font-base: 18px;
+  --font-h1: 29px;
+  --font-h2: 21px;
+  --font-h3: 19px;
+  --font-sm: 15.5px;
+  --font-xs: 13.5px;
+}
+
+[data-contrast="high"] {
+  --bg: #FFFFFF;
+  --card: #FFFFFF;
+  --ink: #000000;
+  --ink-soft: #1C200E;
+  --ink-mute: #3E4424;
+  --line: #9EA76B;
+  --teal-500: #9EA76B;
+  --coral-400: #9EA76B;
+}
+
+/* CSS Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--font-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+h1,
+h2,
+h3,
+h4,
+.brand-font,
+.serif {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Lucide / SVG Icons */
+.lucide,
+.svg-icon,
+[data-lucide] {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2px;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-icon-sm,
+svg.btn-icon-sm,
+i.btn-icon-sm {
+  width: 15px !important;
+  height: 15px !important;
+  vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-md,
+svg.btn-icon-md,
+i.btn-icon-md {
+  width: 18px !important;
+  height: 18px !important;
+  vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* App Shell Container */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  padding-left: 260px;
+  /* Offset for fixed desktop sidebar */
+}
+
+
+/* Permanent Brand Leaf Icon */
+/* Permanent Brand Leaf Icon Styling */
+.brand-leaf-icon {
+  display: block;
+  flex-shrink: 0;
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+}

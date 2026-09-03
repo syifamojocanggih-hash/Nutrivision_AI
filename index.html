@@ -26,8 +26,21 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-  <!-- Lucide Icons (Figma / Iconify standard) -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Lucide Icons (Offline Local with CDN fallback) -->
+  <script src="js/lucide.min.js"></script>
+  <script>if (!window.lucide) { document.write('<script src="https://unpkg.com/lucide@latest"><\/script>'); }</script>
+  <!-- Iconify (Offline Local with CDN fallback) -->
+  <script src="js/iconify-icon.min.js"></script>
+  <script>if (!window.customElements || !window.customElements.get('iconify-icon')) { document.write('<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"><\/script>'); }</script>
+
+  <!-- Early Icon Initialization to prevent any icon blank pop-in or missing icons -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
 
   <!-- Supabase Cloud JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -49,7 +62,10 @@
         <div class="lp-nav-inner">
           <div class="lp-brand" onclick="app.goToLanding()" title="NutriVision AI — Beranda">
             <div class="lp-brand-mark">
-              <i data-lucide="leaf" style="width:18px;height:18px;"></i>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+              </svg>
             </div>
             <div class="lp-brand-title">NutriVision AI</div>
           </div>
@@ -63,14 +79,14 @@
           </nav>
 
           <div class="lp-nav-actions" id="lp-nav-actions-container">
-            <button class="lp-btn-nav-db" id="lp-nav-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database & Supabase Cloud">
+            <button class="lp-btn-nav-db" id="lp-nav-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database &amp; Supabase Cloud" style="display:none;">
               <i data-lucide="database" style="width:14px;height:14px;"></i>
               <span class="db-status-dot" id="lp-db-dot"></span>
               <span>Database</span>
             </button>
             <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')"
               title="Masuk ke Akun NutriVision AI">
-              <i data-lucide="log-in" style="width:15px;height:15px;"></i>
+              <i data-lucide="log-in" class="btn-icon-sm" style="width:15px;height:15px;"></i>
               <span>Login</span>
             </button>
             <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu"
@@ -126,45 +142,61 @@
             </div>
           </div>
 
-          <!-- Right Column: Real Dashboard Preview Card -->
+          <!-- Right Column: Real Dashboard Preview Card (Empty State / Ready to Scan) -->
           <div class="lp-hero-preview-card">
             <div class="lp-preview-head">
               <span class="title">
-                <i data-lucide="scan" style="width:16px;height:16px;color:#9EA76B;"></i>
+                <iconify-icon icon="solar:scanner-bold-duotone" style="font-size:18px;color:#9EA76B;"></iconify-icon>
                 Hasil Segmentasi Piring AI
               </span>
               <span class="lp-preview-conf-badge">
-                <i data-lucide="check-circle" style="width:12px;height:12px;"></i> Keyakinan Model: 88%
+                <iconify-icon icon="solar:camera-linear" style="font-size:13px;"></iconify-icon>
+                <span>Siap Memindai</span>
               </span>
             </div>
 
             <div class="lp-preview-plate-box">
-              <div class="lp-preview-circle">
-                <div class="lp-poly-protein" title="Segmen Protein: Ikan Gabus"></div>
-                <div class="lp-poly-carbs" title="Segmen Karbohidrat: Bubur Beras"></div>
-                <div class="lp-poly-veg" title="Segmen Lauk Nabati: Telur Tim"></div>
+              <div class="lp-preview-circle lp-plate-empty-disc">
+                <div class="lp-plate-empty-content">
+                  <div class="lp-plate-empty-icon-ring">
+                    <iconify-icon icon="solar:camera-add-bold-duotone" style="font-size:34px;color:#9EA76B;"></iconify-icon>
+                  </div>
+                  <span class="lp-plate-empty-title">Piring Belum Terisi</span>
+                  <span class="lp-plate-empty-sub">Belum ada makanan terdeteksi</span>
+                </div>
               </div>
             </div>
 
             <div class="lp-preview-legend-list">
-              <div class="lp-legend-item">
-                <span><span class="dot" style="background:#9EA76B;"></span>Ikan Gabus Kukus (110g)</span>
-                <b>26g Protein [Albumin]</b>
+              <div class="lp-legend-item lp-legend-empty">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <iconify-icon icon="solar:fish-bold-duotone" style="font-size:16px;color:#9EA76B;"></iconify-icon>
+                  <span>Segmen Protein</span>
+                </div>
+                <b style="color:#B1BB81;font-weight:500;">-- g</b>
               </div>
-              <div class="lp-legend-item">
-                <span><span class="dot" style="background:#EB8D70;"></span>Bubur Beras Lembut (220g)</span>
-                <b>35g Karbohidrat</b>
+              <div class="lp-legend-item lp-legend-empty">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <iconify-icon icon="solar:bowl-bold-duotone" style="font-size:16px;color:#EFE8CA;"></iconify-icon>
+                  <span>Segmen Karbohidrat</span>
+                </div>
+                <b style="color:#B1BB81;font-weight:500;">-- g</b>
               </div>
-              <div class="lp-legend-item">
-                <span><span class="dot" style="background:#EF9F27;"></span>Telur Tim Sutra (90g)</span>
-                <b>6.8g Protein</b>
+              <div class="lp-legend-item lp-legend-empty">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:16px;color:#9EA76B;"></iconify-icon>
+                  <span>Segmen Serat / Sayur</span>
+                </div>
+                <b style="color:#B1BB81;font-weight:500;">-- g</b>
               </div>
             </div>
 
             <div class="lp-preview-foot-bar">
-              <span>Target Harian: <b>32g / 98g Protein</b> (Fase 2)</span>
-              <span style="color:#9EA76B;cursor:pointer;" onclick="app.goToDashboard('overview', 'scan')">Coba Scan
-                Sendiri →</span>
+              <span style="white-space:nowrap;">Target Harian: <b>0g / 98g Protein</b></span>
+              <span style="color:#9EA76B;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;font-weight:600;" onclick="app.goToDashboard('overview', 'scan')">
+                <iconify-icon icon="solar:camera-minimalistic-bold" style="font-size:15px;"></iconify-icon>
+                <span>Coba Scan Sendiri →</span>
+              </span>
             </div>
           </div>
         </div>
@@ -181,44 +213,64 @@
         </div>
 
         <div class="lp-main-feature-card">
+          <!-- Preset buttons with Figma/Iconify Icons -->
           <div class="lp-preset-pills-row">
-            <button type="button" class="lp-preset-btn active" data-preset="preset-soft-bubur-gabus"
+            <button type="button" class="lp-preset-btn active" data-preset="preset-empty"
+              onclick="app.selectLandingPreset('preset-empty')">
+              <iconify-icon icon="solar:scanner-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <span>Piring Kosong (Default)</span>
+            </button>
+            <button type="button" class="lp-preset-btn" data-preset="preset-soft-bubur-gabus"
               onclick="app.selectLandingPreset('preset-soft-bubur-gabus')">
-              🥣 Bubur Ikan Gabus (Disfagia)
+              <iconify-icon icon="solar:bowl-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <span>Bubur Ikan Gabus (Disfagia)</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-standard-nasi-ayam"
               onclick="app.selectLandingPreset('preset-standard-nasi-ayam')">
-              🍛 Nasi Dada Ayam &amp; Kangkung
+              <iconify-icon icon="solar:cup-hot-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <span>Nasi Dada Ayam &amp; Kangkung</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-fish-kembung"
               onclick="app.selectLandingPreset('preset-fish-kembung')">
-              🐟 Pepes Ikan Kembung (Omega-3)
+              <iconify-icon icon="solar:fish-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <span>Pepes Ikan Kembung (Omega-3)</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-salmon-quinoa"
               onclick="app.selectLandingPreset('preset-salmon-quinoa')">
-              🥗 Salmon &amp; Brokoli Kukus
+              <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <span>Salmon &amp; Brokoli Kukus</span>
             </button>
           </div>
 
           <div class="lp-main-feature-grid">
             <div class="lp-live-plate-canvas-box">
-              <div class="lp-live-plate-disc">
-                <div class="lp-poly-protein"></div>
-                <div class="lp-poly-carbs"></div>
-                <div class="lp-poly-veg"></div>
+              <div class="lp-live-plate-disc" id="lp-live-plate-disc">
+                <!-- Polygons hidden in empty state -->
+                <div class="lp-poly-protein" id="lp-poly-prot" style="display:none;"></div>
+                <div class="lp-poly-carbs" id="lp-poly-carb" style="display:none;"></div>
+                <div class="lp-poly-veg" id="lp-poly-veg" style="display:none;"></div>
+
+                <!-- Empty State Viewfinder & Prompt -->
+                <div class="lp-plate-empty-content" id="lp-showcase-empty-state">
+                  <div class="lp-plate-empty-icon-ring">
+                    <iconify-icon icon="solar:camera-minimalistic-bold-duotone" style="font-size:42px;color:#9EA76B;"></iconify-icon>
+                  </div>
+                  <span class="lp-plate-empty-title">Piring Kosong</span>
+                  <span class="lp-plate-empty-sub">Belum ada makanan terdeteksi</span>
+                </div>
               </div>
 
               <div class="lp-live-tag lp-ltag-1" id="lp-showcase-tag-1">
-                <i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i>
-                <span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>
+                <iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon>
+                <span>Komponen Protein: Belum terdeteksi</span>
               </div>
               <div class="lp-live-tag lp-ltag-2" id="lp-showcase-tag-2">
-                <i data-lucide="soup" style="width:13px;height:13px;color:#EB8D70;"></i>
-                <span>Bubur Beras Lembut (220g) · 35g Karbo</span>
+                <iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon>
+                <span>Komponen Karbohidrat: Belum terdeteksi</span>
               </div>
               <div class="lp-live-tag lp-ltag-3" id="lp-showcase-tag-3">
-                <i data-lucide="egg" style="width:13px;height:13px;color:#EF9F27;"></i>
-                <span>Telur Tim Sutra (90g) · 6.8g Prot</span>
+                <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon>
+                <span>Sayur &amp; Serat: Belum terdeteksi</span>
               </div>
             </div>
 
@@ -227,31 +279,31 @@
                 <div class="lp-ring-donut-mini">
                   <svg viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="12" />
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#9EA76B" stroke-width="12"
-                      stroke-dasharray="251.2" stroke-dashoffset="80" stroke-linecap="round" />
+                    <circle id="lp-showcase-donut" cx="50" cy="50" r="40" fill="none" stroke="#9EA76B" stroke-width="12"
+                      stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease;" />
                   </svg>
-                  <span class="center-val">68%</span>
+                  <span class="center-val" id="lp-showcase-donut-val">0%</span>
                 </div>
                 <div class="lp-ring-text-meta">
-                  <h4 id="lp-showcase-protein">Target Protein: 32g / 98g</h4>
-                  <p id="lp-showcase-cals">Densitas Energi: 385 kkal (Tekstur Lunak · Fase 2 Pasca-Bedah)</p>
+                  <h4 id="lp-showcase-protein">Target Protein: 0g / 98g</h4>
+                  <p id="lp-showcase-cals">Densitas Energi: 0 kkal (Piring Kosong · Menunggu Pemindaian)</p>
                 </div>
               </div>
 
               <div class="lp-advice-callout" id="lp-showcase-advice">
-                <i data-lucide="lightbulb"
-                  style="width:16px;height:16px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></i>
-                <span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp;
-                  disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>
+                <iconify-icon icon="solar:lightbulb-bolt-bold-duotone"
+                  style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon>
+                <span><strong>Panduan AI:</strong> Belum ada data makanan yang dihitung. Pilih salah satu menu sampel di atas untuk simulasi segmentasi piring, atau gunakan tombol scan untuk menguji foto Anda.</span>
               </div>
 
-              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;">
-                <span style="font-size:11.5px;color:#EFE8CA;" id="lp-showcase-conf">
-                  <i data-lucide="check-circle" style="width:12px;height:12px;color:#9EA76B;"></i> Model Confidence: 96%
+              <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;flex-wrap:wrap;gap:10px;">
+                <span style="font-size:11.5px;color:#EFE8CA;display:flex;align-items:center;gap:5px;" id="lp-showcase-conf">
+                  <iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:15px;color:#9EA76B;"></iconify-icon>
+                  <span>Status AI: Siap Memindai</span>
                 </span>
                 <button class="lp-btn-hero-secondary" style="height:36px;padding:0 14px;font-size:12px;"
                   onclick="app.goToDashboard('overview', 'scan')">
-                  <i data-lucide="camera" style="width:14px;height:14px;"></i>
+                  <iconify-icon icon="solar:camera-bold-duotone" style="font-size:15px;"></iconify-icon>
                   <span>Coba Scan Foto Piring Sendiri →</span>
                 </button>
               </div>
@@ -311,7 +363,10 @@
           <!-- Card 3: Pangan Super Nusantara -->
           <div class="lp-support-card" id="lp-superfoods">
             <div class="lp-scard-head">
-              <div class="lp-scard-icon"><i data-lucide="leaf" style="width:18px;height:18px;"></i></div>
+              <div class="lp-scard-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+              </svg></div>
               <div class="lp-scard-title">Ensiklopedia pangan super lokal</div>
             </div>
             <p class="lp-scard-desc">150+ database pangan Indonesia kaya albumin, omega-3, dan probiotik yang terjangkau
@@ -391,48 +446,104 @@
       <div class="lp-container">
         <div class="lp-section-head-clean">
           <h2>Bukti riset klinis pendukung</h2>
-          <p>Pendekatan nutrisi NutriVision AI mengacu pada publikasi ilmiah gizi klinis dan protokol bedah terkini.</p>
+          <p>Pendekatan nutrisi NutriVision AI mengacu pada publikasi ilmiah gizi klinis dan protokol bedah terkini yang dapat diakses publik.</p>
         </div>
 
         <div class="lp-evidence-grid">
+          <!-- KARTU 1: IKAN GABUS & ALBUMIN -->
           <div class="lp-evidence-card">
-            <div>
-              <span class="lp-evidence-source">Jurnal Gizi Klinis Indonesia</span>
+            <div class="lp-evidence-body">
+              <div class="lp-evidence-top">
+                <span class="lp-evidence-source">J. Ethnopharmacology &amp; JGKI</span>
+                <span class="lp-evidence-badge-peer"><i data-lucide="check-circle-2" style="width:11px;height:11px;"></i> Peer-Reviewed</span>
+              </div>
               <p class="lp-evidence-quote">
                 "Pemberian ekstrak albumin ikan gabus (<em>Channa striata</em>) terbukti secara signifikan meningkatkan
                 kadar albumin serum dan mempercepat proses granulasi serta penutupan luka operasi pasca-laparotomi."
               </p>
             </div>
-            <div class="lp-evidence-citation">
-              Penelitian Uji Klinis Terkontrol Pasca-Bedah Bedah Digestif · 2023
+            <div class="lp-evidence-footer">
+              <div class="lp-evidence-citation">
+                <strong>Uji Klinis Pasca-Bedah Bedah Digestif</strong><br>
+                <span>Terindeks PubMed &amp; SINTA · PMID: 33133347</span>
+              </div>
+              <div class="lp-evidence-actions">
+                <a href="https://pubmed.ncbi.nlm.nih.gov/33133347/" target="_blank" rel="noopener noreferrer" class="lp-evidence-link" title="Buka publikasi riset di PubMed NCBI">
+                  <span>Akses Riset PubMed</span>
+                  <i data-lucide="external-link" class="btn-icon-sm"></i>
+                </a>
+                <a href="https://doi.org/10.1016/j.jep.2020.113543" target="_blank" rel="noopener noreferrer" class="lp-evidence-link-secondary" title="Buka tautan DOI Jurnal">
+                  <span>DOI</span>
+                </a>
+              </div>
             </div>
           </div>
 
+          <!-- KARTU 2: ESPEN SURGERY GUIDELINES -->
           <div class="lp-evidence-card">
-            <div>
-              <span class="lp-evidence-source">ESPEN Guidelines on Surgery</span>
+            <div class="lp-evidence-body">
+              <div class="lp-evidence-top">
+                <span class="lp-evidence-source">ESPEN Guidelines on Surgery</span>
+                <span class="lp-evidence-badge-peer"><i data-lucide="shield-check" style="width:11px;height:11px;"></i> Clinical Guideline</span>
+              </div>
               <p class="lp-evidence-quote">
                 "Kebutuhan protein pasien pasca-trauma atau tindakan bedah mayor meningkat menjadi 1.5 – 2.0 g/kg berat
                 badan per hari untuk meminimalkan kehilangan massa otot dan menstimulasi sintesis kolagen luka."
               </p>
             </div>
-            <div class="lp-evidence-citation">
-              European Society for Clinical Nutrition and Metabolism (ESPEN) · 2022
+            <div class="lp-evidence-footer">
+              <div class="lp-evidence-citation">
+                <strong>European Society for Clinical Nutrition &amp; Metabolism</strong><br>
+                <span>Clinical Nutrition Journal · PMID: 34246582</span>
+              </div>
+              <div class="lp-evidence-actions">
+                <a href="https://pubmed.ncbi.nlm.nih.gov/34246582/" target="_blank" rel="noopener noreferrer" class="lp-evidence-link" title="Buka pedoman resmi ESPEN di PubMed">
+                  <span>Akses Riset PubMed</span>
+                  <i data-lucide="external-link" class="btn-icon-sm"></i>
+                </a>
+                <a href="https://doi.org/10.1016/j.clnu.2021.03.031" target="_blank" rel="noopener noreferrer" class="lp-evidence-link-secondary" title="Buka tautan DOI Jurnal ESPEN">
+                  <span>DOI</span>
+                </a>
+              </div>
             </div>
           </div>
 
+          <!-- KARTU 3: OMEGA-3 & REHABILITASI MEDIS -->
           <div class="lp-evidence-card">
-            <div>
-              <span class="lp-evidence-source">Asean Journal of Rehabilitation</span>
+            <div class="lp-evidence-body">
+              <div class="lp-evidence-top">
+                <span class="lp-evidence-source">Asean J. Rehab &amp; Nutrients</span>
+                <span class="lp-evidence-badge-peer"><i data-lucide="check-circle-2" style="width:11px;height:11px;"></i> Peer-Reviewed</span>
+              </div>
               <p class="lp-evidence-quote">
                 "Asam lemak Omega-3 EPA/DHA dari sumber hayati laut lokal (seperti ikan kembung) efektif menurunkan
                 mediator inflamasi IL-6 dan mempercepat pemulihan mobilitas sendi pasca-cedera muskuloskeletal."
               </p>
             </div>
-            <div class="lp-evidence-citation">
-              Studi Intervensi Nutrisi Terapi Fisik &amp; Rehabilitasi Medik · 2024
+            <div class="lp-evidence-footer">
+              <div class="lp-evidence-citation">
+                <strong>Studi Intervensi Nutrisi Terapi Fisik &amp; Rehabilitasi Medik</strong><br>
+                <span>Terindeks PubMed &amp; PMC · PMID: 32414124</span>
+              </div>
+              <div class="lp-evidence-actions">
+                <a href="https://pubmed.ncbi.nlm.nih.gov/32414124/" target="_blank" rel="noopener noreferrer" class="lp-evidence-link" title="Buka publikasi riset di PubMed NCBI">
+                  <span>Akses Riset PubMed</span>
+                  <i data-lucide="external-link" class="btn-icon-sm"></i>
+                </a>
+                <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7352329/" target="_blank" rel="noopener noreferrer" class="lp-evidence-link-secondary" title="Buka naskah lengkap PMC">
+                  <span>PMC Full</span>
+                </a>
+              </div>
             </div>
           </div>
+        </div>
+
+        <!-- Catatan transparansi ilmiah di bawah grid bukti -->
+        <div class="lp-evidence-transparency-note">
+          <i data-lucide="info" style="width:16px;height:16px;color:#9EA76B;flex-shrink:0;"></i>
+          <span>
+            Seluruh rujukan riset terdaftar pada repositori ilmiah global (<strong>National Library of Medicine / PubMed</strong>) serta pedoman klinis resmi <strong>ESPEN</strong>. Klik tombol pada masing-masing kartu untuk membaca abstrak maupun naskah publikasi ilmiah (open-access).
+          </span>
         </div>
       </div>
     </section>
@@ -465,8 +576,11 @@
           <div class="lp-footer-brand">
             <div class="lp-brand" onclick="app.goToLanding()">
               <div class="lp-brand-mark">
-                <i data-lucide="leaf" style="width:18px;height:18px;"></i>
-              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+              </svg>
+            </div>
               <div class="lp-brand-title" style="color:#FFFFFF;">NutriVision AI</div>
             </div>
             <p>
@@ -529,7 +643,10 @@
       <div class="brand-container" onclick="app.navigate('overview')" style="cursor:pointer;"
         title="NutriVision AI Dasbor">
         <div class="brand-mark">
-          <i data-lucide="leaf" style="width:22px;height:22px;"></i>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+            <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+          </svg>
         </div>
         <div class="brand-text">
           <span class="brand-name">NutriVision AI</span>
@@ -595,7 +712,7 @@
           </button>
 
           <!-- Supabase Cloud Database Status & Sync Modal Trigger -->
-          <button type="button" class="topbar-db-btn" id="topbar-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database & Cloud Sync">
+          <button type="button" class="topbar-db-btn" id="topbar-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database &amp; Cloud Sync" style="display:none;">
             <i data-lucide="database" style="width:16px;height:16px;"></i>
             <span class="db-status-dot" id="topbar-db-dot"></span>
             <span class="topbar-db-lbl">DB</span>
@@ -1083,37 +1200,41 @@
           <!-- Header Row: Title on Left, Category Icon Pills on Right -->
           <div class="popular-menu-header">
             <div class="popular-menu-title-group">
-              <h2 class="popular-menu-heading">Our Popular Menu</h2>
-              <p class="popular-menu-sub">Pilihan menu nutrisi lezat tinggi protein &amp; gizi teruji untuk pemulihan
-                optimal.</p>
+              <h2 class="popular-menu-heading">Katalog Pangan Lokal Bappenas &amp; TKPI</h2>
+              <p class="popular-menu-sub">Data Resmi Komposisi Pangan Indonesia (TKPI Bappenas/Kemenkes RI) &amp; Acuan Harga Pangan Bapanas.</p>
             </div>
 
             <!-- Category Icon Pills -->
             <div class="popular-category-pills">
               <button class="cat-pill-btn active" data-category="all" onclick="app.filterCatalogCategory('all', this)"
-                title="Semua Menu">
-                <i data-lucide="layout-grid" style="width:16px;height:16px;"></i>
-                <span>All</span>
+                title="Semua Pangan Lokal">
+                <iconify-icon icon="solar:widget-2-bold" style="font-size:16px;"></iconify-icon>
+                <span>Semua</span>
               </button>
-              <button class="cat-pill-btn" data-category="main" onclick="app.filterCatalogCategory('main', this)"
-                title="Main Dishes">
-                <i data-lucide="soup" style="width:16px;height:16px;"></i>
-                <span>Meals</span>
+              <button class="cat-pill-btn" data-category="protein-animal" onclick="app.filterCatalogCategory('protein-animal', this)"
+                title="Protein Hewani Kaya Albumin/Omega-3">
+                <iconify-icon icon="solar:bone-bold" style="font-size:16px;"></iconify-icon>
+                <span>Protein Hewani</span>
               </button>
-              <button class="cat-pill-btn" data-category="grill" onclick="app.filterCatalogCategory('grill', this)"
-                title="Grill & Poultry">
-                <i data-lucide="flame" style="width:16px;height:16px;"></i>
-                <span>Grills</span>
+              <button class="cat-pill-btn" data-category="plant-veg" onclick="app.filterCatalogCategory('plant-veg', this)"
+                title="Nabati &amp; Sayuran Serat">
+                <iconify-icon icon="solar:leaf-bold" style="font-size:16px;"></iconify-icon>
+                <span>Nabati &amp; Sayur</span>
               </button>
-              <button class="cat-pill-btn" data-category="drink" onclick="app.filterCatalogCategory('drink', this)"
-                title="Juices & Drinks">
-                <i data-lucide="cup-soda" style="width:16px;height:16px;"></i>
-                <span>Drinks</span>
+              <button class="cat-pill-btn" data-category="carbs" onclick="app.filterCatalogCategory('carbs', this)"
+                title="Sumber Karbohidrat &amp; Bubur">
+                <iconify-icon icon="solar:bowl-bold" style="font-size:16px;"></iconify-icon>
+                <span>Karbohidrat</span>
+              </button>
+              <button class="cat-pill-btn" data-category="fruit-bev" onclick="app.filterCatalogCategory('fruit-bev', this)"
+                title="Buah Segar &amp; Rehidrasi Elektrolit">
+                <iconify-icon icon="solar:cup-bold" style="font-size:16px;"></iconify-icon>
+                <span>Buah &amp; Minuman</span>
               </button>
               <button class="cat-pill-btn" data-category="soft" onclick="app.filterCatalogCategory('soft', this)"
-                title="Soft & Recovery">
-                <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
-                <span>Soft Diet</span>
+                title="Diet Lunak / Disfagia">
+                <iconify-icon icon="solar:stars-bold" style="font-size:16px;"></iconify-icon>
+                <span>Diet Lunak</span>
               </button>
             </div>
           </div>
@@ -1123,7 +1244,7 @@
             <div class="popular-search-box">
               <i data-lucide="search" class="popular-search-icon"></i>
               <input type="text" class="popular-search-input" id="food-catalog-search"
-                placeholder="Search food, ingredients, recovery meals..." oninput="app.renderFoodCatalog(this.value)">
+                placeholder="Cari pangan lokal (Ikan Gabus, Tempe, Telur, Beras, dll)..." oninput="app.renderFoodCatalog(this.value)">
             </div>
             <div class="popular-nav-arrows">
               <button class="popular-arrow-btn" onclick="app.scrollCatalogGrid(-1)" title="Previous">
@@ -2080,6 +2201,18 @@
             </button>
           </div>
 
+          
+          <!-- Dedicated Admin Quick-Access Link -->
+          <div class="auth-admin-access-box" style="margin-top:14px;padding:10px 12px;background:rgba(158,167,107,0.08);border:1px dashed var(--line);border-radius:10px;text-align:center;">
+            <a href="javascript:void(0)" onclick="app.loginAsAdmin()" style="font-size:12px;color:var(--matcha-500);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+              <iconify-icon icon="solar:shield-keyhole-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <span>Masuk sebagai Administrator (Kelola Database)</span>
+            </a>
+            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">
+              Akses khusus verifikasi database &amp; sinkronisasi cloud
+            </div>
+          </div>
+
           <div class="auth-switch-footer-text">
             Belum memiliki akun? <a onclick="app.switchAuthTab('register')">Daftar Sekarang (Sign Up)</a>
           </div>
@@ -2342,6 +2475,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <!-- Core JavaScript Application Scripts -->
   <script src="js/supabase-config.js"></script>
   <script src="js/db.js"></script>
+  <script src="js/bappenas-api.js"></script>
   <script src="js/data.js"></script>
   <script src="js/cv-engine.js"></script>
   <script src="js/camera.js"></script>

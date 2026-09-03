@@ -43,6 +43,7 @@ class NutriVisionApp {
         const parsed = JSON.parse(saved);
         return {
           hasCompletedQuiz: parsed.hasCompletedQuiz !== undefined ? parsed.hasCompletedQuiz : Boolean(parsed.name && parsed.targets),
+          role: parsed.role || 'patient',
           name: parsed.name || '',
           contact: parsed.contact || '',
           gender: parsed.gender || 'male',
@@ -67,6 +68,7 @@ class NutriVisionApp {
     }
     return {
       hasCompletedQuiz: false,
+      role: 'patient',
       name: '',
       contact: '',
       gender: 'male',
@@ -163,6 +165,22 @@ class NutriVisionApp {
     });
 
     // Inisialisasi ikon Lucide (Figma / Iconify standard)
+    
+    // 5. Admin-Only Visibility for Database Controls (Hidden for regular users/patients)
+    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+    const topbarDbBtn = document.getElementById('topbar-db-btn');
+    const lpNavDbBtn = document.getElementById('lp-nav-db-btn');
+
+    if (topbarDbBtn) {
+      topbarDbBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+      if (isAdmin) {
+        topbarDbBtn.title = 'Panel Database Administrator (Aktif)';
+      }
+    }
+    if (lpNavDbBtn) {
+      lpNavDbBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+    }
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -532,57 +550,108 @@ class NutriVisionApp {
   // INTERACTIVE SIMULATOR: PRESET SCANNER SHOWCASE
   // =========================================================================
   selectLandingPreset(presetKey) {
-    document.querySelectorAll('.lp-meal-tab-btn').forEach(btn => {
+    document.querySelectorAll('.lp-preset-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.preset === presetKey);
     });
+
+    const emptyState = document.getElementById('lp-showcase-empty-state');
+    const polyProt = document.getElementById('lp-poly-prot');
+    const polyCarb = document.getElementById('lp-poly-carb');
+    const polyVeg  = document.getElementById('lp-poly-veg');
+    const donutCircle = document.getElementById('lp-showcase-donut');
+    const donutVal = document.getElementById('lp-showcase-donut-val');
+
+    if (presetKey === 'preset-empty' || !presetKey) {
+      if (emptyState) emptyState.style.display = 'flex';
+      if (polyProt) polyProt.style.display = 'none';
+      if (polyCarb) polyCarb.style.display = 'none';
+      if (polyVeg)  polyVeg.style.display = 'none';
+
+      if (donutCircle) donutCircle.style.strokeDashoffset = '251.2';
+      if (donutVal) donutVal.textContent = '0%';
+
+      const confEl = document.getElementById('lp-showcase-conf');
+      if (confEl) confEl.innerHTML = '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:15px;color:#9EA76B;"></iconify-icon><span>Status AI: Siap Memindai</span>';
+
+      const protEl = document.getElementById('lp-showcase-protein');
+      if (protEl) protEl.innerHTML = 'Target Protein: 0g / 98g';
+
+      const calsEl = document.getElementById('lp-showcase-cals');
+      if (calsEl) calsEl.innerHTML = 'Densitas Energi: 0 kkal (Piring Kosong · Menunggu Pemindaian)';
+
+      const adviceEl = document.getElementById('lp-showcase-advice');
+      if (adviceEl) adviceEl.innerHTML = '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Panduan AI:</strong> Belum ada data makanan yang dihitung. Silakan pilih salah satu menu sampel di atas untuk simulasi segmentasi, atau gunakan tombol scan untuk menguji foto piring asli.</span>';
+
+      const tag1 = document.getElementById('lp-showcase-tag-1');
+      if (tag1) tag1.innerHTML = '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Komponen Protein: Belum terdeteksi</span>';
+
+      const tag2 = document.getElementById('lp-showcase-tag-2');
+      if (tag2) tag2.innerHTML = '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Komponen Karbohidrat: Belum terdeteksi</span>';
+
+      const tag3 = document.getElementById('lp-showcase-tag-3');
+      if (tag3) tag3.innerHTML = '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Sayur &amp; Serat: Belum terdeteksi</span>';
+      return;
+    }
+
+    // Showing sample preset data
+    if (emptyState) emptyState.style.display = 'none';
+    if (polyProt) polyProt.style.display = 'block';
+    if (polyCarb) polyCarb.style.display = 'block';
+    if (polyVeg)  polyVeg.style.display = 'block';
 
     const presets = {
       'preset-soft-bubur-gabus': {
         conf: '96%',
-        targetProt: '32g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Tinggi Albumin)</span>',
-        cals: '385 kkal <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Tekstur Lunak)</span>',
-        advice: '<strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi & disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.',
-        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
-        tag2: '<i data-lucide="soup" style="width:13px;height:13px;color:#EB8D70;"></i><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
-        tag3: '<i data-lucide="egg" style="width:13px;height:13px;color:#EF9F27;"></i><span>Telur Tim Sutra (90g) · 6.8g Prot</span>',
-        polyColor: '#9EA76B'
+        donutPct: 68,
+        targetProt: 'Target Protein: 32g / 98g',
+        cals: 'Densitas Energi: 385 kkal (Tekstur Lunak · Fase 2 Pasca-Bedah)',
+        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp; disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>',
+        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
+        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
+        tag3: '<iconify-icon icon="solar:egg-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Telur Tim Sutra (90g) · 6.8g Prot</span>'
       },
       'preset-standard-nasi-ayam': {
         conf: '91%',
-        targetProt: '38g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Padat Gizi)</span>',
-        cals: '465 kkal <span style="font-size:11px;font-weight:500;color:var(--coral-500);">(Energi Seimbang)</span>',
-        advice: '<strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot & pembentukan enzim perbaikan jaringan.',
-        tag1: '<i data-lucide="drumstick" style="width:13px;height:13px;color:#9EA76B;"></i><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
-        tag2: '<i data-lucide="wheat" style="width:13px;height:13px;color:#EB8D70;"></i><span>Nasi Putih (175g) · 52g Karbo</span>',
-        tag3: '<i data-lucide="salad" style="width:13px;height:13px;color:#EF9F27;"></i><span>Tumis Kangkung &amp; Telur · Vit A/C</span>',
-        polyColor: '#D85A30'
+        donutPct: 77,
+        targetProt: 'Target Protein: 38g / 98g',
+        cals: 'Densitas Energi: 465 kkal (Gizi Seimbang · Fase 3)',
+        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot &amp; pembentukan enzim perbaikan jaringan.</span>',
+        tag1: '<iconify-icon icon="solar:cup-hot-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
+        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Nasi Putih (175g) · 52g Karbo</span>',
+        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Tumis Kangkung &amp; Telur · Vit A/C</span>'
       },
       'preset-fish-kembung': {
         conf: '94%',
-        targetProt: '41g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Kaya Omega-3)</span>',
-        cals: '430 kkal <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Hemat &amp; Bergizi)</span>',
-        advice: '<strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.',
-        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
-        tag2: '<i data-lucide="leaf" style="width:13px;height:13px;color:#EB8D70;"></i><span>Tempe Kukus (80g) · 15g Prot</span>',
-        tag3: '<i data-lucide="salad" style="width:13px;height:13px;color:#EF9F27;"></i><span>Sayur Bening Bayam · Zat Besi</span>',
-        polyColor: '#9EA76B'
+        donutPct: 83,
+        targetProt: 'Target Protein: 41g / 98g',
+        cals: 'Densitas Energi: 430 kkal (Kaya Omega-3 · Pangan Lokal)',
+        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.</span>',
+        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
+        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Tempe Kukus (80g) · 15g Prot</span>',
+        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Sayur Bening Bayam · Zat Besi</span>'
       },
       'preset-salmon-quinoa': {
         conf: '95%',
-        targetProt: '36g / 98g <span style="font-size:11px;font-weight:500;color:var(--teal-600);">(Antioksidan Tinggi)</span>',
-        cals: '420 kkal <span style="font-size:11px;font-weight:500;color:var(--coral-500);">(Densitas Tinggi)</span>',
-        advice: '<strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.',
-        tag1: '<i data-lucide="fish" style="width:13px;height:13px;color:#9EA76B;"></i><span>Fillet Salmon (130g) · 28g Prot</span>',
-        tag2: '<i data-lucide="salad" style="width:13px;height:13px;color:#EB8D70;"></i><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
-        tag3: '<i data-lucide="wheat" style="width:13px;height:13px;color:#EF9F27;"></i><span>Beras Merah (100g) · 23g Karbo</span>',
-        polyColor: '#D85A30'
+        donutPct: 73,
+        targetProt: 'Target Protein: 36g / 98g',
+        cals: 'Densitas Energi: 420 kkal (Antioksidan Tinggi · Rekondisi)',
+        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.</span>',
+        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Fillet Salmon (130g) · 28g Prot</span>',
+        tag2: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
+        tag3: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Beras Merah (100g) · 23g Karbo</span>'
       }
     };
 
     const data = presets[presetKey] || presets['preset-soft-bubur-gabus'];
 
+    if (donutCircle) {
+      const offset = 251.2 * (1 - data.donutPct / 100);
+      donutCircle.style.strokeDashoffset = offset;
+    }
+    if (donutVal) donutVal.textContent = `${data.donutPct}%`;
+
     const confEl = document.getElementById('lp-showcase-conf');
-    if (confEl) confEl.textContent = `AI Confidence: ${data.conf}`;
+    if (confEl) confEl.innerHTML = `<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:15px;color:#9EA76B;"></iconify-icon><span>Model Confidence: ${data.conf}</span>`;
 
     const protEl = document.getElementById('lp-showcase-protein');
     if (protEl) protEl.innerHTML = data.targetProt;
@@ -601,10 +670,6 @@ class NutriVisionApp {
 
     const tag3 = document.getElementById('lp-showcase-tag-3');
     if (tag3) tag3.innerHTML = data.tag3;
-
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
-    }
   }
 
   // =========================================================================
@@ -1415,8 +1480,19 @@ class NutriVisionApp {
 
     const term = searchTerm.toLowerCase().trim();
     const items = NUTRIVISION_DATA.indonesianFoodDatabase.filter(food => {
-      const matchCat = (this.activeCatalogCategory === 'all') || (food.category === this.activeCatalogCategory);
-      const matchSearch = !term || food.name.toLowerCase().includes(term) || (food.subtitle && food.subtitle.toLowerCase().includes(term)) || (food.category && food.category.toLowerCase().includes(term));
+      let matchCat = (this.activeCatalogCategory === 'all');
+      if (!matchCat) {
+        if (this.activeCatalogCategory === 'soft') {
+          matchCat = food.texture === 'soft' || food.texture === 'liquid';
+        } else {
+          matchCat = (food.category === this.activeCatalogCategory);
+        }
+      }
+      const matchSearch = !term || 
+        food.name.toLowerCase().includes(term) || 
+        (food.subtitle && food.subtitle.toLowerCase().includes(term)) || 
+        (food.clinicalIndication && food.clinicalIndication.toLowerCase().includes(term)) ||
+        (food.tkpiCode && food.tkpiCode.toLowerCase().includes(term));
       return matchCat && matchSearch;
     });
 
@@ -1436,56 +1512,64 @@ class NutriVisionApp {
 
     grid.innerHTML = items.map(food => {
       const isFav = this.favoriteFoods.has(food.id);
-      const rating = (food.rating || 5.0).toFixed(1);
-      const subtitle = food.subtitle || `${food.defaultPortionGrams}g · ${food.proteinRange[0]}-${food.proteinRange[1]}g Prot · ${food.calsRange[0]}-${food.calsRange[1]} kkal`;
+      const subtitle = food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kkal`;
       const clinicalTag = food.clinicalIndication || 'Pemulihan Klinis';
-      const bappenasRef = food.bappenasRef || 'Bapanas RI';
+      const bappenasRef = food.bappenasRef || 'Bapanas: Standar Nasional';
+      const tkpiCode = food.tkpiCode || 'TKPI 2024';
 
       return `
         <div class="popular-food-card" onclick="app.addCatalogItemToScan('${food.id}')" title="Klik untuk tambahkan ke piring scan">
-          <!-- Floating Round Dish Image & Rating -->
+          <!-- Floating Round Dish Image & Top Actions -->
           <div class="food-card-top">
             <div class="food-dish-plate-wrap">
               <img src="${food.image}" alt="${food.name}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
             </div>
-            <div class="food-rating-badge">
-              <span class="rating-num">${rating}</span>
-              <i data-lucide="star" class="star-icon"></i>
+
+            <!-- Pencarian Populer & Love/Suka Button Aligned Side-by-Side -->
+            <div class="food-card-header-actions" onclick="event.stopPropagation();">
+              <span class="food-popular-badge" title="Status Pencarian Populer Pasien">
+                <iconify-icon icon="solar:fire-bold" class="popular-fire-icon"></iconify-icon>
+                <span>Populer</span>
+              </span>
+              <button type="button" class="food-fav-btn ${isFav ? 'active' : ''}" 
+                      onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
+                      title="${isFav ? 'Disukai (Klik untuk batalkan)' : 'Suka / Simpan ke Menu Favorit'}"
+                      aria-label="Suka">
+                <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-heart-icon"></iconify-icon>
+              </button>
             </div>
           </div>
-
-          <!-- Favorite Heart Button -->
-          <button class="food-fav-btn ${isFav ? 'active' : ''}" 
-                  onclick="app.toggleFavoriteFood('${food.id}', event)" 
-                  title="${isFav ? 'Hapus favorit' : 'Favoritkan menu'}">
-            <i data-lucide="heart" class="fav-icon"></i>
-          </button>
 
           <!-- Card Content -->
           <div class="food-card-body">
             <div class="food-tag-row">
               <span class="food-clinical-tag">
-                <i data-lucide="shield-check" style="width:11px;height:11px;"></i>
+                <iconify-icon icon="solar:shield-check-bold" style="font-size:12px;"></iconify-icon>
                 ${clinicalTag}
+              </span>
+              <span class="food-tkpi-badge" title="Data Komposisi Gizi Terverifikasi Bappenas & TKPI Kemenkes RI">
+                <iconify-icon icon="solar:verified-check-bold" style="font-size:11px;color:#9EA76B;"></iconify-icon>
+                ${tkpiCode}
               </span>
             </div>
             <h4 class="food-card-title">${food.name}</h4>
             <p class="food-card-sub">${subtitle}</p>
 
             <div class="food-macro-pills-row">
-              <span class="macro-pill-item prot">🥩 ${food.proteinRange[0]}-${food.proteinRange[1]}g Prot</span>
-              <span class="macro-pill-item cal">⚡ ${food.calsRange[0]}-${food.calsRange[1]} kkal</span>
+              <span class="macro-pill-item prot">🥩 ${food.protein}g Prot</span>
+              <span class="macro-pill-item carb">🍞 ${food.carbs}g Karbo</span>
+              <span class="macro-pill-item cal">⚡ ${food.calories} kkal</span>
             </div>
 
             <div class="food-card-footer">
               <button class="food-cart-btn" 
                       onclick="event.stopPropagation(); app.addCatalogItemToScan('${food.id}');" 
                       title="Tambah ke Piring Scan">
-                <i data-lucide="plus" class="cart-icon"></i>
+                <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
               </button>
               <div class="food-card-price-group">
                 <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
-                <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran">${bappenasRef}</span>
+                <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran Bapanas RI">${bappenasRef}</span>
               </div>
             </div>
           </div>
@@ -1597,6 +1681,7 @@ class NutriVisionApp {
       this.userProfile = {
         ...this.userProfile,
         id: user.id,
+        role: user.role || 'patient',
         name: user.name || this.userProfile.name,
         contact: user.email,
         gender: user.gender || 'male',
@@ -1766,6 +1851,18 @@ class NutriVisionApp {
     }
   }
 
+  
+  // ── 1-Click Login Akses Administrator ──
+  async loginAsAdmin() {
+    this.openAuthModal('login');
+    const emailInput = document.getElementById('login-email');
+    const passInput = document.getElementById('login-password');
+    if (emailInput) emailInput.value = 'admin@nutrivision.id';
+    if (passInput) passInput.value = 'admin123';
+    this.showToast('🔑 Mengisi kredensial admin (admin@nutrivision.id)...');
+    setTimeout(() => this.handleLogin(), 200);
+  }
+
   handleLogout() {
     if (window.nutriVisionDB) {
       window.nutriVisionDB.logout();
@@ -1773,6 +1870,7 @@ class NutriVisionApp {
     localStorage.removeItem('nutrivision_user_profile');
     this.userProfile = {
       hasCompletedQuiz: false,
+      role: 'patient',
       name: '',
       contact: '',
       gender: 'male',
@@ -1820,7 +1918,7 @@ class NutriVisionApp {
       } else {
         lpActions.innerHTML = `
           <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')" title="Masuk ke Akun NutriVision AI">
-            <i data-lucide="log-in" style="width:15px;height:15px;"></i>
+            <i data-lucide="log-in" class="btn-icon-sm" style="width:15px;height:15px;"></i>
             <span>Login</span>
           </button>
           <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu" onclick="app.toggleLandingMobileMenu()">
@@ -1906,6 +2004,11 @@ class NutriVisionApp {
   // SUPABASE CLOUD & DATABASE INSPECTOR METHODS
   // =========================================================================
   openDatabaseSyncModal() {
+    if (this.userProfile?.role !== 'admin') {
+      this.showToast('🔒 Akses Ditolak: Panel Database hanya dapat dibuka oleh Administrator.');
+      this.openAuthModal('login');
+      return;
+    }
     const modal = document.getElementById('modal-db-sync');
     if (!modal) return;
 
@@ -2064,13 +2167,15 @@ class NutriVisionApp {
 
   toggleKeyVisibility() {
     const input = document.getElementById('sb-key-input');
-    const icon = document.getElementById('db-key-eye-icon');
+    const toggleBtn = document.querySelector('.db-input-toggle-vis');
     if (!input) return;
     const isHidden = input.type === 'password';
     input.type = isHidden ? 'text' : 'password';
-    if (icon) {
-      icon.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
-      if (window.lucide) window.lucide.createIcons({ nodes: [icon.closest('.db-input-toggle-vis')] });
+    if (toggleBtn) {
+      toggleBtn.innerHTML = `<i data-lucide="${isHidden ? 'eye-off' : 'eye'}" id="db-key-eye-icon" style="width:14px;height:14px;"></i>`;
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ root: toggleBtn });
+      }
     }
   }
 
@@ -2130,11 +2235,58 @@ class NutriVisionApp {
 const app = new NutriVisionApp();
 window.app = app;
 
-window.refreshIcons = function () {
+window.refreshIcons = function (rootElement) {
   if (window.lucide && typeof window.lucide.createIcons === 'function') {
-    window.lucide.createIcons();
+    if (rootElement && rootElement.nodeType === 1) {
+      window.lucide.createIcons({ root: rootElement });
+    } else {
+      window.lucide.createIcons();
+    }
   }
 };
+
+// Auto MutationObserver: deteksi & inisialisasi ikon dinamis secara otomatis
+let _iconObserverTimeout = null;
+function _scheduleIconAutoRefresh() {
+  if (_iconObserverTimeout) return;
+  _iconObserverTimeout = setTimeout(() => {
+    _iconObserverTimeout = null;
+    window.refreshIcons();
+  }, 40);
+}
+
+if (typeof window !== 'undefined' && window.MutationObserver) {
+  const _iconObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === 1) {
+            if (node.hasAttribute && node.hasAttribute('data-lucide')) {
+              _scheduleIconAutoRefresh();
+              return;
+            }
+            if (node.querySelector && node.querySelector('[data-lucide]')) {
+              _scheduleIconAutoRefresh();
+              return;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const _startObserver = () => {
+    if (document.body) {
+      _iconObserver.observe(document.body, { childList: true, subtree: true });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _startObserver);
+  } else {
+    _startObserver();
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   app.init();

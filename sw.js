@@ -1,10 +1,20 @@
 // NutriVision AI Service Worker
-const CACHE_NAME = 'nutrivision-v1.1.0';
+const CACHE_NAME = 'nutrivision-v1.1.3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './css/styles.css',
+  './css/variables.css',
+  './css/layout.css',
+  './css/components.css',
+  './css/dashboard.css',
+  './css/landing.css',
+  './css/modals.css',
+  './css/database.css',
+  './css/responsive.css',
+  './js/lucide.min.js',
+  './js/iconify-icon.min.js',
   './js/data.js',
   './js/cv-engine.js',
   './js/camera.js',
@@ -16,7 +26,6 @@ const ASSETS_TO_CACHE = [
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  'https://unpkg.com/lucide@latest',
   'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap'
 ];
 

@@ -1,0 +1,347 @@
+/* ==========================================================================
+   NutriVision AI — 6. Mobile App Bar, PWA Bottom Nav & Media Queries
+   ========================================================================== */
+/* ==========================================================================
+   MOBILE BOTTOM NAVIGATION & APP BAR (PWA)
+   ========================================================================= */
+.bottom-nav-pwa {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid #DDD4B0;
+  z-index: 50;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -4px 20px rgba(28, 32, 14, 0.06);
+}
+
+.bottom-nav-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #687346;
+  padding: 4px 8px;
+  transition: all 0.15s ease;
+  position: relative;
+  flex: 1;
+  text-align: center;
+}
+
+.bottom-nav-btn .nav-icon {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.bottom-nav-btn.active {
+  color: #9EA76B;
+  font-weight: 700;
+}
+
+.bottom-nav-btn.active .nav-icon {
+  color: #9EA76B;
+}
+
+.bottom-nav-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 22px;
+  height: 3px;
+  background: #9EA76B;
+  border-radius: 2px;
+}
+
+/* Floating Action Button (Camera Scan in Mobile) */
+.fab-scan-btn {
+  position: fixed;
+  bottom: calc(74px + var(--safe-bottom));
+  right: 18px;
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-circle);
+  background: linear-gradient(135deg, #9EA76B, #9EA76B);
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(158, 167, 107, 0.4);
+  z-index: 45;
+  transition: all 0.2s ease;
+}
+
+.fab-scan-btn:active {
+  transform: scale(0.92);
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: max(14px, var(--safe-top));
+  right: 14px;
+  left: 14px;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: #1C200E;
+  color: #FFFFFF;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  animation: slideInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES (MOBILE PHONE VIEWPORT)
+   ========================================================================== */
+@media (max-width: 960px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding-left: 0;
+  }
+
+  /* Hide desktop sidebar */
+  .sidebar {
+    display: none;
+  }
+
+  /* Show mobile app header showcase on home overview */
+  .mobile-app-header-block {
+    display: block;
+  }
+
+  /* Hide desktop topbar and hero scan card on mobile overview to give clean mobile experience */
+  .topbar {
+    display: none;
+  }
+
+  .hero-scan-card {
+    display: none;
+  }
+
+  /* Show mobile bottom nav & floating action camera button */
+  .bottom-nav-pwa {
+    display: flex;
+  }
+
+  .fab-scan-btn {
+    display: flex;
+  }
+
+  /* Main container padding for smartphone */
+  .main-wrapper {
+    padding: max(12px, var(--safe-top)) 16px calc(76px + var(--safe-bottom));
+  }
+
+  /* Disclaimer Banner */
+  .disclaimer-banner {
+    padding: 10px 12px;
+    font-size: 12px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    gap: 8px;
+  }
+
+  /* Card paddings on mobile */
+  .card {
+    padding: 16px 16px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .card-head {
+    margin-bottom: 12px;
+  }
+
+  .card-title-group h2 {
+    font-size: 16px;
+  }
+
+  .plate-segmentation-showcase {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 16px 14px;
+  }
+
+  .plate-diagram-col {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+
+  .plate-canvas-box {
+    width: 125px;
+    height: 125px;
+  }
+
+  .segment-row-top {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .segment-row-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Macronutrient Ring on mobile */
+  .macro-ring-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .macro-donut-wrapper {
+    width: 110px;
+    height: 110px;
+  }
+
+  .macro-donut-center .val {
+    font-size: 20px;
+  }
+
+  .macro-progress-list {
+    width: 100%;
+  }
+
+  .recovery-tip-box {
+    font-size: 11.5px;
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  /* Form & Radio Cards on mobile */
+  .form-radio-cards {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .radio-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: var(--radius-xs);
+  }
+
+  /* Mobile Bottom Sheet Modal */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal-box {
+    border-radius: 24px 24px 0 0;
+    max-height: 88vh;
+    padding: 20px 16px calc(20px + var(--safe-bottom));
+    animation: slideUpMobile 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  @keyframes slideUpMobile {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .camera-capture-viewport {
+    height: 170px;
+    border-radius: var(--radius-sm);
+  }
+
+  .scan-result-canvas-container {
+    height: 150px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Mobile Popular Menu Layout */
+  .popular-menu-card {
+    padding: 20px 16px !important;
+    border-radius: 22px !important;
+  }
+
+  .popular-menu-heading {
+    font-size: 24px;
+  }
+
+  .popular-category-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cat-pill-btn {
+    white-space: nowrap;
+    font-size: 11.5px;
+    padding: 6px 12px;
+  }
+
+  .popular-menu-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .popular-search-box {
+    max-width: 100%;
+  }
+
+  .popular-nav-arrows {
+    display: none;
+  }
+
+  .popular-catalog-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
