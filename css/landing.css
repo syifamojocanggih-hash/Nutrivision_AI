@@ -450,37 +450,65 @@ body:not(.is-landing-active) #landing-page-view {
   align-items: center;
 }
 
-.lp-preset-pills-row {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 16px;
+.lp-preset-pills-row,
+.lp-feature-presets-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 18px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  width: 100% !important;
+}
+
+.lp-preset-pills-row::-webkit-scrollbar,
+.lp-feature-presets-bar::-webkit-scrollbar {
+  display: none !important;
 }
 
 .lp-preset-btn {
   all: unset;
-  cursor: pointer;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #EEF1D8;
-  white-space: nowrap;
-  transition: all 0.15s ease;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  padding: 7px 16px !important;
+  border-radius: 9999px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #EEF1D8 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
 }
 
 .lp-preset-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #FFFFFF !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
 }
 
 .lp-preset-btn.active {
-  background: #9EA76B;
-  color: #FFFFFF;
-  border-color: #B1BB81;
+  background: #9EA76B !important;
+  color: #FFFFFF !important;
+  border-color: #B1BB81 !important;
+  box-shadow: 0 3px 12px rgba(158, 167, 107, 0.4) !important;
+}
+
+.lp-preset-btn i,
+.lp-preset-btn iconify-icon {
+  font-size: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  flex-shrink: 0 !important;
 }
 
 .lp-live-plate-canvas-box {

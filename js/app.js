@@ -627,6 +627,9 @@ class NutriVisionApp {
 
     this.isLanding = false;
     document.body.classList.remove('is-landing-active');
+    if (sectionId === 'catalog') {
+      this.isPlateMatchedCatalogMode = false;
+    }
     this.navigate(sectionId);
     if (window.history.pushState) {
       window.history.pushState(null, null, `#${sectionId}`);
@@ -686,7 +689,7 @@ class NutriVisionApp {
       if (tag2) tag2.innerHTML = '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Komponen Karbohidrat: Belum terdeteksi</span>';
 
       const tag3 = document.getElementById('lp-showcase-tag-3');
-      if (tag3) tag3.innerHTML = '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Sayur &amp; Serat: Belum terdeteksi</span>';
+      if (tag3) tag3.innerHTML = '<span>Sayur &amp; Serat: Belum terdeteksi</span>';
       return;
     }
 
@@ -767,6 +770,10 @@ class NutriVisionApp {
 
     const tag3 = document.getElementById('lp-showcase-tag-3');
     if (tag3) tag3.innerHTML = data.tag3;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   // =========================================================================
@@ -1658,8 +1665,228 @@ class NutriVisionApp {
   // =========================================================================
   // OUR POPULAR MENU / KATALOG GIZI MAKANAN MODERN (MATCHING MOCKUP)
   // =========================================================================
+  openPlateCatalogModal() {
+    this.renderPlateCatalogModal();
+    this.openModal('plate-catalog-modal');
+  }
+
+  renderPlateCatalogModal() {
+    const body = document.getElementById('plate-catalog-modal-body');
+    if (!body) return;
+
+    const segments = (window.cvEngine && cvEngine.currentScan && cvEngine.currentScan.segments) ? cvEngine.currentScan.segments : [];
+    const db = NUTRIVISION_DATA.indonesianFoodDatabase || [];
+
+    // Fallback default segments if none detected yet
+    let targetSegments = segments;
+    if (targetSegments.length === 0) {
+      targetSegments = [
+        { name: 'Nasi Putih Pulen', portionGrams: 175, color: '#9EA76B', protein: [4, 5], cals: [220, 250], carbs: [48, 55], fat: [0.4, 0.8], foodId: 'nasi-putih' },
+        { name: 'Dada Ayam Panggang', portionGrams: 125, color: '#9EA76B', protein: [28, 33], cals: [190, 220], carbs: [0, 1.5], fat: [3.8, 5.2], foodId: 'dada-ayam-panggang' },
+        { name: 'Tumis Kangkung', portionGrams: 85, color: '#2DD4BF', protein: [2.5, 3.5], cals: [45, 60], carbs: [3, 5], fat: [1.2, 2.0], foodId: 'tumis-kangkung' },
+        { name: 'Telur Rebus (1/2 butir)', portionGrams: 30, color: '#F59E0B', protein: [3.3, 3.8], cals: [38, 45], carbs: [0.3, 0.5], fat: [2.6, 3.0], foodId: 'telur-rebus' }
+      ];
+    }
+
+    const totalGrams = targetSegments.reduce((sum, s) => sum + (s.portionGrams || 0), 0) || 1;
+    let totalEstimatedPrice = 0;
+    let totalProtMin = 0;
+    let totalProtMax = 0;
+    let totalCalsMin = 0;
+    let totalCalsMax = 0;
+
+    const cardsHtml = targetSegments.map((seg, idx) => {
+      const segName = (seg.name || '').toLowerCase();
+      const segFoodId = (seg.foodId || '').toLowerCase();
+
+      // Find best match in database
+      let matchedFood = db.find(f => segFoodId && (f.id === segFoodId || f.id.includes(segFoodId) || segFoodId.includes(f.id)));
+      if (!matchedFood) {
+        const keywords = segName.split(/[\s,()·/+-]+/).filter(w => w.length > 2);
+        matchedFood = db.find(f => {
+          const fName = f.name.toLowerCase();
+          for (const kw of keywords) {
+            if (['rebus', 'kukus', 'panggang', 'butir', 'goreng', 'porsi', 'potong', 'halus', 'tim', 'sutra'].includes(kw)) continue;
+            if (fName.includes(kw) || f.id.includes(kw)) return true;
+          }
+          return false;
+        });
+      }
+
+      const portionGrams = seg.portionGrams || 100;
+      const portionPct = Math.round((portionGrams / totalGrams) * 100);
+
+      // Extract price and metadata
+      let priceNum = 3500;
+      let priceText = 'Rp 3.500';
+      let bappenasText = 'Bapanas: Acuan Standar';
+      let foodImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80';
+      let clinicalBenefit = 'Kaya mikronutrien dan protein esensial untuk percepatan pemulihan jaringan.';
+      let tkpiCode = 'TKPI 2024';
+      let displayName = seg.name;
+
+      if (matchedFood) {
+        displayName = matchedFood.name;
+        foodImage = matchedFood.image || foodImage;
+        bappenasText = matchedFood.bappenasRef || bappenasText;
+        clinicalBenefit = matchedFood.subtitle || matchedFood.clinicalIndication || clinicalBenefit;
+        tkpiCode = matchedFood.tkpiCode || tkpiCode;
+        
+        // Extract raw price number e.g. "Rp 4.800" -> 4800
+        const rawNum = parseInt((matchedFood.price || '').replace(/[^0-9]/g, ''), 10);
+        if (rawNum > 0) {
+          priceNum = rawNum;
+          priceText = matchedFood.price;
+        }
+      }
+
+      totalEstimatedPrice += priceNum;
+      
+      const pMin = seg.protein ? seg.protein[0] : (matchedFood ? matchedFood.protein : 4);
+      const pMax = seg.protein ? seg.protein[1] : (matchedFood ? matchedFood.protein + 2 : 6);
+      totalProtMin += pMin;
+      totalProtMax += pMax;
+
+      const cMin = seg.cals ? seg.cals[0] : (matchedFood ? matchedFood.calories - 20 : 90);
+      const cMax = seg.cals ? seg.cals[1] : (matchedFood ? matchedFood.calories + 20 : 140);
+      totalCalsMin += cMin;
+      totalCalsMax += cMax;
+
+      return `
+        <div class="plate-food-card">
+          <div class="plate-food-thumb-box">
+            <img src="${foodImage}" alt="${displayName}" class="plate-food-thumb-img" onerror="this.src='icons/icon-192.png'" loading="lazy" />
+            <span class="plate-food-color-tag" style="background:${seg.color || '#9EA76B'};"></span>
+          </div>
+          <div class="plate-food-details">
+            <div>
+              <div class="plate-food-hdr">
+                <div class="plate-food-name">${displayName}</div>
+                <span class="plate-portion-pill">${portionGrams}g (${portionPct}%)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+                <span class="plate-food-price-badge">
+                  <i data-lucide="tag" style="width:12px;height:12px;"></i> ${priceText}
+                </span>
+                <span class="plate-food-bapanas-ref">${bappenasText}</span>
+              </div>
+              <div class="plate-food-macros">
+                <span class="plate-macro-item">Prot: <b>${pMin}-${pMax}g</b></span> · 
+                <span class="plate-macro-item">Kal: <b>${cMin}-${cMax} kkal</b></span> · 
+                <span class="plate-macro-item" style="color:#64748B;">${tkpiCode}</span>
+              </div>
+            </div>
+            <div class="plate-food-benefit">
+              💡 ${clinicalBenefit}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    body.innerHTML = `
+      <div class="plate-summary-strip">
+        <div>
+          <div class="plate-summary-stat-label">Komponen Bahan</div>
+          <div class="plate-summary-stat-val">${targetSegments.length} <span style="font-size:12px;font-weight:500;color:var(--text-sub);">Bahan</span></div>
+        </div>
+        <div>
+          <div class="plate-summary-stat-label">Total Porsi</div>
+          <div class="plate-summary-stat-val">${totalGrams} <span style="font-size:12px;font-weight:500;color:var(--text-sub);">gram</span></div>
+        </div>
+        <div>
+          <div class="plate-summary-stat-label">Total Protein</div>
+          <div class="plate-summary-stat-val" style="color:#15803D;">${totalProtMin.toFixed(1).replace('.0','')}-${totalProtMax.toFixed(1).replace('.0','')} <span style="font-size:12px;font-weight:500;color:#15803D;">g</span></div>
+        </div>
+        <div>
+          <div class="plate-summary-stat-label">Estimasi Biaya Piring</div>
+          <div class="plate-summary-stat-val" style="color:#0284C7;">Rp ${totalEstimatedPrice.toLocaleString('id-ID')}</div>
+        </div>
+      </div>
+
+      <div class="plate-breakdown-items-grid">
+        ${cardsHtml}
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  openPlateMatchedCatalog() {
+    this.isPlateMatchedCatalogMode = true;
+    this.activeCatalogCategory = 'all';
+    document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.category === 'all');
+    });
+    const searchInput = document.getElementById('food-catalog-search');
+    if (searchInput) searchInput.value = '';
+
+    this.navigate('catalog');
+  }
+
+  clearCatalogPlateFilter() {
+    this.isPlateMatchedCatalogMode = false;
+    this.activeCatalogCategory = 'all';
+    document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.category === 'all');
+    });
+    const searchInput = document.getElementById('food-catalog-search');
+    if (searchInput) searchInput.value = '';
+    this.renderFoodCatalog('');
+  }
+
+  getMatchedCatalogFoodsForPlate() {
+    const segments = (window.cvEngine && cvEngine.currentScan && cvEngine.currentScan.segments) ? cvEngine.currentScan.segments : [];
+    const db = NUTRIVISION_DATA.indonesianFoodDatabase || [];
+
+    if (segments.length === 0) {
+      return { items: db, segmentNames: [] };
+    }
+
+    const matched = [];
+    const seenIds = new Set();
+    const segmentNames = [];
+
+    segments.forEach(seg => {
+      if (seg.name) segmentNames.push(seg.name);
+      const segName = (seg.name || '').toLowerCase();
+      const segFoodId = (seg.foodId || '').toLowerCase();
+
+      db.forEach(food => {
+        if (seenIds.has(food.id)) return;
+
+        // 1. Direct or partial ID match
+        if (segFoodId && (food.id === segFoodId || food.id.includes(segFoodId) || segFoodId.includes(food.id))) {
+          seenIds.add(food.id);
+          matched.push(food);
+          return;
+        }
+
+        // 2. Meaningful keyword matching
+        const foodName = food.name.toLowerCase();
+        const keywords = segName.split(/[\s,()·/+-]+/).filter(w => w.length > 2);
+        for (const kw of keywords) {
+          if (['rebus', 'kukus', 'panggang', 'butir', 'goreng', 'porsi', 'potong', 'halus', 'tim', 'sutra', 'bening', 'sayur', 'menu', 'komponen'].includes(kw)) continue;
+          if (foodName.includes(kw) || food.id.includes(kw)) {
+            seenIds.add(food.id);
+            matched.push(food);
+            break;
+          }
+        }
+      });
+    });
+
+    return {
+      items: matched.length > 0 ? matched : db,
+      segmentNames
+    };
+  }
+
   filterCatalogCategory(category, btnElement) {
     this.activeCatalogCategory = category;
+    this.isPlateMatchedCatalogMode = false;
     document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => b.classList.remove('active'));
     if (btnElement) {
       btnElement.classList.add('active');
@@ -1696,8 +1923,42 @@ class NutriVisionApp {
     if (!this.activeCatalogCategory) this.activeCatalogCategory = 'all';
     if (!this.favoriteFoods) this.favoriteFoods = new Set();
 
+    const bannerContainer = document.getElementById('catalog-matched-banner-container');
+    let baseList = NUTRIVISION_DATA.indonesianFoodDatabase;
+
+    if (this.isPlateMatchedCatalogMode) {
+      const { items: matchedItems, segmentNames } = this.getMatchedCatalogFoodsForPlate();
+      if (matchedItems && matchedItems.length > 0) {
+        baseList = matchedItems;
+      }
+      if (bannerContainer) {
+        bannerContainer.style.display = 'block';
+        bannerContainer.innerHTML = `
+          <div class="catalog-matched-alert" style="background:linear-gradient(135deg, rgba(158,167,107,0.16) 0%, rgba(158,167,107,0.06) 100%);border:1.5px solid #9EA76B;border-radius:14px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(158,167,107,0.12);margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:#9EA76B;color:#FFFFFF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i data-lucide="sparkles" style="width:18px;height:18px;"></i>
+              </div>
+              <div>
+                <b style="color:var(--text-main, #2D3748);font-size:13.5px;display:block;">Pilihan Pangan Sesuai Komposisi Piring Anda</b>
+                <span style="font-size:12px;color:var(--text-sub, #64748B);">Menampilkan <strong>${baseList.length} bahan pangan lokal</strong> yang cocok dengan hasil segmentasi piring (${segmentNames.join(', ')}).</span>
+              </div>
+            </div>
+            <button type="button" class="btn-sm-teal" style="background:var(--card-bg, #FFFFFF);border:1.5px solid #9EA76B;color:var(--text-main, #2D3748);font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;" onclick="app.clearCatalogPlateFilter()">
+              <i data-lucide="layout-grid" style="width:14px;height:14px;"></i> Tampilkan Semua Pangan Lokal
+            </button>
+          </div>
+        `;
+      }
+    } else {
+      if (bannerContainer) {
+        bannerContainer.style.display = 'none';
+        bannerContainer.innerHTML = '';
+      }
+    }
+
     const term = searchTerm.toLowerCase().trim();
-    const items = NUTRIVISION_DATA.indonesianFoodDatabase.filter(food => {
+    const items = baseList.filter(food => {
       let matchCat = (this.activeCatalogCategory === 'all');
       if (!matchCat) {
         if (this.activeCatalogCategory === 'soft') {
@@ -2543,6 +2804,9 @@ class NutriVisionApp {
     document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
         const sec = btn.dataset.sec;
+        if (sec === 'catalog') {
+          this.isPlateMatchedCatalogMode = false;
+        }
         if (sec) this.navigate(sec);
       });
     });
@@ -2551,6 +2815,9 @@ class NutriVisionApp {
     document.querySelectorAll('.bottom-nav-pwa .bottom-nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const sec = btn.dataset.sec;
+        if (sec === 'catalog') {
+          this.isPlateMatchedCatalogMode = false;
+        }
         if (sec) this.navigate(sec);
       });
     });

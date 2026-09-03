@@ -189,7 +189,6 @@
               </div>
               <div class="lp-legend-item lp-legend-empty">
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:16px;color:#9EA76B;"></iconify-icon>
                   <span>Segmen Serat / Sayur</span>
                 </div>
                 <b style="color:#B1BB81;font-weight:500;">-- g</b>
@@ -213,36 +212,35 @@
       <div class="lp-container">
         <div class="lp-section-head-clean">
           <h2>Segmentasi citra makanan berbasis AI</h2>
-          <p>Multi-segment computer vision menyekat komponen hidangan, menghitung estimasi gramatur, dan mencocokkannya
-            dengan fase pemulihan jaringan.</p>
+          <p>Deteksi instan porsi protein, karbohidrat, dan serat dengan akurasi klinis tinggi</p>
         </div>
 
         <div class="lp-main-feature-card">
           <!-- Preset buttons with Figma/Iconify Icons -->
-          <div class="lp-preset-pills-row">
+          <div class="lp-preset-pills-row lp-feature-presets-bar">
             <button type="button" class="lp-preset-btn active" data-preset="preset-empty"
               onclick="app.selectLandingPreset('preset-empty')">
-              <iconify-icon icon="solar:scanner-bold-duotone" style="font-size:15px;"></iconify-icon>
-              <span>Piring Kosong (Default)</span>
+              <i data-lucide="disc" style="width:15px;height:15px;"></i>
+              <span>Piring Kosong (Reset)</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-soft-bubur-gabus"
               onclick="app.selectLandingPreset('preset-soft-bubur-gabus')">
-              <iconify-icon icon="solar:bowl-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <i data-lucide="soup" style="width:15px;height:15px;"></i>
               <span>Bubur Ikan Gabus (Disfagia)</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-standard-nasi-ayam"
               onclick="app.selectLandingPreset('preset-standard-nasi-ayam')">
-              <iconify-icon icon="solar:cup-hot-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <i data-lucide="drumstick" style="width:15px;height:15px;"></i>
               <span>Nasi Dada Ayam &amp; Kangkung</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-fish-kembung"
               onclick="app.selectLandingPreset('preset-fish-kembung')">
-              <iconify-icon icon="solar:fish-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <i data-lucide="fish" style="width:15px;height:15px;"></i>
               <span>Pepes Ikan Kembung (Omega-3)</span>
             </button>
             <button type="button" class="lp-preset-btn" data-preset="preset-salmon-quinoa"
               onclick="app.selectLandingPreset('preset-salmon-quinoa')">
-              <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:15px;"></iconify-icon>
+              <i data-lucide="leaf" style="width:15px;height:15px;"></i>
               <span>Salmon &amp; Brokoli Kukus</span>
             </button>
           </div>
@@ -274,7 +272,6 @@
                 <span>Komponen Karbohidrat: Belum terdeteksi</span>
               </div>
               <div class="lp-live-tag lp-ltag-3" id="lp-showcase-tag-3">
-                <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon>
                 <span>Sayur &amp; Serat: Belum terdeteksi</span>
               </div>
             </div>
@@ -1456,7 +1453,7 @@
                 <button class="btn-primary-coral" onclick="app.openScanModal()">
                   <i data-lucide="camera" class="btn-icon-md"></i> Scan Makanan Baru
                 </button>
-                <button class="btn-outline-glass" onclick="app.navigate('catalog')">
+                <button class="btn-outline-glass" onclick="app.openPlateCatalogModal()" title="Lihat pop-up rincian makanan & estimasi harga sesuai piring ini">
                   <i data-lucide="book-open" class="btn-icon-md"></i> Katalog Pangan
                 </button>
               </div>
@@ -1739,6 +1736,9 @@
               </button>
             </div>
           </div>
+
+          <!-- Matched Breakdown Banner (Shown when opened from Plate Hero Card) -->
+          <div id="catalog-matched-banner-container" style="display:none;margin-bottom:16px;"></div>
 
           <!-- Catalog Cards Grid (Floating Dish Cutout Showcase) -->
           <div class="popular-catalog-grid" id="food-catalog-grid">
@@ -2153,6 +2153,41 @@
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- =========================================================================
+     MODAL POP-UP: KATALOG PANGAN & HARGA SESUAI BREAKDOWN PIRING
+     ========================================================================= -->
+  <div class="modal-overlay" id="plate-catalog-modal">
+    <div class="modal-box plate-catalog-modal-box">
+      <div class="modal-header" style="padding-bottom:14px;border-bottom:1px solid var(--line);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="modal-title-icon-badge" style="width:40px;height:40px;border-radius:12px;background:#EEF1D8;color:#5D6738;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i data-lucide="book-open" style="width:22px;height:22px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:17px;font-weight:700;color:var(--text-main,#1C200E);">Katalog &amp; Referensi Harga Komposisi Piring</h3>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--text-sub,#64748B);">Rincian bahan pangan, nilai gizi TKPI Bappenas, dan acuan harga pasar Badan Pangan Nasional (Bapanas RI).</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="app.closeModal('plate-catalog-modal')" title="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div id="plate-catalog-modal-body" style="padding:16px 0;">
+        <!-- Dynamically rendered via JS -->
+      </div>
+
+      <div class="modal-footer" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap;">
+        <button type="button" class="btn-outline-glass" style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;padding:8px 18px;border-radius:20px;font-weight:600;" onclick="app.closeModal('plate-catalog-modal'); app.clearCatalogPlateFilter(); app.navigate('catalog');">
+          <i data-lucide="layout-grid" style="width:15px;height:15px;"></i> Buka Seluruh Katalog Pangan Lokal (100+)
+        </button>
+        <button type="button" class="btn-primary-coral" style="padding:8px 22px;border-radius:20px;font-size:12.5px;font-weight:600;" onclick="app.closeModal('plate-catalog-modal')">
+          Tutup Pop-up
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- =========================================================================
      MODAL 1: COMPUTER VISION SCAN & CORRECTION (FR-01, FR-02, FR-03, FR-07)
