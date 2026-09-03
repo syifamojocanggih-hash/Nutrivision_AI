@@ -89,6 +89,10 @@ class NutriVisionApp {
     };
   }
 
+  get db() {
+    return window.nutriVisionDB || null;
+  }
+
   saveUserProfile() {
     localStorage.setItem('nutrivision_user_profile', JSON.stringify(this.userProfile));
     this.applyAccessibilitySettings();
@@ -605,6 +609,22 @@ class NutriVisionApp {
       this.goToAdminPortal();
       return;
     }
+
+    // Validasi Wajib Isi: User biasa harus menyelesaikan 3 langkah pengisian profil sebelum masuk dashboard
+    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+    const hasCompleted = Boolean(this.userProfile && this.userProfile.hasCompletedQuiz && this.userProfile.name);
+
+    if (!isAdmin && !hasCompleted) {
+      this.isLanding = false;
+      document.body.classList.remove('is-landing-active');
+      this.navigate(sectionId);
+      setTimeout(() => {
+        this.openQuizModal(1);
+        this.showToast('Lengkapi 3 langkah profil pemulihan untuk mengaktifkan dasbor.', 'info');
+      }, 100);
+      return;
+    }
+
     this.isLanding = false;
     document.body.classList.remove('is-landing-active');
     this.navigate(sectionId);
@@ -978,7 +998,7 @@ class NutriVisionApp {
   }
 
   // =========================================================================
-  // FOODVISOR-STYLE DIAGNOSTIC QUIZ METHODS
+  // FOODVISOR-STYLE DIAGNOSTIC QUIZ METHODS (3 STEPS WITH BULLET PAGINATION)
   // =========================================================================
   openQuizModal(step = 1) {
     const onboardName = document.getElementById('onboard-name');
@@ -993,33 +1013,116 @@ class NutriVisionApp {
     this.goToQuizStep(step);
   }
 
-  goToQuizStep(step) {
-    this.currentQuizStep = step;
+  validateQuizStep(step) {
+    if (step === 1) {
+      const nameVal = document.getElementById('onboard-name')?.value?.trim();
+      const contactVal = document.getElementById('onboard-contact')?.value?.trim();
+      const ageVal = parseInt(document.getElementById('onboard-age')?.value, 10);
 
-    // Update progress indicator
-    const stepIndicator = document.getElementById('quiz-step-indicator');
-    const stepTitle = document.getElementById('quiz-step-title');
-    const progressBar = document.getElementById('quiz-progress-bar');
+      if (!nameVal) {
+        this.showToast('Nama Lengkap Pasien wajib diisi di Langkah 1.', 'warning');
+        document.getElementById('onboard-name')?.focus();
+        return false;
+      }
+      if (!contactVal) {
+        this.showToast('Email atau No. WhatsApp wajib diisi di Langkah 1.', 'warning');
+        document.getElementById('onboard-contact')?.focus();
+        return false;
+      }
+      if (!ageVal || isNaN(ageVal) || ageVal < 5 || ageVal > 120) {
+        this.showToast('Masukkan usia yang valid (5 - 120 tahun).', 'warning');
+        document.getElementById('onboard-age')?.focus();
+        return false;
+      }
+      return true;
+    }
 
-    const titles = [
-      'Identitas & Akun Pasien',
-      'Sasaran Jalur Pemulihan',
-      'Biometrik & Aktivitas Fisik',
-      'Gejala Pencernaan & Pantangan',
-      'Hasil Diagnostik Gizi Presisi'
-    ];
-
-    if (stepIndicator) stepIndicator.textContent = `Langkah ${step} dari 5`;
-    if (stepTitle) stepTitle.textContent = titles[step - 1] || 'Kuesioner Diagnostik';
-    if (progressBar) progressBar.style.width = `${step * 20}%`;
-
-    // Toggle panes
-    document.querySelectorAll('.quiz-step-pane').forEach((pane, idx) => {
-      pane.classList.toggle('active', (idx + 1) === step);
-    });
+    if (step === 2) {
+      if (!this.quizState.condition) {
+        this.quizState.condition = 'post-surgery';
+      }
+      return true;
+    }
 
     if (step === 3) {
+      const weight = parseFloat(document.getElementById('onboard-weight')?.value);
+      const height = parseFloat(document.getElementById('onboard-height')?.value);
+      const consent = document.getElementById('onboard-consent-check')?.checked;
+
+      if (!weight || isNaN(weight) || weight < 20 || weight > 300) {
+        this.showToast('Masukkan berat badan yang valid (20 - 300 kg).', 'warning');
+        document.getElementById('onboard-weight')?.focus();
+        return false;
+      }
+      if (!height || isNaN(height) || height < 80 || height > 250) {
+        this.showToast('Masukkan tinggi badan yang valid (80 - 250 cm).', 'warning');
+        document.getElementById('onboard-height')?.focus();
+        return false;
+      }
+      if (!consent) {
+        this.showToast('Silakan centang persetujuan disclaimer medis terlebih dahulu.', 'warning');
+        return false;
+      }
+      return true;
+    }
+
+    return true;
+  }
+
+  goToQuizStep(step) {
+    this.currentQuizStep = Math.max(1, Math.min(3, step));
+
+    // Update 3 Bullet Stepper Elements
+    for (let i = 1; i <= 3; i++) {
+      const bulletEl = document.getElementById(`stepper-bullet-${i}`);
+      const circleEl = document.getElementById(`bullet-circle-${i}`);
+      const lineEl = document.getElementById(`stepper-line-${i}`);
+
+      if (!bulletEl || !circleEl) continue;
+
+      bulletEl.classList.remove('active', 'completed', 'locked');
+
+      if (i < this.currentQuizStep) {
+        // Langkah sebelumnya (selesai)
+        bulletEl.classList.add('completed');
+        circleEl.innerHTML = '<i data-lucide="check" style="width:16px;height:16px;"></i>';
+      } else if (i === this.currentQuizStep) {
+        // Sedang aktif diisi sekarang
+        bulletEl.classList.add('active');
+        circleEl.textContent = i;
+      } else {
+        // Belum dibuka (terkunci)
+        bulletEl.classList.add('locked');
+        circleEl.textContent = i;
+      }
+
+      if (lineEl) {
+        if (i < this.currentQuizStep) {
+          lineEl.classList.add('completed');
+        } else {
+          lineEl.classList.remove('completed');
+        }
+      }
+    }
+
+    // Toggle 3 Step Panes
+    for (let i = 1; i <= 3; i++) {
+      const pane = document.getElementById(`quiz-step-${i}`);
+      if (pane) {
+        pane.classList.toggle('active', i === this.currentQuizStep);
+      }
+    }
+
+    // Di Step 3: Hitung otomatis live BMI & Target gizi
+    if (this.currentQuizStep === 3) {
       this.updateLiveBMIDisplay();
+      this.calculateDiagnosticResults();
+    }
+
+    // Kontrol tombol Close X: hanya boleh muncul jika profil sudah pernah selesai sebelumnya
+    const closeBtn = document.getElementById('onboarding-close-btn');
+    if (closeBtn) {
+      closeBtn.style.display = (this.userProfile?.hasCompletedQuiz && this.userProfile?.name) ? 'inline-flex' : 'none';
     }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -1027,23 +1130,55 @@ class NutriVisionApp {
     }
   }
 
+  jumpToQuizStep(targetStep) {
+    if (targetStep === this.currentQuizStep) return;
+
+    if (targetStep < this.currentQuizStep) {
+      // Boleh kembali ke langkah sebelumnya kapan saja
+      this.goToQuizStep(targetStep);
+      return;
+    }
+
+    // Jika ingin melangkah maju, WAJIB validasi langkah sebelumnya secara berurutan
+    if (targetStep >= 2) {
+      if (!this.validateQuizStep(1)) return;
+    }
+    if (targetStep >= 3) {
+      if (!this.validateQuizStep(2)) return;
+    }
+
+    this.goToQuizStep(targetStep);
+  }
+
   nextQuizStep() {
     if (this.currentQuizStep === 1) {
-      const nameVal = document.getElementById('onboard-name')?.value?.trim();
-      if (!nameVal) {
-        alert('Mohon masukkan nama lengkap pasien/pengguna terlebih dahulu.');
-        document.getElementById('onboard-name')?.focus();
-        return;
-      }
+      if (!this.validateQuizStep(1)) return;
+      this.goToQuizStep(2);
+      return;
     }
-    if (this.currentQuizStep < 5) {
-      this.goToQuizStep(this.currentQuizStep + 1);
+
+    if (this.currentQuizStep === 2) {
+      if (!this.validateQuizStep(2)) return;
+      this.goToQuizStep(3);
+      return;
+    }
+
+    if (this.currentQuizStep === 3) {
+      this.saveOnboardingProfile();
     }
   }
 
   prevQuizStep() {
     if (this.currentQuizStep > 1) {
       this.goToQuizStep(this.currentQuizStep - 1);
+    }
+  }
+
+  tryCloseOnboardingModal() {
+    if (this.userProfile?.hasCompletedQuiz && this.userProfile?.name) {
+      this.closeModal('onboarding-modal');
+    } else {
+      this.showToast('Pengisian profil wajib diselesaikan untuk membuka Dasbor.', 'warning');
     }
   }
 
@@ -1175,19 +1310,25 @@ class NutriVisionApp {
 
   // Simpan Hasil Diagnostik ke Profil Pengguna
   saveOnboardingProfile() {
-    const consentChecked = document.getElementById('onboard-consent-check')?.checked;
-    if (!consentChecked) {
-      alert('Mohon centang persetujuan pernyataan tanggung jawab bersama sebelum melanjutkan.');
+    if (!this.validateQuizStep(1)) {
+      this.goToQuizStep(1);
+      return;
+    }
+    if (!this.validateQuizStep(2)) {
+      this.goToQuizStep(2);
+      return;
+    }
+    if (!this.validateQuizStep(3)) {
+      this.goToQuizStep(3);
       return;
     }
 
-    if (!this.calculatedDiagnostics) {
-      this.calculateDiagnosticResults();
-    }
+    this.calculateDiagnosticResults();
 
     const diag = this.calculatedDiagnostics;
-    const contactInput = document.getElementById('onboard-contact')?.value || 'rangga.pratama@email.com';
-    const phaseInput = document.getElementById('onboard-phase')?.value || 'Minggu ke-2 (Fase Proliferasi)';
+    const nameInput = document.getElementById('onboard-name')?.value?.trim();
+    const contactInput = document.getElementById('onboard-contact')?.value?.trim();
+    const phaseInput = document.getElementById('onboard-phase')?.value || 'Minggu ke-2 (Fase Proliferasi & Jaringan)';
     const restrictionsInput = document.getElementById('onboard-restrictions')?.value || '';
 
     const conditionTitles = {
@@ -1197,7 +1338,7 @@ class NutriVisionApp {
       'wellness': 'Pemeliharaan Gizi Medis'
     };
 
-    this.userProfile.name = diag.name || 'Rangga Pratama';
+    this.userProfile.name = nameInput || diag.name || 'Pengguna NutriVision';
     this.userProfile.contact = contactInput;
     this.userProfile.gender = diag.gender;
     this.userProfile.age = diag.age;
@@ -1205,7 +1346,7 @@ class NutriVisionApp {
     this.userProfile.weightKg = diag.weight;
     this.userProfile.activityLevel = diag.activity;
     this.userProfile.conditionId = diag.condition;
-    this.userProfile.conditionTitle = conditionTitles[diag.condition] || 'Pasca-Operasi';
+    this.userProfile.conditionTitle = conditionTitles[diag.condition] || 'Pasca-Operasi & Bedah';
     this.userProfile.phase = phaseInput;
     this.userProfile.restrictions = restrictionsInput;
     this.userProfile.bmi = diag.bmi;
@@ -2055,25 +2196,35 @@ class NutriVisionApp {
   // =========================================================================
   // UTILITIES & NOTIFICATIONS
   // =========================================================================
-  showToast(message) {
+  showToast(message, type = 'auto') {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
+    let isError = type === 'error' || /❌|gagal|error|batal|peringatan/i.test(message);
+    let isWarning = type === 'warning' || /⚠️|perhatian|notice/i.test(message);
+    let isSuccess = type === 'success' || /✅|sukses|berhasil/i.test(message);
+
     const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = `<i data-lucide="check-circle" style="color:var(--teal-300);width:18px;height:18px;flex-shrink:0;"></i><span>${message}</span>`;
+    toast.className = 'toast' + (isError ? ' toast-error' : (isWarning ? ' toast-warning' : (isSuccess ? ' toast-success' : '')));
+
+    const iconName = isError ? 'alert-triangle' : (isWarning ? 'alert-circle' : (isSuccess ? 'check-circle' : 'info'));
+    const iconColor = isError ? '#FCA5A5' : (isWarning ? '#FDE68A' : (isSuccess ? '#86EFAC' : 'var(--teal-300)'));
+
+    toast.innerHTML = `<i data-lucide="${iconName}" style="color:${iconColor};width:18px;height:18px;flex-shrink:0;"></i><span>${message}</span>`;
     container.appendChild(toast);
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
+      window.lucide.createIcons({ root: toast });
     }
+
+    const duration = isError ? 5500 : (isWarning ? 4200 : 3200);
 
     setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(-10px)';
       toast.style.transition = 'all 0.3s ease';
       setTimeout(() => toast.remove(), 300);
-    }, 3200);
+    }, duration);
   }
 
   exportCaregiverReport() {
@@ -2128,9 +2279,36 @@ class NutriVisionApp {
     if (modal) modal.classList.remove('open');
   }
 
-  updateSupabaseStatusUI() {
+  showDatabaseError(title, message, isSchemaError = false) {
+    const banner = document.getElementById('db-error-banner');
+    const titleEl = document.getElementById('db-error-title');
+    const msgEl = document.getElementById('db-error-msg');
+    const actionEl = document.getElementById('db-error-action');
+
+    if (banner && titleEl && msgEl) {
+      titleEl.textContent = title || 'Koneksi Supabase Bermasalah';
+      msgEl.textContent = message || 'Terjadi kesalahan saat berkomunikasi dengan Supabase Cloud.';
+      if (actionEl) {
+        actionEl.style.display = isSchemaError ? 'block' : 'none';
+      }
+      banner.style.display = 'flex';
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ root: banner });
+      }
+    }
+
+    this.showToast(`❌ ${title}: ${message}`, 'error');
+  }
+
+  hideDatabaseError() {
+    const banner = document.getElementById('db-error-banner');
+    if (banner) banner.style.display = 'none';
+  }
+
+  updateSupabaseStatusUI(customError = null) {
+    const db = this.db || window.nutriVisionDB;
     const isConfigured = window.SUPABASE_CONFIG?.isConfigured;
-    const isConnected = this.db?.isSupabaseConnected;
+    const isConnected = db?.isSupabaseConnected;
     const dot = document.getElementById('db-pulse-dot');
     const text = document.getElementById('db-status-text');
     const topbarDot = document.getElementById('topbar-db-dot');
@@ -2139,11 +2317,16 @@ class NutriVisionApp {
     // Helper: reset all pulse classes then apply one
     const setPulse = (el, cls) => {
       if (!el) return;
-      el.classList.remove('connected', 'checking');
+      el.classList.remove('connected', 'checking', 'error');
       if (cls) el.classList.add(cls);
     };
 
-    if (isConnected && isConfigured) {
+    if (customError) {
+      setPulse(dot, 'error');
+      if (text) text.innerHTML = `<span style="color:#DC2626;font-weight:700;">Gagal Terhubung (Error)</span>`;
+      if (topbarDot) { topbarDot.style.background = '#EF4444'; topbarDot.title = 'Error Koneksi Supabase'; }
+      if (lpDot)     { lpDot.style.background = '#EF4444'; }
+    } else if (isConnected && isConfigured) {
       setPulse(dot, 'connected');
       if (text) {
         let host = '';
@@ -2167,84 +2350,160 @@ class NutriVisionApp {
 
   async saveSupabaseSettings(e) {
     if (e && e.preventDefault) e.preventDefault();
-    const url = document.getElementById('sb-url-input')?.value?.trim();
-    const key = document.getElementById('sb-key-input')?.value?.trim();
+
+    const connectBtn = document.getElementById('db-btn-connect');
+    const originalBtnText = connectBtn ? connectBtn.innerHTML : '';
+
+    let url = document.getElementById('sb-url-input')?.value?.trim();
+    let key = document.getElementById('sb-key-input')?.value?.trim();
 
     if (!url || !key) {
-      this.showToast('Silakan isi Project URL dan Anon Key Supabase.');
+      this.showToast('Silakan isi Project URL dan Anon Key Supabase.', 'warning');
+      this.showDatabaseError('Formulir Belum Lengkap', 'Project URL dan Anon Key Supabase wajib diisi.');
       return;
     }
 
-    window.SUPABASE_CONFIG.save(url, key);
-    this.db.initSupabaseClient();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    try {
+      const parsedUrl = new URL(url);
+      url = parsedUrl.origin; // Menghilangkan /rest/v1 atau /res yang tidak sengaja tertempel
+      const urlInput = document.getElementById('sb-url-input');
+      if (urlInput) urlInput.value = url;
+    } catch (err) {}
+
+    if (connectBtn) {
+      connectBtn.innerHTML = '<span>⏳ Menghubungkan ke Supabase...</span>';
+      connectBtn.disabled = true;
+    }
+
+    this.hideDatabaseError();
     this.showToast('Menghubungkan ke Supabase...');
 
-    const res = await this.db.testSupabaseConnection(url, key);
-    if (res.success) {
-      this.db.isSupabaseConnected = true;
-      this.updateSupabaseStatusUI();
-      this.showToast('✅ Berhasil terhubung ke Supabase Cloud!');
-    } else {
-      this.db.isSupabaseConnected = false;
-      this.updateSupabaseStatusUI();
-      alert('⚠️ Peringatan Supabase:\n' + res.message + '\n\nTips: Pastikan SQL schema sudah dijalankan di Supabase SQL Editor.');
+    try {
+      const db = this.db || window.nutriVisionDB;
+      if (!db) {
+        throw new Error('Database engine NutriVisionDB belum siap di browser.');
+      }
+
+      if (!window.SUPABASE_CONFIG || typeof window.SUPABASE_CONFIG.save !== 'function') {
+        window.SUPABASE_CONFIG = {
+          url: url,
+          anonKey: key,
+          get isConfigured() { return !!(this.url && this.anonKey); },
+          save(u, k) {
+            this.url = u; this.anonKey = k;
+            localStorage.setItem('nv_supabase_url', u);
+            localStorage.setItem('nv_supabase_key', k);
+          }
+        };
+      }
+
+      window.SUPABASE_CONFIG.save(url, key);
+      await db.initSupabaseClient();
+
+      const res = await db.testSupabaseConnection(url, key);
+      if (res.success) {
+        db.isSupabaseConnected = true;
+        this.updateSupabaseStatusUI();
+        this.showToast('✅ Berhasil terhubung ke Supabase Cloud!', 'success');
+
+        const shouldSync = confirm('✅ BERHASIL TERHUBUNG KE SUPABASE CLOUD!\n\nApakah Anda ingin langsung mengunggah seluruh akun demo dan data lokal ke tabel Supabase (users & meals) sekarang?');
+        if (shouldSync) {
+          await this.syncAllDataToSupabase();
+        }
+      } else {
+        db.isSupabaseConnected = false;
+        this.updateSupabaseStatusUI(res.message);
+        this.showDatabaseError('Koneksi Supabase Gagal', res.message, res.isSchemaError);
+      }
+    } catch (err) {
+      this.showDatabaseError('Koneksi Gagal', err.message);
+    } finally {
+      if (connectBtn) {
+        connectBtn.innerHTML = originalBtnText || '<i data-lucide="plug-zap" style="width:15px;height:15px;"></i><span>Simpan &amp; Hubungkan</span>';
+        connectBtn.disabled = false;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons({ root: connectBtn });
+        }
+      }
     }
   }
 
   resetSupabaseConfig() {
     if (confirm('Reset kredensial Supabase dan kembali ke IndexedDB lokal murni?')) {
-      window.SUPABASE_CONFIG.reset();
-      this.db.initSupabaseClient();
+      const db = this.db || window.nutriVisionDB;
+      if (window.SUPABASE_CONFIG) window.SUPABASE_CONFIG.reset();
+      if (db) db.initSupabaseClient();
       const urlInput = document.getElementById('sb-url-input');
       const keyInput = document.getElementById('sb-key-input');
       if (urlInput) urlInput.value = '';
       if (keyInput) keyInput.value = '';
+      this.hideDatabaseError();
       this.updateSupabaseStatusUI();
-      this.showToast('Kredensial Supabase di-reset. Kembali ke mode IndexedDB.');
+      this.showToast('Kredensial Supabase di-reset. Kembali ke mode IndexedDB.', 'info');
     }
   }
 
   async testSupabaseCloud(showAlert = true) {
+    const db = this.db || window.nutriVisionDB;
     const url = document.getElementById('sb-url-input')?.value?.trim() || window.SUPABASE_CONFIG?.url;
     const key = document.getElementById('sb-key-input')?.value?.trim() || window.SUPABASE_CONFIG?.anonKey;
 
     if (!url || !key) {
-      this.showToast('URL atau Anon Key Supabase belum diisi.');
+      this.showToast('URL atau Anon Key Supabase belum diisi.', 'warning');
+      this.showDatabaseError('Formulir Kosong', 'Silakan isi Project URL dan Anon Key terlebih dahulu.');
       return;
     }
 
+    if (!db) {
+      this.showToast('Database engine belum siap.', 'warning');
+      return;
+    }
+
+    this.hideDatabaseError();
     this.showToast('Menguji koneksi Supabase...');
-    const res = await this.db.testSupabaseConnection(url, key);
+    const res = await db.testSupabaseConnection(url, key);
 
     if (res.success) {
-      this.db.isSupabaseConnected = true;
+      db.isSupabaseConnected = true;
       this.updateSupabaseStatusUI();
-      if (showAlert) alert('✅ Sukses! Database Supabase siap menerima data dari localhost.');
+      this.showToast('✅ Sukses! Database Supabase siap menerima data.', 'success');
+      if (showAlert) alert('✅ Sukses! Database Supabase siap menerima data dari aplikasi NutriVision AI.');
     } else {
-      this.db.isSupabaseConnected = false;
-      this.updateSupabaseStatusUI();
-      if (showAlert) alert('❌ Gagal terhubung:\n' + res.message);
+      db.isSupabaseConnected = false;
+      this.updateSupabaseStatusUI(res.message);
+      this.showDatabaseError('Uji Koneksi Gagal', res.message, res.isSchemaError);
     }
   }
 
   async syncAllDataToSupabase() {
-    if (!window.SUPABASE_CONFIG?.isConfigured || !this.db.supabase) {
-      this.showToast('Silakan simpan kredensial Supabase terlebih dahulu.');
+    const db = this.db || window.nutriVisionDB;
+    if (!window.SUPABASE_CONFIG?.isConfigured || !db || !db.supabase) {
+      this.showToast('Silakan simpan kredensial Supabase terlebih dahulu.', 'warning');
+      this.showDatabaseError('Belum Terhubung', 'Silakan masukkan kredensial dan klik "Simpan & Hubungkan" sebelum melakukan upload.');
       return;
     }
 
     const btn = document.getElementById('btn-sync-all-supabase');
+    const heroBtn = document.getElementById('btn-hero-sync-supabase');
     if (btn) btn.disabled = true;
+    if (heroBtn) heroBtn.disabled = true;
+    this.hideDatabaseError();
     this.showToast('Mengunggah seluruh data lokal ke Supabase...');
 
     try {
-      const res = await this.db.syncAllToSupabase();
-      this.showToast('✅ Berhasil upload ' + res.syncedUsers + ' akun & ' + res.syncedMeals + ' riwayat ke Supabase!');
-      alert('🎉 Sinkronisasi Selesai!\n\n- ' + res.syncedUsers + ' Akun Pengguna disinkronkan ke tabel "users"\n- ' + res.syncedMeals + ' Log Makanan disinkronkan ke tabel "meals"\n\nSilakan cek tabel di Supabase Dashboard (Table Editor).');
+      const res = await db.syncAllToSupabase();
+      this.showToast(`✅ Berhasil upload ${res.syncedUsers} akun & ${res.syncedMeals} riwayat ke Supabase!`, 'success');
+      alert(`🎉 Sinkronisasi Selesai!\n\n- ${res.syncedUsers} Akun Pengguna disinkronkan ke tabel "users"\n- ${res.syncedMeals} Log Makanan disinkronkan ke tabel "meals"\n\nSilakan cek tabel di Supabase Dashboard (Table Editor).`);
     } catch (err) {
-      alert('Gagal sinkronisasi: ' + err.message);
+      const isSchema = (err.message || '').includes('relation') || (err.message || '').includes('exist') || (err.message || '').includes('tabel');
+      this.showDatabaseError('Gagal Sinkronisasi Cloud', err.message, isSchema);
+      alert('❌ Gagal sinkronisasi data ke Supabase:\n\n' + err.message + '\n\nTips: Pastikan SQL schema sudah dijalankan di menu SQL Editor pada Supabase dashboard.');
     } finally {
       if (btn) btn.disabled = false;
+      if (heroBtn) heroBtn.disabled = false;
     }
   }
 
@@ -2311,6 +2570,13 @@ class NutriVisionApp {
           this.closeModal(modal.id);
         }
       });
+    });
+
+    // Supabase real-time background sync error listener
+    window.addEventListener('supabase-sync-error', (e) => {
+      const action = e.detail?.action || 'Sinkronisasi';
+      const msg = e.detail?.message || 'Gagal terhubung ke Supabase.';
+      this.showToast(`⚠️ Error ${action}: ${msg}`, 'error');
     });
 
     // Landing Page Navbar Scroll Shadow Effect

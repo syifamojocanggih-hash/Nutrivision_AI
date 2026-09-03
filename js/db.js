@@ -82,14 +82,17 @@ class NutriVisionDatabase {
   }
 
   /**
-   * Inisialisasi Supabase JS Client
+   * Inisialisasi Supabase JS Client & Auto-Sync
    */
-  initSupabaseClient() {
+  async initSupabaseClient() {
     try {
       if (window.supabase && typeof window.supabase.createClient === 'function' && window.SUPABASE_CONFIG?.isConfigured) {
         this.supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
         this.isSupabaseConnected = true;
         console.log('☁️ Supabase Cloud Client Connected:', window.SUPABASE_CONFIG.url);
+
+        // Auto-seed data ke Supabase jika tabel masih kosong
+        await this.autoSyncInitialDataToSupabase();
       } else {
         this.supabase = null;
         this.isSupabaseConnected = false;
@@ -102,30 +105,67 @@ class NutriVisionDatabase {
   }
 
   /**
+   * Auto-Seed seluruh akun demo & data ke Supabase jika tabel cloud masih kosong
+   */
+  async autoSyncInitialDataToSupabase() {
+    if (!this.supabase) return;
+    try {
+      const { data, error } = await this.supabase.from('users').select('id').limit(1);
+      if (error) {
+        console.warn('Supabase check table notice:', error.message);
+        return;
+      }
+      if (!data || data.length === 0) {
+        console.log('⚡ Supabase users table kosong. Melakukan auto-seed seluruh data ke Supabase Cloud...');
+        await this.syncAllToSupabase();
+        console.log('✅ Seluruh akun & data berhasil di-seed otomatis ke Supabase Cloud!');
+      }
+    } catch (err) {
+      console.warn('Auto sync to Supabase notice:', err.message);
+    }
+  }
+
+  /**
    * Test Koneksi ke Supabase Cloud
    */
   async testSupabaseConnection(customUrl, customKey) {
-    const url = customUrl || window.SUPABASE_CONFIG?.url;
-    const key = customKey || window.SUPABASE_CONFIG?.anonKey;
+    let url = (customUrl || window.SUPABASE_CONFIG?.url || '').trim();
+    let key = (customKey || window.SUPABASE_CONFIG?.anonKey || '').trim();
 
     if (!url || !key) {
-      return { success: false, message: 'URL atau Anon Key Supabase belum diisi.' };
+      return { success: false, isSchemaError: false, message: 'URL atau Anon Key Supabase belum diisi.' };
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
     }
 
     try {
-      if (!window.supabase) {
-        return { success: false, message: 'Library Supabase JS belum termuat di browser.' };
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        return { success: false, isSchemaError: false, message: 'Library Supabase JS SDK belum termuat di browser.' };
       }
 
       const client = window.supabase.createClient(url, key);
-      const { data, error } = await client.from('users').select('id').limit(1);
+
+      // Timeout 8 detik agar query tidak pernah menggantung tanpa respon
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Koneksi timeout (8 detik). Pastikan URL Supabase valid dan koneksi internet aktif.')), 8000)
+      );
+      const queryPromise = client.from('users').select('id').limit(1);
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
 
       if (error && error.code !== 'PGRST116') {
-        // Jika tabel belum ada atau permission issue
+        const isSchema = (error.message || '').includes('relation') ||
+                         (error.message || '').includes('does not exist') ||
+                         error.code === '42P01' || error.code === 'PGRST204' || error.code === 'PGRST200';
         return {
           success: false,
+          isSchemaError: isSchema,
           error: error,
-          message: `Terhubung ke Supabase, namun ada kendala query tabel 'users': ${error.message}. Pastikan SQL schema sudah dijalankan.`
+          message: isSchema
+            ? `Tabel 'users' belum ada di Supabase (${error.message}). Anda perlu menjalankan SQL Schema di SQL Editor Supabase terlebih dahulu.`
+            : `Kendala akses Supabase: ${error.message} (Kode: ${error.code || 'UNKNOWN'}). Periksa apakah Anon Key dan URL sudah sesuai.`
         };
       }
 
@@ -136,7 +176,8 @@ class NutriVisionDatabase {
     } catch (err) {
       return {
         success: false,
-        message: 'Gagal terhubung: ' + err.message
+        isSchemaError: false,
+        message: 'Gagal terhubung ke Supabase: ' + err.message
       };
     }
   }
@@ -348,14 +389,19 @@ class NutriVisionDatabase {
       });
     }
 
-    // 2. Background Sync ke Supabase Cloud (Non-blocking)
+    // 2. Direct Sync ke Supabase Cloud (Live Storage)
     if (this.supabase) {
       try {
         const row = this.mapUserToSupabaseRow(user);
-        this.supabase.from('users').upsert(row).then(({ error }) => {
-          if (error) console.warn('Supabase user upsert notice:', error.message);
-          else console.log('☁️ User synced to Supabase:', user.email);
-        });
+        const { error } = await this.supabase.from('users').upsert(row);
+        if (error) {
+          console.warn('Supabase user upsert notice:', error.message);
+          window.dispatchEvent(new CustomEvent('supabase-sync-error', {
+            detail: { action: 'Simpan Akun', message: error.message }
+          }));
+        } else {
+          console.log('☁️ [SUPABASE LIVE] User saved to cloud:', user.email);
+        }
       } catch (err) {
         console.warn('Supabase sync error:', err.message);
       }
@@ -636,7 +682,7 @@ class NutriVisionDatabase {
       });
     }
 
-    // 2. Background Sync ke Supabase
+    // 2. Direct Sync ke Supabase Cloud (Live Storage)
     if (this.supabase) {
       try {
         const row = {
@@ -651,10 +697,15 @@ class NutriVisionDatabase {
           segments: meal.segments || [],
           timestamp: meal.timestamp || meal.createdAt
         };
-        this.supabase.from('meals').upsert(row).then(({ error }) => {
-          if (error) console.warn('Supabase meal upsert notice:', error.message);
-          else console.log('☁️ Meal synced to Supabase:', meal.name);
-        });
+        const { error } = await this.supabase.from('meals').upsert(row);
+        if (error) {
+          console.warn('Supabase meal upsert notice:', error.message);
+          window.dispatchEvent(new CustomEvent('supabase-sync-error', {
+            detail: { action: 'Simpan Makanan', message: error.message }
+          }));
+        } else {
+          console.log('☁️ [SUPABASE LIVE] Meal saved to cloud:', meal.name);
+        }
       } catch (err) {
         console.warn('Supabase meal sync error:', err.message);
       }
@@ -707,52 +758,300 @@ class NutriVisionDatabase {
     });
   }
 
+  getSeedUsersList() {
+    return [
+      {
+        id: 'usr_demo_surgery',
+        name: 'Rangga Pratama',
+        email: 'pasien@nutrivision.id',
+        passwordHash: this.hashPassword('pasien123'),
+        role: 'patient',
+        condition: 'post-surgery',
+        conditionLabel: 'Pasca-Operasi Usus Buntu',
+        recoveryPhase: 'Fase 2 Proliferasi',
+        weight: 65,
+        height: 172,
+        age: 32,
+        gender: 'male',
+        targetProtein: 75,
+        targetCalories: 1950,
+        createdAt: '2026-08-01T08:00:00.000Z',
+        avatarText: 'RP',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: ['nausea']
+      },
+      {
+        id: 'usr_demo_rehab',
+        name: 'Siti Rahmawati',
+        email: 'siti@nutrivision.id',
+        passwordHash: this.hashPassword('siti123'),
+        role: 'patient',
+        condition: 'injury-rehab',
+        conditionLabel: 'Fisioterapi Cedera ACL',
+        recoveryPhase: 'Fase 1 Akut',
+        weight: 50,
+        height: 160,
+        age: 27,
+        gender: 'female',
+        targetProtein: 80,
+        targetCalories: 1750,
+        createdAt: '2026-08-10T09:30:00.000Z',
+        avatarText: 'SR',
+        hasCompletedQuiz: true,
+        allergies: 'Udang / Seafood',
+        symptoms: ['appetite']
+      },
+      {
+        id: 'usr_demo_doctor',
+        name: 'dr. Sarah Sp.GK',
+        email: 'dokter@nutrivision.id',
+        passwordHash: this.hashPassword('dokter123'),
+        role: 'clinician',
+        condition: 'clinician',
+        conditionLabel: 'Spesialis Gizi Klinis RSUP',
+        recoveryPhase: 'Pengawas Klinis',
+        weight: 58,
+        height: 165,
+        age: 39,
+        gender: 'female',
+        targetProtein: 90,
+        targetCalories: 2000,
+        createdAt: '2026-07-15T10:00:00.000Z',
+        avatarText: 'DS',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
+      },
+      {
+        id: 'usr_demo_caregiver',
+        name: 'Ratna Dewi',
+        email: 'caregiver@nutrivision.id',
+        passwordHash: this.hashPassword('caregiver123'),
+        role: 'caregiver',
+        condition: 'caregiver',
+        conditionLabel: 'Pendamping Pasien Lansia',
+        recoveryPhase: 'Pendamping Rawat',
+        weight: 55,
+        height: 158,
+        age: 45,
+        gender: 'female',
+        targetProtein: 70,
+        targetCalories: 1800,
+        createdAt: '2026-08-05T11:00:00.000Z',
+        avatarText: 'RD',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
+      },
+      {
+        id: 'usr_admin_master',
+        name: 'Administrator NutriVision',
+        email: 'admin@nutrivision.id',
+        passwordHash: this.hashPassword('admin123'),
+        role: 'admin',
+        condition: 'admin',
+        conditionLabel: 'Administrator Database & Cloud',
+        recoveryPhase: 'Akses Penuh',
+        weight: 70,
+        height: 175,
+        age: 30,
+        gender: 'male',
+        targetProtein: 90,
+        targetCalories: 2000,
+        createdAt: '2026-08-01T00:00:00.000Z',
+        avatarText: 'AD',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
+      }
+    ];
+  }
+
+  async getLocalUsers() {
+    let users = [];
+    if (this.db) {
+      users = await new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction(['users'], 'readonly');
+          const store = tx.objectStore('users');
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    }
+
+    try {
+      const raw = localStorage.getItem('nv_db_users');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const map = new Map();
+        users.forEach(u => map.set(u.id, u));
+        Object.values(parsed).forEach(u => map.set(u.id, u));
+        users = Array.from(map.values());
+      }
+    } catch (e) {}
+
+    const seeds = this.getSeedUsersList();
+    const existingIds = new Set(users.map(u => u.id));
+    for (const seed of seeds) {
+      if (!existingIds.has(seed.id)) {
+        users.push(seed);
+      }
+    }
+
+    return users;
+  }
+
+  async getLocalMeals() {
+    let meals = [];
+    if (this.db) {
+      meals = await new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction(['meals'], 'readonly');
+          const store = tx.objectStore('meals');
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    }
+
+    try {
+      const raw = localStorage.getItem('nv_db_meals');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const map = new Map();
+        meals.forEach(m => map.set(m.id, m));
+        parsed.forEach(m => map.set(m.id, m));
+        meals = Array.from(map.values());
+      }
+    } catch (e) {}
+
+    if (!meals || meals.length === 0) {
+      meals = [
+        {
+          id: 'meal_demo_101',
+          userId: 'usr_demo_surgery',
+          mealType: 'breakfast',
+          name: 'Bubur Ikan Gabus & Telur Tim (Tinggi Albumin)',
+          calories: 385,
+          protein: 37,
+          carbs: 32,
+          fat: 8,
+          segments: [
+            { name: 'Ikan Gabus (Albumin)', grams: 110, protein: 26 },
+            { name: 'Bubur Halus', grams: 200, protein: 4 },
+            { name: 'Telur Ayam Tim', grams: 60, protein: 7 }
+          ],
+          timestamp: '2026-09-03T07:45:12.000Z'
+        },
+        {
+          id: 'meal_demo_102',
+          userId: 'usr_demo_rehab',
+          mealType: 'lunch',
+          name: 'Pepes Ikan Kembung Kukus & Nasi Merah',
+          calories: 410,
+          protein: 33,
+          carbs: 31,
+          fat: 10,
+          segments: [
+            { name: 'Ikan Kembung Kukus (Omega-3)', grams: 130, protein: 28 },
+            { name: 'Nasi Merah', grams: 120, protein: 3 },
+            { name: 'Sayur Bening Bayam', grams: 80, protein: 2 }
+          ],
+          timestamp: '2026-09-03T06:20:00.000Z'
+        },
+        {
+          id: 'meal_demo_103',
+          userId: 'usr_demo_surgery',
+          mealType: 'dinner',
+          name: 'Sup Krim Labu Halus & Tahu Sutra',
+          calories: 310,
+          protein: 22,
+          carbs: 25,
+          fat: 6,
+          segments: [
+            { name: 'Tahu Sutra Kukus', grams: 120, protein: 14 },
+            { name: 'Sup Labu Halus', grams: 180, protein: 4 }
+          ],
+          timestamp: '2026-09-02T18:30:00.000Z'
+        },
+        {
+          id: 'meal_demo_104',
+          userId: 'usr_demo_doctor',
+          mealType: 'lunch',
+          name: 'Dada Ayam Panggang & Tempe Bacem',
+          calories: 420,
+          protein: 42,
+          carbs: 28,
+          fat: 10,
+          segments: [
+            { name: 'Dada Ayam', grams: 160, protein: 35 },
+            { name: 'Tempe Bacem', grams: 80, protein: 7 }
+          ],
+          timestamp: '2026-09-02T12:15:00.000Z'
+        }
+      ];
+    }
+
+    return meals;
+  }
+
   /**
-   * Upload seluruh data lokal (semua user & meal) ke Supabase dalam 1 klik
+   * Upload seluruh data lokal Chrome (semua user & meal) ke Supabase dalam 1 klik
    */
   async syncAllToSupabase() {
     if (!this.supabase) {
       throw new Error('Supabase belum terhubung. Silakan masukkan Project URL & Anon Key terlebih dahulu.');
     }
 
-    const allUsers = await this.getAllUsers();
+    const localUsers = await this.getLocalUsers();
+    const localMeals = await this.getLocalMeals();
     let syncedUsers = 0;
     let syncedMeals = 0;
 
-    for (const u of allUsers) {
+    for (const u of localUsers) {
       const row = this.mapUserToSupabaseRow(u);
       const { error } = await this.supabase.from('users').upsert(row);
-      if (!error) syncedUsers++;
+      if (!error) {
+        syncedUsers++;
+      } else {
+        console.error('Supabase user upsert error:', error);
+        this.addAuditLog('SUPABASE_SYNC_ERROR', 'admin@nutrivision.id', `Gagal sync akun (${u.email}): ${error.message}`, 'WARNING');
+        throw new Error(`Gagal menyimpan akun "${u.name || u.email}" ke tabel 'users': ${error.message}`);
+      }
     }
 
-    // Ambil semua meals dari local IndexedDB
-    const allMeals = await new Promise((resolve) => {
-      if (this.useFallback) {
-        resolve(JSON.parse(localStorage.getItem('nv_db_meals') || '[]'));
-        return;
-      }
-      const tx = this.db.transaction(['meals'], 'readonly');
-      const req = tx.objectStore('meals').getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
-
-    for (const m of allMeals) {
+    for (const m of localMeals) {
       const row = {
-        id: m.id,
-        user_id: m.userId,
-        meal_type: m.mealType,
-        name: m.name,
-        calories: m.calories,
-        protein: m.protein,
-        carbs: m.carbs,
-        fat: m.fat,
+        id: m.id || ('meal_' + Math.random().toString(36).substring(2, 9)),
+        user_id: m.userId || m.user_id || 'usr_demo_surgery',
+        meal_type: m.mealType || m.meal_type || 'lunch',
+        name: m.name || 'Menu Pilihan',
+        calories: m.calories || 350,
+        protein: m.protein || 25,
+        carbs: m.carbs || 30,
+        fat: m.fat || 8,
         segments: m.segments || [],
-        timestamp: m.timestamp || m.createdAt
+        timestamp: m.timestamp || m.createdAt || new Date().toISOString()
       };
       const { error } = await this.supabase.from('meals').upsert(row);
-      if (!error) syncedMeals++;
+      if (!error) {
+        syncedMeals++;
+      } else {
+        console.error('Supabase meal upsert error:', error);
+        this.addAuditLog('SUPABASE_SYNC_ERROR', 'admin@nutrivision.id', `Gagal sync makanan (${m.name}): ${error.message}`, 'WARNING');
+        throw new Error(`Gagal menyimpan log makanan "${m.name}": ${error.message}`);
+      }
     }
+
+    this.addAuditLog('SUPABASE_SYNC_SUCCESS', 'admin@nutrivision.id', `Berhasil upload ${syncedUsers} akun & ${syncedMeals} riwayat ke Supabase Cloud`, 'SUCCESS');
 
     return {
       syncedUsers,
@@ -763,6 +1062,36 @@ class NutriVisionDatabase {
   // ── SUPER ADMIN MONITORING & TELEMETRY API ──
 
   async getAllScans() {
+    // 1. Ambil dari Supabase Cloud jika aktif
+    if (this.supabase) {
+      try {
+        const { data, error } = await this.supabase
+          .from('meals')
+          .select('*')
+          .order('timestamp', { ascending: false })
+          .limit(50);
+        if (data && !error && data.length > 0) {
+          return data.map(m => ({
+            id: m.id,
+            userId: m.user_id,
+            userName: m.user_id === 'usr_demo_surgery' ? 'Rangga Pratama' : (m.user_id === 'usr_demo_rehab' ? 'Siti Rahmawati' : 'Pasien NutriVision'),
+            userCondition: 'Data Realtime Cloud',
+            timestamp: m.timestamp || new Date().toISOString(),
+            foodTitle: m.name || 'Menu Terdata',
+            components: m.segments || [{ name: m.name, grams: 200, protein: m.protein, category: 'mixed' }],
+            totalGrams: 300,
+            totalCalories: m.calories || 350,
+            totalProtein: m.protein || 25,
+            confidencePct: 95.0,
+            verified: true,
+            status: 'verified'
+          }));
+        }
+      } catch (e) {
+        console.warn('Supabase getAllScans notice:', e.message);
+      }
+    }
+
     let stored = [];
     try {
       stored = JSON.parse(localStorage.getItem('nv_db_scans') || '[]');

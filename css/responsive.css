@@ -114,6 +114,28 @@
   pointer-events: auto;
   animation: slideInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  line-height: 1.4;
+}
+
+.toast.toast-error {
+  background: #991B1B;
+  border: 1.5px solid #F87171;
+  color: #FFFFFF;
+  box-shadow: 0 8px 24px rgba(185, 28, 28, 0.4);
+}
+
+.toast.toast-warning {
+  background: #B45309;
+  border: 1.5px solid #FCD34D;
+  color: #FFFFFF;
+  box-shadow: 0 8px 24px rgba(180, 83, 9, 0.35);
+}
+
+.toast.toast-success {
+  background: #166534;
+  border: 1.5px solid #86EFAC;
+  color: #FFFFFF;
+  box-shadow: 0 8px 24px rgba(22, 101, 52, 0.35);
 }
 
 @keyframes slideInDown {

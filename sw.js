@@ -1,5 +1,5 @@
 // NutriVision AI Service Worker
-const CACHE_NAME = 'nutrivision-v1.1.4';
+const CACHE_NAME = 'nutrivision-v1.1.9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -16,6 +16,8 @@ const ASSETS_TO_CACHE = [
   './css/admin.css',
   './js/lucide.min.js',
   './js/iconify-icon.min.js',
+  './js/supabase.min.js',
+  './js/supabase-config.js',
   './js/data.js',
   './js/cv-engine.js',
   './js/camera.js',
@@ -23,6 +25,7 @@ const ASSETS_TO_CACHE = [
   './js/progress.js',
   './js/community.js',
   './js/caregiver.js',
+  './js/db.js',
   './js/app.js',
   './icons/icon.svg',
   './icons/icon-192.png',
