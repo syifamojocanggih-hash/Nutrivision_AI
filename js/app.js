@@ -1010,11 +1010,16 @@ class NutriVisionApp {
   openQuizModal(step = 1) {
     const onboardName = document.getElementById('onboard-name');
     const onboardContact = document.getElementById('onboard-contact');
+    const consentCheck = document.getElementById('onboard-consent-check');
+
     if (onboardName && this.userProfile.name && !onboardName.value) {
       onboardName.value = this.userProfile.name;
     }
     if (onboardContact && this.userProfile.contact && !onboardContact.value) {
       onboardContact.value = this.userProfile.contact;
+    }
+    if (consentCheck && !this.userProfile?.hasCompletedQuiz) {
+      consentCheck.checked = false;
     }
     this.openModal('onboarding-modal');
     this.goToQuizStep(step);
@@ -1067,13 +1072,67 @@ class NutriVisionApp {
         return false;
       }
       if (!consent) {
-        this.showToast('Silakan centang persetujuan disclaimer medis terlebih dahulu.', 'warning');
+        this.highlightConsentError();
+        this.showToast('⚠️ Silakan centang persetujuan medis terlebih dahulu untuk menyelesaikan registrasi.', 'warning');
         return false;
       }
       return true;
     }
 
     return true;
+  }
+
+  handleOnboardFinishClick() {
+    const consent = document.getElementById('onboard-consent-check')?.checked;
+    if (!consent) {
+      this.highlightConsentError();
+      this.showToast('⚠️ Anda harus mencentang persetujuan medis terlebih dahulu untuk menyelesaikan registrasi.', 'warning');
+      return;
+    }
+    this.saveOnboardingProfile();
+  }
+
+  highlightConsentError() {
+    const box = document.getElementById('onboard-consent-box') || document.querySelector('.disclaimer-consent-box');
+    if (box) {
+      box.classList.remove('consent-error-shake');
+      void box.offsetWidth;
+      box.classList.add('consent-error-shake');
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        box.classList.remove('consent-error-shake');
+      }, 700);
+    }
+  }
+
+  toggleConsentValidation() {
+    const consent = Boolean(document.getElementById('onboard-consent-check')?.checked);
+    const finishBtn = document.getElementById('onboard-finish-btn') || document.querySelector('.quiz-btn-finish');
+    const box = document.getElementById('onboard-consent-box') || document.querySelector('.disclaimer-consent-box');
+
+    if (finishBtn) {
+      if (consent) {
+        finishBtn.classList.remove('disabled');
+        finishBtn.style.opacity = '1';
+        finishBtn.style.cursor = 'pointer';
+        finishBtn.style.filter = 'none';
+      } else {
+        finishBtn.classList.add('disabled');
+        finishBtn.style.opacity = '0.55';
+        finishBtn.style.cursor = 'not-allowed';
+        finishBtn.style.filter = 'grayscale(35%)';
+      }
+    }
+
+    if (box) {
+      if (consent) {
+        box.style.borderColor = '#9EA76B';
+        box.style.backgroundColor = '#F6F9ED';
+      } else {
+        box.style.borderColor = '#EFE8CA';
+        box.style.backgroundColor = '#FFFCF0';
+      }
+    }
   }
 
   goToQuizStep(step) {
@@ -1120,10 +1179,11 @@ class NutriVisionApp {
       }
     }
 
-    // Di Step 3: Hitung otomatis live BMI & Target gizi
+    // Di Step 3: Hitung otomatis live BMI & Target gizi, serta sinkronisasi tombol persetujuan
     if (this.currentQuizStep === 3) {
       this.updateLiveBMIDisplay();
       this.calculateDiagnosticResults();
+      this.toggleConsentValidation();
     }
 
     // Kontrol tombol Close X: hanya boleh muncul jika profil sudah pernah selesai sebelumnya

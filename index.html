@@ -2504,9 +2504,9 @@
         </div>
 
         <!-- Disclaimer & Consent Checkbox -->
-        <div class="disclaimer-consent-box" style="margin:12px 0 16px;">
+        <div class="disclaimer-consent-box" id="onboard-consent-box" style="margin:12px 0 16px;">
           <label class="consent-checkbox-row">
-            <input type="checkbox" id="onboard-consent-check" checked required>
+            <input type="checkbox" id="onboard-consent-check" onchange="app.toggleConsentValidation()" required>
             <span>Saya menyetujui pernyataan persetujuan medis (<i>decision-support</i>) dan siap menerapkan target gizi ini ke Dasbor NutriVision AI.</span>
           </label>
         </div>
@@ -2515,7 +2515,7 @@
           <button type="button" class="quiz-btn-prev" onclick="app.prevQuizStep()">
             <i data-lucide="arrow-left" style="width:15px;height:15px;"></i> Kembali
           </button>
-          <button type="button" class="quiz-btn-next quiz-btn-finish" onclick="app.saveOnboardingProfile()">
+          <button type="button" class="quiz-btn-next quiz-btn-finish disabled" id="onboard-finish-btn" onclick="app.handleOnboardFinishClick()">
             <i data-lucide="check-circle" style="width:17px;height:17px;"></i>
             <span>Selesai &amp; Masuk ke Dasbor</span>
           </button>
