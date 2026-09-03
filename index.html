@@ -654,30 +654,53 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-item active" data-sec="overview">
-          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
-          <span>Ringkasan Dasbor</span>
-        </button>
-        <button class="nav-item" data-sec="planner">
-          <span class="nav-icon"><i data-lucide="utensils"></i></span>
-          <span>Meal Planner</span>
-        </button>
-        <button class="nav-item" data-sec="catalog">
-          <span class="nav-icon"><i data-lucide="book-open"></i></span>
-          <span>Katalog Pangan Lokal</span>
-        </button>
-        <button class="nav-item" data-sec="community">
-          <span class="nav-icon"><i data-lucide="users"></i></span>
-          <span>Ruang Komunitas</span>
-        </button>
-        <button class="nav-item" data-sec="caregiver">
-          <span class="nav-icon"><i data-lucide="shield-plus"></i></span>
-          <span>Portal Pendamping</span>
-        </button>
-        <button class="nav-item" data-sec="progress">
-          <span class="nav-icon"><i data-lucide="route"></i></span>
-          <span>Perjalanan & Progres</span>
-        </button>
+        <!-- Patient Navigation Group -->
+        <div id="sidebar-nav-patient" class="sidebar-nav-group">
+          <button class="nav-item active" data-sec="overview">
+            <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
+            <span>Ringkasan Dasbor</span>
+          </button>
+          <button class="nav-item" data-sec="planner">
+            <span class="nav-icon"><i data-lucide="utensils"></i></span>
+            <span>Meal Planner</span>
+          </button>
+          <button class="nav-item" data-sec="catalog">
+            <span class="nav-icon"><i data-lucide="book-open"></i></span>
+            <span>Katalog Pangan Lokal</span>
+          </button>
+          <button class="nav-item" data-sec="community">
+            <span class="nav-icon"><i data-lucide="users"></i></span>
+            <span>Ruang Komunitas</span>
+          </button>
+          <button class="nav-item" data-sec="caregiver">
+            <span class="nav-icon"><i data-lucide="shield-plus"></i></span>
+            <span>Portal Pendamping</span>
+          </button>
+          <button class="nav-item" data-sec="progress">
+            <span class="nav-icon"><i data-lucide="route"></i></span>
+            <span>Perjalanan &amp; Progres</span>
+          </button>
+        </div>
+
+        <!-- Super Admin Navigation Group -->
+        <div id="sidebar-nav-admin" class="sidebar-nav-group" style="display:none;">
+          <button class="nav-item active" data-sec="admin" onclick="app.goToAdminPortal()" title="Super Admin Command Center">
+            <span class="nav-icon"><i data-lucide="activity" style="color:#9EA76B;"></i></span>
+            <span>Dasbor Telemetri</span>
+          </button>
+          <button class="nav-item" data-sec="admin-clinical-menu" onclick="app.navigate('admin-clinical-menu')" title="Analitik Pangan, Menu &amp; Pola Penyakit Pasien">
+            <span class="nav-icon"><i data-lucide="utensils" style="color:#9EA76B;"></i></span>
+            <span>Analitik Pangan &amp; Klinis</span>
+          </button>
+          <button class="nav-item" data-sec="database" onclick="app.openDatabaseSyncModal()" title="Inspektor Database &amp; Sinkronisasi Supabase">
+            <span class="nav-icon"><i data-lucide="database" style="color:#9EA76B;"></i></span>
+            <span>Database &amp; Supabase</span>
+          </button>
+          <button class="nav-item" data-sec="admin-audit" onclick="app.navigate('admin-audit')" title="Jejak Audit Aktivitas Sistem">
+            <span class="nav-icon"><i data-lucide="terminal" style="color:#9EA76B;"></i></span>
+            <span>Audit Trail Sistem</span>
+          </button>
+        </div>
       </nav>
 
       <!-- Sidebar Dedicated Patient Profile Widget -->
@@ -800,6 +823,458 @@
           (decision-support), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.
         </div>
       </section>
+
+      <!-- =========================================================================
+         VIEW 0: SUPER ADMIN COMMAND CENTER & MONITORING PORTAL
+         ========================================================================= -->
+      <div class="view-section" id="view-admin">
+
+        <!-- 1. Header Command Center Card -->
+        <div class="admin-header-card">
+          <div class="admin-header-top">
+            <div class="admin-badge-title">
+              <span class="admin-pulse-dot"></span>
+              <span>NutriVision AI · Super Admin Command Center</span>
+            </div>
+            <div class="admin-header-actions">
+              <button type="button" class="admin-btn-action matcha" onclick="app.openDatabaseSyncModal()" title="Buka Sinkronisasi Supabase &amp; Cloud DB">
+                <i data-lucide="database" class="btn-icon-sm"></i>
+                <span>Supabase Cloud Sync</span>
+              </button>
+              <button type="button" class="admin-btn-action glass" onclick="app.exportAdminAuditJSON()" title="Ekspor Log Audit &amp; Telemetri ke file JSON">
+                <i data-lucide="download" class="btn-icon-sm"></i>
+                <span>Ekspor Telemetri JSON</span>
+              </button>
+              <button type="button" class="admin-btn-action coral-outline" onclick="app.handleLogout()" title="Keluar dari sesi Administrator">
+                <i data-lucide="log-out" class="btn-icon-sm"></i>
+                <span>Keluar (Logout)</span>
+              </button>
+            </div>
+          </div>
+          <h1 class="admin-header-title">Monitoring Platform &amp; Telemetri Nutrisi AI</h1>
+          <p class="admin-header-subtitle">
+            Pusat pemantauan real-time: mengontrol akun pengguna terdaftar, memeriksa log pemindaian piring makanan yang masuk, audit trail kejadian sistem, dan sinkronisasi database cloud.
+          </p>
+        </div>
+
+        <!-- 2. KPI Telemetry Metrics -->
+        <div class="admin-metrics-grid">
+          <div class="admin-metric-card">
+            <div class="admin-metric-top">
+              <div class="admin-metric-icon-wrap"><i data-lucide="users" style="width:20px;height:20px;"></i></div>
+              <span class="admin-metric-badge green" id="admin-kpi-users-badge">Active</span>
+            </div>
+            <div class="admin-metric-val" id="admin-kpi-total-users">--</div>
+            <div class="admin-metric-lbl">Total Pengguna Terdaftar</div>
+            <div class="admin-metric-sub">
+              <i data-lucide="shield-check" style="width:12px;height:12px;color:#10B981;"></i>
+              <span id="admin-kpi-users-sub">Memuat data pengguna...</span>
+            </div>
+          </div>
+
+          <div class="admin-metric-card">
+            <div class="admin-metric-top">
+              <div class="admin-metric-icon-wrap"><i data-lucide="camera" style="width:20px;height:20px;"></i></div>
+              <span class="admin-metric-badge blue">Inference</span>
+            </div>
+            <div class="admin-metric-val" id="admin-kpi-total-scans">--</div>
+            <div class="admin-metric-lbl">Data Pemindaian Masuk</div>
+            <div class="admin-metric-sub">
+              <i data-lucide="sparkles" style="width:12px;height:12px;color:#3B82F6;"></i>
+              <span id="admin-kpi-scans-sub">Rata-rata Akurasi: 94.8%</span>
+            </div>
+          </div>
+
+          <div class="admin-metric-card">
+            <div class="admin-metric-top">
+              <div class="admin-metric-icon-wrap"><i data-lucide="flame" style="width:20px;height:20px;"></i></div>
+              <span class="admin-metric-badge amber">Nutrisi</span>
+            </div>
+            <div class="admin-metric-val" id="admin-kpi-calories-tracked">--</div>
+            <div class="admin-metric-lbl">Total Kalori Terlacak (kkal)</div>
+            <div class="admin-metric-sub">
+              <i data-lucide="zap" style="width:12px;height:12px;color:#F59E0B;"></i>
+              <span id="admin-kpi-protein-sub">Total Protein: -- g</span>
+            </div>
+          </div>
+
+          <div class="admin-metric-card">
+            <div class="admin-metric-top">
+              <div class="admin-metric-icon-wrap"><i data-lucide="database" style="width:20px;height:20px;"></i></div>
+              <span class="admin-metric-badge green" id="admin-kpi-db-badge">Online</span>
+            </div>
+            <div class="admin-metric-val" id="admin-kpi-db-val">Supabase</div>
+            <div class="admin-metric-lbl">Kesehatan Database Cloud</div>
+            <div class="admin-metric-sub">
+              <i data-lucide="plug-zap" style="width:12px;height:12px;color:#10B981;"></i>
+              <span id="admin-kpi-db-sub">Latensi API: ~14ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Sub-navigation Tabs -->
+        <nav class="admin-tabs-nav" role="tablist">
+          <button type="button" class="admin-tab-btn active" onclick="app.switchAdminTab('users')" id="admin-nav-tab-users">
+            <i data-lucide="users" class="btn-icon-sm"></i>
+            <span>Monitoring Pengguna</span>
+            <span class="admin-tab-count" id="admin-count-users-tab">0</span>
+          </button>
+          <button type="button" class="admin-tab-btn" onclick="app.switchAdminTab('scans')" id="admin-nav-tab-scans">
+            <i data-lucide="camera" class="btn-icon-sm"></i>
+            <span>Data Pemindaian Masuk</span>
+            <span class="admin-tab-count" id="admin-count-scans-tab">0</span>
+          </button>
+          <button type="button" class="admin-tab-btn" onclick="app.switchAdminTab('audit')" id="admin-nav-tab-audit">
+            <i data-lucide="terminal" class="btn-icon-sm"></i>
+            <span>Audit Trail &amp; Keamanan</span>
+            <span class="admin-tab-count" id="admin-count-audit-tab">0</span>
+          </button>
+          <button type="button" class="admin-tab-btn" onclick="app.switchAdminTab('controls')" id="admin-nav-tab-controls">
+            <i data-lucide="sliders" class="btn-icon-sm"></i>
+            <span>Kontrol Parameter AI &amp; Cloud</span>
+          </button>
+        </nav>
+
+        <!-- 4. TAB PANE 1: MONITORING PENGGUNA -->
+        <div class="admin-pane active" id="admin-pane-users">
+          <div class="admin-panel-card">
+            <div class="admin-panel-head">
+              <div class="admin-panel-title">
+                <i data-lucide="users" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+                <span>Tabel Pasien &amp; Pengguna Terdaftar</span>
+              </div>
+              <div class="admin-panel-actions">
+                <input type="text" id="admin-user-search-input" class="admin-search-input" placeholder="Cari nama, email, kondisi..." oninput="app.filterAdminUsers()">
+                <select id="admin-user-role-filter" class="admin-filter-select" onchange="app.filterAdminUsers()">
+                  <option value="all">Semua Peran &amp; Kondisi</option>
+                  <option value="patient">Pasien Saja</option>
+                  <option value="post-surgery">Pasca-Operasi</option>
+                  <option value="injury-rehab">Fisioterapi &amp; Rehab</option>
+                  <option value="gym">Gym Recovery</option>
+                  <option value="clinician">Spesialis Medis</option>
+                </select>
+                <button type="button" class="admin-row-action-btn" onclick="app.refreshAdminData()">
+                  <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
+                  <span>Segarkan</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Pasien / Pengguna</th>
+                    <th>Peran (Role)</th>
+                    <th>Kondisi Klinis</th>
+                    <th>Fase Pemulihan</th>
+                    <th>Target Harian</th>
+                    <th>Kuis Diagnostik</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-table-body">
+                  <!-- Rendered dynamically by app.renderAdminUsers() -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. TAB PANE 2: DATA PEMINDAIAN MASUK (INCOMING SCANS) -->
+        <div class="admin-pane" id="admin-pane-scans">
+          <div class="admin-panel-card">
+            <div class="admin-panel-head">
+              <div class="admin-panel-title">
+                <i data-lucide="camera" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+                <span>Log Pemindaian Piring Citra AI Masuk</span>
+              </div>
+              <div class="admin-panel-actions">
+                <button type="button" class="admin-row-action-btn" onclick="app.refreshAdminData()">
+                  <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
+                  <span>Segarkan Log</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID &amp; Waktu</th>
+                    <th>Pengguna</th>
+                    <th>Menu Piring Terdeteksi</th>
+                    <th>Komponen Makanan</th>
+                    <th>Estimasi Gizi</th>
+                    <th>Akurasi AI</th>
+                    <th>Status Validasi</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-scans-table-body">
+                  <!-- Rendered dynamically by app.renderAdminScans() -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. TAB PANE 3: AUDIT TRAIL & KEAMANAN -->
+        <div class="admin-pane" id="admin-pane-audit">
+          <div class="admin-panel-card">
+            <div class="admin-panel-head">
+              <div class="admin-panel-title">
+                <i data-lucide="terminal" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+                <span>Log Kejadian &amp; Jejak Audit Sistem (Audit Trail)</span>
+              </div>
+              <div class="admin-panel-actions">
+                <button type="button" class="admin-row-action-btn" onclick="app.exportAdminAuditJSON()">
+                  <i data-lucide="download" style="width:12px;height:12px;"></i>
+                  <span>Unduh Log JSON</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-audit-stream" id="admin-audit-stream-container">
+              <!-- Rendered dynamically by app.renderAdminAuditLogs() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. TAB PANE 4: KONTROL PARAMETER AI & CLOUD -->
+        <div class="admin-pane" id="admin-pane-controls">
+          <div class="admin-panel-card">
+            <div class="admin-panel-title" style="margin-bottom:16px;">
+              <i data-lucide="sliders" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+              <span>Parameter Model Computer Vision &amp; Integrasi Cloud</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;">
+              <div style="padding:16px;border:1px solid #EEF1D8;border-radius:12px;background:#FAFCF2;">
+                <div style="font-weight:700;color:var(--ink);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                  <i data-lucide="crosshair" style="width:16px;height:16px;color:#9EA76B;"></i>
+                  Threshold Kepercayaan Deteksi AI
+                </div>
+                <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px;">
+                  Batas ambang probabilitas minimal sebelum label makanan ditandai sebagai "Terverifikasi Otomatis" vs "Perlu Koreksi Manual".
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <input type="range" min="70" max="99" value="85" id="admin-conf-threshold" style="flex:1;accent-color:#9EA76B;" oninput="document.getElementById('admin-conf-val').textContent = this.value + '%'">
+                  <span id="admin-conf-val" style="font-weight:800;font-size:13px;color:#353C1B;">85%</span>
+                </div>
+              </div>
+
+              <div style="padding:16px;border:1px solid #EEF1D8;border-radius:12px;background:#FAFCF2;">
+                <div style="font-weight:700;color:var(--ink);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                  <i data-lucide="database" style="width:16px;height:16px;color:#9EA76B;"></i>
+                  Sinkronisasi Otomatis Supabase
+                </div>
+                <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px;">
+                  Menyelaraskan data offline IndexedDB ke tabel cloud Supabase secara terjadwal.
+                </div>
+                <button type="button" class="admin-btn-action matcha" style="width:100%;justify-content:center;" onclick="app.openDatabaseSyncModal()">
+                  <i data-lucide="refresh-cw" class="btn-icon-sm"></i>
+                  <span>Buka Manajer Sinkronisasi Cloud</span>
+                </button>
+              </div>
+
+              <div style="padding:16px;border:1px solid #EEF1D8;border-radius:12px;background:#FAFCF2;">
+                <div style="font-weight:700;color:var(--ink);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                  <i data-lucide="shield-alert" style="width:16px;height:16px;color:#EF4444;"></i>
+                  Reset &amp; Inisialisasi Ulang Data
+                </div>
+                <div style="font-size:12px;color:var(--ink-soft);margin-bottom:12px;">
+                  Mengembalikan database lokal ke kondisi awal (seed) akun demo dan makanan standar.
+                </div>
+                <button type="button" class="admin-btn-action coral-outline" style="width:100%;justify-content:center;" onclick="app.resetDemoAccountsAdmin()">
+                  <i data-lucide="rotate-ccw" class="btn-icon-sm"></i>
+                  <span>Re-Seed Akun Demo</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =========================================================================
+         VIEW: ANALITIK PANGAN & POLA KLINIS (GABUNGAN MEAL PLANNER & KATALOG ADMIN)
+         ========================================================================= -->
+      <div class="view-section" id="view-admin-clinical-menu">
+
+        <!-- 1. Header Card -->
+        <div class="admin-header-card" style="margin-bottom:24px;">
+          <div class="admin-header-top">
+            <div class="admin-badge-title">
+              <i data-lucide="utensils" class="btn-icon-sm" style="color:#D6DCB2;"></i>
+              <span>Analitik Pangan &amp; Distribusi Pola Klinis</span>
+            </div>
+            <div class="admin-header-actions">
+              <button type="button" class="admin-btn-action matcha" onclick="app.refreshAdminClinicalMenu()">
+                <i data-lucide="rotate-ccw" class="btn-icon-sm"></i>
+                <span>Segarkan Analitik</span>
+              </button>
+            </div>
+          </div>
+          <h1 class="admin-header-title">Pemantauan Prevalensi Pasien &amp; Tren Menu Pangan</h1>
+          <p class="admin-header-subtitle">
+            Halaman integrasi analitik: memantau distribusi kondisi medis pasien, prevalensi alergi/pantangan terbanyak, log akses perencanaan makan (*Meal Planner*), serta menu pangan nusantara terfavorit dan paling sering dipindai (*Katalog Pangan*).
+          </p>
+        </div>
+
+        <!-- 2. 2-Column Split: Distribusi Klinis & Prevalensi Alergi -->
+        <div class="admin-clinical-grid">
+          
+          <!-- Card 1: Sebaran Kondisi Medis & Penyakit -->
+          <div class="admin-panel-card">
+            <div class="admin-panel-head">
+              <div class="admin-panel-title">
+                <i data-lucide="heart-pulse" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+                <span>Sebaran Kondisi Medis / Penyakit Pasien</span>
+              </div>
+              <span class="admin-pill-badge patient" id="admin-clinical-total-badge">-- Pasien</span>
+            </div>
+            <p style="font-size:12px;color:var(--ink-soft);margin-bottom:16px;">
+              Distribusi pasien terdaftar berdasarkan diagnosis klinis dan target rehabilitasi gizi.
+            </p>
+            <div class="admin-dist-bars-container" id="admin-condition-dist-container">
+              <!-- Rendered dynamically by app.renderAdminClinicalMenu() -->
+            </div>
+          </div>
+
+          <!-- Card 2: Prevalensi Alergi & Pantangan Pasien -->
+          <div class="admin-panel-card">
+            <div class="admin-panel-head">
+              <div class="admin-panel-title">
+                <i data-lucide="shield-alert" style="color:#D97706;width:18px;height:18px;"></i>
+                <span>Prevalensi Alergi &amp; Pantangan Pangan</span>
+              </div>
+              <span class="admin-pill-badge corrected">Deteksi Risiko</span>
+            </div>
+            <p style="font-size:12px;color:var(--ink-soft);margin-bottom:16px;">
+              Daftar alergen atau pantangan makanan yang paling sering dilaporkan dalam sistem diagnostik pasien.
+            </p>
+            <div class="admin-allergy-cloud" id="admin-allergy-dist-container">
+              <!-- Rendered dynamically by app.renderAdminClinicalMenu() -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. Card: Pangan Nusantara Terfavorit & Terlaris (Katalog Analitik) -->
+        <div class="admin-panel-card">
+          <div class="admin-panel-head">
+            <div class="admin-panel-title">
+              <i data-lucide="flame" style="color:#EF4444;width:18px;height:18px;"></i>
+              <span>Pangan Terfavorit &amp; Terlaris Nusantara (Leaderboard Menu)</span>
+            </div>
+            <span class="admin-pill-badge verified">Data Pemindaian &amp; Favorit Pasien</span>
+          </div>
+          <p style="font-size:12px;color:var(--ink-soft);margin-bottom:18px;">
+            Daftar komoditas pangan lokal yang paling banyak disukai (ikon hati), paling sering dipilih dalam Meal Plan, dan paling sering dipindai melalui Computer Vision.
+          </p>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Peringkat &amp; Nama Pangan</th>
+                  <th>Kategori Gizi Klinis</th>
+                  <th>Jumlah Favorit (❤️)</th>
+                  <th>Frekuensi Scan / Pilihan</th>
+                  <th>Skor Rating</th>
+                  <th>Estimasi Makro</th>
+                  <th>Status Khusus</th>
+                </tr>
+              </thead>
+              <tbody id="admin-popular-foods-tbody">
+                <!-- Rendered dynamically by app.renderAdminClinicalMenu() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Card: Log Akses Perencanaan Menu Terkini (Meal Planner Access Log) -->
+        <div class="admin-panel-card">
+          <div class="admin-panel-head">
+            <div class="admin-panel-title">
+              <i data-lucide="clock" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+              <span>Riwayat Pasien yang Mengakses Perencanaan Menu (*Meal Planner*)</span>
+            </div>
+            <span class="admin-pill-badge patient">Real-time Log</span>
+          </div>
+          <p style="font-size:12px;color:var(--ink-soft);margin-bottom:16px;">
+            Aktivitas terkini pasien dalam merancang dan menyelaraskan jadwal piring gizi harian.
+          </p>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Pasien</th>
+                  <th>Kondisi Klinis</th>
+                  <th>Menu yang Direncanakan</th>
+                  <th>Target Protein</th>
+                  <th>Waktu Akses</th>
+                </tr>
+              </thead>
+              <tbody id="admin-planner-access-tbody">
+                <!-- Rendered dynamically by app.renderAdminClinicalMenu() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =========================================================================
+         VIEW: AUDIT TRAIL & KEAMANAN SISTEM (DEDICATED VIEW SUPER ADMIN)
+         ========================================================================= -->
+      <div class="view-section" id="view-admin-audit">
+
+        <!-- Header Card -->
+        <div class="admin-header-card" style="margin-bottom:24px;">
+          <div class="admin-header-top">
+            <div class="admin-badge-title">
+              <i data-lucide="terminal" class="btn-icon-sm" style="color:#D6DCB2;"></i>
+              <span>Keamanan &amp; Audit Trail Sistem</span>
+            </div>
+            <div class="admin-header-actions">
+              <button type="button" class="admin-btn-action matcha" onclick="app.refreshAdminAuditView()">
+                <i data-lucide="rotate-ccw" class="btn-icon-sm"></i>
+                <span>Segarkan Log</span>
+              </button>
+              <button type="button" class="admin-btn-action glass" onclick="app.exportAdminAuditJSON()" title="Ekspor Log Audit &amp; Telemetri ke file JSON">
+                <i data-lucide="download" class="btn-icon-sm"></i>
+                <span>Ekspor Telemetri JSON</span>
+              </button>
+            </div>
+          </div>
+          <h1 class="admin-header-title">Jejak Audit Kejadian Sistem &amp; Integritas Data</h1>
+          <p class="admin-header-subtitle">
+            Catatan kronologis aktivitas platform NutriVision AI: otentikasi login, inferensi model Computer Vision, modifikasi database, sinkronisasi Supabase Cloud, dan pemantauan keamanan real-time.
+          </p>
+        </div>
+
+        <!-- Audit Trail Main Panel -->
+        <div class="admin-panel-card">
+          <div class="admin-panel-head">
+            <div class="admin-panel-title">
+              <i data-lucide="terminal" style="color:var(--matcha-600);width:18px;height:18px;"></i>
+              <span>Log Kejadian &amp; Jejak Audit Sistem</span>
+            </div>
+            <div class="admin-panel-actions">
+              <button type="button" class="admin-row-action-btn" onclick="app.exportAdminAuditJSON()">
+                <i data-lucide="download" style="width:12px;height:12px;"></i>
+                <span>Unduh Log JSON</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dedicated Stream Container for this view -->
+          <div class="admin-audit-stream" id="admin-page-audit-stream-container">
+            <!-- Rendered dynamically by app.renderAdminAuditLogs() -->
+          </div>
+        </div>
+
+      </div>
 
       <!-- =========================================================================
          VIEW 1: OVERVIEW DASHBOARD (Fitur Utama & Ringkasan Cepat)
@@ -2202,17 +2677,6 @@
           </div>
 
           
-          <!-- Dedicated Admin Quick-Access Link -->
-          <div class="auth-admin-access-box" style="margin-top:14px;padding:10px 12px;background:rgba(158,167,107,0.08);border:1px dashed var(--line);border-radius:10px;text-align:center;">
-            <a href="javascript:void(0)" onclick="app.loginAsAdmin()" style="font-size:12px;color:var(--matcha-500);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
-              <iconify-icon icon="solar:shield-keyhole-bold-duotone" style="font-size:15px;"></iconify-icon>
-              <span>Masuk sebagai Administrator (Kelola Database)</span>
-            </a>
-            <div style="font-size:10.5px;color:var(--ink-mute);margin-top:2px;">
-              Akses khusus verifikasi database &amp; sinkronisasi cloud
-            </div>
-          </div>
-
           <div class="auth-switch-footer-text">
             Belum memiliki akun? <a onclick="app.switchAuthTab('register')">Daftar Sekarang (Sign Up)</a>
           </div>

@@ -27,3 +27,6 @@
 
 /* 8. Mobile App Bar, PWA Bottom Navigation & Responsive Breakpoints */
 @import url('responsive.css');
+
+/* 9. Super Admin Command Center & Monitoring Portal */
+@import url('admin.css');

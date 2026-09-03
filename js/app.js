@@ -246,15 +246,20 @@ class NutriVisionApp {
 
   // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State & Filled State)
   updateProfileUI() {
-    const hasData = Boolean(this.userProfile.hasCompletedQuiz && this.userProfile.name);
-    const initials = hasData ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+';
+    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+    const hasData = Boolean(this.userProfile.hasCompletedQuiz && this.userProfile.name) || isAdmin;
+    const initials = isAdmin ? 'AD' : (hasData ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+');
 
     // 1. Update Topbar Greeting
     const greetingEl = document.querySelector('.topbar-greeting h1');
     if (greetingEl) {
-      greetingEl.innerHTML = hasData
-        ? `Selamat siang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`
-        : `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>`;
+      if (isAdmin) {
+        greetingEl.innerHTML = `Panel Administrator: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetri</span>`;
+      } else {
+        greetingEl.innerHTML = hasData
+          ? `Selamat siang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`
+          : `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>`;
+      }
     }
 
     // 2. Update Topbar Buttons Visibility (Humanized Logic)
@@ -267,6 +272,18 @@ class NutriVisionApp {
     if (topbarProfileChip) {
       topbarProfileChip.style.display = hasData ? 'inline-flex' : 'none';
     }
+
+    // Toggle Patient vs Super Admin Sidebar Navigation Groups
+    const patientNav = document.getElementById('sidebar-nav-patient');
+    const adminNav = document.getElementById('sidebar-nav-admin');
+    if (patientNav) patientNav.style.display = isAdmin ? 'none' : 'flex';
+    if (adminNav) adminNav.style.display = isAdmin ? 'flex' : 'none';
+
+    // Hide mobile bottom nav & scan floating button for admin (admin does not need patient input tools)
+    const bottomNav = document.querySelector('.bottom-nav-pwa');
+    const fabBtn = document.querySelector('.fab-scan-btn');
+    if (bottomNav) bottomNav.style.display = isAdmin ? 'none' : '';
+    if (fabBtn) fabBtn.style.display = isAdmin ? 'none' : '';
 
     // 3. Update Profile Data Placeholders
     const nameEls = document.querySelectorAll('.user-name-placeholder');
@@ -281,7 +298,22 @@ class NutriVisionApp {
     // 4. Update Dedicated Sidebar Profile Card (Clean & Simple with Integrated Logout)
     const sidebarProfileCard = document.getElementById('sidebar-profile-card');
     if (sidebarProfileCard) {
-      if (hasData) {
+      if (isAdmin) {
+        sidebarProfileCard.innerHTML = `
+          <div class="sidebar-profile-flex">
+            <div class="sidebar-profile-info" onclick="app.goToAdminPortal()" title="Buka Super Admin Command Center">
+              <div class="profile-avatar" style="background:linear-gradient(135deg,#9EA76B,#353C1B);color:#fff;font-weight:800;flex-shrink:0;">AD</div>
+              <div style="min-width:0;flex:1;">
+                <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Super Administrator</b>
+                <span style="font-size:10.5px;color:#D6DCB2;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Root Telemetry &amp; DB</span>
+              </div>
+            </div>
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout &amp; Kembali ke Landing Page" aria-label="Keluar / Logout">
+              <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+            </button>
+          </div>
+        `;
+      } else if (hasData) {
         sidebarProfileCard.innerHTML = `
           <div class="sidebar-profile-flex">
             <div class="sidebar-profile-info" onclick="app.navigate('profile')" title="Buka Profil & Diagnostik">
@@ -421,6 +453,27 @@ class NutriVisionApp {
 
   // Switch Tab Navigasi (Router)
   navigate(sectionId) {
+    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+
+    // Database modal exception
+    if (sectionId === 'database') {
+      this.openDatabaseSyncModal();
+      return;
+    }
+
+    // Role-based route guard & redirect
+    if (isAdmin) {
+      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile') {
+        sectionId = 'admin';
+      } else if (sectionId === 'planner' || sectionId === 'catalog') {
+        sectionId = 'admin-clinical-menu';
+      }
+    } else {
+      if (sectionId === 'admin' || sectionId === 'admin-clinical-menu' || sectionId === 'admin-audit') {
+        sectionId = 'overview';
+      }
+    }
+
     this.activeSection = sectionId;
 
     // Update section visibility
@@ -434,6 +487,20 @@ class NutriVisionApp {
 
     if (sectionId === 'catalog') {
       this.renderFoodCatalog();
+    }
+
+    if (sectionId === 'admin') {
+      this.renderAdminPortal();
+    }
+
+    if (sectionId === 'admin-clinical-menu') {
+      this.renderAdminClinicalMenu();
+    }
+
+    if (sectionId === 'admin-audit') {
+      if (window.nutriVisionDB) {
+        this.renderAdminAuditLogs(window.nutriVisionDB.getAuditLogs());
+      }
     }
 
     // Update Desktop Nav Active State
@@ -489,6 +556,12 @@ class NutriVisionApp {
       if (window.nutriVisionDB) {
         window.nutriVisionDB.logout();
       }
+      this.isAdminPreviewMode = false;
+      const banner = document.getElementById('admin-preview-banner');
+      if (banner) banner.style.display = 'none';
+      const adminNavBtn = document.getElementById('sidebar-admin-nav-item');
+      if (adminNavBtn) adminNavBtn.style.display = 'none';
+
       localStorage.removeItem('nutrivision_user_profile');
       this.userProfile = {
         hasCompletedQuiz: false,
@@ -528,6 +601,10 @@ class NutriVisionApp {
 
   // Pindah ke Mode Dasbor Aplikasi
   goToDashboard(sectionId = 'overview', triggerModal = null) {
+    if (this.userProfile && this.userProfile.role === 'admin' && sectionId === 'overview' && !this.isAdminPreviewMode) {
+      this.goToAdminPortal();
+      return;
+    }
     this.isLanding = false;
     document.body.classList.remove('is-landing-active');
     this.navigate(sectionId);
@@ -1710,6 +1787,18 @@ class NutriVisionApp {
         progressTracker.renderMacroDonut(this.userProfile.targets);
       }
       this.closeModal('auth-modal');
+
+      if (this.userProfile.role === 'admin') {
+        await this.goToAdminPortal();
+        this.showToast(`🛡️ Selamat Datang, Administrator! Super Admin Command Center aktif.`);
+        if (typeof this.pendingAuthCallback === 'function') {
+          const cb = this.pendingAuthCallback;
+          this.pendingAuthCallback = null;
+          cb();
+        }
+        return;
+      }
+
       this.goToDashboard('overview');
 
       if (!hasQuiz || !this.userProfile.targets) {
@@ -1867,6 +1956,12 @@ class NutriVisionApp {
     if (window.nutriVisionDB) {
       window.nutriVisionDB.logout();
     }
+    this.isAdminPreviewMode = false;
+    const banner = document.getElementById('admin-preview-banner');
+    if (banner) banner.style.display = 'none';
+    const adminNavBtn = document.getElementById('sidebar-admin-nav-item');
+    if (adminNavBtn) adminNavBtn.style.display = 'none';
+
     localStorage.removeItem('nutrivision_user_profile');
     this.userProfile = {
       hasCompletedQuiz: false,
@@ -1896,17 +1991,22 @@ class NutriVisionApp {
 
   renderAuthUI() {
     const isLoggedIn = Boolean(this.userProfile && this.userProfile.name && this.userProfile.contact);
+    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
 
     // 1. Landing Page Navbar Actions
     const lpActions = document.getElementById('lp-nav-actions-container');
     if (lpActions) {
       if (isLoggedIn) {
-        const initials = (this.userProfile.name || 'P').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-        const firstName = this.userProfile.name.split(' ')[0];
+        const initials = isAdmin ? 'AD' : (this.userProfile.name || 'P').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const firstName = isAdmin ? 'Super Admin' : this.userProfile.name.split(' ')[0];
+        const targetAction = isAdmin ? 'app.goToAdminPortal()' : "app.goToDashboard('overview')";
+        const targetTitle = isAdmin ? 'Buka Super Admin Command Center' : 'Buka Dasbor Pasien';
+        const targetLabel = isAdmin ? 'Admin Portal' : `Dasbor (${firstName})`;
+
         lpActions.innerHTML = `
-          <button class="lp-btn-nav-primary" onclick="app.goToDashboard('overview')" title="Buka Dasbor Pasien" style="gap:7px;">
+          <button class="lp-btn-nav-primary" onclick="${targetAction}" title="${targetTitle}" style="gap:7px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(255,255,255,0.25);color:#fff;border-radius:50%;font-size:11px;font-weight:700;">${initials}</span>
-            <span>Dasbor (${firstName})</span>
+            <span>${targetLabel}</span>
           </button>
           <button class="lp-btn-nav-outline" onclick="app.handleLogout()" title="Keluar / Logout" style="padding:0 10px;color:var(--coral-600);">
             <i data-lucide="log-out" style="width:15px;height:15px;"></i>
@@ -2228,6 +2328,468 @@ class NutriVisionApp {
         if (menu) menu.classList.remove('mobile-open');
       });
     });
+  }
+
+  // =========================================================================
+  // SUPER ADMINISTRATOR COMMAND CENTER & MONITORING CONTROLLER
+  // =========================================================================
+
+  async goToAdminPortal(tabKey = null) {
+    this.isLanding = false;
+    document.body.classList.remove('is-landing-active');
+
+    this.navigate('admin');
+    if (tabKey) {
+      this.switchAdminTab(tabKey);
+    }
+    await this.renderAdminPortal();
+    if (window.history.pushState) {
+      window.history.pushState(null, null, '#admin');
+    }
+  }
+
+  switchAdminTab(tabKey) {
+    // 1. Update button states
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    const activeBtn = document.getElementById(`admin-nav-tab-${tabKey}`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    // 2. Update pane states
+    document.querySelectorAll('.admin-pane').forEach(pane => {
+      pane.classList.remove('active');
+    });
+    const targetPane = document.getElementById(`admin-pane-${tabKey}`);
+    if (targetPane) targetPane.classList.add('active');
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  async refreshAdminData() {
+    this.showToast('🔄 Memuat ulang telemetri & data pengguna...');
+    await this.renderAdminPortal();
+    this.showToast('✅ Data telemetri berhasil diperbarui.');
+  }
+
+  async renderAdminPortal() {
+    if (!window.nutriVisionDB) return;
+
+    try {
+      const stats = await window.nutriVisionDB.getSystemStats();
+      const users = await window.nutriVisionDB.getAllUsers();
+      const scans = await window.nutriVisionDB.getAllScans();
+      const auditLogs = window.nutriVisionDB.getAuditLogs();
+
+      // 1. Update KPI Telemetry Cards
+      const totalUsersEl = document.getElementById('admin-kpi-total-users');
+      if (totalUsersEl) totalUsersEl.textContent = stats.totalUsers;
+
+      const usersSubEl = document.getElementById('admin-kpi-users-sub');
+      if (usersSubEl) {
+        usersSubEl.textContent = `${stats.patientCount} Pasien · ${stats.clinicianCount} Nakes · ${stats.adminCount} Admin`;
+      }
+
+      const totalScansEl = document.getElementById('admin-kpi-total-scans');
+      if (totalScansEl) totalScansEl.textContent = stats.totalScans;
+
+      const scansSubEl = document.getElementById('admin-kpi-scans-sub');
+      if (scansSubEl) {
+        scansSubEl.textContent = `Akurasi Rata-rata: ${stats.avgConfidence}%`;
+      }
+
+      const calTrackedEl = document.getElementById('admin-kpi-calories-tracked');
+      if (calTrackedEl) {
+        calTrackedEl.textContent = stats.totalCaloriesTracked.toLocaleString('id-ID');
+      }
+
+      const proteinSubEl = document.getElementById('admin-kpi-protein-sub');
+      if (proteinSubEl) {
+        proteinSubEl.textContent = `Total Protein: ${stats.totalProteinTracked} g`;
+      }
+
+      const dbValEl = document.getElementById('admin-kpi-db-val');
+      if (dbValEl) {
+        dbValEl.textContent = window.nutriVisionDB.supabase ? 'Supabase Cloud' : 'IndexedDB Local';
+      }
+
+      const dbSubEl = document.getElementById('admin-kpi-db-sub');
+      if (dbSubEl) {
+        dbSubEl.textContent = stats.cloudStatus;
+      }
+
+      // 2. Update Tab Counts
+      const countUsersTab = document.getElementById('admin-count-users-tab');
+      if (countUsersTab) countUsersTab.textContent = users.length;
+
+      const countScansTab = document.getElementById('admin-count-scans-tab');
+      if (countScansTab) countScansTab.textContent = scans.length;
+
+      const countAuditTab = document.getElementById('admin-count-audit-tab');
+      if (countAuditTab) countAuditTab.textContent = auditLogs.length;
+
+      // 3. Render Tables
+      this._adminCachedUsers = users;
+      this.renderAdminUsers(users);
+      this.renderAdminScans(scans);
+      this.renderAdminAuditLogs(auditLogs);
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    } catch (err) {
+      console.warn('Admin portal render error:', err);
+    }
+  }
+
+  renderAdminUsers(users) {
+    const tbody = document.getElementById('admin-users-table-body');
+    if (!tbody) return;
+
+    if (!users || users.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;padding:32px;color:var(--ink-mute);">
+            Belum ada data pengguna yang terdaftar atau cocok dengan filter.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const roleBadgeMap = {
+      'admin': '<span class="admin-pill-badge admin"><i data-lucide="shield"></i> Super Admin</span>',
+      'clinician': '<span class="admin-pill-badge clinician"><i data-lucide="stethoscope"></i> Dokter / Nakes</span>',
+      'patient': '<span class="admin-pill-badge patient"><i data-lucide="user"></i> Pasien</span>'
+    };
+
+    tbody.innerHTML = users.map(user => {
+      const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      const roleBadge = roleBadgeMap[user.role || 'patient'] || roleBadgeMap['patient'];
+      const condition = user.conditionLabel || user.condition || 'Kondisi Umum';
+      const phase = user.recoveryPhase || user.phase || 'Fase Standar';
+      const targets = user.targetProtein ? `${user.targetProtein}g Prot · ${user.targetCalories || 2000} kkal` : 'Belum Ditargetkan';
+      const quizBadge = user.hasCompletedQuiz
+        ? '<span style="color:#059669;font-weight:700;font-size:11px;">✅ Lengkap</span>'
+        : '<span style="color:#D97706;font-weight:700;font-size:11px;">⏳ Belum Kuis</span>';
+
+      const isRootAdmin = user.role === 'admin' || user.id === 'usr_admin_master';
+
+      return `
+        <tr>
+          <td>
+            <div class="admin-table-user-cell">
+              <div class="admin-user-avatar">${initials}</div>
+              <div>
+                <div class="admin-user-name">${user.name || 'Pengguna'}</div>
+                <div class="admin-user-email">${user.email}</div>
+              </div>
+            </div>
+          </td>
+          <td>${roleBadge}</td>
+          <td><span style="font-weight:600;color:var(--ink-soft);">${condition}</span></td>
+          <td><span style="font-size:11.5px;color:var(--ink-mute);">${phase}</span></td>
+          <td><strong style="color:var(--matcha-700);">${targets}</strong></td>
+          <td>${quizBadge}</td>
+          <td>
+            ${isRootAdmin ? `
+              <span style="font-size:11px;color:var(--ink-mute);font-weight:600;">Akses Root</span>
+            ` : `
+              <div style="display:flex;gap:6px;">
+                <button type="button" class="admin-row-action-btn danger" onclick="app.deleteAdminUser('${user.id}')" title="Hapus Akun Pengguna">
+                  <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
+                  <span>Hapus</span>
+                </button>
+              </div>
+            `}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  filterAdminUsers() {
+    if (!this._adminCachedUsers) return;
+    const query = (document.getElementById('admin-user-search-input')?.value || '').toLowerCase().trim();
+    const roleFilter = document.getElementById('admin-user-role-filter')?.value || 'all';
+
+    const filtered = this._adminCachedUsers.filter(u => {
+      const matchSearch = !query ||
+        (u.name && u.name.toLowerCase().includes(query)) ||
+        (u.email && u.email.toLowerCase().includes(query)) ||
+        (u.conditionLabel && u.conditionLabel.toLowerCase().includes(query)) ||
+        (u.condition && u.condition.toLowerCase().includes(query));
+
+      let matchRole = true;
+      if (roleFilter === 'patient') {
+        matchRole = (u.role === 'patient' || !u.role);
+      } else if (roleFilter === 'clinician') {
+        matchRole = (u.role === 'clinician');
+      } else if (roleFilter === 'post-surgery') {
+        matchRole = (u.condition === 'post-surgery');
+      } else if (roleFilter === 'injury-rehab') {
+        matchRole = (u.condition === 'injury-rehab');
+      } else if (roleFilter === 'gym') {
+        matchRole = (u.condition === 'gym');
+      }
+
+      return matchSearch && matchRole;
+    });
+
+    this.renderAdminUsers(filtered);
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  renderAdminScans(scans) {
+    const tbody = document.getElementById('admin-scans-table-body');
+    if (!tbody) return;
+
+    if (!scans || scans.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;padding:32px;color:var(--ink-mute);">
+            Belum ada log pemindaian piring yang tersimpan.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = scans.map(scan => {
+      const timeStr = scan.timestamp ? new Date(scan.timestamp).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '--';
+      const comps = scan.components && scan.components.length > 0
+        ? scan.components.map(c => `<span style="display:inline-block;padding:1px 6px;margin:2px;background:#F0FDF4;color:#166534;border:1px solid #DCFCE7;border-radius:4px;font-size:10.5px;">${c.name} (${c.grams}g)</span>`).join('')
+        : '<span style="color:var(--ink-mute);font-size:11px;">1 Porsi Terintegrasi</span>';
+
+      const statusBadge = scan.status === 'manual_corrected'
+        ? '<span class="admin-pill-badge corrected"><i data-lucide="edit-3"></i> Koreksi Manual</span>'
+        : '<span class="admin-pill-badge verified"><i data-lucide="check-circle-2"></i> Terverifikasi AI</span>';
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:700;color:var(--ink);">${scan.id}</div>
+            <div style="font-size:11px;color:var(--ink-mute);">${timeStr}</div>
+          </td>
+          <td>
+            <div style="font-weight:600;color:var(--ink);">${scan.userName || 'Pasien'}</div>
+            <div style="font-size:11px;color:var(--ink-mute);">${scan.userCondition || ''}</div>
+          </td>
+          <td>
+            <strong style="color:#1C200E;">${scan.foodTitle || 'Piring Gizi Campur'}</strong>
+          </td>
+          <td style="max-width:280px;">${comps}</td>
+          <td>
+            <div style="font-weight:700;color:var(--matcha-700);">${scan.totalProtein}g Protein</div>
+            <div style="font-size:11px;color:var(--ink-soft);">${scan.totalCalories} kkal (${scan.totalGrams}g)</div>
+          </td>
+          <td>
+            <span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;color:#2563EB;background:#EFF6FF;border:1px solid #BFDBFE;padding:2px 7px;border-radius:999px;font-size:11px;">
+              ${scan.confidencePct || 95}%
+            </span>
+          </td>
+          <td>${statusBadge}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  renderAdminAuditLogs(logs) {
+    const containers = [
+      document.getElementById('admin-audit-stream-container'),
+      document.getElementById('admin-page-audit-stream-container')
+    ].filter(Boolean);
+
+    if (containers.length === 0) return;
+
+    if (!logs || logs.length === 0) {
+      containers.forEach(c => {
+        c.innerHTML = `<div style="text-align:center;padding:24px;color:var(--ink-mute);">Belum ada catatan aktivitas sistem.</div>`;
+      });
+      return;
+    }
+
+    const html = logs.map(log => {
+      const timeStr = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('id-ID') : '--:--';
+      const statusColor = log.status === 'WARNING' ? '#EF4444' : (log.status === 'NOTICE' ? '#F59E0B' : '#10B981');
+
+      return `
+        <div class="admin-audit-item">
+          <div class="admin-audit-left">
+            <span class="admin-audit-time">${timeStr}</span>
+            <span class="admin-audit-type">${log.event}</span>
+            <div class="admin-audit-desc">${log.details}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="admin-audit-actor">${log.actor}</span>
+            <span style="width:8px;height:8px;border-radius:50%;background:${statusColor};" title="${log.status}"></span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    containers.forEach(c => {
+      c.innerHTML = html;
+    });
+  }
+
+  refreshAdminAuditView() {
+    this.showToast('🔄 Memuat ulang jejak audit...');
+    if (window.nutriVisionDB) {
+      this.renderAdminAuditLogs(window.nutriVisionDB.getAuditLogs());
+      this.showToast('✅ Jejak audit sistem berhasil diperbarui.');
+    }
+  }
+
+  async deleteAdminUser(userId) {
+    if (!confirm('Apakah Anda yakin ingin menghapus akun pengguna ini? Tindakan ini tidak dapat dibatalkan.')) {
+      return;
+    }
+
+    try {
+      if (window.nutriVisionDB) {
+        await window.nutriVisionDB.deleteUser(userId);
+        this.showToast('✅ Akun pengguna berhasil dihapus dari database.');
+        await this.renderAdminPortal();
+      }
+    } catch (err) {
+      this.showToast(`⚠️ ${err.message || 'Gagal menghapus pengguna.'}`);
+    }
+  }
+
+  exportAdminAuditJSON() {
+    if (!window.nutriVisionDB) return;
+    const logs = window.nutriVisionDB.getAuditLogs();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+      exportedAt: new Date().toISOString(),
+      system: "NutriVision AI",
+      competition: "GAYATAMA 5",
+      auditTrail: logs
+    }, null, 2));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `nutrivision-telemetry-audit-${Date.now()}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    this.showToast('📥 Berkas telemetri &amp; jejak audit JSON berhasil diunduh.');
+  }
+
+  async resetDemoAccountsAdmin() {
+    if (!confirm('Re-seed akan mereset akun demonstrasi standar ke database lokal. Lanjutkan?')) {
+      return;
+    }
+    if (window.nutriVisionDB) {
+      await window.nutriVisionDB.seedInitialAccounts();
+      window.nutriVisionDB.addAuditLog('SYSTEM_RESEED', 'admin@nutrivision.id', 'Inisialisasi ulang akun demo standar', 'NOTICE');
+      this.showToast('✅ Database lokal telah di-seed ulang dengan akun demo.');
+      await this.renderAdminPortal();
+    }
+  }
+
+  async refreshAdminClinicalMenu() {
+    this.showToast('🔄 Memuat ulang data analitik pangan & klinis...');
+    await this.renderAdminClinicalMenu();
+    this.showToast('✅ Data analitik berhasil diperbarui.');
+  }
+
+  async renderAdminClinicalMenu() {
+    if (!window.nutriVisionDB) return;
+
+    try {
+      const data = await window.nutriVisionDB.getClinicalAndMenuAnalytics();
+
+      // 1. Total Pasien Badge
+      const totalBadge = document.getElementById('admin-clinical-total-badge');
+      if (totalBadge) totalBadge.textContent = `${data.totalPatients} Pasien Terdata`;
+
+      // 2. Render Sebaran Kondisi Medis & Penyakit (Progress bars)
+      const condContainer = document.getElementById('admin-condition-dist-container');
+      if (condContainer) {
+        const total = Math.max(1, data.totalPatients);
+        condContainer.innerHTML = Object.entries(data.conditionCounts).map(([condName, count]) => {
+          const pct = Math.round((count / total) * 100);
+          return `
+            <div class="admin-dist-item">
+              <div class="admin-dist-header">
+                <span>${condName}</span>
+                <span class="admin-dist-count">${count} Pasien (${pct}%)</span>
+              </div>
+              <div class="admin-dist-bar-bg">
+                <div class="admin-dist-bar-fill" style="width:${pct}%;"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Render Prevalensi Alergi & Pantangan
+      const allergyContainer = document.getElementById('admin-allergy-dist-container');
+      if (allergyContainer) {
+        allergyContainer.innerHTML = Object.entries(data.allergyCounts).map(([allergy, count]) => {
+          return `
+            <div class="admin-allergy-tag">
+              <i data-lucide="alert-circle" style="width:14px;height:14px;color:#D97706;"></i>
+              <span>${allergy}</span>
+              <span class="admin-allergy-count-badge">${count}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. Render Leaderboard Pangan Nusantara Terfavorit & Terlaris
+      const foodTbody = document.getElementById('admin-popular-foods-tbody');
+      if (foodTbody) {
+        foodTbody.innerHTML = data.foodStats.map((item, idx) => {
+          const rankBadge = idx === 0 ? '🥇 #1' : (idx === 1 ? '🥈 #2' : (idx === 2 ? '🥉 #3' : `#${idx + 1}`));
+          return `
+            <tr>
+              <td>
+                <div style="font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:12px;font-weight:800;color:var(--matcha-700);">${rankBadge}</span>
+                  <span>${item.name}</span>
+                </div>
+              </td>
+              <td><span style="font-size:12px;color:var(--ink-soft);">${item.category}</span></td>
+              <td><strong style="color:#EF4444;font-size:13px;">${item.favoriteCount} ❤️</strong></td>
+              <td><span style="font-weight:700;color:var(--ink);">${item.scanCount}x dipindai</span></td>
+              <td><strong style="color:#D97706;">⭐ ${item.rating}</strong></td>
+              <td>
+                <span style="font-weight:700;color:var(--matcha-700);">${item.protein}g Prot</span> · 
+                <span style="font-size:11px;color:var(--ink-mute);">${item.calories} kkal</span>
+              </td>
+              <td><span class="admin-pill-badge verified">${item.badge}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // 5. Render Log Akses Perencanaan Menu Pasien
+      const accessTbody = document.getElementById('admin-planner-access-tbody');
+      if (accessTbody) {
+        accessTbody.innerHTML = data.accessLogs.map(log => {
+          return `
+            <tr>
+              <td><strong style="color:var(--ink);">${log.patientName}</strong></td>
+              <td><span style="font-size:12px;color:var(--ink-soft);">${log.condition}</span></td>
+              <td><span style="color:#1C200E;font-weight:600;">${log.plannedMeal}</span></td>
+              <td><strong style="color:var(--matcha-700);">${log.targetProtein}</strong></td>
+              <td><span style="font-size:11.5px;color:var(--ink-mute);">${log.time}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    } catch (err) {
+      console.warn('Error rendering clinical menu analytics:', err);
+    }
   }
 }
 
