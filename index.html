@@ -50,6 +50,14 @@
     }
   </script>
 
+  <!-- HTML2PDF Document Generation Library (Local offline + CDN fallback) -->
+  <script src="js/html2pdf.bundle.min.js"></script>
+  <script>
+    if (!window.html2pdf) {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>');
+    }
+  </script>
+
   <!-- Core Design System -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -816,15 +824,7 @@
         </div>
       </header>
 
-      <!-- Medical Disclaimer Banner (Mandatory PRD Section 8 & 10) -->
-      <section class="disclaimer-banner" role="alert">
-        <span class="disclaimer-icon"><i data-lucide="alert-triangle"></i></span>
-        <div class="disclaimer-text">
-          <strong>Pemberitahuan Layanan Publik & Pendukung Keputusan:</strong>
-          Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan
-          (decision-support), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.
-        </div>
-      </section>
+
 
       <!-- =========================================================================
          VIEW 0: SUPER ADMIN COMMAND CENTER & MONITORING PORTAL
@@ -1287,158 +1287,6 @@
          ========================================================================= -->
       <div class="view-section active-view" id="view-overview">
 
-        <!-- =======================================================================
-           MOBILE APP HOME LAYOUT (MATCHING HEALTHCARE MOCKUP DESIGN)
-           ======================================================================= -->
-        <div class="mobile-app-header-block">
-          <!-- Mobile Top Navigation Bar -->
-          <div class="mob-top-nav">
-            <button class="mob-menu-btn" onclick="app.navigate('overview')" aria-label="Menu" title="Menu">
-              <i data-lucide="menu" style="width:20px;height:20px;"></i>
-            </button>
-            <div class="mob-top-brand">NutriVision AI</div>
-            <button class="mob-notif-btn" onclick="app.toggleSmartNotificationDropdown()" title="Notifikasi">
-              <i data-lucide="bell" style="width:19px;height:19px;"></i>
-              <span class="mob-notif-dot"></span>
-            </button>
-          </div>
-
-          <!-- Mobile Hero Greeting with Doctor Portrait -->
-          <div class="mob-greeting-card">
-            <div class="mob-greeting-text">
-              <span class="mob-greet-sub">Good Morning,</span>
-              <h1 class="mob-greet-title">Take care of <br>your <span class="highlight-blue">health.</span></h1>
-            </div>
-            <div class="mob-doctor-avatar-box">
-              <img src="icons/doctor_avatar.jpg" alt="Doctor Consultation" class="mob-doctor-img" />
-              <div class="mob-doctor-glow"></div>
-            </div>
-          </div>
-
-          <!-- Mobile Search & Filter Pill -->
-          <div class="mob-search-container">
-            <div class="mob-search-bar" onclick="app.navigate('catalog')">
-              <i data-lucide="search" class="mob-search-icon"></i>
-              <input type="text" placeholder="Search doctors, nutrition, symptoms..." readonly
-                class="mob-search-input" />
-              <button class="mob-filter-btn" onclick="event.stopPropagation(); app.navigate('planner');"
-                title="Filter Menu">
-                <i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Mobile Blue Gradient Hero Card (Book Appointment / Scan Food AI) -->
-          <div class="mob-hero-banner" onclick="app.openScanModal()">
-            <div class="mob-banner-decor-circle"></div>
-            <div class="mob-banner-content">
-              <h3 class="mob-banner-title">Book Appointment</h3>
-              <p class="mob-banner-desc">Consult with trusted clinical nutritionists anytime.</p>
-              <button class="mob-banner-btn" type="button" onclick="event.stopPropagation(); app.openScanModal();">
-                <span>Book Now</span>
-                <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
-              </button>
-            </div>
-            <div class="mob-banner-illustration">
-              <div class="mob-cal-card">
-                <div class="mob-cal-header">
-                  <span class="mob-cal-dot"></span>
-                  <span class="mob-cal-dot"></span>
-                </div>
-                <div class="mob-cal-grid">
-                  <span></span><span></span><span></span>
-                  <span></span><span></span><span></span>
-                </div>
-                <div class="mob-cal-badge">
-                  <i data-lucide="check" style="width:14px;height:14px;stroke-width:3;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mobile "Our Services" Grid -->
-          <div class="mob-section-head">
-            <h3>Our Services</h3>
-            <a onclick="app.navigate('catalog')" class="mob-view-all">View all <i data-lucide="chevron-right"
-                style="width:14px;height:14px;"></i></a>
-          </div>
-
-          <div class="mob-services-grid">
-            <div class="mob-service-card" onclick="app.openScanModal()">
-              <div class="mob-service-icon-box blue">
-                <i data-lucide="heart" style="width:20px;height:20px;"></i>
-              </div>
-              <b class="mob-service-title">Consultation</b>
-              <span class="mob-service-sub">Talk to AI / doctor</span>
-            </div>
-
-            <div class="mob-service-card" onclick="app.openScanModal()">
-              <div class="mob-service-icon-box cyan">
-                <i data-lucide="flask-conical" style="width:20px;height:20px;"></i>
-              </div>
-              <b class="mob-service-title">Lab Tests</b>
-              <span class="mob-service-sub">Scan plate easily</span>
-            </div>
-
-            <div class="mob-service-card" onclick="app.navigate('planner')">
-              <div class="mob-service-icon-box indigo">
-                <i data-lucide="pill" style="width:20px;height:20px;"></i>
-              </div>
-              <b class="mob-service-title">Medication</b>
-              <span class="mob-service-sub">Get meal plans</span>
-            </div>
-
-            <div class="mob-service-card" onclick="app.navigate('progress')">
-              <div class="mob-service-icon-box emerald">
-                <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
-              </div>
-              <b class="mob-service-title">Health Checkup</b>
-              <span class="mob-service-sub">Full body tracking</span>
-            </div>
-          </div>
-
-          <!-- Mobile "Upcoming Appointment" Card -->
-          <div class="mob-section-head" style="margin-top:20px;">
-            <h3>Upcoming Appointment</h3>
-          </div>
-
-          <div class="mob-appointment-card" onclick="app.navigate('progress')">
-            <div class="mob-app-doctor-row">
-              <div class="mob-app-avatar">
-                <img src="icons/doctor_avatar.jpg" alt="Dr. James Carter" />
-              </div>
-              <div class="mob-app-info">
-                <b class="mob-app-name">Dr. James Carter</b>
-                <span class="mob-app-role">Cardiologist &amp; Clinical Nutrition</span>
-                <div class="mob-app-datetime">
-                  <span><i data-lucide="calendar" style="width:12px;height:12px;"></i> May 24, 2026</span>
-                  <span><i data-lucide="clock" style="width:12px;height:12px;"></i> 10:30 AM</span>
-                </div>
-              </div>
-              <span class="mob-status-pill">Confirmed</span>
-            </div>
-          </div>
-
-          <!-- Mobile "Health Insights" Section -->
-          <div class="mob-section-head" style="margin-top:20px;">
-            <h3>Health Insights</h3>
-            <a onclick="app.navigate('community')" class="mob-view-all">View all <i data-lucide="chevron-right"
-                style="width:14px;height:14px;"></i></a>
-          </div>
-
-          <div class="mob-insight-card" onclick="app.navigate('community')">
-            <div class="mob-insight-content">
-              <h4 class="mob-insight-title">How to maintain a healthy heart &amp; muscle recovery</h4>
-              <span class="mob-insight-meta">5 min read</span>
-            </div>
-            <div class="mob-insight-img-box">
-              <img src="icons/heart_3d.jpg" alt="Healthy Heart" class="mob-insight-heart-img" />
-            </div>
-          </div>
-
-        </div>
-        <!-- /END MOBILE APP HOME LAYOUT -->
-
         <div class="dashboard-grid">
 
           <!-- HERO CARD: COMPUTER VISION FOOD SEGMENTATION (FR-01, FR-02, FR-03, FR-07) -->
@@ -1594,9 +1442,14 @@
 
             <div class="streak-card-footer">
               <span>Rata-rata mingguan: <b>92% tercapai</b></span>
-              <button class="btn-export-share" onclick="app.exportCaregiverReport()">
-                <i data-lucide="clipboard-check" class="btn-icon-sm"></i> Bagikan ke Fisioterapis / Nakes
-              </button>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <button class="btn-export-share" style="background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;" onclick="app.openPDFReportModal()">
+                  <i data-lucide="file-down" class="btn-icon-sm"></i> Ekspor Dokumen PDF
+                </button>
+                <button class="btn-export-share" onclick="app.exportCaregiverReport()">
+                  <i data-lucide="clipboard-check" class="btn-icon-sm"></i> Salin Teks Nakes
+                </button>
+              </div>
             </div>
           </section>
 
@@ -1895,18 +1748,32 @@
             <!-- Populated dynamically -->
           </div>
 
-          <div style="background:var(--bg);border-radius:var(--radius-md);padding:16px;border:1px solid var(--line);">
-            <h3 style="font-size:16px;margin-bottom:8px;color:var(--ink);">Ringkasan Telehealth Pasien</h3>
-            <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;">
+          <div style="background:var(--bg);border-radius:var(--radius-md);padding:18px 20px;border:1px solid var(--line);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+              <h3 style="font-size:16px;font-weight:700;margin:0;color:var(--ink);display:flex;align-items:center;gap:8px;">
+                <i data-lucide="file-text" style="width:18px;height:18px;color:#233917;"></i> Ringkasan Telehealth Pasien
+              </h3>
+              <span class="badge teal" style="font-size:11.5px;font-weight:700;background:#EAF5E9;color:#1B5E20;border-color:#C2E0BD;">
+                <i data-lucide="check-circle" class="btn-icon-sm"></i> Rekap Siap Ekspor
+              </span>
+            </div>
+            <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:12px;">
               Rata-rata kepatuhan protein 7 hari terakhir: <b>92%</b>. Pasien menunjukkan konsistensi tinggi pada asupan
               protein hewani dan nabati bertekstur lunak. Tidak dilaporkan adanya keluhan sembelit signifikan setelah
               penambahan serat sayur bening bayam.
             </p>
-            <button class="btn-primary-coral"
-              style="margin-top:12px;font-size:13px;padding:8px 16px;display:inline-flex;align-items:center;gap:6px;"
-              onclick="app.exportCaregiverReport()">
-              <i data-lucide="clipboard-check" class="btn-icon-sm"></i> Salin Laporan Telehealth Lengkap
-            </button>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;">
+              <button class="btn-primary-teal"
+                style="font-size:13px;padding:9px 18px;display:inline-flex;align-items:center;gap:7px;background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;box-shadow:0 3px 10px rgba(35,57,23,0.25);"
+                onclick="app.openPDFReportModal()">
+                <i data-lucide="file-down" class="btn-icon-sm"></i> Ekspor Dokumen Laporan (PDF)
+              </button>
+              <button class="btn-outline-glass"
+                style="font-size:13px;padding:9px 16px;display:inline-flex;align-items:center;gap:6px;border-color:var(--line);background:var(--card);color:var(--ink-soft);"
+                onclick="app.exportCaregiverReport()">
+                <i data-lucide="clipboard-check" class="btn-icon-sm"></i> Salin Laporan Telehealth
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -2984,6 +2851,44 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
 
       </div><!-- /db-modal-body -->
     </div><!-- /db-modal-sheet -->
+  </div>
+
+  <!-- =========================================================================
+       MODAL: PRATINJAU & EKSPOR DOKUMEN LAPORAN PROGRESS PDF
+       ========================================================================= -->
+  <div class="modal-overlay" id="modal-pdf-report" onclick="app.closePDFReportModal()">
+    <div class="modal-box pdf-preview-modal-box" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="pdf-modal-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="pdf-modal-badge-icon">
+            <i data-lucide="file-text" style="width:20px;height:20px;"></i>
+          </div>
+          <div>
+            <h3 style="font-size:16px;font-weight:700;color:var(--ink);margin:0;">Dokumen Laporan &amp; Progress Klinis (PDF)</h3>
+            <p style="font-size:12px;color:var(--ink-soft);margin:2px 0 0;">Pratinjau rekapitulasi gizi pemulihan dan rekam telehealth pasien</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button type="button" class="btn-primary-teal" onclick="app.downloadPDFReport()" style="font-size:13px;padding:8px 16px;display:inline-flex;align-items:center;gap:6px;background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;">
+            <i data-lucide="download" class="btn-icon-sm"></i> Unduh PDF
+          </button>
+          <button type="button" class="btn-outline-glass" onclick="app.printPDFReport()" style="font-size:13px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;border-color:var(--line);background:var(--card);color:var(--ink);">
+            <i data-lucide="printer" class="btn-icon-sm"></i> Cetak
+          </button>
+          <button type="button" class="close-btn" onclick="app.closePDFReportModal()" aria-label="Tutup" style="margin-left:4px;">
+            <i data-lucide="x" style="width:18px;height:18px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (Printable Sheet Container) -->
+      <div class="pdf-modal-body">
+        <div id="pdf-report-preview-container" style="width:100%;display:flex;justify-content:center;">
+          <!-- Populated dynamically via progressTracker.generatePDFReportHTML -->
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Core JavaScript Application Scripts -->

@@ -2570,6 +2570,65 @@ class NutriVisionApp {
     }, 'membagikan tautan pendamping pasien');
   }
 
+  openPDFReportModal() {
+    this.requireAuth(() => {
+      const modal = document.getElementById('modal-pdf-report');
+      const container = document.getElementById('pdf-report-preview-container');
+      if (!modal || !container) return;
+
+      container.innerHTML = progressTracker.generatePDFReportHTML(
+        this.userProfile,
+        typeof mealPlanner !== 'undefined' ? mealPlanner : null
+      );
+      modal.classList.add('open');
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }, 'mengekspor dokumen laporan PDF pasien');
+  }
+
+  closePDFReportModal() {
+    const modal = document.getElementById('modal-pdf-report');
+    if (modal) modal.classList.remove('open');
+  }
+
+  downloadPDFReport() {
+    const reportElem = document.getElementById('pdf-printable-report');
+    if (!reportElem) {
+      this.showToast('Gagal memproses dokumen laporan.');
+      return;
+    }
+
+    const patientName = (this.userProfile?.name || 'Pasien').replace(/[^a-zA-Z0-9]/g, '_');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const fileName = `Laporan_Gizi_NutriVision_${patientName}_${dateStr}.pdf`;
+
+    this.showToast('Sedang membuat berkas PDF berkualitas tinggi...');
+
+    if (window.html2pdf) {
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      window.html2pdf().set(opt).from(reportElem).save().then(() => {
+        this.showToast('✅ Dokumen PDF berhasil diunduh!');
+      }).catch(err => {
+        console.warn('html2pdf export failed, fallback to print:', err);
+        window.print();
+      });
+    } else {
+      window.print();
+    }
+  }
+
+  printPDFReport() {
+    window.print();
+  }
+
   // Setup Event Listeners
 
   // =========================================================================

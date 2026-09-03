@@ -1078,27 +1078,34 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
-  border: 1.5px solid #DDD8BF;
+  padding: 7px 13px;
+  border: 1.5px solid #7D8C54;
   border-radius: 20px;
-  background: #FDFCF8;
-  color: #4A522C;
-  font-size: 12px;
+  background: #FFFFFF;
+  color: #1F280E;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .quiz-chip-btn:hover {
-  border-color: #9EA76B;
-  background: #F7F9EC;
+  border-color: #556733;
+  background: #F4F7E6;
+  color: #121808;
 }
 
 .quiz-chip-btn.active {
-  background: #9EA76B;
-  border-color: #9EA76B;
+  background: #233917;
+  border-color: #17280F;
   color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(158, 167, 107, 0.25);
+  box-shadow: 0 3px 10px rgba(23, 40, 15, 0.35);
+}
+
+.quiz-chip-btn.active:hover {
+  background: #1B2E12;
+  border-color: #111F0A;
+  color: #FFFFFF;
 }
 
 /* Actions Row at bottom of each step */
@@ -1383,6 +1390,102 @@
   .plate-food-thumb-box {
     width: 100%;
     height: 130px;
+  }
+}
+
+/* ==========================================================================
+   PDF REPORT PREVIEW MODAL & PRINT MEDIA STYLES
+   ========================================================================== */
+.pdf-preview-modal-box {
+  max-width: 880px !important;
+  width: 95vw !important;
+  max-height: 92vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: var(--bg) !important;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.pdf-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.pdf-modal-badge-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #233917;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(35, 57, 23, 0.25);
+}
+
+.pdf-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: #ECECE5;
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-printable-sheet {
+  transition: transform 0.2s ease;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #pdf-printable-report,
+  #pdf-printable-report * {
+    visibility: visible !important;
+  }
+  #pdf-printable-report {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    background: #FFFFFF !important;
+  }
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  .pdf-preview-modal-box {
+    border: none !important;
+    box-shadow: none !important;
+    background: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  .pdf-modal-header,
+  .close-btn {
+    display: none !important;
   }
 }
 

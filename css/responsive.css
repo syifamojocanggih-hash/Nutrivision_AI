@@ -170,18 +170,101 @@
     display: none;
   }
 
-  /* Show mobile app header showcase on home overview */
+  /* Hide mobile mockup header showcase so mobile matches desktop */
   .mobile-app-header-block {
-    display: block;
+    display: none !important;
   }
 
-  /* Hide desktop topbar and hero scan card on mobile overview to give clean mobile experience */
+  /* Mobile Topbar aligned with Desktop Header */
   .topbar {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topbar-greeting {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topbar-greeting h1 {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-greeting p {
+    font-size: 11px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  #topbar-profile-chip span.user-name-placeholder {
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .install-pwa-btn {
     display: none;
   }
 
+  /* Hero Scan Card matching Desktop on mobile */
   .hero-scan-card {
-    display: none;
+    display: block !important;
+    padding: 18px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .hero-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .hero-header h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .hero-header p {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .hero-actions .btn-primary-coral,
+  .hero-actions .btn-outline-glass {
+    flex: 1;
+    justify-content: center;
+    font-size: 12px;
+    padding: 9px 12px;
+    white-space: nowrap;
   }
 
   /* Show mobile bottom nav & floating action camera button */

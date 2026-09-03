@@ -1,169 +1,200 @@
-# 🥗 NutriVision AI — Panduan Penggunaan Aplikasi
+<div align="center">
 
-NutriVision AI adalah aplikasi web pemandu asupan gizi berbasis kecerdasan buatan (*Computer Vision*) yang dirancang untuk membantu pemulihan pasien pasca-operasi, rehabilitasi cedera medis, maupun program kebugaran.
+```
+ _   _ _   _ _____ ____  _____     _____ ____ ___ ___  _   _      _    ___ 
+| \ | | | | |_   _|  _ \|_ _\ \   / /_ _/ ___|_ _/ _ \| \ | |    / \  |_ _|
+|  \| | | | | | | | |_) || | \ \ / / | |\___ \| | | | |  \| |   / _ \  | | 
+| |\  | |_| | | | |  _ < | |  \ V /  | | ___) | | |_| | |\  |  / ___ \ | | 
+|_| \_|\___/  |_| |_| \_\___|  \_/  |___|____/___\___/|_| \_| /_/   \_\___|
+```
 
-Dokumen ini berisi panduan lengkap langkah demi langkah cara menggunakan seluruh fitur yang tersedia di dalam aplikasi.
+### 🥗 **Nutrisi Presisi Klinis Berbasis AI & Telehealth Pemulihan Pasca-Operasi (ERAS)**
 
----
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready%20%26%20Offline%20First-243818?style=for-the-badge&logo=pwa&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
+[![Computer Vision](https://img.shields.io/badge/Computer%20Vision-Multi--Segment%20AI-4C5C2C?style=for-the-badge&logo=opencv&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
+[![Export PDF](https://img.shields.io/badge/Telehealth-1--Click%20PDF%20Export-1F4725?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
+[![Supabase Cloud](https://img.shields.io/badge/Cloud%20Sync-Supabase%20PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=black)](https://supabase.com)
+[![WCAG AAA](https://img.shields.io/badge/Accessibility-WCAG%20AAA%20High%20Contrast-000000?style=for-the-badge&logo=accessibility&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
 
-## 📑 Daftar Isi
-1. [Cara Mengakses & Menginstall Aplikasi](#1-cara-mengakses--menginstall-aplikasi)
-2. [Langkah Awal: Pengaturan Profil Pasien](#2-langkah-awal-pengaturan-profil-pasien)
-3. [Cara Memindai (Scan) & Mengenali Makanan](#3-cara-memindai-scan--mengenali-makanan)
-4. [Cara Mengatur Porsi & Mengoreksi Bahan Makanan](#4-cara-mengatur-porsi--mengoreksi-bahan-makanan)
-5. [Menggunakan Perencana Menu (Opsi Standar vs Hemat)](#5-menggunakan-perencana-menu-opsi-standar-vs-hemat)
-6. [Mengaktifkan Filter Gejala (Symptom-Aware Filter)](#6-mengaktifkan-filter-gejala-symptom-aware-filter)
-7. [Mencari Bahan di Katalog Pangan Lokal](#7-mencari-bahan-di-katalog-pangan-lokal)
-8. [Melihat Progres & Mengekspor Laporan ke Dokter/Nakes](#8-melihat-progres--mengekspor-laporan-ke-dokternakes)
-9. [Membagikan Akses ke Pendamping (Caregiver Portal)](#9-membagikan-akses-ke-pendamping-caregiver-portal)
-10. [Berinteraksi di Ruang Komunitas Pemulihan](#10-berinteraksi-di-ruang-komunitas-pemulihan)
-11. [Fitur Ramah Lansia & Aksesibilitas](#11-fitur-ramah-lansia--aksesibilitas)
+<br>
 
----
-
-## 1. Cara Mengakses & Menginstall Aplikasi
-
-### A. Akses Langsung Melalui Browser
-Buka tautan website pada browser di Laptop, Tablet, atau HP Anda:
+🌐 **Demo Langsung (Live Application):**  
 👉 **[https://syifamojocanggih-hash.github.io/Nutrivision_AI/](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)**
 
-### B. Menginstall ke Layar Utama HP (PWA)
-Aplikasi ini dapat diinstall seperti aplikasi native tanpa perlu mendownload dari App Store / Play Store:
-* **Pengguna Android (Google Chrome):**
-  1. Klik banner **"Install Aplikasi"** di bagian atas layar, atau
-  2. Tekan menu titik tiga (⋮) di kanan atas browser 👉 Pilih **"Tambahkan ke Layar Utama" / "Install Aplikasi"**.
+</div>
+
+---
+
+## 📖 Tentang NutriVision AI
+
+**NutriVision AI** adalah platform *clinical decision support system* (CDSS) berbasis web dan *Progressive Web App* (PWA) yang memadukan **kecerdasan buatan (*Computer Vision segmentation*)**, **protokol pemulihan bedah ERAS (*Enhanced Recovery After Surgery*)**, serta **ensiklopedia pangan super lokal Nusantara**.
+
+Aplikasi ini mendampingi pasien pasca-operasi, lansia dalam masa pemulihan, atlet rehabilitasi cedera, maupun keluarga pendamping (*caregiver*) untuk memantau pemenuhan target protein dan kalori secara mandiri, aman, dan terukur.
+
+---
+
+## 🌟 Fitur-Fitur Utama
+
+| Fitur Unggulan | Deskripsi & Keunggulan Klinis |
+| :--- | :--- |
+| 👁️ **Multi-Segment Food CV** | Memindai piring makan, mendeteksi beberapa jenis bahan sekaligus, menandai masking poligon warna-warni, serta mengestimasi rentang makronutrisi (Protein, Karbohidrat, Lemak, Kalori). |
+| 🎯 **Macro Rings & Recovery Targets** | Cincin target gizi real-time berbasis profil klinis, berat badan, dan fase regenerasi jaringan (Fase 1 Akut, Fase 2 Proliferasi Albumin, Fase 3 Remodeling). |
+| 📄 **Ekspor Dokumen Laporan (PDF)** | Menghasilkan berkas PDF medis formal ukuran A4 lengkap dengan data pasien, tabel kepatuhan 7 hari, riwayat gejala, target ERAS, dan kolom tanda tangan nakes/caregiver. |
+| 🥣 **Symptom-Aware Texture Filter** | Menyesuaikan rekomendasi menu berdasarkan keluhan klinis aktif (*Sulit Menelan/Disfagia, Mual, Konstipasi, Nafsu Makan Rendah*) dengan tombol berkontras tinggi (WCAG AAA). |
+| 🍱 **Dual-Mode Meal Planner** | Memberikan 2 opsi perencanaan makanan harian: **Opsi Standar (Optimal)** dan **Opsi Hemat (Low-Budget)** berbasis pangan lokal terjangkau. |
+| 🐟 **Ensiklopedia Pangan Super Lokal** | Database pangan Indonesia kaya albumin & mikronutrien regeneratif: Ikan Gabus (*Channa striata*), Tempe Kedelai, Telur Bebek/Ayam, Sayur Bening Bayam, dll. |
+| 👥 **Caregiver Portal (View-Only)** | Tautan aman satu klik untuk keluarga dan dokter fisioterapis agar dapat memantau asupan pasien tanpa risiko salah ubah data. |
+| ♿ **Aksesibilitas & Ramah Lansia** | Pengaturan ukuran font 3-tingkat (A, A+, A++), mode kontras tinggi (*high-contrast*), navigasi bawah jempol (*thumb-friendly*), dan dukungan 100% offline-first. |
+
+---
+
+## 🏗️ Alur Sistem & Arsitektur
+
+```mermaid
+graph LR
+    A[📷 Foto Makanan Pasien] --> B[🧠 CV Engine Segmentation]
+    B --> C[📊 Ekstraksi Poligon & Gramatur]
+    C --> D[🥗 Pencocokan Database Gizi Lokal]
+    D --> E[🎯 Evaluasi Cincin Makro & Kepatuhan]
+    E --> F[📋 Ringkasan Telehealth & Fase ERAS]
+    F --> G[📄 Ekspor Dokumen Medis PDF]
+    F --> H[🔗 Tautan Caregiver View-Only]
+    F --> I[☁️ Sinkronisasi Supabase Cloud]
+```
+
+---
+
+## 📑 Panduan Penggunaan Aplikasi
+
+### 1. Membuka & Menginstall Aplikasi (PWA)
+
+NutriVision AI dirancang dengan arsitektur **Progressive Web App (PWA)** sehingga dapat dibuka di laptop maupun diinstal langsung ke layar utama smartphone layaknya aplikasi native tanpa Google Play Store atau Apple App Store.
+
+* **Pengguna Android (Google Chrome / Edge):**
+  1. Buka [tautan aplikasi](https://syifamojocanggih-hash.github.io/Nutrivision_AI/).
+  2. Tekan menu titik tiga (⋮) di pojok kanan atas browser 👉 Pilih **"Instal Aplikasi"** atau **"Tambahkan ke Layar Utama"**.
 * **Pengguna iPhone / iPad (Safari):**
-  1. Tekan tombol **Bagikan (Share / ikon kotak panah ke atas)** di bagian bawah Safari.
-  2. Gulir ke bawah dan pilih **"Tambah ke Layar Utama" (Add to Home Screen)**.
+  1. Tekan tombol **Bagikan (*Share* / ikon kotak dengan panah ke atas)** di bilah bawah Safari.
+  2. Gulir ke bawah lalu pilih **"Tambah ke Layar Utama" (*Add to Home Screen*)**.
 
 ---
 
-## 2. Langkah Awal: Pengaturan Profil Pasien
+### 2. Pengaturan Profil Pasien & Diagnostik Gizi
 
-Saat pertama kali membuka aplikasi, Anda akan disambut oleh jendela **Profil Pemulihan**:
+Saat pertama kali digunakan, lengkapi profil pasien untuk perhitungan gramatur gizi personal:
 
-1. **Nama Lengkap:** Masukkan nama pasien/pengguna.
-2. **Kondisi Pemulihan:** Pilih salah satu kondisi:
-   * 🏥 **Pasca-Operasi:** Untuk pasien yang baru selesai menjalani operasi pembedahan (target protein tinggi untuk regenerasi jaringan).
-   * 🏃‍♂️ **Fisioterapi & Cedera:** Untuk rehabilitasi sendi, ligamen, atau patah tulang.
-   * 🏋️ **Gym & Muscle Recovery:** Untuk pemulihan intensitas latihan fisik dan pembentukan massa otot.
-3. **Fase Pemulihan & Berat Badan:** Masukkan fase klinis saat ini (contoh: *Minggu ke-2*) dan berat badan dalam kg.
-4. **Target Gizi Otomatis:** Sistem akan secara otomatis menghitung kebutuhan protein harian (contoh: 65 kg × 1.5g = **98g Protein/hari**).
-5. **Persetujuan Medis:** Centang kotak persetujuan tanggung jawab bersama lalu tekan **"Simpan & Mulai Pemulihan"**.
-
-> 💡 *Catatan: Anda dapat mengubah profil kapan saja dengan menekan kartu nama profil Anda di pojok kanan atas.*
+1. Klik tombol **"Mulai Diagnostik Gizi (5 Langkah)"** atau buka tab **Profil**.
+2. Masukkan data:
+   * **Nama Pasien & Kontak/Email**
+   * **Kondisi Klinis:** *Pasca-Operasi Bedah*, *Fisioterapi & Rehabilitasi Cedera*, atau *Pemulihan Kebugaran*.
+   * **Fase Pemulihan:** *Fase 1 (Inflamasi & Akut)*, *Fase 2 (Proliferasi & Sintesis)*, atau *Fase 3 (Remodeling)*.
+   * **Antropometri:** Berat badan (kg), tinggi badan (cm), dan tingkat mobilisasi harian.
+   * **Deklarasi Pantangan / Alergi:** Contoh: *Bebas santan kental, rendah garam, bebas gluten*.
+3. Sistem secara otomatis menghitung **Target Protein Harian** (contoh: 65 kg × 1.5g = **98g protein/hari**) dan kebutuhan kalori basal.
 
 ---
 
-## 3. Cara Memindai (Scan) & Mengenali Makanan
+### 3. Memindai (*Scan*) & Mengenali Piring Makanan
 
-NutriVision AI dapat mengenali beberapa jenis bahan makanan dalam satu piring sekaligus secara otomatis.
-
-1. Tekan tombol **"Scan Makanan Baru"** pada kartu utama di Dashboard atau tekan **Ikon Kamera Melayang (FAB)** di kanan bawah layar HP.
-2. Pilih metode pengambilan foto:
-   * 📷 **Buka Kamera:** Menggunakan kamera langsung dari HP/Laptop untuk memotret piring makanan.
-   * 📁 **Unggah Foto:** Memilih foto makanan yang sudah ada di galeri ponsel Anda.
-   * ⚡ **Preset Demo:** Memilih contoh hidangan siap saji (*Piring Pemulihan Ikan Gabus*, *Sup Tim Ayam Tahu*, atau *Salmon Bowl*) untuk pengujian cepat.
-3. Sistem Computer Vision akan menampilkan **masking visual poligon berwarna** di atas piring dan memecah rincian gizi per bahan.
+1. Klik tombol **"Scan Makanan Baru"** pada kartu utama atau tekan tombol kamera melayang (**FAB**) di pojok kanan bawah layar HP.
+2. Pilih sumber foto:
+   * 📷 **Buka Kamera:** Ambil foto piring makanan secara langsung.
+   * 📁 **Unggah Berkas:** Pilih foto makanan dari galeri ponsel.
+   * ⚡ **Preset Demo:** Pilih hidangan uji cepat (*Sup Ikan Gabus Albumin*, *Tim Ayam Tahu Sayur*, atau *Salmon Recovery Bowl*).
+3. Sistem Computer Vision secara instan menyekat (*segmentation*) piring ke dalam komponen bahan makanan dengan visualisasi poligon, menampilkan persentase kecocokan deteksi, serta total estimasi gramatur protein dan kalori.
 
 ---
 
-## 4. Cara Mengatur Porsi & Mengoreksi Bahan Makanan
+### 4. Menyesuaikan Porsi & Koreksi Bahan Makanan
 
-Jika porsi atau bahan yang dikenali sistem belum sesuai dengan piring Anda:
-
-* **Mengubah Berat Porsi (Gram):** Ubah angka pada kotak gram (contoh: dari 120g menjadi 150g). Total protein dan kalori piring akan dihitung ulang secara instan.
-* **Menghapus Bahan:** Tekan tombol ikon tempat sampah (**🗑️**) di samping bahan yang tidak ada di piring Anda.
-* **Menambah Bahan Tambahan:** Jika ada bahan makanan yang belum terdeteksi, buka menu **Katalog Pangan** dan klik **"+ Tambah ke Piring"**.
-* **Simpan Catatan:** Tekan tombol **"Catat Asupan Ini"** di bawah untuk memasukkan makanan ke dalam progres gizi harian Anda.
-
----
-
-## 5. Menggunakan Perencana Menu (Opsi Standar vs Hemat)
-
-Pada menu **"Rencana Menu"** di navigasi bawah:
-
-1. **Pilih Mode Anggaran:**
-   * **Opsi Standar (Optimal):** Rekomendasi menu pemulihan klinis terbaik (contoh: Salmon Panggang, Dada Ayam Kukus, Sup Ikan Gabus).
-   * **Opsi Hemat (Low-Budget):** Menu padat gizi berbasis pangan lokal dengan harga sangat terjangkau (contoh: Pepes Ikan Kembung, Tahu Tempe Bacem, Telur Rebus).
-2. Setiap kartu menu dilengkapi rincian kandungan protein, estimasi biaya harian, dan label kecocokan klinis (*Kaya Omega-3, Tinggi Albumin, dll.*).
+Jika porsi riil berbeda dari estimasi awal:
+* **Ubah Gram Porsi:** Ketik angka gramatur porsi aktual. Nilai nutrisi makro akan dihitung ulang secara real-time.
+* **Hapus Bahan:** Tekan ikon tempat sampah (**🗑️**) pada bahan yang tidak dikonsumsi.
+* **Tambah Bahan:** Buka tab **Katalog Pangan** lalu klik **"+ Tambah ke Piring"**.
+* **Simpan ke Rekam Harian:** Tekan tombol **"Catat Asupan Ini"** untuk memperbarui cincin progres hari ini.
 
 ---
 
-## 6. Mengaktifkan Filter Gejala (Symptom-Aware Filter)
+### 5. Filter Gejala Adaptif (*Symptom-Aware Filter*)
 
-Pasien pasca-operasi sering kali mengalami keluhan pencernaan. Anda dapat menyaring rekomendasi makanan berdasarkan gejala yang sedang dirasakan:
+Pasien pasca-bedah sering mengalami efek samping anestesi atau pembedahan. NutriVision AI menyediakan tombol filter gejala berkontras tinggi (**Deep Forest Matcha, lolos WCAG AAA**):
 
-1. Buka tab **"Rencana Menu"**.
-2. Pada bagian **"Filter Berdasarkan Gejala Klinis"**, klik salah satu atau beberapa gejala:
-   * 🌊 **Mual:** Sistem menyarankan makanan berkuah bening hangat, dingin bersuhu ruang, dan non-lemak.
-   * 💧 **Sulit Menelan (Disfagia):** Sistem merekomendasikan hidangan bertekstur lunak/halus (bubur saring, telur orak-arik, sup kental).
-   * 🛡️ **Konstipasi:** Sistem memprioritaskan makanan kaya serat larut (sup bayam, labu siam, pepaya) dan hidrasi.
-   * ✨ **Nafsu Makan Rendah:** Sistem menyarankan porsi kecil padat nutrisi yang sering (*small frequent meals*).
-3. Hasil rekomendasi dan panduan tekstur akan langsung muncul di kotak saran.
+* 🌊 **Mual:** Menyarankan hidangan berkuah bening suhu ruang / suam-kuku, biskuit jahe tawar, serta menghindari minyak dan santan.
+* 💧 **Sulit Menelan / Disfagia:** Menyesuaikan menu ke tekstur lunak halus (*puree* / saring), seperti bubur ikan tim dan puding protein.
+* 🛡️ **Konstipasi / Sembelit:** Mengutamakan hidangan berserat larut air (sayur bening bayam, labu siam) dan asupan cairan hangat.
+* ✨ **Nafsu Makan Rendah:** Menganjurkan makanan padat nutrisi porsi mini berfrekuensi sering (*small frequent nutrient-dense meals*).
 
 ---
 
-## 7. Mencari Bahan di Katalog Pangan Lokal
+### 6. Perencana Menu (*Dual-Mode Meal Planner*)
 
-1. Tekan tab **"Katalog"** pada navigasi bawah / sidebar.
-2. Ketik nama bahan makanan pada kolom pencarian (contoh: `gabus`, `tempe`, `telur`, `bayam`).
-3. Anda dapat melihat takaran porsi standar, estimasi harga lokal, dan rentang makronutrisi bahan tersebut.
-4. Klik tombol **"+ Tambah ke Piring"** untuk memasukkan bahan tersebut ke piring scan Anda.
+Pada tab **Menu / Perencana Menu**, Anda dapat beralih antara:
+1. **Opsi Standar (Optimal):** Hidangan dengan bahan premium kaya asam amino (Dada Ayam Fillet, Ikan Gabus Segar, Sup Daging Kolagen).
+2. **Opsi Hemat (Low-Budget):** Menu padat gizi berbasis pangan lokal terjangkau pasar tradisional (Tempe Bacem, Tahu Kukus, Telur Ayam Rebus, Pepes Kembung).
 
----
-
-## 8. Melihat Progres & Mengekspor Laporan ke Dokter/Nakes
-
-1. Buka tab **"Progres"**.
-2. **Cincin Target Harian (Macro Ring):** Memperlihatkan persentase target protein yang sudah terpenuhi hari ini beserta saran penyeimbang.
-3. **Grafik 7 Hari Terakhir:** Memantau konsistensi dan tren asupan gizi selama seminggu penuh.
-4. **Ekspor Laporan Telehealth:** 
-   * Tekan tombol **"Salin Ringkasan untuk Dokter"**.
-   * Format teks ringkasan medis akan otomatis tersalin ke clipboard. Anda tinggal menempelkannya (*Paste*) ke chat WhatsApp dokter, fisioterapis, atau ahli gizi Anda.
+Setiap kartu menyajikan informasi gramatur protein, estimasi biaya harian (Rp), serta label keunggulan biologis.
 
 ---
 
-## 9. Membagikan Akses ke Pendamping (Caregiver Portal)
+### 7. Ekspor Dokumen Laporan & Progress ke Format PDF
 
-Fitur ini memungkinkan keluarga atau perawat memantau asupan makanan pasien dari perangkat mereka sendiri tanpa risiko merusak data:
+NutriVision AI menyediakan fitur ekspor rekam medis nutrisi resmi yang siap dicetak atau diserahkan kepada dokter spesialis, fisioterapis, dan perawat:
 
-1. Buka tab **"Pendamping"**.
-2. Aktifkan sakelar (*toggle*) pada nama pendamping Anda.
-3. Klik tombol **"Salin Tautan Akses"**.
-4. Kirimkan tautan tersebut ke WhatsApp keluarga/perawat. Mereka dapat membuka tautan untuk melihat status gizi harian pasien secara *view-only*.
-
----
-
-## 10. Berinteraksi di Ruang Komunitas Pemulihan
-
-1. Buka tab **"Komunitas"**.
-2. **Membaca Tips:** Lihat tips praktis dan menu pemulihan yang dibagikan oleh sesama pasien yang telah diverifikasi oleh sistem dasar.
-3. **Memberi Reaksi:** Tekan tombol **Suka (❤️)** atau **Komentar (💬)** untuk saling memberi semangat.
-4. **Berbagi Tips Baru:** Tekan tombol **"Tulis Pengalaman"**, tuliskan saran menu atau tips pemulihan Anda, lalu publikasikan.
+1. Buka tab **Progres** atau klik **"Ekspor Dokumen PDF"** pada kartu kepatuhan di Dashboard.
+2. Jendela **Pratinjau Dokumen Medis Resmi** akan terbuka, menampilkan lembar dokumen A4 berisi:
+   * **Kop Dokumen Resmi:** Logo NutriVision AI, nomor referensi telehealth, tanggal & jam terbit.
+   * **Data Klinis Pasien:** Nama, diagnosis klinis, fase ERAS, berat badan, tinggi badan, BMI, dan pantangan.
+   * **Target Nutrisi Harian:** Kartu target Protein, Kalori, Karbohidrat, dan Lemak.
+   * **Tabel Riwayat Kepatuhan 7 Hari:** Rincian hari/tanggal, target, asupan aktual, persentase kepatuhan (dengan mini visual bar), dan status klinis (*Tercapai / Terpantau*) dengan rata-rata 92%.
+   * **Rincian Asupan Terkini Hari Ini & Catatan Gejala Aktif.**
+   * **Lembar Verifikasi & Kolom Tanda Tangan:** Ruang tanda tangan pasien/caregiver dan dokter spesialis / nakes terdaftar (SIP/STR).
+3. Klik tombol **"Unduh PDF"** untuk mengunduh langsung berkas `.pdf` berkualitas tinggi tanpa membutuhkan koneksi internet (*offline-first*), atau klik **"Cetak"** untuk mencetak fisik dokumen.
+4. Anda juga dapat menggunakan tombol **"Salin Laporan Telehealth"** untuk menyalin ringkasan teks cepat ke pesan WhatsApp nakes.
 
 ---
 
-## 11. Fitur Ramah Lansia & Aksesibilitas
+### 8. Portal Pendamping (*Caregiver View-Only*)
 
-Untuk kenyamanan mata pengguna lanjut usia:
-
-* **Mengubah Ukuran Tulisan:** Di bagian bawah bilah navigasi kiri (Desktop) atau pengaturan profil, pilih ukuran huruf:
-  * **A** : Ukuran Standar (15px)
-  * **A+** : Ukuran Sedang (17px)
-  * **A++** : Ukuran Besar (19px)
-* **Mode Kontras Tinggi:** Centang opsi kontras tinggi untuk mempertegas garis dan batas kartu dengan latar belakang putih pekat dan teks hitam tegas.
+1. Buka tab **Pendamping**.
+2. Daftarkan nama perawat atau anggota keluarga pendamping.
+3. Klik **"Salin Tautan Akses"** untuk membagikan tautan *view-only*.
+4. Pendamping dapat melihat riwayat pemenuhan gizi pasien dari ponsel mereka secara aman tanpa hak mengubah data.
 
 ---
 
-## ❓ Pertanyaan yang Sering Diajukan (FAQ)
+### 9. Fitur Aksesibilitas & Ramah Lansia
 
-**Q: Apakah NutriVision AI menggantikan anjuran dokter?**  
-A: Tidak. NutriVision AI adalah alat bantu estimasi dan pendukung keputusan (*decision-support tool*). Selalu prioritaskan instruksi khusus dan pantangan makanan yang diberikan oleh dokter yang merawat Anda.
-
-**Q: Apakah aplikasi ini membutuhkan internet terus-menerus?**  
-A: Berkat teknologi PWA (*Progressive Web App*), aplikasi tetap dapat dibuka dan digunakan untuk melihat katalog serta rencana menu meskipun koneksi internet sedang terputus.
+* **Pengatur Ukuran Font:** Pilih ukuran huruf pada menu aksesibilitas:
+  * **A** : Ukuran Standar (15.5px)
+  * **A+** : Ukuran Sedang (17.5px)
+  * **A++** : Ukuran Besar (19.5px)
+* **Mode Kontras Tinggi (*High-Contrast Mode*):** Mengaktifkan latar putih pekat dengan border hitam tegas 100% untuk mempermudah visibilitas mata lansia dan pengguna dengan gangguan penglihatan.
 
 ---
 
-*Selamat menggunakan NutriVision AI untuk mendukung proses pemulihan kesehatan yang lebih cepat dan optimal!* 💚
+## 🛠️ Arsitektur Teknologi & Dependensi
+
+* **Frontend:** Vanilla JavaScript (ES6+), HTML5 Semantic, CSS Variables Modular Design System
+* **Desain & Tema:** Clean Organic Matcha & Milky Canvas (Harmonis, Hangat, & Ramah Medis)
+* **Computer Vision:** Canvas API Engine, Multi-Polygon Overlay & Rule-Based Segmentation Matching
+* **PDF Generation:** `html2pdf.bundle.min.js` (Client-side vector rendering, offline-first)
+* **Icons:** Lucide Icons & Iconify (Tersedia offline lokal dengan fallback CDN)
+* **Database & Cloud:** Supabase Cloud (PostgreSQL) + LocalStorage Cache First
+* **Aksesibilitas:** WCAG 2.1 AAA Compliance (Contrast Ratio > 13:1 pada elemen aktif)
+
+---
+
+## 🔒 Privasi & Keamanan Data Pasien
+
+* **Local-First Architecture:** Data profil pasien, hasil scan piring, dan riwayat mingguan disimpan secara lokal di perangkat pasien melalui *LocalStorage* terenkripsi browser.
+* **Akses Pendamping Aman:** Tautan pendamping (*Caregiver Link*) bersifat *read-only* dengan token akses acak unik.
+* **Penafian Medis:** Seluruh estimasi gizi disajikan sebagai pendukung keputusan (*decision-support tool*) untuk mendampingi konsultasi dengan dokter spesialis gizi klinis atau tenaga medis bersertifikasi.
+
+---
+
+<div align="center">
+
+Dibuat dengan dedikasi untuk mendukung percepatan pemulihan klinis pasien di seluruh Indonesia 🇮🇩  
+**NutriVision AI — Smart Nutrition, Faster Recovery.**
+
+</div>
