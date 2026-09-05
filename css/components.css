@@ -991,13 +991,13 @@ input:checked+.toggle-slider:before {
   padding: 16px 4px 10px;
 }
 
-/* Modern Card Layout (Matching Screenshot) */
+/* Modern Card Layout (Matching Clean Plain Minimalist Card) */
 .popular-food-card {
   background: #FFFFFF;
   border-radius: 26px;
   padding: 20px 20px 18px;
-  border: 1px solid #DDD4B0;
-  box-shadow: 0 10px 30px rgba(28, 32, 14, 0.05);
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
   transition: all 0.25s cubic-bezier(0.33, 1, 0.68, 1);
   position: relative;
   cursor: pointer;
@@ -1007,9 +1007,9 @@ input:checked+.toggle-slider:before {
 }
 
 .popular-food-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.12);
-  border-color: #DDE2B9;
+  transform: translateY(-5px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+  border-color: #CBD5E1;
 }
 
 .food-card-top {
@@ -1025,11 +1025,11 @@ input:checked+.toggle-slider:before {
   height: 108px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 12px 26px rgba(28, 32, 14, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
   border: 4px solid #FFFFFF;
   margin-top: -14px;
   margin-left: -6px;
-  background: #EFE8CA;
+  background: #F8FAFC;
   flex-shrink: 0;
   transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -1066,26 +1066,33 @@ input:checked+.toggle-slider:before {
   color: #F59E0B;
 }
 
-/* Bestseller / Terlaris Sales Count Badge */
-.food-sales-badge {
+/* Bestseller / Terlaris Sales Count Badge & Side Header */
+.food-card-header-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.food-card-header-side .food-clinical-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 4px 10px;
+  border-radius: 20px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #92400E;
-  background: #FEF3C7;
-  border: 1px solid #FDE68A;
-  padding: 4px 10px;
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.08);
+  max-width: 100%;
   white-space: nowrap;
-}
-
-.food-sales-badge .popular-fire-icon {
-  font-size: 13px;
-  color: #EA580C;
-  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 /* Card Body & Typography */
@@ -1102,12 +1109,12 @@ input:checked+.toggle-slider:before {
 
 .food-clinical-tag {
   font-size: 10px;
-  font-weight: 700;
-  color: #9EA76B;
-  background: #F7F9EC;
-  border: 1px solid #EEF1D8;
-  padding: 2px 8px;
-  border-radius: 6px;
+  font-weight: 500;
+  color: #64748B;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 2.5px 8px;
+  border-radius: 20px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1117,14 +1124,14 @@ input:checked+.toggle-slider:before {
   font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 700;
-  color: #1C200E;
+  color: #0F172A;
   margin-bottom: 4px;
   line-height: 1.25;
 }
 
 .food-card-sub {
   font-size: 11.5px;
-  color: #687346;
+  color: #64748B;
   line-height: 1.4;
   margin-bottom: 10px;
   min-height: 30px;
@@ -1140,106 +1147,129 @@ input:checked+.toggle-slider:before {
 
 .macro-pill-item {
   font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
+  font-weight: 600;
+  padding: 3.5px 9px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
 }
 
-.macro-pill-item.prot {
-  background: #F0FDF4;
-  color: #166534;
-  border: 1px solid #BBF7D0;
+.macro-pill-item.prot,
+.macro-pill-item.carb,
+.macro-pill-item.cal {
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
 }
 
-.macro-pill-item.carb {
-  background: #EFF6FF;
-  color: #1E40AF;
-  border: 1px solid #BFDBFE;
-}
-
-.macro-pill-item.recipe-pill-btn {
-  all: unset;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 8px;
-  background: #FFFBEB;
-  color: #92400E;
-  border: 1px solid #FDE68A;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  margin-left: auto;
-}
-
-.macro-pill-item.recipe-pill-btn:hover {
-  background: #FEF3C7;
-  color: #78350F;
-  border-color: #FCD34D;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(180, 83, 9, 0.15);
-}
-
-.macro-pill-item.recipe-pill-btn:active {
-  transform: scale(0.96);
-}
-
-/* Card Footer: Favorite Button & Price */
+/* Card Footer: Left Actions (Love + Resep Pembuatan Button) & Price in Single Row */
 .food-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid #EFE8CA;
-  gap: 10px;
+  border-top: 1px solid #F1F5F9;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
+.food-footer-left-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Favorite Love Action Button - The ONLY colored element on the card */
 .food-fav-action-btn {
   all: unset;
   cursor: pointer;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: #1C200E;
-  color: #FFFFFF;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #FEF2F2;
+  color: #EF4444;
+  border: 1.5px solid #FECDD3;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 12px rgba(28, 32, 14, 0.15);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.12);
   flex-shrink: 0;
 }
 
 .food-fav-action-btn:hover {
-  transform: scale(1.12);
-  background: #272D13;
-  box-shadow: 0 6px 16px rgba(28, 32, 14, 0.25);
+  transform: scale(1.08);
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+  color: #DC2626;
+  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.2);
 }
 
 .food-fav-action-btn.active {
-  background: #FEE2E2;
-  color: #EF4444;
-  border: 1px solid #FCA5A5;
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+  background: #EF4444;
+  color: #FFFFFF;
+  border: 1.5px solid #EF4444;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35);
 }
 
 .food-fav-action-btn.active:hover {
-  background: #FECDD3;
-  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35);
+  background: #DC2626;
+  border-color: #DC2626;
 }
 
 .food-fav-action-btn .fav-action-icon {
-  font-size: 20px;
+  font-size: 19px;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .food-fav-action-btn:active .fav-action-icon {
   transform: scale(0.85);
+}
+
+/* Resep Pembuatan Button (Only Icon '>' in Plain Neutral 36x36 Square) */
+.food-recipe-action-btn {
+  all: unset;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #64748B;
+  border: 1.5px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.food-recipe-action-btn:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+  border-color: #CBD5E1;
+  transform: scale(1.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.food-recipe-action-btn:active {
+  transform: scale(0.92);
+}
+
+.food-recipe-action-btn .recipe-btn-arrow {
+  font-size: 15px;
+  color: #64748B;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.food-recipe-action-btn:hover .recipe-btn-arrow {
+  color: #0F172A;
+  transform: translateX(1.5px);
 }
 
 .fav-count-badge {
@@ -1257,20 +1287,21 @@ input:checked+.toggle-slider:before {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  margin-left: auto;
 }
 
 .food-card-price {
   font-family: var(--font-heading);
   font-size: 15.5px;
   font-weight: 800;
-  color: #1C200E;
+  color: #0F172A;
   letter-spacing: -0.3px;
   line-height: 1.1;
 }
 
 .food-bappenas-ref {
   font-size: 9.5px;
-  color: #687346;
+  color: #94A3B8;
   font-weight: 500;
   text-align: right;
   margin-top: 2px;

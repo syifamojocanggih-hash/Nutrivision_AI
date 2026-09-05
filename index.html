@@ -744,10 +744,6 @@
             <span class="nav-icon"><i data-lucide="users"></i></span>
             <span>Ruang Komunitas</span>
           </button>
-          <button class="nav-item" data-sec="caregiver">
-            <span class="nav-icon"><i data-lucide="shield-plus"></i></span>
-            <span>Portal Pendamping</span>
-          </button>
           <button class="nav-item" data-sec="progress">
             <span class="nav-icon"><i data-lucide="route"></i></span>
             <span>Perjalanan &amp; Progres</span>
@@ -873,9 +869,15 @@
             </div>
           </div>
 
-          <!-- Topbar Profile Chip (Hanya tampil saat SUDAH login) -->
+          <!-- Topbar Profile Button (Icon samping notifikasi untuk Profil Pasien & Portal Pendamping) -->
+          <button class="topbar-profile-btn" id="topbar-profile-btn" onclick="app.navigate('profile')"
+            title="Buka Profil Pasien &amp; Portal Pendamping" aria-label="Profil Pasien">
+            <i data-lucide="user" style="width:17px;height:17px;"></i>
+          </button>
+
+          <!-- Topbar Profile Chip (Disembunyikan agar tampilan icon samping notif selalu konsisten & sleek) -->
           <div id="topbar-profile-chip"
-            style="display:none;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);padding:4px 10px 4px 6px;border-radius:var(--radius-pill);cursor:pointer;"
+            style="display:none !important;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);padding:4px 10px 4px 6px;border-radius:var(--radius-pill);cursor:pointer;"
             onclick="app.navigate('profile')" title="Buka Profil Pasien">
             <div class="profile-avatar user-avatar-placeholder"
               style="width:26px;height:26px;font-size:11px;background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;">
@@ -1707,37 +1709,7 @@
       </div>
 
       <!-- =========================================================================
-         VIEW 5: PORTAL PENDAMPING FULL (FR-12)
-         ========================================================================= -->
-      <div class="view-section" id="view-caregiver">
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2>Portal Pendamping (Caregiver Access)</h2>
-              <div class="card-subtitle">Kelola izin pantau jarak jauh untuk keluarga dan tenaga medis</div>
-            </div>
-          </div>
-          <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">
-            Pendamping dengan tautan khusus hanya dapat melihat rekapitulasi gizi dan riwayat piring makan tanpa izin
-            mengubah pengaturan atau data rekam medis.
-          </p>
-
-          <div id="caregiver-list-box-full">
-            <!-- Dynamically synchronized -->
-          </div>
-
-          <div class="caregiver-link-box" style="margin-top:20px;">
-            <span>Tautan Akses Pendamping Terenkripsi:</span>
-            <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;"
-              onclick="app.copyCaregiverShareLink()">
-              <i data-lucide="link-2" class="btn-icon-sm"></i> Salin Link
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- =========================================================================
-         VIEW 6: PERJALANAN & PROGRES PEMULIHAN PASIEN (FR-09)
+         VIEW 5: PERJALANAN & PROGRES PEMULIHAN PASIEN (FR-09)
          ========================================================================= -->
       <div class="view-section" id="view-progress">
 
@@ -2016,6 +1988,40 @@
             </div>
           </div>
 
+          <!-- Portal Pendamping (Caregiver Access) — Integrasi Terpusat di Fitur Profil Pasien -->
+          <div class="card" id="profile-caregiver-card" style="grid-column: 1 / -1;">
+            <div class="card-head">
+              <div class="card-title-group">
+                <h2 style="display:flex;align-items:center;gap:8px;">
+                  <i data-lucide="shield-plus" style="width:20px;height:20px;color:var(--teal-600);"></i>
+                  <span>Portal Pendamping (Caregiver Access)</span>
+                </h2>
+                <div class="card-subtitle">Kelola izin pantau jarak jauh untuk keluarga dan tim medis pendamping</div>
+              </div>
+              <span class="badge" style="background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200);font-size:11px;display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="eye" class="btn-icon-sm"></i> Mode Lihat-Saja Terproteksi
+              </span>
+            </div>
+            <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">
+              Pendamping dengan tautan khusus hanya dapat melihat rekapitulasi asupan gizi harian dan riwayat piring makan tanpa izin mengubah pengaturan profil atau data rekam medis pasien.
+            </p>
+
+            <div id="caregiver-list-box-full" style="display:flex;flex-direction:column;gap:10px;">
+              <!-- Dynamically synchronized via caregiverHandler -->
+            </div>
+
+            <div class="caregiver-link-box" style="margin-top:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;background:var(--bg-subtle);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="lock" style="width:16px;height:16px;color:var(--teal-600);"></i>
+                <span style="font-size:var(--font-sm);color:var(--ink);font-weight:600;">Tautan Akses Pendamping Terenkripsi:</span>
+              </div>
+              <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-xs);cursor:pointer;"
+                onclick="app.copyCaregiverShareLink()">
+                <i data-lucide="copy" class="btn-icon-sm"></i> Salin Link Pendamping
+              </button>
+            </div>
+          </div>
+
           <!-- Akun & Manajemen Sesi Login -->
           <div class="card" id="profile-session-card"
             style="grid-column: 1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:var(--bg-subtle);">
@@ -2092,25 +2098,10 @@
   <!-- =========================================================================
      MODAL POP-UP: RESEP PEMBUATAN & PANDUAN MEMASAK KLINIS
      ========================================================================= -->
-  <div class="modal-overlay" id="food-recipe-modal">
-    <div class="modal-box recipe-modal-box" style="max-width:540px;max-height:88vh;overflow-y:auto;">
-      <div class="modal-header" style="padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="modal-title-icon-badge" style="width:40px;height:40px;border-radius:12px;background:#EEF1D8;color:#5D6738;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <iconify-icon icon="solar:chef-hat-bold-duotone" style="font-size:22px;"></iconify-icon>
-          </div>
-          <div>
-            <h3 style="margin:0;font-size:16.5px;font-weight:700;color:var(--text-main,#1C200E);">Panduan Resep &amp; Cara Memasak Klinis</h3>
-            <p style="margin:2px 0 0;font-size:12px;color:var(--text-sub,#64748B);">Metode pengolahan higienis untuk mempertahankan bioavailabilitas protein &amp; albumin.</p>
-          </div>
-        </div>
-        <button class="modal-close-btn" onclick="app.closeModal('food-recipe-modal')" title="Tutup">
-          <i data-lucide="x"></i>
-        </button>
-      </div>
-
-      <div id="food-recipe-modal-content" style="padding:16px 0 4px;">
-        <!-- Dynamically rendered via JS -->
+  <div class="modal-overlay" id="food-recipe-modal" onclick="if(event.target===this) app.closeModal('food-recipe-modal')">
+    <div class="modal-box recipe-modal-box" id="recipe-modal-box">
+      <div id="food-recipe-modal-content">
+        <!-- Dynamically rendered via JS matching Figma reference -->
       </div>
     </div>
   </div>

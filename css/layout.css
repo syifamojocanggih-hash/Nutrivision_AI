@@ -299,6 +299,43 @@
   transform: translateY(-1px);
 }
 
+/* Topbar Profile Icon Button (Beside Smart Notification) */
+.topbar-profile-btn {
+  all: unset;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.topbar-profile-btn:hover {
+  background: var(--teal-50);
+  border-color: var(--teal-200);
+  color: var(--teal-700);
+  transform: translateY(-1px);
+}
+
+.topbar-profile-btn.active {
+  background: var(--teal-500);
+  border-color: var(--teal-600);
+  color: #FFFFFF;
+}
+
+.topbar-profile-btn.active:hover {
+  background: var(--teal-600);
+  border-color: var(--teal-700);
+  color: #FFFFFF;
+}
+
 .notif-badge-dot {
   position: absolute;
   top: -2px;

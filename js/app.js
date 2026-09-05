@@ -22,6 +22,7 @@ class NutriVisionApp {
     this.plateViewMode = 'ai';
     this.currentLandingPreset = 'preset-soft-bubur-gabus';
     this.favoriteFoods = this.loadFavoriteFoods();
+    this.menuClicks = this.loadMenuClicks();
   }
 
   // Auth Guard / Gatekeeper: Memastikan pengguna sudah login & mengisi data klinis valid
@@ -482,6 +483,23 @@ class NutriVisionApp {
       }
     }
 
+    // Portal Pendamping telah dipindahkan ke dalam fitur Profil Pasien
+    if (sectionId === 'caregiver') {
+      this.navigate('profile');
+      setTimeout(() => {
+        const cgCard = document.getElementById('profile-caregiver-card');
+        if (cgCard) {
+          cgCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          cgCard.style.transition = 'box-shadow 0.4s ease';
+          cgCard.style.boxShadow = '0 0 0 3px var(--teal-300)';
+          setTimeout(() => {
+            cgCard.style.boxShadow = '';
+          }, 1800);
+        }
+      }, 150);
+      return;
+    }
+
     this.activeSection = sectionId;
 
     // Update section visibility
@@ -491,6 +509,12 @@ class NutriVisionApp {
     const targetSection = document.getElementById(`view-${sectionId}`);
     if (targetSection) {
       targetSection.classList.add('active-view');
+    }
+
+    if (sectionId === 'profile') {
+      if (window.caregiverHandler && typeof window.caregiverHandler.renderCaregiverList === 'function') {
+        window.caregiverHandler.renderCaregiverList();
+      }
     }
 
     if (sectionId === 'catalog') {
@@ -520,6 +544,12 @@ class NutriVisionApp {
     document.querySelectorAll('.bottom-nav-pwa .bottom-nav-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.sec === sectionId);
     });
+
+    // Update Topbar Profile Button Active State
+    const topbarProfileBtn = document.getElementById('topbar-profile-btn');
+    if (topbarProfileBtn) {
+      topbarProfileBtn.classList.toggle('active', sectionId === 'profile');
+    }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -2203,6 +2233,92 @@ class NutriVisionApp {
     }
   }
 
+  loadMenuClicks() {
+    try {
+      const saved = localStorage.getItem('nutrivision_menu_clicks');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Error loading menu clicks:', e);
+    }
+    return {
+      'telur-rebus': 3428,
+      'ikan-gabus-kukus': 2894,
+      'kentang-ubi-kukus': 1845,
+      'dada-ayam-panggang': 2132,
+      'bubur-ayam': 1958,
+      'pepes-ikan-kembung': 1762,
+      'tempe-bacem-kukus': 1684,
+      'nasi-putih': 1540,
+      'tahu-kukus-wortel': 1426,
+      'sayur-bayam-bening': 1380,
+      'salmon-brokoli-kukus': 1925,
+      'alpukat-madu': 1250,
+      'sup-labu-kuning': 1180
+    };
+  }
+
+  saveMenuClicks() {
+    try {
+      localStorage.setItem('nutrivision_menu_clicks', JSON.stringify(this.menuClicks));
+    } catch (e) {
+      console.warn('Error saving menu clicks:', e);
+    }
+  }
+
+  getMenuClicks(foodId) {
+    if (!this.menuClicks) this.menuClicks = this.loadMenuClicks();
+    if (this.menuClicks[foodId] !== undefined) {
+      return this.menuClicks[foodId];
+    }
+    let hash = 0;
+    for (let i = 0; i < foodId.length; i++) {
+      hash = (hash * 31 + foodId.charCodeAt(i)) % 1400;
+    }
+    const val = 1100 + hash;
+    this.menuClicks[foodId] = val;
+    this.saveMenuClicks();
+    return val;
+  }
+
+  formatClicks(count) {
+    if (count >= 1000) {
+      const kVal = (count / 1000).toFixed(1).replace('.0', '');
+      return `${kVal}k+`;
+    }
+    return count.toString();
+  }
+
+  trackMenuClick(foodId) {
+    if (!this.menuClicks) this.menuClicks = this.loadMenuClicks();
+    const current = this.getMenuClicks(foodId);
+    const updated = current + 1;
+    this.menuClicks[foodId] = updated;
+    this.saveMenuClicks();
+
+    const badgeEl = document.getElementById(`badge-clicks-${foodId}`);
+    if (badgeEl) {
+      const textSpan = badgeEl.querySelector('.sales-clicks-text');
+      if (textSpan) {
+        textSpan.textContent = `Terlaris · ${this.formatClicks(updated)} klik`;
+      }
+      badgeEl.classList.remove('pulse');
+      void badgeEl.offsetWidth;
+      badgeEl.classList.add('pulse');
+    }
+  }
+
+  handleCardClick(foodId) {
+    this.trackMenuClick(foodId);
+    this.addCatalogItemToScan(foodId);
+  }
+
+  handleRecipeClick(foodId) {
+    this.trackMenuClick(foodId);
+    this.openFoodRecipeModal(foodId);
+  }
+
   loadFavoriteFoods() {
     try {
       const saved = localStorage.getItem('nutrivision_favorite_foods');
@@ -2352,57 +2468,53 @@ class NutriVisionApp {
       const clinicalTag = food.clinicalIndication || 'Pemulihan Klinis';
       const bappenasRef = food.bappenasRef || 'Bapanas: Standar Nasional';
       const tkpiCode = food.tkpiCode || 'TKPI 2024';
-      const salesCount = food.salesCount || '1.8k+';
-      const popularRank = food.popularRank ? `${food.popularRank} · ` : 'Terlaris · ';
+      const clicks = this.getMenuClicks(food.id);
+      const formattedClicks = this.formatClicks(clicks);
 
       return `
-        <div class="popular-food-card" onclick="app.addCatalogItemToScan('${food.id}')" title="Klik kartu untuk tambahkan ke piring scan">
-          <!-- Floating Round Dish Image & Top Actions -->
+        <div class="popular-food-card" onclick="app.handleCardClick('${food.id}')" title="Klik kartu untuk tambahkan ke piring scan">
+          <!-- Floating Round Dish Image & Side Header (Hanya Tag Indikasi Klinis) -->
           <div class="food-card-top">
             <div class="food-dish-plate-wrap">
               <img src="${food.image}" alt="${food.name}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
             </div>
 
-            <!-- Jumlah Katalog Pangan Terlaris / Rekomendasi Teratas -->
-            <div class="food-card-header-actions" onclick="event.stopPropagation();">
-              <span class="food-sales-badge" title="Volume Konsumsi Terlaris & Rekomendasi Pasien">
-                <iconify-icon icon="solar:fire-bold" class="popular-fire-icon"></iconify-icon>
-                <span>${popularRank}${salesCount} porsi</span>
+            <!-- Sisi Kanan Atas: Hanya Tag Indikasi Terapi Klinis -->
+            <div class="food-card-header-side" onclick="event.stopPropagation();">
+              <span class="food-clinical-tag" title="Indikasi Terapi Klinis: ${clinicalTag}">
+                <iconify-icon icon="solar:shield-check-bold" style="font-size:11.5px;color:#64748B;flex-shrink:0;"></iconify-icon>
+                <span>${clinicalTag}</span>
               </span>
             </div>
           </div>
 
           <!-- Card Content -->
           <div class="food-card-body">
-            <div class="food-tag-row">
-              <span class="food-clinical-tag">
-                <iconify-icon icon="solar:shield-check-bold" style="font-size:12px;"></iconify-icon>
-                ${clinicalTag}
-              </span>
-              <span class="food-tkpi-badge" title="Data Komposisi Gizi Terverifikasi Bappenas & TKPI Kemenkes RI">
-                <iconify-icon icon="solar:verified-check-bold" style="font-size:11px;color:#9EA76B;"></iconify-icon>
-                ${tkpiCode}
-              </span>
-            </div>
             <h4 class="food-card-title">${food.name}</h4>
             <p class="food-card-sub">${subtitle}</p>
 
             <div class="food-macro-pills-row">
               <span class="macro-pill-item prot">${food.protein}g Prot</span>
               <span class="macro-pill-item carb">${food.carbs}g Karbo</span>
-              <button type="button" class="macro-pill-item recipe-pill-btn" onclick="event.stopPropagation(); app.openFoodRecipeModal('${food.id}')" title="Buka Resep & Panduan Memasak Klinis">
-                <iconify-icon icon="solar:chef-hat-bold-duotone" style="font-size:13px;"></iconify-icon>
-                <span>Resep Pembuatan</span>
-              </button>
+              <span class="macro-pill-item cal">${food.calories} kkal</span>
             </div>
 
+            <!-- Card Footer: Love Icon & Resep Pembuatan Samping-Sampingan -->
             <div class="food-card-footer">
-              <button type="button" class="food-fav-action-btn ${isFav ? 'active' : ''}" 
-                      onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
-                      title="${isFav ? 'Hapus dari Pangan Favorit' : 'Simpan ke Pangan Favorit'}"
-                      aria-label="Favorit">
-                <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-action-icon"></iconify-icon>
-              </button>
+              <div class="food-footer-left-actions">
+                <button type="button" class="food-fav-action-btn ${isFav ? 'active' : ''}" 
+                        onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
+                        title="${isFav ? 'Hapus dari Pangan Favorit' : 'Simpan ke Pangan Favorit'}"
+                        aria-label="Favorit">
+                  <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-action-icon"></iconify-icon>
+                </button>
+                <button type="button" class="food-recipe-action-btn" 
+                        onclick="event.stopPropagation(); app.handleRecipeClick('${food.id}');" 
+                        title="Buka Resep & Panduan Memasak Klinis"
+                        aria-label="Lihat Resep Pembuatan">
+                  <iconify-icon icon="solar:alt-arrow-right-bold" class="recipe-btn-arrow"></iconify-icon>
+                </button>
+              </div>
               <div class="food-card-price-group">
                 <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
                 <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran Bapanas RI">${bappenasRef}</span>
@@ -2430,199 +2542,423 @@ class NutriVisionApp {
     this.showToast(`Ditambahkan ke piring: ${food.name} (${food.defaultPortionGrams}g)`);
   }
 
+  // =========================================================================
+  // MOBILE RECIPE SHEET CONTROLLER (FIGMA REFERENCE DESIGN)
+  // Stepper porsi, checklist bahan, live timer, & switch tab interaktif
+  // =========================================================================
+  initRecipeState() {
+    if (!this.recipeState) {
+      this.recipeState = {
+        foodId: null,
+        servings: 2,
+        activeTab: 'ingredients',
+        checkedIngredients: new Set(),
+        timers: {}
+      };
+    }
+  }
+
   openFoodRecipeModal(foodId) {
     const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
     if (!food) return;
 
+    this.initRecipeState();
+    this.clearAllRecipeTimers();
+
+    this.recipeState.foodId = foodId;
+    this.recipeState.servings = 2;
+    this.recipeState.activeTab = 'ingredients';
+    this.recipeState.checkedIngredients.clear();
+    this.recipeState.timers = {};
+
+    this.renderRecipeModal();
+    this.openModal('food-recipe-modal');
+  }
+
+  clearAllRecipeTimers() {
+    if (this.recipeState && this.recipeState.timers) {
+      Object.values(this.recipeState.timers).forEach(timer => {
+        if (timer.intervalId) clearInterval(timer.intervalId);
+      });
+      this.recipeState.timers = {};
+    }
+  }
+
+  switchRecipeTab(tabName) {
+    this.initRecipeState();
+    this.recipeState.activeTab = tabName;
+    this.renderRecipeModal();
+  }
+
+  changeRecipeServings(delta) {
+    this.initRecipeState();
+    const newServings = Math.max(1, Math.min(10, (this.recipeState.servings || 2) + delta));
+    if (newServings === this.recipeState.servings) return;
+    this.recipeState.servings = newServings;
+    this.renderRecipeModal();
+  }
+
+  toggleRecipeIngredient(index) {
+    this.initRecipeState();
+    if (this.recipeState.checkedIngredients.has(index)) {
+      this.recipeState.checkedIngredients.delete(index);
+    } else {
+      this.recipeState.checkedIngredients.add(index);
+    }
+    const itemEl = document.getElementById(`recipe-ing-item-${index}`);
+    if (itemEl) {
+      const isChecked = this.recipeState.checkedIngredients.has(index);
+      itemEl.classList.toggle('checked', isChecked);
+      const checkboxEl = itemEl.querySelector('.recipe-custom-checkbox');
+      if (checkboxEl) {
+        checkboxEl.innerHTML = isChecked ? '<iconify-icon icon="solar:check-read-bold"></iconify-icon>' : '';
+      }
+    }
+  }
+
+  formatTimerTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  startRecipeTimer(stepIndex, totalSeconds, label) {
+    this.initRecipeState();
+    if (!this.recipeState.timers[stepIndex]) {
+      this.recipeState.timers[stepIndex] = {
+        remaining: totalSeconds,
+        initial: totalSeconds,
+        isRunning: false,
+        intervalId: null,
+        label: label || `Langkah ${stepIndex + 1}`
+      };
+    }
+
+    const timer = this.recipeState.timers[stepIndex];
+    const btnEl = document.getElementById(`recipe-timer-btn-${stepIndex}`);
+    const timeTextEl = document.getElementById(`recipe-timer-text-${stepIndex}`);
+
+    if (timer.isRunning) {
+      // Pause timer
+      clearInterval(timer.intervalId);
+      timer.isRunning = false;
+      if (btnEl) {
+        btnEl.classList.remove('running');
+        btnEl.innerHTML = `
+          <iconify-icon icon="solar:play-bold" style="font-size:14px;"></iconify-icon>
+          <span>Lanjutkan (${this.formatTimerTime(timer.remaining)})</span>
+        `;
+      }
+    } else {
+      // Start / Resume timer
+      timer.isRunning = true;
+      if (btnEl) {
+        btnEl.classList.add('running');
+      }
+
+      timer.intervalId = setInterval(() => {
+        timer.remaining -= 1;
+        if (timeTextEl) {
+          timeTextEl.textContent = this.formatTimerTime(timer.remaining);
+        }
+        if (btnEl) {
+          btnEl.innerHTML = `
+            <iconify-icon icon="solar:pause-bold" style="font-size:14px;"></iconify-icon>
+            <span>Jeda (<span class="recipe-timer-countdown-text">${this.formatTimerTime(timer.remaining)}</span>)</span>
+          `;
+        }
+
+        if (timer.remaining <= 0) {
+          clearInterval(timer.intervalId);
+          timer.isRunning = false;
+          timer.remaining = 0;
+          if (btnEl) {
+            btnEl.classList.remove('running');
+            btnEl.classList.add('completed');
+            btnEl.innerHTML = `
+              <iconify-icon icon="solar:check-circle-bold" style="font-size:15px;"></iconify-icon>
+              <span>Waktu Selesai!</span>
+            `;
+          }
+          this.playTimerDoneSound();
+          this.showToast(`🔔 Waktu Masak Selesai: ${timer.label}!`, 'success');
+        }
+      }, 1000);
+    }
+  }
+
+  resetRecipeTimer(stepIndex) {
+    this.initRecipeState();
+    const timer = this.recipeState.timers[stepIndex];
+    if (!timer) return;
+    if (timer.intervalId) clearInterval(timer.intervalId);
+    timer.remaining = timer.initial;
+    timer.isRunning = false;
+
+    const btnEl = document.getElementById(`recipe-timer-btn-${stepIndex}`);
+    if (btnEl) {
+      btnEl.classList.remove('running', 'completed');
+      btnEl.innerHTML = `
+        <iconify-icon icon="solar:play-bold" style="font-size:14px;"></iconify-icon>
+        <span>Mulai Timer (${this.formatTimerTime(timer.initial)})</span>
+      `;
+    }
+  }
+
+  playTimerDoneSound() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 note
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5 note
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {
+      console.log('Audio chime info:', e);
+    }
+  }
+
+  renderRecipeModal() {
     const modalContent = document.getElementById('food-recipe-modal-content');
     if (!modalContent) return;
 
-    const recipes = {
-      'telur-rebus': {
-        title: 'Telur Ayam Ras / Omega-3 Rebus Klinis',
-        prepTime: '6 - 8 Menit',
-        portion: '1 butir (~55-60 gram)',
-        difficulty: 'Sangat Mudah',
-        method: 'Perebusan Terkontrol (Boiling)',
-        ingredients: [
-          '1-2 butir telur ayam ras segar atau telur omega-3 (suhu ruang)',
-          '500 ml air bersih (cukup untuk merendam seluruh telur)',
-          '1/2 sdt garam dapur (opsional, mempermudah pengelupasan cangkang)',
-          'Semangkuk air es untuk perendaman kejut (ice bath)'
-        ],
-        steps: [
-          'Didihkan air dalam panci sedang hingga muncul gelembung aktif.',
-          'Gunakan sendok makan untuk memasukkan telur secara perlahan ke dasar panci agar cangkang tidak retak.',
-          'Kecilkan api ke api sedang-kecil. Rebus selama 6.5 menit (kuning lembut / jammy yolk) atau 8 menit (matang sempurna lembut).',
-          'Segera angkat telur dan rendam dalam semangkuk air es selama 2-3 menit untuk menghentikan pematangan termal sekunder.',
-          'Ketuk perlahan ujung cangkang lalu kupas di bawah aliran air kecil. Telur rebus mulus siap disajikan.'
-        ],
-        clinicalTips: 'Hindari merebus lebih dari 10-12 menit. Perebusan berlebih memicu reaksi sulfur-besi (lapisan cincin abu-abu kehijauan di sekeliling kuning telur) yang menurunkan daya serap bioavailabilitas asam amino sistein hingga 15%.'
-      },
-      'ikan-gabus-kukus': {
-        title: 'Ikan Gabus Kukus Herbal Albumin Tinggi',
-        prepTime: '15 - 20 Menit',
-        portion: '100 gram fillet matang',
-        difficulty: 'Mudah',
-        method: 'Kukus / Steaming Uap Panas',
-        ingredients: [
-          '100-150 gram fillet ikan gabus segar (channa striata)',
-          '2 siung bawang putih (cincang halus)',
-          '1 ruas jahe (iris tipis korek api)',
-          '1 batang serai (memarkan)',
-          '1 lembar daun salam & 1 batang daun bawang iris',
-          '1 sdt minyak wijen atau minyak zaitun'
-        ],
-        steps: [
-          'Cuci bersih fillet ikan gabus, lumuri dengan perasan air jeruk nipis selama 5 menit lalu bilas tipis.',
-          'Tata fillet ikan di atas piring tahan panas, susun jahe, bawang putih, serai, dan daun salam di atasnya.',
-          'Panaskan kukusan hingga uap mengepul rata.',
-          'Kukus selama 12-15 menit dengan api sedang tertutup rapat hingga daging putih matang sempurna namun tetap berair (juicy).',
-          'Teteskan minyak wijen/zaitun dan taburkan daun bawang segar sebelum disajikan.'
-        ],
-        clinicalTips: 'Metode pengukusan (steaming) menjaga integritas fraksi albumin hingga 94%, dibandingkan penggorengan suhu tinggi yang mendegradasi rantai polipeptida protein penting untuk penyembuhan luka bedah.'
-      },
-      'dada-ayam-panggang': {
-        title: 'Dada Ayam Panggang Herbal Rendah Lemak',
-        prepTime: '20 - 25 Menit',
-        portion: '1 potong (~100 gram)',
-        difficulty: 'Mudah',
-        method: 'Pemanggangan Api Sedang (Pan-Sear / Oven)',
-        ingredients: [
-          '100-120 gram dada ayam tanpa kulit (skinless breast)',
-          '1 siung bawang putih (parut halus)',
-          '1/4 sdt lada bubuk & sedikit ketumbar',
-          '1 sdt minyak zaitun / canola',
-          'Perasan jeruk lemon secukupnya'
-        ],
-        steps: [
-          'Pipihkan dada ayam hingga ketebalan merata (~1.5 cm) agar matang bersamaan.',
-          'Marinasi dada ayam dengan bawang putih, lada, ketumbar, dan minyak zaitun selama 15 menit.',
-          'Panaskan wajan anti lengket (non-stick skillet) dengan api sedang.',
-          'Panggang dada ayam selama 4-5 menit di tiap sisi hingga berwarna keemasan dan bagian dalam matang sempurna.',
-          'Istirahatkan (rest) daging selama 3 menit sebelum diiris agar jus daging meresap kembali.'
-        ],
-        clinicalTips: 'Memasak dada ayam tanpa kulit memangkas 80% lemak jenuh, menghasilkan densitas protein murni 31g per porsi untuk regenerasi sel otot dan jaringan.'
-      },
-      'tempe-bacem-kukus': {
-        title: 'Tempe Bacem Kukus Tanpa Minyak (Low Glycemic)',
-        prepTime: '15 - 20 Menit',
-        portion: '2 potong sedang (~50 gram)',
-        difficulty: 'Mudah',
-        method: 'Ungkep & Kukus',
-        ingredients: [
-          '2-3 potong tempe kedelai segar berkualitas',
-          '2 siung bawang merah & 1 siung bawang putih (haluskan)',
-          '1 sdm gula aren alami (takaran rendah)',
-          '1 lembar daun salam & 1 ruas lengkuas',
-          '150 ml air kelapa murni atau air bersih'
-        ],
-        steps: [
-          'Potong tempe dengan ketebalan 1.5 cm, kerat-kerat tipis permukaannya.',
-          'Masukkan air kelapa, bumbu halus, daun salam, lengkuas, dan tempe ke dalam panci.',
-          'Ungkep dengan api kecil hingga bumbu meresap dan cairan menyusut hampir habis.',
-          'Kukus sebentar selama 5 menit untuk mematangkan rasa dan tekstur lembut.'
-        ],
-        clinicalTips: 'Proses fermentasi Rhizopus oligosporus pada tempe menghasilkan isoflavon bioaktif dan peptida antibakteri yang ramah bagi mukosa pencernaan.'
-      },
-      'bubur-ayam': {
-        title: 'Bubur Nasi Halus Kaldu Ayam Asli',
-        prepTime: '25 Menit',
-        portion: '1 mangkuk sedang (~200 gram)',
-        difficulty: 'Mudah',
-        method: 'Slow Simmering',
-        ingredients: [
-          '50 gram beras pulen lokal (cuci bersih)',
-          '400 ml kaldu rebusan tulang/daging ayam kampung asli',
-          '1 ruas jahe (memarkan)',
-          '50 gram suwiran dada ayam matang',
-          'Irisan seledri & kecap asin rendah natrium'
-        ],
-        steps: [
-          'Didihkan air kaldu ayam bersama beras dan jahe dalam panci anti lengket.',
-          'Aduk perlahan secara berkala dengan api kecil selama 20 menit hingga butiran beras pecah dan menjadi bubur kental lembut.',
-          'Tuang ke dalam mangkuk saji, tata suwiran dada ayam dan seledri di atasnya.'
-        ],
-        clinicalTips: 'Sangat direkomendasikan pada fase pemulihan dini / pasca-anestesi (Fase 1-2) berkat beban cerna lambung yang sangat ringan (low osmolar load).'
-      }
-    };
+    this.initRecipeState();
+    const foodId = this.recipeState.foodId;
+    const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
+    if (!food) return;
 
-    const recipe = recipes[food.id] || {
+    const recipe = (NUTRIVISION_DATA.recipeBook && NUTRIVISION_DATA.recipeBook[foodId]) || {
       title: `Panduan Memasak: ${food.name}`,
-      prepTime: '15 - 20 Menit',
-      portion: `${food.defaultPortionGrams} gram standar saji`,
-      difficulty: 'Mudah & Higienis',
-      method: 'Pengukusan / Perebusan Sehat',
+      author: 'Tim Gizi Klinis NutriVision RI',
+      prepTime: '10m',
+      cookTime: '15m',
+      totalTime: '25m Time',
+      caloriesBase: food.calories || 150,
+      rating: '4.9/5 Rating',
+      parameters: [
+        { label: 'Kukus/Rebus', icon: 'solar:stopwatch-bold', value: '15:00', bg: '#FEF3C7', color: '#92400E' },
+        { label: 'Suhu', icon: 'solar:thermometer-bold', value: '95°C', bg: '#E0F2FE', color: '#0369A1' },
+        { label: 'Resting', icon: 'solar:clock-circle-bold', value: '3:00', bg: '#F1F5F9', color: '#475569' }
+      ],
       ingredients: [
-        `${food.defaultPortionGrams}g ${food.name} segar terstandar`,
-        'Air bersih secukupnya untuk pengolahan higienis',
-        'Bumbu aromatik alami (jahe, bawang putih, atau daun salam sesuai selera)'
+        { name: `${food.name} segar terstandar`, amount: food.defaultPortionGrams || 100, unit: 'gram' },
+        { name: 'Air bersih higienis', amount: 300, unit: 'ml' },
+        { name: 'Bumbu rempah aromatik alami', amount: 1, unit: 'porsi' }
       ],
       steps: [
-        `Cuci bersih ${food.name} di bawah air mengalir higienis.`,
-        'Siapkan peralatan memasak higienis tanpa penambahan minyak jenuh berlebih.',
-        `Olah dengan metode kukus/rebus api sedang selama 10-15 menit hingga matang empuk merata.`,
-        'Sajikan hangat untuk menjaga bioavailabilitas zat gizi makro dan mikronya.'
-      ],
-      clinicalTips: `Bahan pangan ini mengandung ${food.protein}g protein dan ${food.carbs}g karbohidrat per porsi standar, sangat baik untuk mendukung pemulihan energi dan regenerasi sel harian.`
+        {
+          step: 1,
+          title: 'Persiapan Bahan & Higienitas',
+          instruction: `Cuci bersih ${food.name} di bawah air mengalir. Siapkan peralatan higienis tanpa minyak jenuh berlebih.`,
+          timer: 0,
+          tip: null
+        },
+        {
+          step: 2,
+          title: 'Pengolahan Termal Terkontrol',
+          instruction: `Masak dengan metode pengukusan / perebusan api sedang selama 15 menit hingga matang empuk merata dan zat gizi terjaga.`,
+          timer: 900,
+          timerLabel: 'Mulai Timer Memasak (15m)',
+          tip: `Pemanasan terkontrol mempertahankan densitas zat gizi makro (${food.protein}g protein) untuk pemulihan sel optimal.`
+        }
+      ]
     };
 
+    const servings = this.recipeState.servings || 2;
+    const isFav = this.favoriteFoods && this.favoriteFoods.has(foodId);
+    const totalCalories = Math.round((recipe.caloriesBase || food.calories) * servings);
+    const activeTab = this.recipeState.activeTab || 'ingredients';
+
     modalContent.innerHTML = `
-      <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;background:linear-gradient(135deg,#F8FAFC 0%,#F1F5F9 100%);padding:14px;border-radius:14px;border:1px solid #E2E8F0;">
-        <img src="${food.image}" alt="${food.name}" style="width:74px;height:74px;border-radius:14px;object-fit:cover;border:2px solid #FFFFFF;box-shadow:0 4px 12px rgba(0,0,0,0.08);flex-shrink:0;" onerror="this.src='icons/icon-192.png'" />
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-            <span style="font-size:10px;font-weight:700;color:#166534;background:#DCFCE7;padding:2px 8px;border-radius:6px;">${food.clinicalIndication || 'Standar Klinis'}</span>
-            <span style="font-size:10px;font-weight:700;color:#1E40AF;background:#DBEAFE;padding:2px 8px;border-radius:6px;">${food.tkpiCode || 'TKPI 2024'}</span>
+      <!-- 1. Hero Food Photo with Floating Circular Nav Buttons -->
+      <div class="recipe-hero-wrap">
+        <img src="${food.image}" alt="${food.name}" class="recipe-hero-img" onerror="this.src='icons/icon-192.png'" />
+        <div class="recipe-hero-gradient"></div>
+        
+        <!-- Floating Close Button (Top-Left) -->
+        <button type="button" class="recipe-floating-btn recipe-close-btn" onclick="app.closeModal('food-recipe-modal')" title="Tutup Modal" aria-label="Tutup">
+          <iconify-icon icon="solar:close-circle-bold"></iconify-icon>
+        </button>
+
+        <!-- Floating Favorite Heart Button (Top-Right) -->
+        <button type="button" class="recipe-floating-btn recipe-fav-btn ${isFav ? 'active' : ''}" 
+                onclick="app.toggleFavoriteFood('${food.id}', event); app.renderRecipeModal();" 
+                title="${isFav ? 'Hapus dari Favorit' : 'Simpan ke Favorit'}" aria-label="Favorit">
+          <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}"></iconify-icon>
+        </button>
+      </div>
+
+      <!-- 2. Overlapping Curved Bottom Sheet Body -->
+      <div class="recipe-sheet-card">
+        <div class="recipe-drag-notch"></div>
+        
+        <h3 class="recipe-sheet-title">${recipe.title}</h3>
+        <p class="recipe-sheet-author">
+          <iconify-icon icon="solar:verified-check-bold" style="color:#0284C7;font-size:14px;"></iconify-icon>
+          <span>${recipe.author}</span>
+        </p>
+
+        <!-- 3. Stepper Porsi & Quick Stats Badges Row -->
+        <div class="recipe-meta-row">
+          <div class="recipe-servings-stepper">
+            <button type="button" class="recipe-servings-btn" onclick="app.changeRecipeServings(-1)" title="Kurangi Porsi" aria-label="Kurangi">-</button>
+            <span class="recipe-servings-text">${servings} porsi</span>
+            <button type="button" class="recipe-servings-btn" onclick="app.changeRecipeServings(1)" title="Tambah Porsi" aria-label="Tambah">+</button>
           </div>
-          <h4 style="margin:0 0 4px 0;font-size:15.5px;color:#1E293B;font-weight:800;line-height:1.3;">${recipe.title}</h4>
-          <div style="display:flex;align-items:center;gap:12px;font-size:11.5px;color:#64748B;font-weight:600;flex-wrap:wrap;">
-            <span>⏱️ ${recipe.prepTime}</span>
-            <span>🍽️ ${recipe.portion}</span>
-            <span>🔥 ${recipe.method}</span>
+
+          <div class="recipe-stats-badges">
+            <span class="recipe-stat-pill" title="Total Waktu Pengolahan">
+              <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
+              <span>${recipe.totalTime || recipe.cookTime}</span>
+            </span>
+            <span class="recipe-stat-pill calories" title="Total Kalori untuk ${servings} porsi">
+              <iconify-icon icon="solar:flame-bold"></iconify-icon>
+              <span>${totalCalories} kkal</span>
+            </span>
+            <span class="recipe-stat-pill rating" title="Rating Klinis Teruji">
+              <iconify-icon icon="solar:star-bold"></iconify-icon>
+              <span>${recipe.rating || '4.9/5'}</span>
+            </span>
           </div>
         </div>
-      </div>
 
-      <div style="margin-bottom:16px;">
-        <h5 style="margin:0 0 8px 0;font-size:13px;color:#334155;font-weight:700;display:flex;align-items:center;gap:6px;">
-          <iconify-icon icon="solar:cart-bold" style="color:#0F766E;"></iconify-icon> Bahan-Bahan yang Diperlukan:
-        </h5>
-        <ul style="margin:0;padding-left:20px;font-size:12.5px;color:#475569;line-height:1.6;">
-          ${recipe.ingredients.map(ing => `<li style="margin-bottom:3px;">${ing}</li>`).join('')}
-        </ul>
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <h5 style="margin:0 0 8px 0;font-size:13px;color:#334155;font-weight:700;display:flex;align-items:center;gap:6px;">
-          <iconify-icon icon="solar:checklist-minimalistic-bold" style="color:#0F766E;"></iconify-icon> Langkah-Langkah Pengolahan Klinis:
-        </h5>
-        <ol style="margin:0;padding-left:20px;font-size:12.5px;color:#475569;line-height:1.6;">
-          ${recipe.steps.map(step => `<li style="margin-bottom:6px;">${step}</li>`).join('')}
-        </ol>
-      </div>
-
-      <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:12px 14px;margin-bottom:18px;">
-        <div style="display:flex;align-items:flex-start;gap:8px;">
-          <iconify-icon icon="solar:shield-warning-bold" style="font-size:18px;color:#D97706;margin-top:1px;flex-shrink:0;"></iconify-icon>
-          <div style="font-size:12px;color:#92400E;line-height:1.5;">
-            <strong style="display:block;margin-bottom:2px;color:#78350F;">Tips Bioavailabilitas & Klinis:</strong>
-            ${recipe.clinicalTips}
-          </div>
+        <!-- 4. Segmented Control Switch: Ingredients vs Directions -->
+        <div class="recipe-segmented-nav">
+          <button type="button" class="recipe-tab-btn ${activeTab === 'ingredients' ? 'active' : ''}" 
+                  onclick="app.switchRecipeTab('ingredients')">
+            Bahan-Bahan (${recipe.ingredients.length})
+          </button>
+          <button type="button" class="recipe-tab-btn ${activeTab === 'directions' ? 'active' : ''}" 
+                  onclick="app.switchRecipeTab('directions')">
+            Cara Memasak (${recipe.steps.length} Langkah)
+          </button>
         </div>
-      </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid #E2E8F0;">
-        <button type="button" class="btn-sm-teal" style="background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;padding:8px 16px;border-radius:20px;cursor:pointer;font-weight:600;font-size:12px;" onclick="app.closeModal('food-recipe-modal')">
-          Tutup
-        </button>
-        <button type="button" class="btn-sm-teal" style="background:#0F766E;color:#FFFFFF;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
-          <iconify-icon icon="solar:add-circle-bold" style="font-size:16px;"></iconify-icon> Tambahkan ke Piring Scan
-        </button>
+        <!-- 5. Dynamic Tab View Content -->
+        ${activeTab === 'ingredients' ? `
+          <!-- TAB 1: INGREDIENTS LIST -->
+          <div class="recipe-ingredients-list">
+            ${recipe.ingredients.map((ing, idx) => {
+              const isChecked = this.recipeState.checkedIngredients.has(idx);
+              // Scale amount proportionally to servings
+              const scaledAmount = (typeof ing.amount === 'number') 
+                ? (ing.amount * servings) 
+                : ing.amount;
+              const formattedAmount = (typeof scaledAmount === 'number')
+                ? Number.isInteger(scaledAmount) ? scaledAmount : scaledAmount.toFixed(1).replace('.0', '')
+                : scaledAmount;
+
+              return `
+                <div class="recipe-ingredient-item ${isChecked ? 'checked' : ''}" 
+                     id="recipe-ing-item-${idx}" 
+                     onclick="app.toggleRecipeIngredient(${idx})"
+                     title="Klik untuk menandai bahan sudah siap">
+                  <div class="recipe-ing-left">
+                    <iconify-icon icon="solar:hamburger-menu-linear" class="recipe-ing-bullet"></iconify-icon>
+                    <span class="recipe-ing-name">${ing.name}</span>
+                  </div>
+                  <div class="recipe-ing-right">
+                    <span class="recipe-ing-measure">${formattedAmount} ${ing.unit}</span>
+                    <div class="recipe-custom-checkbox">
+                      ${isChecked ? '<iconify-icon icon="solar:check-read-bold"></iconify-icon>' : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Bottom Sticky Action Button -->
+          <div class="recipe-sticky-action-bar">
+            <button type="button" class="recipe-add-plate-btn" 
+                    onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
+              <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
+              <span>Tambahkan ke Piring Scan (${servings} Porsi)</span>
+            </button>
+          </div>
+        ` : `
+          <!-- TAB 2: DIRECTIONS (STEPS & LIVE TIMERS) -->
+          ${recipe.parameters && recipe.parameters.length ? `
+            <div class="recipe-params-grid">
+              ${recipe.parameters.map(p => `
+                <div class="recipe-param-card" style="background:${p.bg};color:${p.color};">
+                  <span class="recipe-param-label">
+                    <iconify-icon icon="${p.icon}"></iconify-icon>
+                    <span>${p.label}</span>
+                  </span>
+                  <span class="recipe-param-val">${p.value}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="recipe-steps-list">
+            ${recipe.steps.map((st, idx) => {
+              const timer = this.recipeState.timers[idx];
+              const isRunning = timer && timer.isRunning;
+              const remainingSec = timer ? timer.remaining : st.timer;
+              const hasTimer = st.timer && st.timer > 0;
+
+              return `
+                <div class="recipe-step-card ${isRunning ? 'active-timer' : ''}">
+                  <div class="recipe-step-header">
+                    <h4 class="recipe-step-num">Langkah ${st.step}</h4>
+                    <span class="recipe-step-title">${st.title}</span>
+                  </div>
+                  <p class="recipe-step-desc">${st.instruction}</p>
+
+                  ${st.tip ? `
+                    <div class="recipe-step-tip">
+                      <iconify-icon icon="solar:shield-warning-bold" style="font-size:16px;flex-shrink:0;color:#D97706;margin-top:1px;"></iconify-icon>
+                      <span><strong>Tips Bioavailabilitas:</strong> ${st.tip}</span>
+                    </div>
+                  ` : ''}
+
+                  ${hasTimer ? `
+                    <div class="recipe-timer-control-row">
+                      <button type="button" class="recipe-step-timer-btn ${isRunning ? 'running' : ''}" 
+                              id="recipe-timer-btn-${idx}"
+                              onclick="app.startRecipeTimer(${idx}, ${st.timer}, '${st.title}')">
+                        <iconify-icon icon="${isRunning ? 'solar:pause-bold' : 'solar:play-bold'}" style="font-size:14px;"></iconify-icon>
+                        <span id="recipe-timer-text-${idx}">
+                          ${isRunning ? `Jeda (${this.formatTimerTime(remainingSec)})` : (st.timerLabel || `Mulai Timer (${this.formatTimerTime(st.timer)})`)}
+                        </span>
+                      </button>
+                      ${timer ? `
+                        <button type="button" class="recipe-timer-reset-btn" onclick="app.resetRecipeTimer(${idx})" title="Reset Timer">
+                          <iconify-icon icon="solar:restart-bold"></iconify-icon>
+                        </button>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Bottom Sticky Action Button -->
+          <div class="recipe-sticky-action-bar">
+            <button type="button" class="recipe-add-plate-btn" 
+                    onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
+              <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
+              <span>Tambahkan ke Piring Scan (${servings} Porsi)</span>
+            </button>
+          </div>
+        `}
       </div>
     `;
 
-    this.openModal('food-recipe-modal');
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   // =========================================================================
@@ -2642,6 +2978,9 @@ class NutriVisionApp {
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.remove('open');
+    }
+    if (modalId === 'food-recipe-modal') {
+      this.clearAllRecipeTimers();
     }
     if (modalId === 'scan-modal') {
       this.deactivateLiveCamera();
