@@ -19,6 +19,9 @@ class NutriVisionApp {
       condition: this.userProfile.conditionId || 'post-surgery',
       activity: this.userProfile.activityLevel || 'light'
     };
+    this.plateViewMode = 'ai';
+    this.currentLandingPreset = 'preset-soft-bubur-gabus';
+    this.favoriteFoods = this.loadFavoriteFoods();
   }
 
   // Auth Guard / Gatekeeper: Memastikan pengguna sudah login & mengisi data klinis valid
@@ -144,6 +147,7 @@ class NutriVisionApp {
     communityHandler.renderCommunityFeed();
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
+    this.updateFavoriteBadge();
 
     // Inisialisasi Kalkulator Mini Landing Page
     this.updateCalcUI();
@@ -598,6 +602,9 @@ class NutriVisionApp {
     if (window.history.pushState) {
       window.history.pushState(null, null, '#landing');
     }
+    setTimeout(() => {
+      this.selectLandingPreset(this.currentLandingPreset || 'preset-soft-bubur-gabus');
+    }, 60);
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -647,25 +654,78 @@ class NutriVisionApp {
   }
 
   // =========================================================================
-  // INTERACTIVE SIMULATOR: PRESET SCANNER SHOWCASE
+  // INTERACTIVE SIMULATOR: PRESET SCANNER SHOWCASE & FOOD VISUALIZER
   // =========================================================================
+  setPlateViewMode(mode) {
+    this.plateViewMode = mode;
+    document.querySelectorAll('#lp-plate-mode-toggles .lp-mode-pill').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+
+    const segSvg = document.getElementById('lp-plate-seg-svg');
+    const laserBeam = document.getElementById('lp-plate-laser');
+    const pinsLayer = document.getElementById('lp-plate-pins-layer');
+    const heatmapEl = document.getElementById('lp-plate-heatmap');
+
+    if (mode === 'photo') {
+      if (segSvg) segSvg.style.display = 'none';
+      if (laserBeam) laserBeam.style.display = 'none';
+      if (pinsLayer) pinsLayer.style.display = 'none';
+      if (heatmapEl) heatmapEl.style.display = 'none';
+    } else if (mode === 'heatmap') {
+      if (segSvg) segSvg.style.display = 'none';
+      if (laserBeam) laserBeam.style.display = 'none';
+      if (pinsLayer) pinsLayer.style.display = 'none';
+      if (heatmapEl) heatmapEl.style.display = 'block';
+    } else {
+      // 'ai' mode (default)
+      if (segSvg) segSvg.style.display = 'block';
+      if (laserBeam) laserBeam.style.display = 'block';
+      if (pinsLayer) pinsLayer.style.display = 'block';
+      if (heatmapEl) heatmapEl.style.display = 'none';
+    }
+  }
+
+  highlightPlateSegment(segId, isHighlighted) {
+    const poly = document.querySelector(`.lp-seg-poly[data-seg="${segId}"]`);
+    if (poly) {
+      poly.classList.toggle('highlighted', Boolean(isHighlighted));
+    }
+    const pin = document.querySelector(`.lp-food-pin[data-seg="${segId}"]`);
+    if (pin) {
+      pin.classList.toggle('highlighted', Boolean(isHighlighted));
+    }
+    const tagMap = { 'prot': 'lp-showcase-tag-1', 'carb': 'lp-showcase-tag-2', 'veg': 'lp-showcase-tag-3' };
+    const tagEl = document.getElementById(tagMap[segId]);
+    if (tagEl) {
+      tagEl.classList.toggle('highlighted', Boolean(isHighlighted));
+    }
+  }
+
   selectLandingPreset(presetKey) {
     document.querySelectorAll('.lp-preset-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.preset === presetKey);
     });
 
     const emptyState = document.getElementById('lp-showcase-empty-state');
-    const polyProt = document.getElementById('lp-poly-prot');
-    const polyCarb = document.getElementById('lp-poly-carb');
-    const polyVeg  = document.getElementById('lp-poly-veg');
+    const foodImg = document.getElementById('lp-plate-food-img');
+    const segSvgGroup = document.getElementById('lp-svg-segments-group');
+    const pinsLayer = document.getElementById('lp-plate-pins-layer');
+    const heatmapEl = document.getElementById('lp-plate-heatmap');
+    const laserBeam = document.getElementById('lp-plate-laser');
     const donutCircle = document.getElementById('lp-showcase-donut');
     const donutVal = document.getElementById('lp-showcase-donut-val');
 
     if (presetKey === 'preset-empty' || !presetKey) {
+      if (foodImg) {
+        foodImg.src = 'images/plate_empty.jpg';
+        foodImg.style.opacity = '0.92';
+      }
       if (emptyState) emptyState.style.display = 'flex';
-      if (polyProt) polyProt.style.display = 'none';
-      if (polyCarb) polyCarb.style.display = 'none';
-      if (polyVeg)  polyVeg.style.display = 'none';
+      if (segSvgGroup) segSvgGroup.innerHTML = '';
+      if (pinsLayer) pinsLayer.innerHTML = '';
+      if (heatmapEl) heatmapEl.style.display = 'none';
+      if (laserBeam) laserBeam.style.display = 'none';
 
       if (donutCircle) donutCircle.style.strokeDashoffset = '251.2';
       if (donutVal) donutVal.textContent = '0%';
@@ -686,63 +746,229 @@ class NutriVisionApp {
       if (tag1) tag1.innerHTML = '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Komponen Protein: Belum terdeteksi</span>';
 
       const tag2 = document.getElementById('lp-showcase-tag-2');
-      if (tag2) tag2.innerHTML = '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Komponen Karbohidrat: Belum terdeteksi</span>';
+      if (tag2) tag2.innerHTML = '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon><span>Komponen Karbohidrat: Belum terdeteksi</span>';
 
       const tag3 = document.getElementById('lp-showcase-tag-3');
-      if (tag3) tag3.innerHTML = '<span>Sayur &amp; Serat: Belum terdeteksi</span>';
+      if (tag3) tag3.innerHTML = '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Sayur &amp; Serat: Belum terdeteksi</span>';
+
+      const tag4 = document.getElementById('lp-showcase-tag-4');
+      if (tag4) tag4.innerHTML = '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: Siap Memindai</span>';
       return;
     }
 
     // Showing sample preset data
     if (emptyState) emptyState.style.display = 'none';
-    if (polyProt) polyProt.style.display = 'block';
-    if (polyCarb) polyCarb.style.display = 'block';
-    if (polyVeg)  polyVeg.style.display = 'block';
+    if (laserBeam && this.plateViewMode !== 'photo') laserBeam.style.display = 'block';
 
     const presets = {
       'preset-soft-bubur-gabus': {
         conf: '96%',
         donutPct: 68,
+        image: 'images/plate_bubur_gabus.jpg',
         targetProt: 'Target Protein: 32g / 98g',
         cals: 'Densitas Energi: 385 kkal (Tekstur Lunak · Fase 2 Pasca-Bedah)',
         advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp; disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>',
+        heatmap: 'radial-gradient(circle at 48% 38%, rgba(245, 158, 11, 0.75) 0%, rgba(239, 68, 68, 0.5) 25%, transparent 55%), radial-gradient(circle at 70% 50%, rgba(234, 179, 8, 0.65) 0%, transparent 40%), radial-gradient(circle at 35% 55%, rgba(6, 182, 212, 0.55) 0%, transparent 50%)',
+        segments: [
+          {
+            id: 'prot',
+            name: 'Ikan Gabus',
+            points: '37,30 50,27 63,33 63,45 55,54 44,52 35,45 35,36',
+            color: '#9EA76B',
+            fill: 'rgba(158, 167, 107, 0.28)',
+            pin: { x: 48, y: 39, label: '🐟 Ikan Gabus 26g' }
+          },
+          {
+            id: 'carb',
+            name: 'Bubur Beras',
+            points: '25,38 32,24 50,22 68,24 76,36 78,56 70,72 52,76 36,74 24,62 22,46',
+            color: '#06B6D4',
+            fill: 'rgba(6, 182, 212, 0.22)',
+            pin: { x: 28, y: 56, label: '🍚 Bubur Beras 35g' }
+          },
+          {
+            id: 'veg',
+            name: 'Telur Tim Sutra',
+            points: '58,36 72,36 78,46 76,60 66,64 58,56 56,44',
+            color: '#EF9F27',
+            fill: 'rgba(239, 159, 39, 0.28)',
+            pin: { x: 68, y: 50, label: '🥚 Telur Tim 6.8g' }
+          }
+        ],
         tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
-        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
-        tag3: '<iconify-icon icon="solar:egg-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Telur Tim Sutra (90g) · 6.8g Prot</span>'
+        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
+        tag3: '<iconify-icon icon="solar:egg-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Telur Tim Sutra (90g) · 6.8g Prot</span>',
+        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 96% · Tekstur Lunak</span>'
       },
       'preset-standard-nasi-ayam': {
         conf: '91%',
         donutPct: 77,
+        image: 'images/plate_nasi_ayam.jpg',
         targetProt: 'Target Protein: 38g / 98g',
         cals: 'Densitas Energi: 465 kkal (Gizi Seimbang · Fase 3)',
         advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot &amp; pembentukan enzim perbaikan jaringan.</span>',
-        tag1: '<iconify-icon icon="solar:cup-hot-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
-        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Nasi Putih (175g) · 52g Karbo</span>',
-        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Tumis Kangkung &amp; Telur · Vit A/C</span>'
+        heatmap: 'radial-gradient(circle at 35% 60%, rgba(239, 68, 68, 0.75) 0%, rgba(245, 158, 11, 0.45) 35%, transparent 55%), radial-gradient(circle at 66% 52%, rgba(6, 182, 212, 0.6) 0%, transparent 45%), radial-gradient(circle at 44% 28%, rgba(16, 185, 129, 0.65) 0%, transparent 40%)',
+        segments: [
+          {
+            id: 'prot',
+            name: 'Dada Ayam',
+            points: '20,44 32,38 48,44 54,64 52,78 38,78 22,68 18,52',
+            color: '#E25822',
+            fill: 'rgba(226, 88, 34, 0.28)',
+            pin: { x: 34, y: 60, label: '🍗 Dada Ayam 31g' }
+          },
+          {
+            id: 'carb',
+            name: 'Nasi Putih',
+            points: '50,34 68,28 82,38 82,56 78,72 60,76 50,62 48,46',
+            color: '#06B6D4',
+            fill: 'rgba(6, 182, 212, 0.22)',
+            pin: { x: 66, y: 52, label: '🍚 Nasi Putih 52g' }
+          },
+          {
+            id: 'veg',
+            name: 'Tumis Kangkung',
+            points: '26,26 44,18 64,20 64,36 46,42 30,40 24,32',
+            color: '#10B981',
+            fill: 'rgba(16, 185, 129, 0.28)',
+            pin: { x: 44, y: 28, label: '🥬 Kangkung Vit A/C' }
+          }
+        ],
+        tag1: '<iconify-icon icon="solar:cup-hot-bold-duotone" style="font-size:14px;color:#E25822;"></iconify-icon><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
+        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon><span>Nasi Putih (175g) · 52g Karbo</span>',
+        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#10B981;"></iconify-icon><span>Tumis Kangkung · Vit A/C &amp; Serat</span>',
+        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 91% · Gizi Seimbang</span>'
       },
       'preset-fish-kembung': {
         conf: '94%',
         donutPct: 83,
+        image: 'images/plate_pepes_kembung.jpg',
         targetProt: 'Target Protein: 41g / 98g',
         cals: 'Densitas Energi: 430 kkal (Kaya Omega-3 · Pangan Lokal)',
         advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.</span>',
+        heatmap: 'radial-gradient(circle at 66% 42%, rgba(239, 68, 68, 0.75) 0%, transparent 45%), radial-gradient(circle at 34% 46%, rgba(245, 158, 11, 0.65) 0%, transparent 40%), radial-gradient(circle at 50% 68%, rgba(16, 185, 129, 0.65) 0%, transparent 40%)',
+        segments: [
+          {
+            id: 'prot',
+            name: 'Ikan Kembung',
+            points: '48,22 62,20 74,32 78,48 76,66 84,72 74,78 64,62 52,42 46,28',
+            color: '#9EA76B',
+            fill: 'rgba(158, 167, 107, 0.28)',
+            pin: { x: 64, y: 40, label: '🐟 Ikan Kembung 29g' }
+          },
+          {
+            id: 'carb',
+            name: 'Tempe Kukus',
+            points: '24,28 46,26 46,58 36,66 24,64 22,46',
+            color: '#F59E0B',
+            fill: 'rgba(245, 158, 11, 0.28)',
+            pin: { x: 32, y: 46, label: '🌱 Tempe Kukus 15g' }
+          },
+          {
+            id: 'veg',
+            name: 'Sayur Bayam',
+            points: '36,54 58,52 68,60 66,78 48,82 34,74',
+            color: '#10B981',
+            fill: 'rgba(16, 185, 129, 0.28)',
+            pin: { x: 50, y: 68, label: '🥬 Bayam Zat Besi' }
+          }
+        ],
         tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
-        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Tempe Kukus (80g) · 15g Prot</span>',
-        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Sayur Bening Bayam · Zat Besi</span>'
+        tag2: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#F59E0B;"></iconify-icon><span>Tempe Kukus (80g) · 15g Prot</span>',
+        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#10B981;"></iconify-icon><span>Sayur Bening Bayam · Zat Besi</span>',
+        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 94% · Anti-Inflamasi</span>'
       },
       'preset-salmon-quinoa': {
         conf: '95%',
         donutPct: 73,
+        image: 'images/plate_salmon_brokoli.jpg',
         targetProt: 'Target Protein: 36g / 98g',
         cals: 'Densitas Energi: 420 kkal (Antioksidan Tinggi · Rekondisi)',
         advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.</span>',
-        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Fillet Salmon (130g) · 28g Prot</span>',
-        tag2: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
-        tag3: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Beras Merah (100g) · 23g Karbo</span>'
+        heatmap: 'radial-gradient(circle at 48% 52%, rgba(239, 68, 68, 0.8) 0%, transparent 45%), radial-gradient(circle at 28% 50%, rgba(16, 185, 129, 0.7) 0%, transparent 40%), radial-gradient(circle at 68% 50%, rgba(245, 158, 11, 0.65) 0%, transparent 40%)',
+        segments: [
+          {
+            id: 'prot',
+            name: 'Fillet Salmon',
+            points: '40,26 56,26 56,76 42,76 38,50',
+            color: '#FF6B4A',
+            fill: 'rgba(255, 107, 74, 0.28)',
+            pin: { x: 48, y: 52, label: '🍣 Salmon 28g' }
+          },
+          {
+            id: 'veg',
+            name: 'Brokoli Kukus',
+            points: '18,34 38,28 38,72 26,74 18,56 16,42',
+            color: '#10B981',
+            fill: 'rgba(16, 185, 129, 0.28)',
+            pin: { x: 28, y: 50, label: '🥦 Brokoli Vit C' }
+          },
+          {
+            id: 'carb',
+            name: 'Beras Merah',
+            points: '58,28 78,32 80,62 72,72 58,68 56,44',
+            color: '#EF9F27',
+            fill: 'rgba(239, 159, 39, 0.28)',
+            pin: { x: 68, y: 50, label: '🌾 Beras Merah 23g' }
+          }
+        ],
+        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#FF6B4A;"></iconify-icon><span>Fillet Salmon (130g) · 28g Prot</span>',
+        tag2: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#10B981;"></iconify-icon><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
+        tag3: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Beras Merah (100g) · 23g Karbo</span>',
+        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 95% · Remodeling</span>'
       }
     };
 
     const data = presets[presetKey] || presets['preset-soft-bubur-gabus'];
+
+    // Update Food Image with smooth fade
+    if (foodImg && data.image) {
+      foodImg.style.opacity = '0.3';
+      setTimeout(() => {
+        foodImg.src = data.image;
+        foodImg.style.opacity = '1';
+      }, 120);
+    }
+
+    // Update Heatmap background gradient
+    if (heatmapEl && data.heatmap) {
+      heatmapEl.style.background = data.heatmap;
+    }
+
+    // Render SVG Polygons
+    if (segSvgGroup && data.segments) {
+      segSvgGroup.innerHTML = data.segments.map(seg => `
+        <polygon 
+          class="lp-seg-poly" 
+          data-seg="${seg.id}" 
+          points="${seg.points}" 
+          fill="${seg.fill || 'rgba(158, 167, 107, 0.28)'}" 
+          stroke="${seg.color}" 
+          stroke-width="1.8"
+          onmouseenter="app.highlightPlateSegment('${seg.id}', true)"
+          onmouseleave="app.highlightPlateSegment('${seg.id}', false)"
+        />
+      `).join('');
+    }
+
+    // Render In-Plate Detection Pins
+    if (pinsLayer && data.segments) {
+      pinsLayer.innerHTML = data.segments.map(seg => {
+        if (!seg.pin) return '';
+        return `
+          <div class="lp-food-pin" data-seg="${seg.id}" 
+               style="left:${seg.pin.x}%;top:${seg.pin.y}%;"
+               onmouseenter="app.highlightPlateSegment('${seg.id}', true)"
+               onmouseleave="app.highlightPlateSegment('${seg.id}', false)">
+            <span class="pin-dot" style="background:${seg.color}"></span>
+            <span>${seg.pin.label}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Refresh view mode visibility
+    this.setPlateViewMode(this.plateViewMode || 'ai');
 
     if (donutCircle) {
       const offset = 251.2 * (1 - data.donutPct / 100);
@@ -770,6 +996,9 @@ class NutriVisionApp {
 
     const tag3 = document.getElementById('lp-showcase-tag-3');
     if (tag3) tag3.innerHTML = data.tag3;
+
+    const tag4 = document.getElementById('lp-showcase-tag-4');
+    if (tag4 && data.tag4) tag4.innerHTML = data.tag4;
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -1518,7 +1747,7 @@ class NutriVisionApp {
         const portionPct = Math.round(((seg.portionGrams || 0) / totalGrams) * 100);
         const isHovered = (cvEngine.activeHoverSegmentId === seg.id);
         return `
-          <div class="segment-row ${isHovered ? 'hovered' : ''}" 
+          <div class="segment-row ${isHovered ? 'hovered' : ''}" data-seg-id="${seg.id}"
                onmouseenter="cvEngine.activeHoverSegmentId='${seg.id}'; app.renderOverviewPlate();" 
                onmouseleave="cvEngine.activeHoverSegmentId=null; app.renderOverviewPlate();">
             <div class="segment-row-top">
@@ -1549,6 +1778,18 @@ class NutriVisionApp {
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
+  }
+
+  // Sinkronisasi highlight baris saat kursor bergerak di atas irisan pizza canvas
+  renderOverviewPlateLegendHover(segId) {
+    const rows = document.querySelectorAll('#overview-segment-legend .segment-row');
+    rows.forEach(r => {
+      if (segId && r.getAttribute('data-seg-id') === segId) {
+        r.classList.add('hovered');
+      } else {
+        r.classList.remove('hovered');
+      }
+    });
   }
 
   // =========================================================================
@@ -1962,15 +2203,51 @@ class NutriVisionApp {
     }
   }
 
+  loadFavoriteFoods() {
+    try {
+      const saved = localStorage.getItem('nutrivision_favorite_foods');
+      if (saved) {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch (e) {
+      console.warn('Error loading favorite foods:', e);
+    }
+    return new Set(['telur-rebus', 'ikan-gabus-kukus']);
+  }
+
+  saveFavoriteFoods() {
+    try {
+      localStorage.setItem('nutrivision_favorite_foods', JSON.stringify([...this.favoriteFoods]));
+    } catch (e) {
+      console.warn('Error saving favorite foods:', e);
+    }
+    this.updateFavoriteBadge();
+  }
+
+  updateFavoriteBadge() {
+    const badge = document.getElementById('fav-catalog-count-badge');
+    if (badge) {
+      const count = this.favoriteFoods ? this.favoriteFoods.size : 0;
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+  }
+
   toggleFavoriteFood(foodId, event) {
     if (event) event.stopPropagation();
-    if (!this.favoriteFoods) this.favoriteFoods = new Set();
+    if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
+    const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
+    const foodName = food ? food.name : 'Pangan Lokal';
+
     if (this.favoriteFoods.has(foodId)) {
       this.favoriteFoods.delete(foodId);
-      this.showToast('Dihapus dari favorit.');
+      this.saveFavoriteFoods();
+      this.showToast(`Dihapus dari Favorit: ${foodName}`);
     } else {
       this.favoriteFoods.add(foodId);
-      this.showToast('Disimpan ke menu favorit!');
+      this.saveFavoriteFoods();
+      this.showToast(`❤️ Disimpan ke Favorit: ${foodName}`);
     }
     const searchVal = document.getElementById('food-catalog-search')?.value || '';
     this.renderFoodCatalog(searchVal);
@@ -1981,7 +2258,7 @@ class NutriVisionApp {
     if (!grid) return;
 
     if (!this.activeCatalogCategory) this.activeCatalogCategory = 'all';
-    if (!this.favoriteFoods) this.favoriteFoods = new Set();
+    if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
 
     const bannerContainer = document.getElementById('catalog-matched-banner-container');
     let baseList = NUTRIVISION_DATA.indonesianFoodDatabase;
@@ -2021,7 +2298,9 @@ class NutriVisionApp {
     const items = baseList.filter(food => {
       let matchCat = (this.activeCatalogCategory === 'all');
       if (!matchCat) {
-        if (this.activeCatalogCategory === 'soft') {
+        if (this.activeCatalogCategory === 'favorite') {
+          matchCat = this.favoriteFoods.has(food.id);
+        } else if (this.activeCatalogCategory === 'soft') {
           matchCat = food.texture === 'soft' || food.texture === 'liquid';
         } else {
           matchCat = (food.category === this.activeCatalogCategory);
@@ -2036,13 +2315,31 @@ class NutriVisionApp {
     });
 
     if (items.length === 0) {
-      grid.innerHTML = `
-        <div class="catalog-empty-state">
-          <i data-lucide="search-x" style="width:40px;height:40px;color:#94A3B8;margin-bottom:8px;"></i>
-          <h4>Menu tidak ditemukan</h4>
-          <p>Coba kata kunci lain atau pilih kategori menu di atas.</p>
-        </div>
-      `;
+      if (this.activeCatalogCategory === 'favorite') {
+        grid.innerHTML = `
+          <div class="catalog-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: rgba(255,255,255,0.7); border-radius: 18px; border: 1.5px dashed #E2E8F0;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEE2E2; color: #EF4444; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+              <iconify-icon icon="solar:heart-broken-bold" style="font-size: 28px;"></iconify-icon>
+            </div>
+            <h4 style="margin: 0 0 6px; font-size: 16px; color: #1E293B; font-weight: 700;">Belum Ada Pangan Favorit</h4>
+            <p style="margin: 0 0 16px; font-size: 13px; color: #64748B; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+              Klik tombol hati di pojok kiri bawah kartu makanan untuk menyimpan menu lokal favorit Anda untuk perencanaan gizi cepat.
+            </p>
+            <button type="button" class="btn-sm-teal" style="background: #0F766E; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-weight: 700; font-size: 12px; cursor: pointer;" onclick="document.querySelector('.cat-pill-btn[data-category=\\'all\\']')?.click()">
+              Jelajahi Semua Pangan Lokal
+            </button>
+          </div>
+        `;
+      } else {
+        grid.innerHTML = `
+          <div class="catalog-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px;">
+            <i data-lucide="search-x" style="width:40px;height:40px;color:#94A3B8;margin-bottom:8px;"></i>
+            <h4>Menu tidak ditemukan</h4>
+            <p>Coba kata kunci lain atau pilih kategori menu di atas.</p>
+          </div>
+        `;
+      }
+      this.updateFavoriteBadge();
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
@@ -2055,27 +2352,23 @@ class NutriVisionApp {
       const clinicalTag = food.clinicalIndication || 'Pemulihan Klinis';
       const bappenasRef = food.bappenasRef || 'Bapanas: Standar Nasional';
       const tkpiCode = food.tkpiCode || 'TKPI 2024';
+      const salesCount = food.salesCount || '1.8k+';
+      const popularRank = food.popularRank ? `${food.popularRank} · ` : 'Terlaris · ';
 
       return `
-        <div class="popular-food-card" onclick="app.addCatalogItemToScan('${food.id}')" title="Klik untuk tambahkan ke piring scan">
+        <div class="popular-food-card" onclick="app.addCatalogItemToScan('${food.id}')" title="Klik kartu untuk tambahkan ke piring scan">
           <!-- Floating Round Dish Image & Top Actions -->
           <div class="food-card-top">
             <div class="food-dish-plate-wrap">
               <img src="${food.image}" alt="${food.name}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
             </div>
 
-            <!-- Pencarian Populer & Love/Suka Button Aligned Side-by-Side -->
+            <!-- Jumlah Katalog Pangan Terlaris / Rekomendasi Teratas -->
             <div class="food-card-header-actions" onclick="event.stopPropagation();">
-              <span class="food-popular-badge" title="Status Pencarian Populer Pasien">
+              <span class="food-sales-badge" title="Volume Konsumsi Terlaris & Rekomendasi Pasien">
                 <iconify-icon icon="solar:fire-bold" class="popular-fire-icon"></iconify-icon>
-                <span>Populer</span>
+                <span>${popularRank}${salesCount} porsi</span>
               </span>
-              <button type="button" class="food-fav-btn ${isFav ? 'active' : ''}" 
-                      onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
-                      title="${isFav ? 'Disukai (Klik untuk batalkan)' : 'Suka / Simpan ke Menu Favorit'}"
-                      aria-label="Suka">
-                <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-heart-icon"></iconify-icon>
-              </button>
             </div>
           </div>
 
@@ -2095,16 +2388,20 @@ class NutriVisionApp {
             <p class="food-card-sub">${subtitle}</p>
 
             <div class="food-macro-pills-row">
-              <span class="macro-pill-item prot">🥩 ${food.protein}g Prot</span>
-              <span class="macro-pill-item carb">🍞 ${food.carbs}g Karbo</span>
-              <span class="macro-pill-item cal">⚡ ${food.calories} kkal</span>
+              <span class="macro-pill-item prot">${food.protein}g Prot</span>
+              <span class="macro-pill-item carb">${food.carbs}g Karbo</span>
+              <button type="button" class="macro-pill-item recipe-pill-btn" onclick="event.stopPropagation(); app.openFoodRecipeModal('${food.id}')" title="Buka Resep & Panduan Memasak Klinis">
+                <iconify-icon icon="solar:chef-hat-bold-duotone" style="font-size:13px;"></iconify-icon>
+                <span>Resep Pembuatan</span>
+              </button>
             </div>
 
             <div class="food-card-footer">
-              <button class="food-cart-btn" 
-                      onclick="event.stopPropagation(); app.addCatalogItemToScan('${food.id}');" 
-                      title="Tambah ke Piring Scan">
-                <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
+              <button type="button" class="food-fav-action-btn ${isFav ? 'active' : ''}" 
+                      onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
+                      title="${isFav ? 'Hapus dari Pangan Favorit' : 'Simpan ke Pangan Favorit'}"
+                      aria-label="Favorit">
+                <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-action-icon"></iconify-icon>
               </button>
               <div class="food-card-price-group">
                 <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
@@ -2115,6 +2412,8 @@ class NutriVisionApp {
         </div>
       `;
     }).join('');
+
+    this.updateFavoriteBadge();
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -2129,6 +2428,201 @@ class NutriVisionApp {
     this.renderScanModalUI();
     this.renderOverviewPlate();
     this.showToast(`Ditambahkan ke piring: ${food.name} (${food.defaultPortionGrams}g)`);
+  }
+
+  openFoodRecipeModal(foodId) {
+    const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
+    if (!food) return;
+
+    const modalContent = document.getElementById('food-recipe-modal-content');
+    if (!modalContent) return;
+
+    const recipes = {
+      'telur-rebus': {
+        title: 'Telur Ayam Ras / Omega-3 Rebus Klinis',
+        prepTime: '6 - 8 Menit',
+        portion: '1 butir (~55-60 gram)',
+        difficulty: 'Sangat Mudah',
+        method: 'Perebusan Terkontrol (Boiling)',
+        ingredients: [
+          '1-2 butir telur ayam ras segar atau telur omega-3 (suhu ruang)',
+          '500 ml air bersih (cukup untuk merendam seluruh telur)',
+          '1/2 sdt garam dapur (opsional, mempermudah pengelupasan cangkang)',
+          'Semangkuk air es untuk perendaman kejut (ice bath)'
+        ],
+        steps: [
+          'Didihkan air dalam panci sedang hingga muncul gelembung aktif.',
+          'Gunakan sendok makan untuk memasukkan telur secara perlahan ke dasar panci agar cangkang tidak retak.',
+          'Kecilkan api ke api sedang-kecil. Rebus selama 6.5 menit (kuning lembut / jammy yolk) atau 8 menit (matang sempurna lembut).',
+          'Segera angkat telur dan rendam dalam semangkuk air es selama 2-3 menit untuk menghentikan pematangan termal sekunder.',
+          'Ketuk perlahan ujung cangkang lalu kupas di bawah aliran air kecil. Telur rebus mulus siap disajikan.'
+        ],
+        clinicalTips: 'Hindari merebus lebih dari 10-12 menit. Perebusan berlebih memicu reaksi sulfur-besi (lapisan cincin abu-abu kehijauan di sekeliling kuning telur) yang menurunkan daya serap bioavailabilitas asam amino sistein hingga 15%.'
+      },
+      'ikan-gabus-kukus': {
+        title: 'Ikan Gabus Kukus Herbal Albumin Tinggi',
+        prepTime: '15 - 20 Menit',
+        portion: '100 gram fillet matang',
+        difficulty: 'Mudah',
+        method: 'Kukus / Steaming Uap Panas',
+        ingredients: [
+          '100-150 gram fillet ikan gabus segar (channa striata)',
+          '2 siung bawang putih (cincang halus)',
+          '1 ruas jahe (iris tipis korek api)',
+          '1 batang serai (memarkan)',
+          '1 lembar daun salam & 1 batang daun bawang iris',
+          '1 sdt minyak wijen atau minyak zaitun'
+        ],
+        steps: [
+          'Cuci bersih fillet ikan gabus, lumuri dengan perasan air jeruk nipis selama 5 menit lalu bilas tipis.',
+          'Tata fillet ikan di atas piring tahan panas, susun jahe, bawang putih, serai, dan daun salam di atasnya.',
+          'Panaskan kukusan hingga uap mengepul rata.',
+          'Kukus selama 12-15 menit dengan api sedang tertutup rapat hingga daging putih matang sempurna namun tetap berair (juicy).',
+          'Teteskan minyak wijen/zaitun dan taburkan daun bawang segar sebelum disajikan.'
+        ],
+        clinicalTips: 'Metode pengukusan (steaming) menjaga integritas fraksi albumin hingga 94%, dibandingkan penggorengan suhu tinggi yang mendegradasi rantai polipeptida protein penting untuk penyembuhan luka bedah.'
+      },
+      'dada-ayam-panggang': {
+        title: 'Dada Ayam Panggang Herbal Rendah Lemak',
+        prepTime: '20 - 25 Menit',
+        portion: '1 potong (~100 gram)',
+        difficulty: 'Mudah',
+        method: 'Pemanggangan Api Sedang (Pan-Sear / Oven)',
+        ingredients: [
+          '100-120 gram dada ayam tanpa kulit (skinless breast)',
+          '1 siung bawang putih (parut halus)',
+          '1/4 sdt lada bubuk & sedikit ketumbar',
+          '1 sdt minyak zaitun / canola',
+          'Perasan jeruk lemon secukupnya'
+        ],
+        steps: [
+          'Pipihkan dada ayam hingga ketebalan merata (~1.5 cm) agar matang bersamaan.',
+          'Marinasi dada ayam dengan bawang putih, lada, ketumbar, dan minyak zaitun selama 15 menit.',
+          'Panaskan wajan anti lengket (non-stick skillet) dengan api sedang.',
+          'Panggang dada ayam selama 4-5 menit di tiap sisi hingga berwarna keemasan dan bagian dalam matang sempurna.',
+          'Istirahatkan (rest) daging selama 3 menit sebelum diiris agar jus daging meresap kembali.'
+        ],
+        clinicalTips: 'Memasak dada ayam tanpa kulit memangkas 80% lemak jenuh, menghasilkan densitas protein murni 31g per porsi untuk regenerasi sel otot dan jaringan.'
+      },
+      'tempe-bacem-kukus': {
+        title: 'Tempe Bacem Kukus Tanpa Minyak (Low Glycemic)',
+        prepTime: '15 - 20 Menit',
+        portion: '2 potong sedang (~50 gram)',
+        difficulty: 'Mudah',
+        method: 'Ungkep & Kukus',
+        ingredients: [
+          '2-3 potong tempe kedelai segar berkualitas',
+          '2 siung bawang merah & 1 siung bawang putih (haluskan)',
+          '1 sdm gula aren alami (takaran rendah)',
+          '1 lembar daun salam & 1 ruas lengkuas',
+          '150 ml air kelapa murni atau air bersih'
+        ],
+        steps: [
+          'Potong tempe dengan ketebalan 1.5 cm, kerat-kerat tipis permukaannya.',
+          'Masukkan air kelapa, bumbu halus, daun salam, lengkuas, dan tempe ke dalam panci.',
+          'Ungkep dengan api kecil hingga bumbu meresap dan cairan menyusut hampir habis.',
+          'Kukus sebentar selama 5 menit untuk mematangkan rasa dan tekstur lembut.'
+        ],
+        clinicalTips: 'Proses fermentasi Rhizopus oligosporus pada tempe menghasilkan isoflavon bioaktif dan peptida antibakteri yang ramah bagi mukosa pencernaan.'
+      },
+      'bubur-ayam': {
+        title: 'Bubur Nasi Halus Kaldu Ayam Asli',
+        prepTime: '25 Menit',
+        portion: '1 mangkuk sedang (~200 gram)',
+        difficulty: 'Mudah',
+        method: 'Slow Simmering',
+        ingredients: [
+          '50 gram beras pulen lokal (cuci bersih)',
+          '400 ml kaldu rebusan tulang/daging ayam kampung asli',
+          '1 ruas jahe (memarkan)',
+          '50 gram suwiran dada ayam matang',
+          'Irisan seledri & kecap asin rendah natrium'
+        ],
+        steps: [
+          'Didihkan air kaldu ayam bersama beras dan jahe dalam panci anti lengket.',
+          'Aduk perlahan secara berkala dengan api kecil selama 20 menit hingga butiran beras pecah dan menjadi bubur kental lembut.',
+          'Tuang ke dalam mangkuk saji, tata suwiran dada ayam dan seledri di atasnya.'
+        ],
+        clinicalTips: 'Sangat direkomendasikan pada fase pemulihan dini / pasca-anestesi (Fase 1-2) berkat beban cerna lambung yang sangat ringan (low osmolar load).'
+      }
+    };
+
+    const recipe = recipes[food.id] || {
+      title: `Panduan Memasak: ${food.name}`,
+      prepTime: '15 - 20 Menit',
+      portion: `${food.defaultPortionGrams} gram standar saji`,
+      difficulty: 'Mudah & Higienis',
+      method: 'Pengukusan / Perebusan Sehat',
+      ingredients: [
+        `${food.defaultPortionGrams}g ${food.name} segar terstandar`,
+        'Air bersih secukupnya untuk pengolahan higienis',
+        'Bumbu aromatik alami (jahe, bawang putih, atau daun salam sesuai selera)'
+      ],
+      steps: [
+        `Cuci bersih ${food.name} di bawah air mengalir higienis.`,
+        'Siapkan peralatan memasak higienis tanpa penambahan minyak jenuh berlebih.',
+        `Olah dengan metode kukus/rebus api sedang selama 10-15 menit hingga matang empuk merata.`,
+        'Sajikan hangat untuk menjaga bioavailabilitas zat gizi makro dan mikronya.'
+      ],
+      clinicalTips: `Bahan pangan ini mengandung ${food.protein}g protein dan ${food.carbs}g karbohidrat per porsi standar, sangat baik untuk mendukung pemulihan energi dan regenerasi sel harian.`
+    };
+
+    modalContent.innerHTML = `
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;background:linear-gradient(135deg,#F8FAFC 0%,#F1F5F9 100%);padding:14px;border-radius:14px;border:1px solid #E2E8F0;">
+        <img src="${food.image}" alt="${food.name}" style="width:74px;height:74px;border-radius:14px;object-fit:cover;border:2px solid #FFFFFF;box-shadow:0 4px 12px rgba(0,0,0,0.08);flex-shrink:0;" onerror="this.src='icons/icon-192.png'" />
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-size:10px;font-weight:700;color:#166534;background:#DCFCE7;padding:2px 8px;border-radius:6px;">${food.clinicalIndication || 'Standar Klinis'}</span>
+            <span style="font-size:10px;font-weight:700;color:#1E40AF;background:#DBEAFE;padding:2px 8px;border-radius:6px;">${food.tkpiCode || 'TKPI 2024'}</span>
+          </div>
+          <h4 style="margin:0 0 4px 0;font-size:15.5px;color:#1E293B;font-weight:800;line-height:1.3;">${recipe.title}</h4>
+          <div style="display:flex;align-items:center;gap:12px;font-size:11.5px;color:#64748B;font-weight:600;flex-wrap:wrap;">
+            <span>⏱️ ${recipe.prepTime}</span>
+            <span>🍽️ ${recipe.portion}</span>
+            <span>🔥 ${recipe.method}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <h5 style="margin:0 0 8px 0;font-size:13px;color:#334155;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <iconify-icon icon="solar:cart-bold" style="color:#0F766E;"></iconify-icon> Bahan-Bahan yang Diperlukan:
+        </h5>
+        <ul style="margin:0;padding-left:20px;font-size:12.5px;color:#475569;line-height:1.6;">
+          ${recipe.ingredients.map(ing => `<li style="margin-bottom:3px;">${ing}</li>`).join('')}
+        </ul>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <h5 style="margin:0 0 8px 0;font-size:13px;color:#334155;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <iconify-icon icon="solar:checklist-minimalistic-bold" style="color:#0F766E;"></iconify-icon> Langkah-Langkah Pengolahan Klinis:
+        </h5>
+        <ol style="margin:0;padding-left:20px;font-size:12.5px;color:#475569;line-height:1.6;">
+          ${recipe.steps.map(step => `<li style="margin-bottom:6px;">${step}</li>`).join('')}
+        </ol>
+      </div>
+
+      <div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:12px 14px;margin-bottom:18px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <iconify-icon icon="solar:shield-warning-bold" style="font-size:18px;color:#D97706;margin-top:1px;flex-shrink:0;"></iconify-icon>
+          <div style="font-size:12px;color:#92400E;line-height:1.5;">
+            <strong style="display:block;margin-bottom:2px;color:#78350F;">Tips Bioavailabilitas & Klinis:</strong>
+            ${recipe.clinicalTips}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid #E2E8F0;">
+        <button type="button" class="btn-sm-teal" style="background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;padding:8px 16px;border-radius:20px;cursor:pointer;font-weight:600;font-size:12px;" onclick="app.closeModal('food-recipe-modal')">
+          Tutup
+        </button>
+        <button type="button" class="btn-sm-teal" style="background:#0F766E;color:#FFFFFF;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:6px;" onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
+          <iconify-icon icon="solar:add-circle-bold" style="font-size:16px;"></iconify-icon> Tambahkan ke Piring Scan
+        </button>
+      </div>
+    `;
+
+    this.openModal('food-recipe-modal');
   }
 
   // =========================================================================

@@ -511,57 +511,348 @@ body:not(.is-landing-active) #landing-page-view {
   flex-shrink: 0 !important;
 }
 
+/* ==========================================================================
+   AI LIVE SCANNER & CLINICAL FOOD VISUALIZER SHOWCASE
+   ========================================================================== */
 .lp-live-plate-canvas-box {
-  background: #293517;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 20px;
+  background: radial-gradient(ellipse at 50% 30%, #2f3c1b 0%, #1c2410 70%, #141b0b 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(158, 167, 107, 0.32);
+  padding: 56px 16px 52px;
   position: relative;
-  min-height: 230px;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 36px rgba(10, 14, 6, 0.45);
 }
 
-.lp-live-plate-disc {
-  width: 170px;
-  height: 170px;
+/* Subtle background optical grid lines */
+.lp-live-plate-canvas-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(158, 167, 107, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(158, 167, 107, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+/* Corner Viewfinder HUD Reticles */
+.lp-reticle-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+  border-color: rgba(158, 167, 107, 0.6);
+  border-style: solid;
+  z-index: 5;
+}
+.lp-rc-tl { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+.lp-rc-tr { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
+.lp-rc-bl { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
+.lp-rc-br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+
+/* Top HUD Scanner Bar */
+.lp-scanner-hud-bar {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  gap: 8px;
+}
+
+.lp-scanner-hud-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #EFE8CA;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  background: rgba(18, 24, 10, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lp-pulse-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #272D13;
-  border: 4px solid rgba(158, 167, 107, 0.35);
-  position: relative;
+  background: #4ADE80;
+  box-shadow: 0 0 8px #4ADE80;
+  animation: pulseLiveDot 1.8s ease-in-out infinite;
 }
 
+@keyframes pulseLiveDot {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 6px #4ADE80; }
+  50% { transform: scale(1.25); opacity: 0.75; box-shadow: 0 0 12px #4ADE80; }
+}
+
+/* View Mode Toggles */
+.lp-view-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(14, 20, 8, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  gap: 2px;
+}
+
+.lp-mode-pill {
+  all: unset;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #DDE2B9 !important;
+  padding: 4px 10px !important;
+  border-radius: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.lp-mode-pill:hover {
+  color: #FFFFFF !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.lp-mode-pill.active {
+  background: #9EA76B !important;
+  color: #17220F !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(158, 167, 107, 0.4) !important;
+}
+
+/* Central Plate Disc */
+.lp-live-plate-disc {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: #18200D;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 16px 36px rgba(0, 0, 0, 0.75), 
+    0 0 0 5px #253012, 
+    0 0 0 7px rgba(158, 167, 107, 0.35);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  z-index: 2;
+  margin: 10px auto;
+}
+
+.lp-live-plate-disc:hover {
+  box-shadow: 
+    0 20px 42px rgba(0, 0, 0, 0.85), 
+    0 0 0 5px #253012, 
+    0 0 0 7px rgba(158, 167, 107, 0.6);
+}
+
+/* Realistic Plate Food Photograph */
+.lp-plate-food-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: opacity 0.35s ease, transform 0.4s ease;
+  z-index: 1;
+}
+
+/* SVG Segmentation Layer */
+.lp-plate-seg-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.lp-seg-poly {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  stroke-dasharray: 4 2;
+  animation: polyStrokeDash 20s linear infinite;
+}
+
+@keyframes polyStrokeDash {
+  to { stroke-dashoffset: 60; }
+}
+
+.lp-seg-poly:hover,
+.lp-seg-poly.highlighted {
+  fill-opacity: 0.58 !important;
+  stroke-dasharray: none !important;
+  stroke-width: 2.5 !important;
+  filter: drop-shadow(0 0 8px currentColor) !important;
+}
+
+/* Laser Scanner Beam */
+.lp-scanner-laser-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(34, 211, 238, 0.85) 50%, transparent 100%);
+  box-shadow: 0 0 10px #22D3EE, 0 0 20px rgba(158, 167, 107, 0.6);
+  z-index: 5;
+  pointer-events: none;
+  animation: plateLaserSweep 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes plateLaserSweep {
+  0% { top: 4%; opacity: 0.15; }
+  25% { opacity: 0.95; }
+  75% { opacity: 0.95; }
+  100% { top: 94%; opacity: 0.15; }
+}
+
+/* Floating AI Micro-Pins */
+.lp-plate-pins-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.lp-food-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(18, 24, 10, 0.88);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFFFFF;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.lp-food-pin:hover,
+.lp-food-pin.highlighted {
+  transform: translate(-50%, -50%) scale(1.14);
+  border-color: #FFFFFF;
+  background: rgba(28, 38, 16, 0.96);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.7);
+}
+
+.lp-food-pin .pin-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Heatmap Nutrient Density Overlay */
+.lp-plate-heatmap {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+/* Interactive Outside Live Tags */
 .lp-live-tag {
   position: absolute;
-  background: rgba(28, 32, 14, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 4px 9px;
-  border-radius: var(--radius-xs);
-  font-size: 11px;
-  font-weight: 500;
+  background: rgba(20, 26, 11, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
   color: #FFFFFF;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  z-index: 8;
+  max-width: 250px;
+}
+
+.lp-live-tag:hover,
+.lp-live-tag.highlighted {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 14px rgba(158, 167, 107, 0.3);
+  background: rgba(30, 40, 18, 0.96);
 }
 
 .lp-ltag-1 {
-  top: 12px;
-  left: 12px;
-  border-left: 3px solid #9EA76B;
+  top: 54px;
+  left: 14px;
+  border-left: 3.5px solid #9EA76B;
 }
 
 .lp-ltag-2 {
-  top: 12px;
-  right: 12px;
-  border-left: 3px solid #06B6D4;
+  top: 54px;
+  right: 14px;
+  border-left: 3.5px solid #06B6D4;
 }
 
 .lp-ltag-3 {
-  bottom: 12px;
-  left: 12px;
-  border-left: 3px solid #9EA76B;
+  bottom: 14px;
+  left: 14px;
+  border-left: 3.5px solid #EF9F27;
+}
+
+.lp-ltag-4 {
+  bottom: 14px;
+  right: 14px;
+  border-left: 3.5px solid #9EA76B;
+  font-size: 10.5px;
+  color: #DDE2B9;
+}
+
+/* Responsive Handling */
+@media (max-width: 640px) {
+  .lp-live-plate-canvas-box {
+    padding: 56px 10px 60px;
+    min-height: 400px;
+  }
+  .lp-live-plate-disc {
+    width: 190px;
+    height: 190px;
+    margin: 20px auto;
+  }
+  .lp-live-tag {
+    font-size: 10px;
+    padding: 4px 8px;
+    max-width: 46%;
+  }
+  .lp-ltag-1 { top: 50px; left: 8px; }
+  .lp-ltag-2 { top: 50px; right: 8px; }
+  .lp-ltag-3 { bottom: 10px; left: 8px; }
+  .lp-ltag-4 { bottom: 10px; right: 8px; }
 }
 
 .lp-main-metrics-column {

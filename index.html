@@ -226,12 +226,12 @@
         <div class="lp-main-feature-card">
           <!-- Preset buttons with Figma/Iconify Icons -->
           <div class="lp-preset-pills-row lp-feature-presets-bar">
-            <button type="button" class="lp-preset-btn active" data-preset="preset-empty"
+            <button type="button" class="lp-preset-btn" data-preset="preset-empty"
               onclick="app.selectLandingPreset('preset-empty')">
               <i data-lucide="disc" style="width:15px;height:15px;"></i>
               <span>Piring Kosong (Reset)</span>
             </button>
-            <button type="button" class="lp-preset-btn" data-preset="preset-soft-bubur-gabus"
+            <button type="button" class="lp-preset-btn active" data-preset="preset-soft-bubur-gabus"
               onclick="app.selectLandingPreset('preset-soft-bubur-gabus')">
               <i data-lucide="soup" style="width:15px;height:15px;"></i>
               <span>Bubur Ikan Gabus (Disfagia)</span>
@@ -254,33 +254,95 @@
           </div>
 
           <div class="lp-main-feature-grid">
-            <div class="lp-live-plate-canvas-box">
+            <div class="lp-live-plate-canvas-box" id="lp-live-plate-canvas-box">
+              <!-- Futuristic HUD Reticle Corners -->
+              <span class="lp-reticle-corner lp-rc-tl"></span>
+              <span class="lp-reticle-corner lp-rc-tr"></span>
+              <span class="lp-reticle-corner lp-rc-bl"></span>
+              <span class="lp-reticle-corner lp-rc-br"></span>
+
+              <!-- Live HUD Scanner Bar & View Mode Toggles -->
+              <div class="lp-scanner-hud-bar">
+                <div class="lp-scanner-hud-status">
+                  <span class="lp-pulse-dot"></span>
+                  <span class="lp-hud-status-text">LIVE YOLO-FOOD CV · 30 FPS</span>
+                </div>
+                <div class="lp-view-mode-toggle" id="lp-plate-mode-toggles">
+                  <button type="button" class="lp-mode-pill active" data-mode="ai"
+                    onclick="app.setPlateViewMode('ai')" title="Lihat segmentasi kontur AI">
+                    <iconify-icon icon="solar:scanner-bold-duotone" style="font-size:13px;"></iconify-icon>
+                    <span>AI Mask</span>
+                  </button>
+                  <button type="button" class="lp-mode-pill" data-mode="photo"
+                    onclick="app.setPlateViewMode('photo')" title="Lihat foto asli hidangan">
+                    <iconify-icon icon="solar:camera-bold-duotone" style="font-size:13px;"></iconify-icon>
+                    <span>Foto Asli</span>
+                  </button>
+                  <button type="button" class="lp-mode-pill" data-mode="heatmap"
+                    onclick="app.setPlateViewMode('heatmap')" title="Peta densitas nutrisi termal">
+                    <iconify-icon icon="solar:fire-bold-duotone" style="font-size:13px;"></iconify-icon>
+                    <span>Heatmap</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Main Plate Disc with Real Food Image & SVG Masks -->
               <div class="lp-live-plate-disc" id="lp-live-plate-disc">
-                <!-- Polygons hidden in empty state -->
+                <!-- Real Food Image -->
+                <img id="lp-plate-food-img" src="images/plate_bubur_gabus.jpg" alt="Piring Hidangan Nutrivision AI"
+                  class="lp-plate-food-img" onerror="this.src='icons/icon-192.png'" />
+
+                <!-- Heatmap Density Overlay -->
+                <div id="lp-plate-heatmap" class="lp-plate-heatmap" style="display:none;"></div>
+
+                <!-- SVG Segmentation Polygons -->
+                <svg id="lp-plate-seg-svg" class="lp-plate-seg-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <g id="lp-svg-segments-group"></g>
+                </svg>
+
+                <!-- Dynamic Scanner Laser Beam -->
+                <div class="lp-scanner-laser-beam" id="lp-plate-laser"></div>
+
+                <!-- Floating AI Detection Micro-Pins -->
+                <div id="lp-plate-pins-layer" class="lp-plate-pins-layer"></div>
+
+                <!-- Compatibility DOM elements for existing scripts -->
                 <div class="lp-poly-protein" id="lp-poly-prot" style="display:none;"></div>
                 <div class="lp-poly-carbs" id="lp-poly-carb" style="display:none;"></div>
                 <div class="lp-poly-veg" id="lp-poly-veg" style="display:none;"></div>
 
                 <!-- Empty State Viewfinder & Prompt -->
-                <div class="lp-plate-empty-content" id="lp-showcase-empty-state">
+                <div class="lp-plate-empty-content" id="lp-showcase-empty-state" style="display:none;">
                   <div class="lp-plate-empty-icon-ring">
-                    <iconify-icon icon="solar:camera-minimalistic-bold-duotone" style="font-size:42px;color:#9EA76B;"></iconify-icon>
+                    <iconify-icon icon="solar:camera-minimalistic-bold-duotone" style="font-size:38px;color:#9EA76B;"></iconify-icon>
                   </div>
                   <span class="lp-plate-empty-title">Piring Kosong</span>
-                  <span class="lp-plate-empty-sub">Belum ada makanan terdeteksi</span>
+                  <span class="lp-plate-empty-sub">Pilih salah satu menu sampel di atas untuk simulasi segmentasi AI</span>
                 </div>
               </div>
 
-              <div class="lp-live-tag lp-ltag-1" id="lp-showcase-tag-1">
+              <!-- Live Interactive Nutrient Segment Tags -->
+              <div class="lp-live-tag lp-ltag-1" id="lp-showcase-tag-1"
+                onmouseenter="app.highlightPlateSegment('prot', true)"
+                onmouseleave="app.highlightPlateSegment('prot', false)">
                 <iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon>
                 <span>Komponen Protein: Belum terdeteksi</span>
               </div>
-              <div class="lp-live-tag lp-ltag-2" id="lp-showcase-tag-2">
-                <iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EB8D70;"></iconify-icon>
+              <div class="lp-live-tag lp-ltag-2" id="lp-showcase-tag-2"
+                onmouseenter="app.highlightPlateSegment('carb', true)"
+                onmouseleave="app.highlightPlateSegment('carb', false)">
+                <iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon>
                 <span>Komponen Karbohidrat: Belum terdeteksi</span>
               </div>
-              <div class="lp-live-tag lp-ltag-3" id="lp-showcase-tag-3">
+              <div class="lp-live-tag lp-ltag-3" id="lp-showcase-tag-3"
+                onmouseenter="app.highlightPlateSegment('veg', true)"
+                onmouseleave="app.highlightPlateSegment('veg', false)">
+                <iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon>
                 <span>Sayur &amp; Serat: Belum terdeteksi</span>
+              </div>
+              <div class="lp-live-tag lp-ltag-4" id="lp-showcase-tag-4">
+                <iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon>
+                <span>Akurasi CV: 96.4% · Presisi Klinis</span>
               </div>
             </div>
 
@@ -1545,6 +1607,12 @@
                 <iconify-icon icon="solar:widget-2-bold" style="font-size:16px;"></iconify-icon>
                 <span>Semua</span>
               </button>
+              <button class="cat-pill-btn" data-category="favorite" onclick="app.filterCatalogCategory('favorite', this)"
+                title="Pangan Lokal Favorit Saya" id="cat-pill-favorite">
+                <iconify-icon icon="solar:heart-bold" style="font-size:16px;color:#EF4444;"></iconify-icon>
+                <span>Favorit Saya</span>
+                <span class="fav-count-badge" id="fav-catalog-count-badge" style="display:none;">0</span>
+              </button>
               <button class="cat-pill-btn" data-category="protein-animal" onclick="app.filterCatalogCategory('protein-animal', this)"
                 title="Protein Hewani Kaya Albumin/Omega-3">
                 <iconify-icon icon="solar:bone-bold" style="font-size:16px;"></iconify-icon>
@@ -2020,6 +2088,32 @@
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- =========================================================================
+     MODAL POP-UP: RESEP PEMBUATAN & PANDUAN MEMASAK KLINIS
+     ========================================================================= -->
+  <div class="modal-overlay" id="food-recipe-modal">
+    <div class="modal-box recipe-modal-box" style="max-width:540px;max-height:88vh;overflow-y:auto;">
+      <div class="modal-header" style="padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="modal-title-icon-badge" style="width:40px;height:40px;border-radius:12px;background:#EEF1D8;color:#5D6738;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <iconify-icon icon="solar:chef-hat-bold-duotone" style="font-size:22px;"></iconify-icon>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:16.5px;font-weight:700;color:var(--text-main,#1C200E);">Panduan Resep &amp; Cara Memasak Klinis</h3>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--text-sub,#64748B);">Metode pengolahan higienis untuk mempertahankan bioavailabilitas protein &amp; albumin.</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="app.closeModal('food-recipe-modal')" title="Tutup">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div id="food-recipe-modal-content" style="padding:16px 0 4px;">
+        <!-- Dynamically rendered via JS -->
+      </div>
+    </div>
+  </div>
 
   <!-- =========================================================================
      MODAL POP-UP: KATALOG PANGAN & HARGA SESUAI BREAKDOWN PIRING
