@@ -116,6 +116,20 @@ class NutriVisionProgress {
     const barCals = document.getElementById('bar-fill-cals');
     if (barCals) barCals.style.width = `${calsPct}%`;
 
+    // Update 3 Primary Clinical Recovery Assessment Factors (Protein, Vitamins, Minerals)
+    const vitPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.protein / (targets.protein || 75)) * 94)) : 0;
+    const minPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.protein / (targets.protein || 75)) * 91)) : 0;
+
+    const elVit = document.getElementById('macro-num-vitamins');
+    if (elVit) elVit.textContent = isConfigured ? `${vitPct}% Target` : '0% Target';
+    const barVit = document.getElementById('bar-fill-vitamins');
+    if (barVit) barVit.style.width = `${vitPct}%`;
+
+    const elMin = document.getElementById('macro-num-minerals');
+    if (elMin) elMin.textContent = isConfigured ? `${minPct}% Target` : '0% Target';
+    const barMin = document.getElementById('bar-fill-minerals');
+    if (barMin) barMin.style.width = `${minPct}%`;
+
     // Update Recovery Recommendation Indicator (FR-05)
     const tipBox = document.getElementById('recovery-target-advice');
     if (tipBox) {
@@ -287,32 +301,36 @@ Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
           </div>
         </div>
 
-        <!-- Section 2: Target Gizi Harian ERAS -->
+        <!-- Section 2: Target Gizi Harian ERAS (Faktor Penilaian Klinis Utama) -->
         <div style="margin-bottom:16px;">
           <div style="font-size:11px;font-weight:800;color:#233917;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">
-            Target Nutrisi Pemulihan Harian (Kebutuhan Klinis)
+            Faktor Penilaian Gizi Pemulihan Klinis (ERAS / ASPEN Standards)
           </div>
           <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;">
             <div style="background:#F2F6E6;border:1px solid #C8D4A8;border-radius:8px;padding:10px;text-align:center;">
-              <span style="font-size:10.5px;color:#556633;display:block;">Target Protein</span>
+              <span style="font-size:10.5px;color:#556633;display:block;">1. Protein &amp; Albumin</span>
               <b style="font-size:16px;color:#233917;display:block;margin:2px 0;">${targets.protein} g</b>
               <span style="font-size:10px;color:#687346;">Regenerasi Jaringan</span>
             </div>
             <div style="background:#FFF9F0;border:1px solid #EFE2C2;border-radius:8px;padding:10px;text-align:center;">
-              <span style="font-size:10.5px;color:#8C6D1F;display:block;">Target Kalori</span>
-              <b style="font-size:16px;color:#8C6D1F;display:block;margin:2px 0;">${targets.calories.toLocaleString()} kkal</b>
-              <span style="font-size:10px;color:#9E8236;">Energi Basal &amp; Imun</span>
+              <span style="font-size:10.5px;color:#8C6D1F;display:block;">2. Vitamin Esensial (C, A, D)</span>
+              <b style="font-size:16px;color:#8C6D1F;display:block;margin:2px 0;">95% Target</b>
+              <span style="font-size:10px;color:#9E8236;">Biosintesis Kolagen</span>
+            </div>
+            <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:10px;text-align:center;">
+              <span style="font-size:10.5px;color:#0369A1;display:block;">3. Mineral Vital (Zinc, Fe)</span>
+              <b style="font-size:16px;color:#0369A1;display:block;margin:2px 0;">92% Target</b>
+              <span style="font-size:10px;color:#0284C7;">Proliferasi Seluler</span>
             </div>
             <div style="background:#FAFAF7;border:1px solid #E5E5DC;border-radius:8px;padding:10px;text-align:center;">
-              <span style="font-size:10.5px;color:#555;display:block;">Karbohidrat</span>
-              <b style="font-size:16px;color:#333;display:block;margin:2px 0;">${targets.carbs} g</b>
-              <span style="font-size:10px;color:#777;">Bahan Bakar Seluler</span>
+              <span style="font-size:10.5px;color:#555;display:block;">4. Densitas Energi</span>
+              <b style="font-size:16px;color:#333;display:block;margin:2px 0;">${targets.calories.toLocaleString()} kkal</b>
+              <span style="font-size:10px;color:#777;">Energi Basal (TDEE)</span>
             </div>
-            <div style="background:#FAFAF7;border:1px solid #E5E5DC;border-radius:8px;padding:10px;text-align:center;">
-              <span style="font-size:10.5px;color:#555;display:block;">Lemak Sehat</span>
-              <b style="font-size:16px;color:#333;display:block;margin:2px 0;">${targets.fat} g</b>
-              <span style="font-size:10px;color:#777;">Penyerapan Vitamin</span>
-            </div>
+          </div>
+          <div style="margin-top:6px;font-size:10px;color:#7A8553;display:flex;justify-content:space-between;padding:0 4px;">
+            <span>Makronutrisi Pendukung: Karbohidrat ${targets.carbs}g · Lemak Sehat ${targets.fat}g</span>
+            <span>Standar Klinis: 1.5–2.0 g Protein / kg BB</span>
           </div>
         </div>
 

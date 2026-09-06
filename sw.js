@@ -26,11 +26,12 @@ const ASSETS_TO_CACHE = [
   './js/community.js',
   './js/caregiver.js',
   './js/db.js',
+  './js/i18n.js',
   './js/app.js',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
 ];
 
 self.addEventListener('install', (event) => {

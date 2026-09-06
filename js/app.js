@@ -42,6 +42,7 @@ class NutriVisionApp {
   // Muat data profil pengguna dari LocalStorage atau inisialisasi default (Fresh Zero State)
   loadUserProfile() {
     const saved = localStorage.getItem('nutrivision_user_profile');
+    const storedLang = localStorage.getItem('nutrivision_lang') || 'en';
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -64,7 +65,8 @@ class NutriVisionApp {
           bmiCategory: parsed.bmiCategory || '--',
           targets: parsed.targets || null,
           fontSize: parsed.fontSize || 'normal',
-          highContrast: parsed.highContrast || false
+          highContrast: parsed.highContrast || false,
+          language: parsed.language || storedLang
         };
       } catch (e) {
         console.error('Error parsing user profile:', e);
@@ -89,7 +91,8 @@ class NutriVisionApp {
       bmiCategory: '--',
       targets: null,
       fontSize: 'normal',
-      highContrast: false
+      highContrast: false,
+      language: storedLang
     };
   }
 
@@ -106,6 +109,9 @@ class NutriVisionApp {
   // Inisialisasi Aplikasi
   async init() {
     console.log('🚀 Initializing NutriVision AI PWA...');
+    if (window.i18n && typeof window.i18n.init === 'function') {
+      window.i18n.init();
+    }
     this.registerServiceWorker();
     this.setupPWAInstallPrompt();
     this.setupEventListeners();
@@ -244,13 +250,38 @@ class NutriVisionApp {
   setFontSize(size) {
     this.userProfile.fontSize = size;
     this.saveUserProfile();
-    this.showToast(`Ukuran teks diatur ke: ${size.toUpperCase()}`);
+    const lang = window.i18n ? window.i18n.getLanguage() : 'en';
+    this.showToast(lang === 'id' ? `Ukuran teks diatur ke: ${size.toUpperCase()}` : `Text size set to: ${size.toUpperCase()}`);
   }
 
   toggleHighContrast() {
     this.userProfile.highContrast = !this.userProfile.highContrast;
     this.saveUserProfile();
-    this.showToast(this.userProfile.highContrast ? 'Mode Kontras Tinggi Diaktifkan' : 'Mode Standar Diaktifkan');
+    const lang = window.i18n ? window.i18n.getLanguage() : 'en';
+    this.showToast(this.userProfile.highContrast
+      ? (lang === 'id' ? 'Mode Kontras Tinggi Diaktifkan' : 'High Contrast Mode Enabled')
+      : (lang === 'id' ? 'Mode Standar Diaktifkan' : 'Standard Contrast Mode Enabled'));
+  }
+
+  setLanguage(lang) {
+    if (window.i18n) {
+      window.i18n.setLanguage(lang);
+    } else {
+      localStorage.setItem('nutrivision_lang', lang);
+      document.documentElement.lang = lang;
+    }
+    this.userProfile.language = lang;
+    this.saveUserProfile();
+  }
+
+  onLanguageChange(lang) {
+    this.renderAuthUI();
+    this.updateProfileUI();
+    this.updateCalcUI();
+    this.selectLandingPreset(this.currentLandingPreset || 'preset-soft-bubur-gabus');
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State & Filled State)
@@ -258,16 +289,19 @@ class NutriVisionApp {
     const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
     const hasData = Boolean(this.userProfile.hasCompletedQuiz && this.userProfile.name) || isAdmin;
     const initials = isAdmin ? 'AD' : (hasData ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+');
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile.language || 'en');
 
     // 1. Update Topbar Greeting
     const greetingEl = document.querySelector('.topbar-greeting h1');
     if (greetingEl) {
       if (isAdmin) {
-        greetingEl.innerHTML = `Panel Administrator: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetri</span>`;
+        greetingEl.innerHTML = lang === 'id'
+          ? `Panel Administrator: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetri</span>`
+          : `Admin Command Center: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetry</span>`;
       } else {
         greetingEl.innerHTML = hasData
-          ? `Selamat siang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`
-          : `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>`;
+          ? (lang === 'id' ? `Selamat siang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>` : `Good day, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`)
+          : (lang === 'id' ? `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>` : `Welcome to <span style="color:var(--teal-700);">NutriVision AI</span>`);
       }
     }
 
@@ -296,10 +330,10 @@ class NutriVisionApp {
 
     // 3. Update Profile Data Placeholders
     const nameEls = document.querySelectorAll('.user-name-placeholder');
-    nameEls.forEach(el => el.textContent = hasData ? this.userProfile.name : 'Profil Pasien');
+    nameEls.forEach(el => el.textContent = hasData ? this.userProfile.name : (lang === 'id' ? 'Profil Pasien' : 'Patient Profile'));
 
     const conditionEls = document.querySelectorAll('.user-condition-placeholder');
-    conditionEls.forEach(el => el.textContent = hasData ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : 'Belum dikonfigurasi (Mulai Diagnostik Gizi)');
+    conditionEls.forEach(el => el.textContent = hasData ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : (lang === 'id' ? 'Belum dikonfigurasi (Mulai Diagnostik Gizi)' : 'Not configured (Start Nutrition Diagnostic)'));
 
     const avatarEls = document.querySelectorAll('.user-avatar-placeholder');
     avatarEls.forEach(el => el.textContent = initials);
@@ -310,14 +344,14 @@ class NutriVisionApp {
       if (isAdmin) {
         sidebarProfileCard.innerHTML = `
           <div class="sidebar-profile-flex">
-            <div class="sidebar-profile-info" onclick="app.goToAdminPortal()" title="Buka Super Admin Command Center">
+            <div class="sidebar-profile-info" onclick="app.goToAdminPortal()" title="${lang === 'id' ? 'Buka Super Admin Command Center' : 'Open Super Admin Command Center'}">
               <div class="profile-avatar" style="background:linear-gradient(135deg,#9EA76B,#353C1B);color:#fff;font-weight:800;flex-shrink:0;">AD</div>
               <div style="min-width:0;flex:1;">
                 <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Super Administrator</b>
                 <span style="font-size:10.5px;color:#D6DCB2;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Root Telemetry &amp; DB</span>
               </div>
             </div>
-            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout &amp; Kembali ke Landing Page" aria-label="Keluar / Logout">
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="${lang === 'id' ? 'Logout & Kembali ke Landing Page' : 'Sign Out & Back to Landing Page'}" aria-label="Sign Out / Logout">
               <i data-lucide="log-out" style="width:15px;height:15px;"></i>
             </button>
           </div>
@@ -325,14 +359,14 @@ class NutriVisionApp {
       } else if (hasData) {
         sidebarProfileCard.innerHTML = `
           <div class="sidebar-profile-flex">
-            <div class="sidebar-profile-info" onclick="app.navigate('profile')" title="Buka Profil & Diagnostik">
+            <div class="sidebar-profile-info" onclick="app.navigate('profile')" title="${lang === 'id' ? 'Buka Profil & Diagnostik' : 'Open Profile & Diagnostics'}">
               <div class="profile-avatar" style="background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;flex-shrink:0;">${initials}</div>
               <div style="min-width:0;flex:1;">
                 <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.name}</b>
                 <span style="font-size:10.5px;color:#EFE8CA;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.conditionTitle}</span>
               </div>
             </div>
-            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout & Kembali ke Landing Page" aria-label="Keluar / Logout">
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="${lang === 'id' ? 'Logout & Kembali ke Landing Page' : 'Sign Out & Back to Landing Page'}" aria-label="Sign Out / Logout">
               <i data-lucide="log-out" style="width:15px;height:15px;"></i>
             </button>
           </div>
@@ -340,14 +374,14 @@ class NutriVisionApp {
       } else {
         sidebarProfileCard.innerHTML = `
           <div class="sidebar-profile-flex">
-            <div class="sidebar-profile-info" onclick="app.openAuthModal('login')" title="Masuk atau Daftar Akun">
+            <div class="sidebar-profile-info" onclick="app.openAuthModal('login')" title="${lang === 'id' ? 'Masuk atau Daftar Akun' : 'Sign In or Register'}">
               <div class="profile-avatar" style="background:rgba(255,255,255,0.15);color:#fff;font-weight:700;flex-shrink:0;">?</div>
               <div style="min-width:0;flex:1;">
-                <b style="color:#fff;font-size:13px;display:block;">Masuk / Daftar</b>
-                <span style="font-size:10.5px;color:#EFE8CA;display:block;">Klik untuk mulai</span>
+                <b style="color:#fff;font-size:13px;display:block;">${lang === 'id' ? 'Masuk / Daftar' : 'Sign In / Register'}</b>
+                <span style="font-size:10.5px;color:#EFE8CA;display:block;">${lang === 'id' ? 'Klik untuk mulai' : 'Click to start'}</span>
               </div>
             </div>
-            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.openAuthModal('login');" title="Masuk" aria-label="Masuk">
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.openAuthModal('login');" title="${lang === 'id' ? 'Masuk' : 'Sign In'}" aria-label="${lang === 'id' ? 'Masuk' : 'Sign In'}">
               <i data-lucide="log-in" style="width:15px;height:15px;"></i>
             </button>
           </div>
@@ -365,12 +399,12 @@ class NutriVisionApp {
     const badgeStatus = document.getElementById('profile-badge-status');
     if (badgeText && badgeStatus) {
       if (hasData) {
-        badgeText.textContent = 'Akun Terverifikasi';
+        badgeText.textContent = lang === 'id' ? 'Akun Terverifikasi' : 'Verified Account';
         badgeStatus.style.background = 'var(--teal-50)';
         badgeStatus.style.color = 'var(--teal-700)';
         badgeStatus.style.borderColor = 'var(--teal-200)';
       } else {
-        badgeText.textContent = 'Mode Tamu';
+        badgeText.textContent = lang === 'id' ? 'Mode Tamu' : 'Guest Mode';
         badgeStatus.style.background = 'var(--bg-subtle)';
         badgeStatus.style.color = 'var(--ink-mute)';
         badgeStatus.style.borderColor = 'var(--line)';
@@ -379,52 +413,58 @@ class NutriVisionApp {
 
     const btnRecalcLabel = document.getElementById('btn-quiz-recalc-label');
     if (btnRecalcLabel) {
-      btnRecalcLabel.textContent = hasData ? 'Hitung Ulang Diagnostik' : 'Mulai Diagnostik Gizi';
+      btnRecalcLabel.textContent = hasData ? (lang === 'id' ? 'Hitung Ulang Diagnostik' : 'Recalculate Diagnostic') : (lang === 'id' ? 'Mulai Diagnostik Gizi' : 'Start Nutrition Diagnostic');
     }
 
     const elEmail = document.getElementById('profile-email-phone');
-    if (elEmail) elEmail.textContent = hasData ? `${this.userProfile.contact || 'Belum diisi'}` : 'Belum masuk akun';
+    if (elEmail) elEmail.textContent = hasData ? `${this.userProfile.contact || (lang === 'id' ? 'Belum diisi' : 'Not specified')}` : (lang === 'id' ? 'Belum masuk akun' : 'Not signed in');
 
     const elStatWH = document.getElementById('profile-stat-weight-height');
     if (elStatWH) elStatWH.textContent = hasData ? `${this.userProfile.weightKg} kg · ${this.userProfile.heightCm || 170} cm` : '-- kg · -- cm';
 
     const elStatBMI = document.getElementById('profile-stat-bmi');
-    if (elStatBMI) elStatBMI.textContent = hasData ? `${this.userProfile.bmi || '--'} (${this.userProfile.bmiCategory || '--'})` : '-- (Belum dihitung)';
+    if (elStatBMI) elStatBMI.textContent = hasData ? `${this.userProfile.bmi || '--'} (${this.userProfile.bmiCategory || '--'})` : (lang === 'id' ? '-- (Belum dihitung)' : '-- (Not calculated)');
 
     const elStatCals = document.getElementById('profile-stat-calories');
     if (elStatCals) elStatCals.textContent = hasData && this.userProfile.targets ? `${this.userProfile.targets.calories.toLocaleString()}` : '--';
 
+    const dayUnit = lang === 'id' ? 'hari' : 'day';
     const elTargetProt = document.getElementById('profile-target-protein');
     if (elTargetProt) {
       if (hasData && this.userProfile.targets) {
         const perKg = (this.userProfile.targets.protein / (this.userProfile.weightKg || 65)).toFixed(1);
-        elTargetProt.textContent = `${this.userProfile.targets.protein} g / hari (${perKg}g/kg)`;
+        elTargetProt.textContent = `${this.userProfile.targets.protein} g / ${dayUnit} (${perKg}g/kg)`;
       } else {
-        elTargetProt.textContent = '-- g / hari';
+        elTargetProt.textContent = `-- g / ${dayUnit}`;
       }
     }
 
     const elTargetCarbs = document.getElementById('profile-target-carbs');
-    if (elTargetCarbs) elTargetCarbs.textContent = hasData && this.userProfile.targets ? `${this.userProfile.targets.carbs} g / hari` : '-- g / hari';
+    if (elTargetCarbs) elTargetCarbs.textContent = hasData && this.userProfile.targets ? `${this.userProfile.targets.carbs} g / ${dayUnit}` : `-- g / ${dayUnit}`;
 
     const elTargetFat = document.getElementById('profile-target-fat');
-    if (elTargetFat) elTargetFat.textContent = hasData && this.userProfile.targets ? `${this.userProfile.targets.fat} g / hari` : '-- g / hari';
+    if (elTargetFat) elTargetFat.textContent = hasData && this.userProfile.targets ? `${this.userProfile.targets.fat} g / ${dayUnit}` : `-- g / ${dayUnit}`;
 
     const elStatRestr = document.getElementById('profile-stat-restrictions');
-    if (elStatRestr) elStatRestr.textContent = hasData ? (this.userProfile.restrictions || 'Bebas pantangan khusus') : 'Belum mengisi deklarasi pantangan';
+    if (elStatRestr) elStatRestr.textContent = hasData ? (this.userProfile.restrictions || (lang === 'id' ? 'Bebas pantangan khusus' : 'No dietary restrictions')) : (lang === 'id' ? 'Belum mengisi deklarasi pantangan' : 'No restrictions declared');
 
     const elStatAct = document.getElementById('profile-stat-activity');
     if (elStatAct) {
       if (hasData) {
-        const actMap = {
+        const actMap = lang === 'id' ? {
           'bedrest': '<i data-lucide="bed" class="btn-icon-sm"></i> Bedrest Total / Tirah Baring (Aktivitas minimal)',
           'light': '<i data-lucide="footprints" class="btn-icon-sm"></i> Mobilisasi Ringan (Aktivitas ringan harian)',
           'therapy': '<i data-lucide="heart-pulse" class="btn-icon-sm"></i> Terapi Fisik Teratur (Fisioterapi 2-3x/minggu)',
           'active': '<i data-lucide="zap" class="btn-icon-sm"></i> Latihan Fisik Aktif / Gym'
+        } : {
+          'bedrest': '<i data-lucide="bed" class="btn-icon-sm"></i> Complete Bedrest (Minimal activity)',
+          'light': '<i data-lucide="footprints" class="btn-icon-sm"></i> Light Mobilization (Daily light tasks)',
+          'therapy': '<i data-lucide="heart-pulse" class="btn-icon-sm"></i> Regular Physical Therapy (2-3x/week)',
+          'active': '<i data-lucide="zap" class="btn-icon-sm"></i> Active Training / Gym'
         };
-        elStatAct.innerHTML = actMap[this.userProfile.activityLevel] || '<i data-lucide="footprints" class="btn-icon-sm"></i> Mobilisasi Ringan';
+        elStatAct.innerHTML = actMap[this.userProfile.activityLevel] || (lang === 'id' ? '<i data-lucide="footprints" class="btn-icon-sm"></i> Mobilisasi Ringan' : '<i data-lucide="footprints" class="btn-icon-sm"></i> Light Mobilization');
       } else {
-        elStatAct.textContent = 'Belum mengisi tingkat aktivitas';
+        elStatAct.textContent = lang === 'id' ? 'Belum mengisi tingkat aktivitas' : 'No activity level declared';
       }
     }
 
@@ -434,26 +474,34 @@ class NutriVisionApp {
     const sessActions = document.getElementById('profile-session-actions');
     if (sessTitle && sessDesc && sessActions) {
       if (hasData) {
-        sessTitle.innerHTML = `<i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> Status Sesi Login Aktif`;
-        sessDesc.innerHTML = `Terhubung sebagai <span class="user-name-placeholder" style="font-weight:600;color:var(--ink-soft);">${this.userProfile.name}</span> (<span id="profile-auth-email">${this.userProfile.contact || 'Email terdaftar'}</span>)`;
+        sessTitle.innerHTML = `<i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> ${lang === 'id' ? 'Status Sesi Login Aktif' : 'Active Login Session'}`;
+        sessDesc.innerHTML = `${lang === 'id' ? 'Terhubung sebagai' : 'Connected as'} <span class="user-name-placeholder" style="font-weight:600;color:var(--ink-soft);">${this.userProfile.name}</span> (<span id="profile-auth-email">${this.userProfile.contact || (lang === 'id' ? 'Email terdaftar' : 'Registered email')}</span>)`;
         sessActions.innerHTML = `
           <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
-            <i data-lucide="user-check" class="btn-icon-sm"></i> Ganti Akun Pasien
+            <i data-lucide="user-check" class="btn-icon-sm"></i> ${lang === 'id' ? 'Ganti Akun Pasien' : 'Switch Patient Account'}
           </button>
           <button class="btn-outline-glass" style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;" onclick="app.logout()">
-            <i data-lucide="log-out" class="btn-icon-sm"></i> Keluar (Logout)
+            <i data-lucide="log-out" class="btn-icon-sm"></i> ${lang === 'id' ? 'Keluar (Logout)' : 'Sign Out (Logout)'}
           </button>
         `;
       } else {
-        sessTitle.innerHTML = `<i data-lucide="shield-alert" class="btn-icon-sm" style="color:var(--amber-600);"></i> Status Sesi: Mode Tamu (Belum Login)`;
-        sessDesc.innerHTML = `Masuk atau buat akun baru untuk menyimpan riwayat asupan dan target gizi personal.`;
+        sessTitle.innerHTML = `<i data-lucide="shield-alert" class="btn-icon-sm" style="color:var(--amber-600);"></i> ${lang === 'id' ? 'Status Sesi: Mode Tamu (Belum Login)' : 'Session Status: Guest Mode (Not Signed In)'}`;
+        sessDesc.innerHTML = lang === 'id' ? 'Masuk atau buat akun baru untuk menyimpan riwayat asupan dan target gizi personal.' : 'Sign in or create a new account to preserve intake history and personalized nutrition targets.';
         sessActions.innerHTML = `
           <button class="btn-primary-coral" style="font-size:12px;padding:6px 14px;display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
-            <i data-lucide="log-in" class="btn-icon-sm"></i> Masuk / Daftar Akun
+            <i data-lucide="log-in" class="btn-icon-sm"></i> ${lang === 'id' ? 'Masuk / Daftar Akun' : 'Sign In / Register Account'}
           </button>
         `;
       }
     }
+
+    // 7. Synchronize Language Switchers
+    document.querySelectorAll('.lp-lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    document.querySelectorAll('.profile-lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -696,40 +744,172 @@ class NutriVisionApp {
     const laserBeam = document.getElementById('lp-plate-laser');
     const pinsLayer = document.getElementById('lp-plate-pins-layer');
     const heatmapEl = document.getElementById('lp-plate-heatmap');
+    const calloutSvg = document.getElementById('lp-plate-callout-lines-svg');
 
     if (mode === 'photo') {
       if (segSvg) segSvg.style.display = 'none';
       if (laserBeam) laserBeam.style.display = 'none';
       if (pinsLayer) pinsLayer.style.display = 'none';
       if (heatmapEl) heatmapEl.style.display = 'none';
+      if (calloutSvg) calloutSvg.style.display = 'none';
     } else if (mode === 'heatmap') {
       if (segSvg) segSvg.style.display = 'none';
       if (laserBeam) laserBeam.style.display = 'none';
       if (pinsLayer) pinsLayer.style.display = 'none';
       if (heatmapEl) heatmapEl.style.display = 'block';
+      if (calloutSvg) calloutSvg.style.display = 'none';
     } else {
       // 'ai' mode (default)
       if (segSvg) segSvg.style.display = 'block';
       if (laserBeam) laserBeam.style.display = 'block';
-      if (pinsLayer) pinsLayer.style.display = 'block';
+      if (pinsLayer) pinsLayer.style.display = 'none';
       if (heatmapEl) heatmapEl.style.display = 'none';
+      if (calloutSvg) calloutSvg.style.display = 'block';
     }
   }
 
   highlightPlateSegment(segId, isHighlighted) {
+    const isHigh = Boolean(isHighlighted);
     const poly = document.querySelector(`.lp-seg-poly[data-seg="${segId}"]`);
-    if (poly) {
-      poly.classList.toggle('highlighted', Boolean(isHighlighted));
+    if (poly) poly.classList.toggle('highlighted', isHigh);
+
+    const calloutGroup = document.querySelector(`.lp-callout-group[data-seg="${segId}"]`);
+    if (calloutGroup) calloutGroup.classList.toggle('highlighted', isHigh);
+
+    let targetTagId = null;
+    if (this.currentPresetSegments) {
+      const seg = this.currentPresetSegments.find(s => s.id === segId);
+      if (seg) targetTagId = seg.tagId;
     }
-    const pin = document.querySelector(`.lp-food-pin[data-seg="${segId}"]`);
-    if (pin) {
-      pin.classList.toggle('highlighted', Boolean(isHighlighted));
+    if (!targetTagId) {
+      const tagMap = { 'prot': 'lp-showcase-tag-1', 'carb': 'lp-showcase-tag-2', 'veg': 'lp-showcase-tag-3' };
+      targetTagId = tagMap[segId];
     }
-    const tagMap = { 'prot': 'lp-showcase-tag-1', 'carb': 'lp-showcase-tag-2', 'veg': 'lp-showcase-tag-3' };
-    const tagEl = document.getElementById(tagMap[segId]);
-    if (tagEl) {
-      tagEl.classList.toggle('highlighted', Boolean(isHighlighted));
+    const tagEl = document.getElementById(targetTagId);
+    if (tagEl) tagEl.classList.toggle('highlighted', isHigh);
+  }
+
+  setupPlateCalloutResizeObserver() {
+    if (this._plateResizeObserverSetup) return;
+    this._plateResizeObserverSetup = true;
+
+    const box = document.getElementById('lp-live-plate-canvas-box');
+    const handleResize = () => {
+      if (this.currentPresetSegments && this.currentPresetSegments.length > 0) {
+        requestAnimationFrame(() => this.renderPlateCallouts(this.currentPresetSegments));
+      }
+    };
+
+    if (window.ResizeObserver && box) {
+      const ro = new ResizeObserver(handleResize);
+      ro.observe(box);
     }
+    window.addEventListener('resize', handleResize);
+  }
+
+  buildElbowLeaderPath(fx, fy, tx, ty, radius = 8) {
+    if (Math.abs(fy - ty) < 4) {
+      return `M ${fx} ${fy} L ${tx} ${ty}`;
+    }
+
+    let cornerX;
+    if (tx < fx) {
+      cornerX = Math.max(tx + 18, Math.round(tx + (fx - tx) * 0.35));
+      if (cornerX > fx - 10) cornerX = Math.round((tx + fx) / 2);
+    } else {
+      cornerX = Math.min(tx - 18, Math.round(tx - (tx - fx) * 0.35));
+      if (cornerX < fx + 10) cornerX = Math.round((tx + fx) / 2);
+    }
+
+    const dx1 = Math.sign(cornerX - fx);
+    const dy = Math.sign(ty - fy);
+    const dx2 = Math.sign(tx - cornerX);
+
+    const r = Math.min(
+      radius,
+      Math.abs(cornerX - fx) / 2,
+      Math.abs(ty - fy) / 2,
+      Math.abs(tx - cornerX) / 2
+    );
+
+    if (r < 2) {
+      return `M ${fx} ${fy} L ${cornerX} ${fy} L ${cornerX} ${ty} L ${tx} ${ty}`;
+    }
+
+    const p1x = cornerX - dx1 * r;
+    const p1y = fy;
+    const p2x = cornerX;
+    const p2y = fy + dy * r;
+    const p3x = cornerX;
+    const p3y = ty - dy * r;
+    const p4x = cornerX + dx2 * r;
+    const p4y = ty;
+
+    return `M ${fx} ${fy} L ${p1x} ${p1y} Q ${cornerX} ${fy} ${p2x} ${p2y} L ${p3x} ${p3y} Q ${cornerX} ${ty} ${p4x} ${p4y} L ${tx} ${ty}`;
+  }
+
+  renderPlateCallouts(segments) {
+    const svgEl = document.getElementById('lp-plate-callout-lines-svg');
+    const canvasBox = document.getElementById('lp-live-plate-canvas-box');
+    const discEl = document.getElementById('lp-live-plate-disc');
+    if (!svgEl || !canvasBox || !discEl) return;
+
+    if (!segments || segments.length === 0 || this.plateViewMode === 'photo' || this.plateViewMode === 'heatmap') {
+      svgEl.innerHTML = '';
+      return;
+    }
+
+    const boxRect = canvasBox.getBoundingClientRect();
+    const discRect = discEl.getBoundingClientRect();
+
+    if (boxRect.width === 0 || discRect.width === 0) return;
+
+    const discRelLeft = discRect.left - boxRect.left;
+    const discRelTop = discRect.top - boxRect.top;
+    const discW = discRect.width;
+    const discH = discRect.height;
+
+    const svgItems = [];
+
+    segments.forEach(seg => {
+      if (!seg.pin || !seg.tagId) return;
+      const tagEl = document.getElementById(seg.tagId);
+      if (!tagEl) return;
+
+      const tagRect = tagEl.getBoundingClientRect();
+      const fx = Math.round(discRelLeft + (seg.pin.x / 100) * discW);
+      const fy = Math.round(discRelTop + (seg.pin.y / 100) * discH);
+
+      const tagLeft = tagRect.left - boxRect.left;
+      const tagRight = tagRect.right - boxRect.left;
+      const tagCenterY = Math.round(tagRect.top - boxRect.top + tagRect.height / 2);
+
+      let tx = 0;
+      let ty = tagCenterY;
+
+      if (fx >= tagRight) {
+        tx = Math.round(tagRight);
+      } else if (fx <= tagLeft) {
+        tx = Math.round(tagLeft);
+      } else {
+        tx = Math.abs(fx - tagRight) < Math.abs(fx - tagLeft) ? Math.round(tagRight) : Math.round(tagLeft);
+      }
+
+      const pathD = this.buildElbowLeaderPath(fx, fy, tx, ty, 8);
+
+      svgItems.push(`
+        <g class="lp-callout-group" data-seg="${seg.id}"
+           onmouseenter="app.highlightPlateSegment('${seg.id}', true)"
+           onmouseleave="app.highlightPlateSegment('${seg.id}', false)">
+          <path class="lp-callout-path" d="${pathD}" stroke="${seg.color}" style="color:${seg.color};" />
+          <circle class="lp-callout-dot-pulse" cx="${fx}" cy="${fy}" r="5" stroke="${seg.color}" fill="none" stroke-width="1.5" />
+          <circle class="lp-callout-dot-core" cx="${fx}" cy="${fy}" r="4.2" fill="${seg.color}" stroke="#FFFFFF" stroke-width="1.8" />
+          <circle cx="${tx}" cy="${ty}" r="2.5" fill="${seg.color}" />
+        </g>
+      `);
+    });
+
+    svgEl.innerHTML = svgItems.join('');
   }
 
   selectLandingPreset(presetKey) {
@@ -737,6 +917,7 @@ class NutriVisionApp {
       btn.classList.toggle('active', btn.dataset.preset === presetKey);
     });
 
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile ? this.userProfile.language : 'en');
     const emptyState = document.getElementById('lp-showcase-empty-state');
     const foodImg = document.getElementById('lp-plate-food-img');
     const segSvgGroup = document.getElementById('lp-svg-segments-group');
@@ -745,6 +926,7 @@ class NutriVisionApp {
     const laserBeam = document.getElementById('lp-plate-laser');
     const donutCircle = document.getElementById('lp-showcase-donut');
     const donutVal = document.getElementById('lp-showcase-donut-val');
+    const calloutSvg = document.getElementById('lp-plate-callout-lines-svg');
 
     if (presetKey === 'preset-empty' || !presetKey) {
       if (foodImg) {
@@ -754,35 +936,67 @@ class NutriVisionApp {
       if (emptyState) emptyState.style.display = 'flex';
       if (segSvgGroup) segSvgGroup.innerHTML = '';
       if (pinsLayer) pinsLayer.innerHTML = '';
+      if (calloutSvg) calloutSvg.innerHTML = '';
       if (heatmapEl) heatmapEl.style.display = 'none';
       if (laserBeam) laserBeam.style.display = 'none';
+
+      this.currentPresetSegments = null;
+      this.currentPresetData = null;
 
       if (donutCircle) donutCircle.style.strokeDashoffset = '251.2';
       if (donutVal) donutVal.textContent = '0%';
 
       const confEl = document.getElementById('lp-showcase-conf');
-      if (confEl) confEl.innerHTML = '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:15px;color:#9EA76B;"></iconify-icon><span>Status AI: Siap Memindai</span>';
+      if (confEl) confEl.innerHTML = `<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:15px;color:#9EA76B;"></iconify-icon><span>${lang === 'id' ? 'Status AI: Siap Memindai' : 'AI Status: Ready to Scan'}</span>`;
 
       const protEl = document.getElementById('lp-showcase-protein');
-      if (protEl) protEl.innerHTML = 'Target Protein: 0g / 98g';
+      if (protEl) protEl.innerHTML = lang === 'id' ? 'Target Protein: 0g / 98g' : 'Protein Target: 0g / 98g';
 
       const calsEl = document.getElementById('lp-showcase-cals');
-      if (calsEl) calsEl.innerHTML = 'Densitas Energi: 0 kkal (Piring Kosong · Menunggu Pemindaian)';
+      if (calsEl) calsEl.innerHTML = lang === 'id' ? 'Densitas Energi: 0 kkal (Piring Kosong · Menunggu Pemindaian)' : 'Energy Density: 0 kcal (Empty Plate · Waiting for Scan)';
 
       const adviceEl = document.getElementById('lp-showcase-advice');
-      if (adviceEl) adviceEl.innerHTML = '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Panduan AI:</strong> Belum ada data makanan yang dihitung. Silakan pilih salah satu menu sampel di atas untuk simulasi segmentasi, atau gunakan tombol scan untuk menguji foto piring asli.</span>';
+      if (adviceEl) adviceEl.innerHTML = lang === 'id'
+        ? '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Panduan AI:</strong> Belum ada data makanan yang dihitung. Silakan pilih salah satu menu sampel di atas untuk simulasi segmentasi, atau gunakan tombol scan untuk menguji foto piring asli.</span>'
+        : '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>AI Clinical Guide:</strong> No food data calculated yet. Select a sample meal above to simulate segmentation, or use the scan button to test an actual plate photo.</span>';
 
       const tag1 = document.getElementById('lp-showcase-tag-1');
-      if (tag1) tag1.innerHTML = '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Komponen Protein: Belum terdeteksi</span>';
-
+      if (tag1) {
+        tag1.style.borderLeftColor = '#9EA76B';
+        tag1.innerHTML = `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title">${lang === 'id' ? 'Komponen Protein' : 'Protein Component'}</div><div class="lp-callout-tag-sub">${lang === 'id' ? 'Belum terdeteksi' : 'Not detected'}</div></div>`;
+      }
       const tag2 = document.getElementById('lp-showcase-tag-2');
-      if (tag2) tag2.innerHTML = '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon><span>Komponen Karbohidrat: Belum terdeteksi</span>';
-
+      if (tag2) {
+        tag2.style.borderLeftColor = '#06B6D4';
+        tag2.innerHTML = `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title">${lang === 'id' ? 'Komponen Karbohidrat' : 'Carbohydrate Component'}</div><div class="lp-callout-tag-sub">${lang === 'id' ? 'Belum terdeteksi' : 'Not detected'}</div></div>`;
+      }
       const tag3 = document.getElementById('lp-showcase-tag-3');
-      if (tag3) tag3.innerHTML = '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Sayur &amp; Serat: Belum terdeteksi</span>';
-
+      if (tag3) {
+        tag3.style.borderLeftColor = '#EF9F27';
+        tag3.innerHTML = `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title">${lang === 'id' ? 'Sayur & Serat' : 'Vegetables & Fiber'}</div><div class="lp-callout-tag-sub">${lang === 'id' ? 'Belum terdeteksi' : 'Not detected'}</div></div>`;
+      }
       const tag4 = document.getElementById('lp-showcase-tag-4');
-      if (tag4) tag4.innerHTML = '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: Siap Memindai</span>';
+      if (tag4) {
+        tag4.style.borderLeftColor = '#9EA76B';
+        tag4.innerHTML = `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">${lang === 'id' ? 'Status Pemindai' : 'Scanner Status'}</div><div class="lp-callout-tag-sub">${lang === 'id' ? 'Akurasi CV: Siap Memindai' : 'CV Accuracy: Ready to Scan'}</div></div>`;
+      }
+
+      // Reset Clinical Assessment Card to 0%
+      const gradeEl = document.getElementById('lp-assessment-grade-score');
+      if (gradeEl) gradeEl.textContent = lang === 'id' ? '0% SIAP' : '0% READY';
+      const protValEl = document.getElementById('lp-factor-prot-val');
+      if (protValEl) protValEl.textContent = '0g · 0%';
+      const protFillEl = document.getElementById('lp-factor-prot-fill');
+      if (protFillEl) protFillEl.style.width = '0%';
+      const vitValEl = document.getElementById('lp-factor-vit-val');
+      if (vitValEl) vitValEl.textContent = '0%';
+      const vitFillEl = document.getElementById('lp-factor-vit-fill');
+      if (vitFillEl) vitFillEl.style.width = '0%';
+      const minValEl = document.getElementById('lp-factor-min-val');
+      if (minValEl) minValEl.textContent = '0%';
+      const minFillEl = document.getElementById('lp-factor-min-fill');
+      if (minFillEl) minFillEl.style.width = '0%';
+
       return;
     }
 
@@ -790,166 +1004,233 @@ class NutriVisionApp {
     if (emptyState) emptyState.style.display = 'none';
     if (laserBeam && this.plateViewMode !== 'photo') laserBeam.style.display = 'block';
 
+    const isId = lang === 'id';
     const presets = {
       'preset-soft-bubur-gabus': {
         conf: '96%',
         donutPct: 68,
         image: 'images/plate_bubur_gabus.jpg',
-        targetProt: 'Target Protein: 32g / 98g',
-        cals: 'Densitas Energi: 385 kkal (Tekstur Lunak · Fase 2 Pasca-Bedah)',
-        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp; disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>',
+        targetProt: isId ? 'Target Protein: 32g / 98g' : 'Protein Target: 32g / 98g',
+        cals: isId ? 'Densitas Energi: 385 kkal (Tekstur Lunak · Fase 2 Pasca-Bedah)' : 'Energy Density: 385 kcal (Soft Texture · Phase 2 Post-Surgery)',
+        advice: isId
+          ? '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Tekstur bubur saring sangat ramah untuk pasien pasca-anestesi &amp; disfagia. Albumin Ikan Gabus memicu granulasi luka 2x lebih cepat.</span>'
+          : '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Clinical Advice:</strong> Pureed textures are gentle for post-anesthesia &amp; dysphagia patients. Snakehead fish albumin accelerates wound granulation up to 2x faster.</span>',
         heatmap: 'radial-gradient(circle at 48% 38%, rgba(245, 158, 11, 0.75) 0%, rgba(239, 68, 68, 0.5) 25%, transparent 55%), radial-gradient(circle at 70% 50%, rgba(234, 179, 8, 0.65) 0%, transparent 40%), radial-gradient(circle at 35% 55%, rgba(6, 182, 212, 0.55) 0%, transparent 50%)',
+        assessment: {
+          grade: isId ? '96% SESUAI' : '96% MATCH',
+          protVal: '32g · 98% Optimal',
+          protPct: 98,
+          vitVal: isId ? '88% Target Harian' : '88% Daily Target',
+          vitPct: 88,
+          minVal: isId ? '92% Target Harian' : '92% Daily Target',
+          minPct: 92
+        },
         segments: [
           {
             id: 'prot',
-            name: 'Ikan Gabus',
+            tagId: 'lp-showcase-tag-1',
+            name: isId ? 'Ikan Gabus' : 'Snakehead Fish',
+            portion: isId ? '110g · 26g Prot [Albumin]' : '110g · 26g Prot [Albumin]',
             points: '37,30 50,27 63,33 63,45 55,54 44,52 35,45 35,36',
             color: '#9EA76B',
             fill: 'rgba(158, 167, 107, 0.28)',
-            pin: { x: 48, y: 39, label: '🐟 Ikan Gabus 26g' }
-          },
-          {
-            id: 'carb',
-            name: 'Bubur Beras',
-            points: '25,38 32,24 50,22 68,24 76,36 78,56 70,72 52,76 36,74 24,62 22,46',
-            color: '#06B6D4',
-            fill: 'rgba(6, 182, 212, 0.22)',
-            pin: { x: 28, y: 56, label: '🍚 Bubur Beras 35g' }
+            pin: { x: 44, y: 38 }
           },
           {
             id: 'veg',
-            name: 'Telur Tim Sutra',
+            tagId: 'lp-showcase-tag-2',
+            name: isId ? 'Telur Tim Sutra' : 'Steamed Silk Egg',
+            portion: isId ? '90g · 6.8g Prot' : '90g · 6.8g Prot',
             points: '58,36 72,36 78,46 76,60 66,64 58,56 56,44',
             color: '#EF9F27',
             fill: 'rgba(239, 159, 39, 0.28)',
-            pin: { x: 68, y: 50, label: '🥚 Telur Tim 6.8g' }
+            pin: { x: 70, y: 52 }
+          },
+          {
+            id: 'carb',
+            tagId: 'lp-showcase-tag-3',
+            name: isId ? 'Bubur Beras Lembut' : 'Soft Rice Porridge',
+            portion: isId ? '220g · 35g Karbo' : '220g · 35g Carbs',
+            points: '25,38 32,24 50,22 68,24 76,36 78,56 70,72 52,76 36,74 24,62 22,46',
+            color: '#06B6D4',
+            fill: 'rgba(6, 182, 212, 0.22)',
+            pin: { x: 26, y: 62 }
           }
         ],
-        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Ikan Gabus (110g) · 26g Prot [Albumin]</span>',
-        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon><span>Bubur Beras Lembut (220g) · 35g Karbo</span>',
-        tag3: '<iconify-icon icon="solar:egg-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Telur Tim Sutra (90g) · 6.8g Prot</span>',
-        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 96% · Tekstur Lunak</span>'
+        tag4: isId
+          ? `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">Status CV</div><div class="lp-callout-tag-sub">Akurasi 96% · Tekstur Lunak</div></div>`
+          : `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">CV Scanner</div><div class="lp-callout-tag-sub">96% Accuracy · Soft Texture</div></div>`
       },
       'preset-standard-nasi-ayam': {
         conf: '91%',
         donutPct: 77,
         image: 'images/plate_nasi_ayam.jpg',
-        targetProt: 'Target Protein: 38g / 98g',
-        cals: 'Densitas Energi: 465 kkal (Gizi Seimbang · Fase 3)',
-        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot &amp; pembentukan enzim perbaikan jaringan.</span>',
+        targetProt: isId ? 'Target Protein: 38g / 98g' : 'Protein Target: 38g / 98g',
+        cals: isId ? 'Densitas Energi: 465 kkal (Gizi Seimbang · Fase 3)' : 'Energy Density: 465 kcal (Balanced Nutrition · Phase 3)',
+        advice: isId
+          ? '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino lengkap pada dada ayam tanpa kulit mendukung regenerasi sel otot &amp; pembentukan enzim perbaikan jaringan.</span>'
+          : '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Clinical Advice:</strong> Complete amino acids from skinless chicken breast promote muscle cell regeneration and tissue repair enzyme synthesis.</span>',
         heatmap: 'radial-gradient(circle at 35% 60%, rgba(239, 68, 68, 0.75) 0%, rgba(245, 158, 11, 0.45) 35%, transparent 55%), radial-gradient(circle at 66% 52%, rgba(6, 182, 212, 0.6) 0%, transparent 45%), radial-gradient(circle at 44% 28%, rgba(16, 185, 129, 0.65) 0%, transparent 40%)',
+        assessment: {
+          grade: isId ? '94% SESUAI' : '94% MATCH',
+          protVal: '38g · 96% Optimal',
+          protPct: 96,
+          vitVal: isId ? '94% Target Harian' : '94% Daily Target',
+          vitPct: 94,
+          minVal: isId ? '90% Target Harian' : '90% Daily Target',
+          minPct: 90
+        },
         segments: [
           {
-            id: 'prot',
-            name: 'Dada Ayam',
-            points: '20,44 32,38 48,44 54,64 52,78 38,78 22,68 18,52',
-            color: '#E25822',
-            fill: 'rgba(226, 88, 34, 0.28)',
-            pin: { x: 34, y: 60, label: '🍗 Dada Ayam 31g' }
-          },
-          {
-            id: 'carb',
-            name: 'Nasi Putih',
-            points: '50,34 68,28 82,38 82,56 78,72 60,76 50,62 48,46',
-            color: '#06B6D4',
-            fill: 'rgba(6, 182, 212, 0.22)',
-            pin: { x: 66, y: 52, label: '🍚 Nasi Putih 52g' }
-          },
-          {
             id: 'veg',
-            name: 'Tumis Kangkung',
+            tagId: 'lp-showcase-tag-1',
+            name: isId ? 'Tumis Kangkung' : 'Stir-Fried Water Spinach',
+            portion: isId ? 'Kaya Vit A/C &amp; Serat' : 'Vit A/C &amp; Balanced Fiber',
             points: '26,26 44,18 64,20 64,36 46,42 30,40 24,32',
             color: '#10B981',
             fill: 'rgba(16, 185, 129, 0.28)',
-            pin: { x: 44, y: 28, label: '🥬 Kangkung Vit A/C' }
+            pin: { x: 44, y: 28 }
+          },
+          {
+            id: 'carb',
+            tagId: 'lp-showcase-tag-2',
+            name: isId ? 'Nasi Putih Pulen' : 'Steamed White Rice',
+            portion: isId ? '175g · 52g Karbo' : '175g · 52g Carbs',
+            points: '50,34 68,28 82,38 82,56 78,72 60,76 50,62 48,46',
+            color: '#06B6D4',
+            fill: 'rgba(6, 182, 212, 0.22)',
+            pin: { x: 66, y: 52 }
+          },
+          {
+            id: 'prot',
+            tagId: 'lp-showcase-tag-3',
+            name: isId ? 'Dada Ayam Panggang' : 'Grilled Chicken Breast',
+            portion: isId ? '125g · 31g Prot' : '125g · 31g Prot',
+            points: '20,44 32,38 48,44 54,64 52,78 38,78 22,68 18,52',
+            color: '#E25822',
+            fill: 'rgba(226, 88, 34, 0.28)',
+            pin: { x: 34, y: 60 }
           }
         ],
-        tag1: '<iconify-icon icon="solar:cup-hot-bold-duotone" style="font-size:14px;color:#E25822;"></iconify-icon><span>Dada Ayam Panggang (125g) · 31g Prot</span>',
-        tag2: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#06B6D4;"></iconify-icon><span>Nasi Putih (175g) · 52g Karbo</span>',
-        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#10B981;"></iconify-icon><span>Tumis Kangkung · Vit A/C &amp; Serat</span>',
-        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 91% · Gizi Seimbang</span>'
+        tag4: isId
+          ? `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">Status CV</div><div class="lp-callout-tag-sub">Akurasi 91% · Gizi Seimbang</div></div>`
+          : `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">CV Scanner</div><div class="lp-callout-tag-sub">91% Accuracy · Balanced Diet</div></div>`
       },
       'preset-fish-kembung': {
         conf: '94%',
         donutPct: 83,
         image: 'images/plate_pepes_kembung.jpg',
-        targetProt: 'Target Protein: 41g / 98g',
-        cals: 'Densitas Energi: 430 kkal (Kaya Omega-3 · Pangan Lokal)',
-        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.</span>',
+        targetProt: isId ? 'Target Protein: 41g / 98g' : 'Protein Target: 41g / 98g',
+        cals: isId ? 'Densitas Energi: 430 kkal (Kaya Omega-3 · Pangan Lokal)' : 'Energy Density: 430 kcal (Omega-3 Rich · Local Superfood)',
+        advice: isId
+          ? '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Ikan kembung mengandung asam lemak Omega-3 EPA/DHA setara salmon untuk meredakan inflamasi pembengkakan dengan harga terjangkau.</span>'
+          : '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Clinical Advice:</strong> Indian mackerel provides EPA/DHA Omega-3 fatty acids matching salmon at an accessible cost, mitigating inflammatory swelling.</span>',
         heatmap: 'radial-gradient(circle at 66% 42%, rgba(239, 68, 68, 0.75) 0%, transparent 45%), radial-gradient(circle at 34% 46%, rgba(245, 158, 11, 0.65) 0%, transparent 40%), radial-gradient(circle at 50% 68%, rgba(16, 185, 129, 0.65) 0%, transparent 40%)',
+        assessment: {
+          grade: isId ? '95% SESUAI' : '95% MATCH',
+          protVal: '41g · 99% Optimal',
+          protPct: 99,
+          vitVal: isId ? '91% Target Harian' : '91% Daily Target',
+          vitPct: 91,
+          minVal: isId ? '96% Target Harian' : '96% Daily Target',
+          minPct: 96
+        },
         segments: [
           {
-            id: 'prot',
-            name: 'Ikan Kembung',
-            points: '48,22 62,20 74,32 78,48 76,66 84,72 74,78 64,62 52,42 46,28',
-            color: '#9EA76B',
-            fill: 'rgba(158, 167, 107, 0.28)',
-            pin: { x: 64, y: 40, label: '🐟 Ikan Kembung 29g' }
-          },
-          {
             id: 'carb',
-            name: 'Tempe Kukus',
+            tagId: 'lp-showcase-tag-1',
+            name: isId ? 'Tempe Kukus' : 'Steamed Tempeh',
+            portion: isId ? '80g · 15g Prot Nabati' : '80g · 15g Plant Protein',
             points: '24,28 46,26 46,58 36,66 24,64 22,46',
             color: '#F59E0B',
             fill: 'rgba(245, 158, 11, 0.28)',
-            pin: { x: 32, y: 46, label: '🌱 Tempe Kukus 15g' }
+            pin: { x: 32, y: 46 }
+          },
+          {
+            id: 'prot',
+            tagId: 'lp-showcase-tag-2',
+            name: isId ? 'Pepes Ikan Kembung' : 'Mackerel Pepes',
+            portion: isId ? '140g · 29g Prot [Omega-3]' : '140g · 29g Prot [Omega-3]',
+            points: '48,22 62,20 74,32 78,48 76,66 84,72 74,78 64,62 52,42 46,28',
+            color: '#9EA76B',
+            fill: 'rgba(158, 167, 107, 0.28)',
+            pin: { x: 64, y: 40 }
           },
           {
             id: 'veg',
-            name: 'Sayur Bayam',
+            tagId: 'lp-showcase-tag-3',
+            name: isId ? 'Sayur Bening Bayam' : 'Clear Spinach Soup',
+            portion: isId ? 'Kaya Zat Besi &amp; Folat' : 'Iron Rich &amp; Folate',
             points: '36,54 58,52 68,60 66,78 48,82 34,74',
             color: '#10B981',
             fill: 'rgba(16, 185, 129, 0.28)',
-            pin: { x: 50, y: 68, label: '🥬 Bayam Zat Besi' }
+            pin: { x: 50, y: 68 }
           }
         ],
-        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Ikan Kembung (140g) · 29g Prot [Omega-3]</span>',
-        tag2: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#F59E0B;"></iconify-icon><span>Tempe Kukus (80g) · 15g Prot</span>',
-        tag3: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#10B981;"></iconify-icon><span>Sayur Bening Bayam · Zat Besi</span>',
-        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 94% · Anti-Inflamasi</span>'
+        tag4: isId
+          ? `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">Status CV</div><div class="lp-callout-tag-sub">Akurasi 94% · Anti-Inflamasi</div></div>`
+          : `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">CV Scanner</div><div class="lp-callout-tag-sub">94% Accuracy · Anti-Inflammatory</div></div>`
       },
       'preset-salmon-quinoa': {
         conf: '95%',
         donutPct: 73,
         image: 'images/plate_salmon_brokoli.jpg',
-        targetProt: 'Target Protein: 36g / 98g',
-        cals: 'Densitas Energi: 420 kkal (Antioksidan Tinggi · Rekondisi)',
-        advice: '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.</span>',
+        targetProt: isId ? 'Target Protein: 36g / 98g' : 'Protein Target: 36g / 98g',
+        cals: isId ? 'Densitas Energi: 420 kkal (Antioksidan Tinggi · Rekondisi)' : 'Energy Density: 420 kcal (High Antioxidant · Reconditioning)',
+        advice: isId
+          ? '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Saran Klinis:</strong> Asam amino esensial dan sulforaphane brokoli menekan radikal bebas inflamasi pada fase remodeling jaringan.</span>'
+          : '<iconify-icon icon="solar:lightbulb-bolt-bold-duotone" style="font-size:19px;color:#9EA76B;flex-shrink:0;margin-top:2px;"></iconify-icon><span><strong>Clinical Advice:</strong> Essential amino acids and broccoli sulforaphane neutralize inflammatory free radicals during tissue remodeling phases.</span>',
         heatmap: 'radial-gradient(circle at 48% 52%, rgba(239, 68, 68, 0.8) 0%, transparent 45%), radial-gradient(circle at 28% 50%, rgba(16, 185, 129, 0.7) 0%, transparent 40%), radial-gradient(circle at 68% 50%, rgba(245, 158, 11, 0.65) 0%, transparent 40%)',
+        assessment: {
+          grade: isId ? '97% SESUAI' : '97% MATCH',
+          protVal: '36g · 97% Optimal',
+          protPct: 97,
+          vitVal: isId ? '98% Target Harian' : '98% Daily Target',
+          vitPct: 98,
+          minVal: isId ? '93% Target Harian' : '93% Daily Target',
+          minPct: 93
+        },
         segments: [
           {
             id: 'prot',
-            name: 'Fillet Salmon',
+            tagId: 'lp-showcase-tag-1',
+            name: isId ? 'Fillet Salmon Panggang' : 'Grilled Salmon Fillet',
+            portion: isId ? '130g · 28g Prot' : '130g · 28g Prot',
             points: '40,26 56,26 56,76 42,76 38,50',
             color: '#FF6B4A',
             fill: 'rgba(255, 107, 74, 0.28)',
-            pin: { x: 48, y: 52, label: '🍣 Salmon 28g' }
-          },
-          {
-            id: 'veg',
-            name: 'Brokoli Kukus',
-            points: '18,34 38,28 38,72 26,74 18,56 16,42',
-            color: '#10B981',
-            fill: 'rgba(16, 185, 129, 0.28)',
-            pin: { x: 28, y: 50, label: '🥦 Brokoli Vit C' }
+            pin: { x: 48, y: 44 }
           },
           {
             id: 'carb',
-            name: 'Beras Merah',
+            tagId: 'lp-showcase-tag-2',
+            name: isId ? 'Beras Merah Organik' : 'Organic Brown Rice',
+            portion: isId ? '100g · 23g Karbo Kompleks' : '100g · 23g Complex Carbs',
             points: '58,28 78,32 80,62 72,72 58,68 56,44',
             color: '#EF9F27',
             fill: 'rgba(239, 159, 39, 0.28)',
-            pin: { x: 68, y: 50, label: '🌾 Beras Merah 23g' }
+            pin: { x: 68, y: 50 }
+          },
+          {
+            id: 'veg',
+            tagId: 'lp-showcase-tag-3',
+            name: isId ? 'Brokoli Kukus' : 'Steamed Broccoli',
+            portion: isId ? '90g · Vit C &amp; Sulforaphane' : '90g · Vit C &amp; Sulforaphane',
+            points: '18,34 38,28 38,72 26,74 18,56 16,42',
+            color: '#10B981',
+            fill: 'rgba(16, 185, 129, 0.28)',
+            pin: { x: 28, y: 50 }
           }
         ],
-        tag1: '<iconify-icon icon="solar:fish-bold-duotone" style="font-size:14px;color:#FF6B4A;"></iconify-icon><span>Fillet Salmon (130g) · 28g Prot</span>',
-        tag2: '<iconify-icon icon="solar:leaf-bold-duotone" style="font-size:14px;color:#10B981;"></iconify-icon><span>Brokoli Kukus (90g) · Vit C &amp; Zinc</span>',
-        tag3: '<iconify-icon icon="solar:bowl-bold-duotone" style="font-size:14px;color:#EF9F27;"></iconify-icon><span>Beras Merah (100g) · 23g Karbo</span>',
-        tag4: '<iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:14px;color:#9EA76B;"></iconify-icon><span>Akurasi CV: 95% · Remodeling</span>'
+        tag4: isId
+          ? `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">Status CV</div><div class="lp-callout-tag-sub">Akurasi 95% · Remodeling</div></div>`
+          : `<div class="lp-callout-tag-body"><div class="lp-callout-tag-title" style="color:#DDE2B9;">CV Scanner</div><div class="lp-callout-tag-sub">95% Accuracy · Remodeling</div></div>`
       }
     };
 
     const data = presets[presetKey] || presets['preset-soft-bubur-gabus'];
+    this.currentPresetData = data;
+    this.currentPresetSegments = data.segments;
 
     // Update Food Image with smooth fade
     if (foodImg && data.image) {
@@ -965,7 +1246,7 @@ class NutriVisionApp {
       heatmapEl.style.background = data.heatmap;
     }
 
-    // Render SVG Polygons
+    // Render SVG Polygons with solid subtle styling
     if (segSvgGroup && data.segments) {
       segSvgGroup.innerHTML = data.segments.map(seg => `
         <polygon 
@@ -974,27 +1255,16 @@ class NutriVisionApp {
           points="${seg.points}" 
           fill="${seg.fill || 'rgba(158, 167, 107, 0.28)'}" 
           stroke="${seg.color}" 
-          stroke-width="1.8"
+          stroke-width="1.6"
           onmouseenter="app.highlightPlateSegment('${seg.id}', true)"
           onmouseleave="app.highlightPlateSegment('${seg.id}', false)"
         />
       `).join('');
     }
 
-    // Render In-Plate Detection Pins
-    if (pinsLayer && data.segments) {
-      pinsLayer.innerHTML = data.segments.map(seg => {
-        if (!seg.pin) return '';
-        return `
-          <div class="lp-food-pin" data-seg="${seg.id}" 
-               style="left:${seg.pin.x}%;top:${seg.pin.y}%;"
-               onmouseenter="app.highlightPlateSegment('${seg.id}', true)"
-               onmouseleave="app.highlightPlateSegment('${seg.id}', false)">
-            <span class="pin-dot" style="background:${seg.color}"></span>
-            <span>${seg.pin.label}</span>
-          </div>
-        `;
-      }).join('');
+    // Clear legacy emoji pills to keep food plate unobstructed
+    if (pinsLayer) {
+      pinsLayer.innerHTML = '';
     }
 
     // Refresh view mode visibility
@@ -1018,17 +1288,53 @@ class NutriVisionApp {
     const adviceEl = document.getElementById('lp-showcase-advice');
     if (adviceEl) adviceEl.innerHTML = data.advice;
 
-    const tag1 = document.getElementById('lp-showcase-tag-1');
-    if (tag1) tag1.innerHTML = data.tag1;
+    // Update Core Clinical Assessment Factors (Protein, Vitamins, Minerals)
+    if (data.assessment) {
+      const gradeEl = document.getElementById('lp-assessment-grade-score');
+      if (gradeEl) gradeEl.textContent = data.assessment.grade;
 
-    const tag2 = document.getElementById('lp-showcase-tag-2');
-    if (tag2) tag2.innerHTML = data.tag2;
+      const protValEl = document.getElementById('lp-factor-prot-val');
+      if (protValEl) protValEl.textContent = data.assessment.protVal;
+      const protFillEl = document.getElementById('lp-factor-prot-fill');
+      if (protFillEl) protFillEl.style.width = `${data.assessment.protPct}%`;
 
-    const tag3 = document.getElementById('lp-showcase-tag-3');
-    if (tag3) tag3.innerHTML = data.tag3;
+      const vitValEl = document.getElementById('lp-factor-vit-val');
+      if (vitValEl) vitValEl.textContent = data.assessment.vitVal;
+      const vitFillEl = document.getElementById('lp-factor-vit-fill');
+      if (vitFillEl) vitFillEl.style.width = `${data.assessment.vitPct}%`;
+
+      const minValEl = document.getElementById('lp-factor-min-val');
+      if (minValEl) minValEl.textContent = data.assessment.minVal;
+      const minFillEl = document.getElementById('lp-factor-min-fill');
+      if (minFillEl) minFillEl.style.width = `${data.assessment.minPct}%`;
+    }
+
+    // Render structured callout tags connected to leader lines
+    if (data.segments) {
+      data.segments.forEach(seg => {
+        const tagEl = document.getElementById(seg.tagId);
+        if (tagEl) {
+          tagEl.style.borderLeftColor = seg.color;
+          tagEl.innerHTML = `
+            <div class="lp-callout-tag-body">
+              <div class="lp-callout-tag-title">${seg.name}</div>
+              <div class="lp-callout-tag-sub">${seg.portion}</div>
+            </div>
+          `;
+          tagEl.onmouseenter = () => this.highlightPlateSegment(seg.id, true);
+          tagEl.onmouseleave = () => this.highlightPlateSegment(seg.id, false);
+        }
+      });
+    }
 
     const tag4 = document.getElementById('lp-showcase-tag-4');
     if (tag4 && data.tag4) tag4.innerHTML = data.tag4;
+
+    // Attach resize observer & render leader lines overlay
+    this.setupPlateCalloutResizeObserver();
+    requestAnimationFrame(() => {
+      this.renderPlateCallouts(data.segments);
+    });
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -1188,26 +1494,44 @@ class NutriVisionApp {
   // Kalkulasi & Render Hasil Kalkulator Mini secara Real-Time
   updateCalcUI() {
     const w = this.calcState.weight || 65;
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile ? this.userProfile.language : 'en');
+    const isId = lang === 'id';
     let factor = 1.5;
     let calFactor = 30;
-    let recomFood = '🐟 Ikan Gabus (150g) + 2 Butir Telur Rebus + Tempe';
-    let clinicalTip = 'Target 1.5 g/kg BB optimal untuk menstimulasi fibroblas dan sintesis kolagen penutupan luka.';
+    let recomFood = isId
+      ? '🐟 Ikan Gabus (150g) + 2 Butir Telur Rebus + Tempe'
+      : '🐟 Snakehead Fish (150g) + 2 Boiled Eggs + Tempeh';
+    let clinicalTip = isId
+      ? 'Target 1.5 g/kg BB optimal untuk menstimulasi fibroblas dan sintesis kolagen penutupan luka.'
+      : 'Target 1.5 g/kg BW is optimal to stimulate fibroblasts and collagen synthesis for wound closure.';
 
     if (this.calcState.condition === 'post-surgery') {
       factor = 1.5;
       calFactor = this.calcState.activity === 'bedrest' ? 28 : (this.calcState.activity === 'active' ? 33 : 30);
-      recomFood = '🐟 Ikan Gabus (150g) + 2 Butir Telur Rebus + Tempe';
-      clinicalTip = 'Target 1.5 g/kg BB optimal untuk menstimulasi fibroblas dan sintesis kolagen penutupan luka.';
+      recomFood = isId
+        ? '🐟 Ikan Gabus (150g) + 2 Butir Telur Rebus + Tempe'
+        : '🐟 Snakehead Fish (150g) + 2 Boiled Eggs + Tempeh';
+      clinicalTip = isId
+        ? 'Target 1.5 g/kg BB optimal untuk menstimulasi fibroblas dan sintesis kolagen penutupan luka.'
+        : 'Target 1.5 g/kg BW is optimal to stimulate fibroblasts and collagen synthesis for wound closure.';
     } else if (this.calcState.condition === 'injury-rehab') {
       factor = 1.6;
       calFactor = 32;
-      recomFood = '🐟 Ikan Kembung Panggang (Omega-3) + Dada Ayam + Sayur Kelor';
-      clinicalTip = 'Target 1.6 g/kg BB kaya EPA/DHA meredakan inflamasi sendi dan regenerasi jaringan tendon.';
+      recomFood = isId
+        ? '🐟 Ikan Kembung Panggang (Omega-3) + Dada Ayam + Sayur Kelor'
+        : '🐟 Grilled Mackerel (Omega-3) + Chicken Breast + Moringa Soup';
+      clinicalTip = isId
+        ? 'Target 1.6 g/kg BB kaya EPA/DHA meredakan inflamasi sendi dan regenerasi jaringan tendon.'
+        : 'Target 1.6 g/kg BW rich in EPA/DHA reduces joint inflammation and regenerates tendon tissues.';
     } else if (this.calcState.condition === 'gym-recovery') {
       factor = 1.8;
       calFactor = 35;
-      recomFood = '🍗 Dada Ayam Kukus + Ikan Kembung + Telur + Tahu Tempe';
-      clinicalTip = 'Target 1.8 g/kg BB untuk hipertrofi otot dan pengisian glikogen pasca-latihan intensif.';
+      recomFood = isId
+        ? '🍗 Dada Ayam Kukus + Ikan Kembung + Telur + Tahu Tempe'
+        : '🍗 Steamed Chicken Breast + Mackerel + Eggs + Tofu & Tempeh';
+      clinicalTip = isId
+        ? 'Target 1.8 g/kg BB untuk hipertrofi otot dan pengisian glikogen pasca-latihan intensif.'
+        : 'Target 1.8 g/kg BW for muscle hypertrophy and post-workout glycogen replenishment.';
     }
 
     if (this.calcState.activity === 'bedrest') {
@@ -1220,10 +1544,12 @@ class NutriVisionApp {
     const cals = Math.round(w * calFactor);
 
     const elProt = document.getElementById('lp-calc-target-protein');
-    if (elProt) elProt.innerHTML = `${protein} <span>g Protein / hari</span>`;
+    if (elProt) elProt.innerHTML = `${protein} <span>g Protein / ${isId ? 'hari' : 'day'}</span>`;
 
     const elCals = document.getElementById('lp-calc-target-cals');
-    if (elCals) elCals.textContent = `Total Energi: ~${cals.toLocaleString()} kkal/hari (${factor.toFixed(1)} g/kg BB)`;
+    if (elCals) elCals.textContent = isId
+      ? `Total Energi: ~${cals.toLocaleString()} kkal/hari (${factor.toFixed(1)} g/kg BB)`
+      : `Total Energy: ~${cals.toLocaleString()} kcal/day (${factor.toFixed(1)} g/kg BW)`;
 
     const elRecom = document.getElementById('lp-calc-food-recom');
     if (elRecom) elRecom.textContent = recomFood;
@@ -3287,6 +3613,8 @@ class NutriVisionApp {
   renderAuthUI() {
     const isLoggedIn = Boolean(this.userProfile && this.userProfile.name && this.userProfile.contact);
     const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile ? this.userProfile.language : 'en');
+    const isId = lang === 'id';
 
     // 1. Landing Page Navbar Actions
     const lpActions = document.getElementById('lp-nav-actions-container');
@@ -3295,15 +3623,16 @@ class NutriVisionApp {
         const initials = isAdmin ? 'AD' : (this.userProfile.name || 'P').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
         const firstName = isAdmin ? 'Super Admin' : this.userProfile.name.split(' ')[0];
         const targetAction = isAdmin ? 'app.goToAdminPortal()' : "app.goToDashboard('overview')";
-        const targetTitle = isAdmin ? 'Buka Super Admin Command Center' : 'Buka Dasbor Pasien';
-        const targetLabel = isAdmin ? 'Admin Portal' : `Dasbor (${firstName})`;
+        const targetTitle = isAdmin ? (isId ? 'Buka Super Admin Command Center' : 'Open Super Admin Command Center') : (isId ? 'Buka Dasbor Pasien' : 'Open Patient Dashboard');
+        const targetLabel = isAdmin ? 'Admin Portal' : (isId ? `Dasbor (${firstName})` : `Dashboard (${firstName})`);
+        const logoutTitle = isId ? 'Keluar / Logout' : 'Sign Out / Logout';
 
         lpActions.innerHTML = `
           <button class="lp-btn-nav-primary" onclick="${targetAction}" title="${targetTitle}" style="gap:7px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(255,255,255,0.25);color:#fff;border-radius:50%;font-size:11px;font-weight:700;">${initials}</span>
             <span>${targetLabel}</span>
           </button>
-          <button class="lp-btn-nav-outline" onclick="app.handleLogout()" title="Keluar / Logout" style="padding:0 10px;color:var(--coral-600);">
+          <button class="lp-btn-nav-outline" onclick="app.handleLogout()" title="${logoutTitle}" style="padding:0 10px;color:var(--coral-600);">
             <i data-lucide="log-out" style="width:15px;height:15px;"></i>
           </button>
           <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu" onclick="app.toggleLandingMobileMenu()">
@@ -3311,10 +3640,12 @@ class NutriVisionApp {
           </button>
         `;
       } else {
+        const loginTitle = isId ? 'Masuk ke Akun NutriVision AI' : 'Sign In to NutriVision AI';
+        const loginLabel = isId ? 'Masuk' : 'Login';
         lpActions.innerHTML = `
-          <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')" title="Masuk ke Akun NutriVision AI">
+          <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')" title="${loginTitle}">
             <i data-lucide="log-in" class="btn-icon-sm" style="width:15px;height:15px;"></i>
-            <span>Login</span>
+            <span data-i18n="nav_login">${loginLabel}</span>
           </button>
           <button class="lp-mobile-toggle" id="lp-menu-toggle" aria-label="Toggle Menu" onclick="app.toggleLandingMobileMenu()">
             <i data-lucide="menu" style="width:18px;height:18px;"></i>
@@ -3322,6 +3653,11 @@ class NutriVisionApp {
         `;
       }
     }
+
+    // Synchronize language switcher active button states
+    document.querySelectorAll('.lp-lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
 
     // 2. Dashboard Topbar Action Buttons
     const topbarLoginBtn = document.getElementById('topbar-login-btn');

@@ -752,3 +752,119 @@
   background: var(--teal-50);
   transition: all 0.15s ease;
 }
+
+/* ==========================================================================
+   FEATURE 6: PROFILE LANGUAGE & ACCESSIBILITY CONTROLS
+   ========================================================================== */
+.settings-section-block {
+  margin-bottom: 20px;
+}
+
+.settings-section-block:last-child {
+  margin-bottom: 0;
+}
+
+.settings-block-title {
+  font-size: var(--font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-mute);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lang-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.profile-lang-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.profile-lang-btn:hover {
+  border-color: var(--matcha-400);
+  background: var(--matcha-50);
+}
+
+.profile-lang-btn.active {
+  border-color: var(--matcha-500);
+  background: #F7F9EC;
+  box-shadow: 0 2px 10px rgba(158, 167, 107, 0.18);
+}
+
+.profile-lang-flag {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.profile-lang-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+}
+
+.profile-lang-sub {
+  font-size: 11px;
+  color: var(--ink-mute);
+  display: block;
+}
+
+.font-size-btn-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.font-btn {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  transition: all 0.2s ease;
+}
+
+.font-btn:hover {
+  border-color: var(--matcha-400);
+  background: var(--matcha-50);
+}
+
+.font-btn.active {
+  background: var(--matcha-500);
+  color: #FFFFFF;
+  border-color: var(--matcha-600);
+  box-shadow: 0 2px 8px rgba(158, 167, 107, 0.25);
+}
+
+.contrast-toggle-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
