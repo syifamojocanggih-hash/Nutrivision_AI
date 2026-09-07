@@ -7,18 +7,24 @@ class NutriVisionCaregiver {
       {
         id: 'cg-1',
         name: 'Ibu Maria (Ibu Kandung)',
+        nameEn: 'Maria (Biological Mother)',
         role: 'Keluarga Pendamping',
+        roleEn: 'Family Caregiver',
         initials: 'IM',
         hasAccess: true,
-        lastSeen: '15 menit yang lalu'
+        lastSeen: '15 menit yang lalu',
+        lastSeenEn: '15 minutes ago'
       },
       {
         id: 'cg-2',
         name: 'dr. Hendra (Sp.KFR)',
+        nameEn: 'Dr. Hendra (Physiatrist)',
         role: 'Dokter / Fisioterapis',
+        roleEn: 'Physician / Physiatrist',
         initials: 'DH',
         hasAccess: true,
-        lastSeen: 'Kemarin, 16:30'
+        lastSeen: 'Kemarin, 16:30',
+        lastSeenEn: 'Yesterday, 16:30'
       }
     ];
   }
@@ -43,13 +49,20 @@ class NutriVisionCaregiver {
     const container2 = document.getElementById('caregiver-list-box-full');
     if (!container1 && !container2) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
     const html = this.caregivers.map(cg => {
+      const displayName = isId ? cg.name : (cg.nameEn || cg.name);
+      const displayRole = isId ? cg.role : (cg.roleEn || cg.role);
+      const lastActiveLabel = isId ? 'Terakhir aktif:' : 'Last active:';
+      const displayLastSeen = isId ? cg.lastSeen : (cg.lastSeenEn || cg.lastSeen);
+
       return `
         <div class="caregiver-row">
           <div class="caregiver-avatar">${cg.initials}</div>
           <div class="caregiver-details">
-            <b>${cg.name}</b>
-            <span>${cg.role} · Terakhir aktif: ${cg.lastSeen}</span>
+            <b>${displayName}</b>
+            <span>${displayRole} · ${lastActiveLabel} ${displayLastSeen}</span>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" ${cg.hasAccess ? 'checked' : ''} onchange="caregiverHandler.toggleAccess('${cg.id}', this.checked)">
@@ -65,3 +78,4 @@ class NutriVisionCaregiver {
 }
 
 const caregiverHandler = new NutriVisionCaregiver();
+

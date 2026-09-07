@@ -27,6 +27,7 @@ class NutriVisionPlanner {
     const container2 = document.getElementById('meal-plan-list-full');
     if (!container1 && !container2) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const plans = NUTRIVISION_DATA.mealPlans[this.currentMode] || [];
     const isSoftTextureRequired = this.activeSymptoms.has('sulit-menelan');
 
@@ -34,21 +35,32 @@ class NutriVisionPlanner {
     if (container1) {
       const previewPlans = plans.slice(0, 2);
       container1.innerHTML = previewPlans.map(item => {
-        const isSoftItem = item.name.toLowerCase().includes('bubur') || 
-                           item.name.toLowerCase().includes('halus') || 
-                           item.name.toLowerCase().includes('kukus') ||
-                           item.name.toLowerCase().includes('tim');
+        const nameStr = (item.name + ' ' + (item.nameEn || '')).toLowerCase();
+        const isSoftItem = nameStr.includes('bubur') || 
+                           nameStr.includes('porridge') ||
+                           nameStr.includes('halus') || 
+                           nameStr.includes('smooth') ||
+                           nameStr.includes('kukus') ||
+                           nameStr.includes('steamed') ||
+                           nameStr.includes('tim') ||
+                           nameStr.includes('chawanmushi');
+
+        const displayName = isId ? item.name : (item.nameEn || item.name);
+        const displayMacro = isId ? item.macro : (item.macroEn || item.macro.replace('kkal', 'kcal'));
+        const displaySuitable = isId ? item.suitableFor : (item.suitableForEn || item.suitableFor);
+        const displayBadge = isId ? item.badge : (item.badgeEn || item.badge);
+        const swallowTag = isId ? '✓ Ramah Menelan' : '✓ Easy Swallowing';
 
         return `
           <div class="meal-plan-item">
             <div class="meal-plan-info">
-              <div class="name">${item.name}</div>
-              <div class="macro">${item.macro} · <span style="color:var(--teal-700)">${item.suitableFor}</span></div>
-              ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">✓ Ramah Menelan</span>` : ''}
+              <div class="name">${displayName}</div>
+              <div class="macro">${displayMacro} · <span style="color:var(--teal-700)">${displaySuitable}</span></div>
+              ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">${swallowTag}</span>` : ''}
             </div>
             <div class="meal-plan-meta">
               <div class="meal-plan-price">${item.price}</div>
-              <span class="meal-plan-tag">${item.badge}</span>
+              <span class="meal-plan-tag">${displayBadge}</span>
             </div>
           </div>
         `;
@@ -58,25 +70,38 @@ class NutriVisionPlanner {
     // Render for Dedicated Full Page
     if (container2) {
       container2.innerHTML = plans.map(item => {
-        const isSoftItem = item.name.toLowerCase().includes('bubur') || 
-                           item.name.toLowerCase().includes('halus') || 
-                           item.name.toLowerCase().includes('kukus') ||
-                           item.name.toLowerCase().includes('tim');
+        const nameStr = (item.name + ' ' + (item.nameEn || '')).toLowerCase();
+        const isSoftItem = nameStr.includes('bubur') || 
+                           nameStr.includes('porridge') ||
+                           nameStr.includes('halus') || 
+                           nameStr.includes('smooth') ||
+                           nameStr.includes('kukus') ||
+                           nameStr.includes('steamed') ||
+                           nameStr.includes('tim') ||
+                           nameStr.includes('chawanmushi');
+
+        const displayName = isId ? item.name : (item.nameEn || item.name);
+        const displayMacro = isId ? item.macro : (item.macroEn || item.macro.replace('kkal', 'kcal'));
+        const displaySuitable = isId ? item.suitableFor : (item.suitableForEn || item.suitableFor);
+        const displayBadge = isId ? item.badge : (item.badgeEn || item.badge);
+        const costLabel = isId ? 'Est. Biaya:' : 'Est. Cost:';
+        const dysphagiaTag = isId ? '✓ Tekstur Lunak / Ramah Disfagia' : '✓ Soft Texture / Dysphagia Friendly';
+        const logBtnText = isId ? 'Catat Asupan' : 'Log Meal';
 
         return `
           <div class="meal-plan-item" style="padding:14px;">
             <div class="meal-plan-info">
-              <div class="name" style="font-size:15px;font-weight:600;">${item.name}</div>
-              <div class="macro" style="margin-top:2px;">${item.macro} · <span style="color:var(--teal-700);font-weight:500;">${item.suitableFor}</span></div>
+              <div class="name" style="font-size:15px;font-weight:600;">${displayName}</div>
+              <div class="macro" style="margin-top:2px;">${displayMacro} · <span style="color:var(--teal-700);font-weight:500;">${displaySuitable}</span></div>
               <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap;">
-                <span class="meal-plan-tag">${item.badge}</span>
-                <span style="font-size:12px;color:var(--ink-soft);font-weight:600;">Est. Biaya: ${item.price}</span>
-                ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="font-size:10.5px;">✓ Tekstur Lunak / Ramah Disfagia</span>` : ''}
+                <span class="meal-plan-tag">${displayBadge}</span>
+                <span style="font-size:12px;color:var(--ink-soft);font-weight:600;">${costLabel} ${item.price}</span>
+                ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="font-size:10.5px;">${dysphagiaTag}</span>` : ''}
               </div>
             </div>
             <div class="meal-plan-meta">
-              <button class="btn-sm-teal" style="font-size:11.5px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;" onclick="mealPlanner.logMeal('${item.name}', '${item.macro}')">
-                <i data-lucide="plus-circle" class="btn-icon-sm"></i> Catat Asupan
+              <button class="btn-sm-teal" style="font-size:11.5px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;" onclick="mealPlanner.logMeal('${displayName.replace(/'/g, "\\'")}', '${displayMacro.replace(/'/g, "\\'")}')">
+                <i data-lucide="plus-circle" class="btn-icon-sm"></i> ${logBtnText}
               </button>
             </div>
           </div>
@@ -90,12 +115,13 @@ class NutriVisionPlanner {
   }
 
   logMeal(mealName, macroStr) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     app.requireAuth(() => {
-      // Parse protein and calories from macroStr e.g. "28g Protein · 420 kkal"
+      // Parse protein and calories from macroStr e.g. "28g Protein · 420 kkal" or "420 kcal"
       let prot = 25;
       let cals = 380;
       const protMatch = macroStr.match(/(\d+)g Protein/i);
-      const calsMatch = macroStr.match(/(\d+) kkal/i);
+      const calsMatch = macroStr.match(/(\d+)\s*(?:kkal|kcal)/i);
       if (protMatch) prot = parseInt(protMatch[1], 10);
       if (calsMatch) cals = parseInt(calsMatch[1], 10);
 
@@ -108,8 +134,8 @@ class NutriVisionPlanner {
 
       progressTracker.renderMacroDonut(app.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
-      app.showToast(`Menu "${mealName}" berhasil dicatat ke progres asupan harian!`);
-    }, `mencatat menu "${mealName}"`);
+      app.showToast(isId ? `Menu "${mealName}" berhasil dicatat ke progres asupan harian!` : `Meal "${mealName}" successfully logged to daily recovery intake!`);
+    }, isId ? `mencatat menu "${mealName}"` : `logging meal "${mealName}"`);
   }
 
   // Render Symptom-Aware Feedback
@@ -117,10 +143,15 @@ class NutriVisionPlanner {
     const container = document.getElementById(resultContainerId);
     if (!container) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
     if (this.activeSymptoms.size === 0) {
-      container.innerHTML = `
+      container.innerHTML = isId ? `
         <strong>Kondisi Normal / Tanpa Gejala Spesifik:</strong>
         Menu disajikan dengan variasi gizi lengkap seimbang sesuai target fase pemulihan kamu.
+      ` : `
+        <strong>Normal Condition / No Specific Symptoms:</strong>
+        Menus are served with complete balanced nutrition tailored to your recovery phase target.
       `;
       return;
     }
@@ -131,18 +162,22 @@ class NutriVisionPlanner {
     this.activeSymptoms.forEach(key => {
       const rule = NUTRIVISION_DATA.symptomRules[key];
       if (rule) {
-        combinedText.push(`• <strong>${rule.title}:</strong> ${rule.text}`);
-        combinedFoods.push(...rule.recommendedFoods);
+        const title = isId ? rule.title : (rule.titleEn || rule.title);
+        const text = isId ? rule.text : (rule.textEn || rule.text);
+        const foods = isId ? rule.recommendedFoods : (rule.recommendedFoodsEn || rule.recommendedFoods);
+        combinedText.push(`• <strong>${title}:</strong> ${text}`);
+        combinedFoods.push(...foods);
       }
     });
 
     const uniqueFoods = [...new Set(combinedFoods)].slice(0, 4);
+    const recLabel = isId ? 'Pilihan Makanan Dianjurkan:' : 'Recommended Food Choices:';
 
     container.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:6px;">
         ${combinedText.join('')}
         <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(15,110,86,0.15)">
-          <strong style="color:var(--teal-800)">Pilihan Makanan Dianjurkan:</strong>
+          <strong style="color:var(--teal-800)">${recLabel}</strong>
           <span>${uniqueFoods.join(', ')}.</span>
         </div>
       </div>
@@ -154,3 +189,4 @@ class NutriVisionPlanner {
 }
 
 const mealPlanner = new NutriVisionPlanner();
+

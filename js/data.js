@@ -65,6 +65,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'ikan-gabus-kukus',
       name: 'Ikan Gabus Tim Albumin',
+      nameEn: 'Steamed Snakehead Fish (Albumin)',
       tkpiCode: 'TKPI-IK012',
       category: 'protein-animal',
       isPopular: true,
@@ -73,8 +74,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/plate_bubur_gabus.jpg',
       subtitle: 'Kaya Albumin 2.17g untuk granulasi luka & regenerasi sel bedah',
+      subtitleEn: 'Rich in 2.17g Albumin for wound granulation & surgical cellular repair',
       clinicalIndication: 'Pasca-Operasi',
+      clinicalIndicationEn: 'Post-Surgery',
       bappenasRef: 'Bapanas: Rp 65.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 65,000/kg',
       defaultPortionGrams: 120,
       calories: 124,
       protein: 27.6,
@@ -89,6 +93,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'dada-ayam-panggang',
       name: 'Dada Ayam Fillet Kukus/Panggang',
+      nameEn: 'Steamed/Grilled Chicken Breast Fillet',
       tkpiCode: 'TKPI-DG005',
       category: 'protein-animal',
       isPopular: true,
@@ -97,8 +102,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/plate_nasi_ayam.jpg',
       subtitle: 'Tinggi Leusin 2.4g & Asam Amino Esensial bebas lemak jenuh',
+      subtitleEn: 'High Leucine 2.4g & Essential Amino Acids free from saturated fat',
       clinicalIndication: 'Regenerasi Otot',
+      clinicalIndicationEn: 'Muscle Repair',
       bappenasRef: 'Bapanas: Rp 38.500/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 38,500/kg',
       defaultPortionGrams: 120,
       calories: 165,
       protein: 31.2,
@@ -113,6 +121,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'telur-rebus',
       name: 'Telur Ayam Ras / Omega-3 Rebus',
+      nameEn: 'Boiled Farm/Omega-3 Egg',
       tkpiCode: 'TKPI-TL001',
       category: 'protein-animal',
       isPopular: true,
@@ -121,8 +130,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/telur_rebus.jpg',
       subtitle: 'Nilai Biologis Protein 100 + Kolin 147mg & Kolagen Alami',
+      subtitleEn: 'Biological Protein Value 100 + 147mg Choline & Natural Collagen',
       clinicalIndication: 'Pemulihan Sel',
+      clinicalIndicationEn: 'Cellular Recovery',
       bappenasRef: 'Bapanas: Rp 29.500/kg (~16 btr)',
+      bappenasRefEn: 'Natl Food Agency: Rp 29,500/kg (~16 eggs)',
       defaultPortionGrams: 60,
       calories: 78,
       protein: 7.2,
@@ -137,6 +149,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'ikan-kembung-bakar',
       name: 'Ikan Kembung Segar Kukus/Bakar',
+      nameEn: 'Steamed/Grilled Fresh Mackerel',
       tkpiCode: 'TKPI-IK018',
       category: 'protein-animal',
       isPopular: true,
@@ -145,8 +158,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/plate_pepes_kembung.jpg',
       subtitle: 'Kaya Omega-3 (EPA/DHA 2.6g) setara salmon untuk redakan inflamasi',
+      subtitleEn: 'Rich in Omega-3 (EPA/DHA 2.6g) salmon-equivalent to soothe inflammation',
       clinicalIndication: 'Kesehatan Sendi',
+      clinicalIndicationEn: 'Joint Health',
       bappenasRef: 'Bapanas: Rp 38.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 38,000/kg',
       defaultPortionGrams: 120,
       calories: 168,
       protein: 24.5,
@@ -161,6 +177,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'daging-sapi-murni',
       name: 'Daging Sapi Has Tanpa Lemak',
+      nameEn: 'Lean Tenderloin Beef',
       tkpiCode: 'TKPI-DG001',
       category: 'protein-animal',
       isPopular: true,
@@ -168,8 +185,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Tinggi Zat Besi Heme 2.8mg, Zinc & Kolagen Pembentuk Sel Darah',
+      subtitleEn: 'High Heme Iron 2.8mg, Zinc & Collagen for red blood cell formation',
       clinicalIndication: 'Cegah Anemia',
+      clinicalIndicationEn: 'Anemia Prevention',
       bappenasRef: 'Bapanas: Rp 135.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 135,000/kg',
       defaultPortionGrams: 100,
       calories: 185,
       protein: 26.5,
@@ -184,6 +204,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'tempe-bacem-kukus',
       name: 'Tempe Kedelai Murni Kukus',
+      nameEn: 'Steamed Pure Soybean Tempeh',
       tkpiCode: 'TKPI-KB003',
       category: 'plant-veg',
       isPopular: true,
@@ -192,8 +213,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/plate_pepes_kembung.jpg',
       subtitle: 'Fermentasi Rhizopus menghasilkan Prebiotik & Isoflavon 19g protein',
+      subtitleEn: 'Rhizopus fermentation delivers Prebiotics & Isoflavones with 19g protein',
       clinicalIndication: 'Pencernaan',
+      clinicalIndicationEn: 'Digestive Health',
       bappenasRef: 'Bapanas: Rp 18.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 18,000/kg',
       defaultPortionGrams: 100,
       calories: 195,
       protein: 19.2,
@@ -208,14 +232,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'tahu-putih-kukus',
       name: 'Tahu Putih Sutra Kukus',
+      nameEn: 'Steamed Silken White Tofu',
       tkpiCode: 'TKPI-KB004',
       category: 'plant-veg',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Protein nabati bertekstur halus, sangat ramah lambung pasca-anestesi',
+      subtitleEn: 'Ultra-smooth plant protein, highly stomach-friendly post-anesthesia',
       clinicalIndication: 'Diet Disfagia',
+      clinicalIndicationEn: 'Dysphagia Diet',
       bappenasRef: 'Bapanas: Rp 12.000/pak',
+      bappenasRefEn: 'Natl Food Agency: Rp 12,000/pack',
       defaultPortionGrams: 100,
       calories: 80,
       protein: 8.5,
@@ -230,14 +258,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'sayur-bayam-bening',
       name: 'Sayur Bening Bayam & Jagung',
+      nameEn: 'Clear Spinach & Sweetcorn Soup',
       tkpiCode: 'TKPI-SY007',
       category: 'plant-veg',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Kaya Zat Besi 3.5mg, Asam Folat & Vitamin K untuk pembekuan darah',
+      subtitleEn: 'Rich in 3.5mg Iron, Folate & Vitamin K for healthy blood clotting',
       clinicalIndication: 'Hemoglobin',
+      clinicalIndicationEn: 'Hemoglobin Support',
       bappenasRef: 'Bapanas: Rp 4.000/ikat',
+      bappenasRefEn: 'Natl Food Agency: Rp 4,000/bunch',
       defaultPortionGrams: 150,
       calories: 36,
       protein: 3.2,
@@ -252,14 +284,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'brokoli-wortel-kukus',
       name: 'Brokoli & Wortel Rebus',
+      nameEn: 'Steamed Broccoli & Carrots',
       tkpiCode: 'TKPI-SY012',
       category: 'plant-veg',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Sulforaphane & Beta-karoten menekan inflamasi stres oksidatif luka',
+      subtitleEn: 'Sulforaphane & Beta-carotene suppress oxidative stress & wound inflammation',
       clinicalIndication: 'Antioksidan',
+      clinicalIndicationEn: 'Antioxidant',
       bappenasRef: 'Bapanas: Rp 28.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 28,000/kg',
       defaultPortionGrams: 120,
       calories: 42,
       protein: 2.8,
@@ -274,14 +310,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'tumis-kangkung',
       name: 'Tumis Kangkung Bawang Putih',
+      nameEn: 'Garlic Sautéed Water Spinach',
       tkpiCode: 'TKPI-SY015',
       category: 'plant-veg',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Serat larut air melancarkan peristaltik usus & cegah konstipasi',
+      subtitleEn: 'Soluble fiber stimulates bowel peristalsis & relieves constipation',
       clinicalIndication: 'Cegah Konstipasi',
+      clinicalIndicationEn: 'Constipation Relief',
       bappenasRef: 'Bapanas: Rp 3.500/ikat',
+      bappenasRefEn: 'Natl Food Agency: Rp 3,500/bunch',
       defaultPortionGrams: 120,
       calories: 58,
       protein: 3.0,
@@ -296,6 +336,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'nasi-putih',
       name: 'Nasi Putih Beras Medium',
+      nameEn: 'Steamed White Rice',
       tkpiCode: 'TKPI-SR001',
       category: 'carbs',
       isPopular: true,
@@ -303,8 +344,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/plate_nasi_ayam.jpg',
       subtitle: 'Sumber energi primer glukosa untuk metabolisme sel & fisioterapi',
+      subtitleEn: 'Primary glucose energy source for cell metabolism & rehab therapy',
       clinicalIndication: 'Pemulihan Energi',
+      clinicalIndicationEn: 'Energy Restoration',
       bappenasRef: 'Bapanas: Rp 14.500/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 14,500/kg',
       defaultPortionGrams: 150,
       calories: 185,
       protein: 3.6,
@@ -319,6 +363,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'bubur-ayam',
       name: 'Bubur Beras Sutra Halus',
+      nameEn: 'Silky Soft Rice Porridge',
       tkpiCode: 'TKPI-SR003',
       category: 'carbs',
       isPopular: true,
@@ -326,8 +371,11 @@ const NUTRIVISION_DATA = {
       popularSearchLabel: 'Pencarian Populer',
       image: 'images/plate_bubur_gabus.jpg',
       subtitle: 'Tekstur saring ultra-halus, transisi makanan hari 1-3 pasca-bedah',
+      subtitleEn: 'Ultra-smooth strained texture, ideal food transition days 1-3 post-op',
       clinicalIndication: 'Diet Lunak',
+      clinicalIndicationEn: 'Soft Diet',
       bappenasRef: 'Bapanas: Rp 14.500/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 14,500/kg',
       defaultPortionGrams: 220,
       calories: 128,
       protein: 2.8,
@@ -342,14 +390,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'kentang-ubi-kukus',
       name: 'Kentang & Ubi Jalar Kukus',
+      nameEn: 'Steamed Potato & Sweet Potato',
       tkpiCode: 'TKPI-UB002',
       category: 'carbs',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Karbohidrat kompleks indeks glikemik stabil + Kalium 450mg',
+      subtitleEn: 'Complex carbs with stable glycemic index + 450mg Potassium',
       clinicalIndication: 'Kontrol Gula',
+      clinicalIndicationEn: 'Blood Sugar Control',
       bappenasRef: 'Bapanas: Rp 18.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 18,000/kg',
       defaultPortionGrams: 150,
       calories: 148,
       protein: 2.5,
@@ -364,14 +416,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'jus-jeruk-murni',
       name: 'Jus Jeruk Peras Murni',
+      nameEn: 'Fresh Squeezed Orange Juice',
       tkpiCode: 'TKPI-BH005',
       category: 'fruit-bev',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Asam Askorbat 88mg mempercepat hidroksilasi prolin sintesis kolagen',
+      subtitleEn: '88mg Ascorbic Acid accelerates proline hydroxylation for collagen synthesis',
       clinicalIndication: 'Sintesis Kolagen',
+      clinicalIndicationEn: 'Collagen Synthesis',
       bappenasRef: 'Bapanas: Rp 22.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 22,000/kg',
       defaultPortionGrams: 200,
       calories: 86,
       protein: 1.4,
@@ -386,14 +442,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'jus-jambu-biji',
       name: 'Jus Jambu Biji Merah Murni',
+      nameEn: 'Fresh Pink Guava Juice',
       tkpiCode: 'TKPI-BH009',
       category: 'fruit-bev',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Konsentrasi Vitamin C tertinggi (180mg) & Likopen anti-inflamasi',
+      subtitleEn: 'Highest Vitamin C concentration (180mg) & anti-inflammatory lycopene',
       clinicalIndication: 'Kekebalan Sel',
+      clinicalIndicationEn: 'Cell Immunity',
       bappenasRef: 'Bapanas: Rp 16.000/kg',
+      bappenasRefEn: 'Natl Food Agency: Rp 16,000/kg',
       defaultPortionGrams: 200,
       calories: 98,
       protein: 1.8,
@@ -408,14 +468,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'air-kelapa-murni',
       name: 'Air Kelapa Hijau Murni',
+      nameEn: 'Pure Young Coconut Water',
       tkpiCode: 'TKPI-MN002',
       category: 'fruit-bev',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Isotonik alami kaya Kalium 600mg, Natrium & Magnesium cegah dehidrasi',
+      subtitleEn: 'Natural isotonic rich in 600mg Potassium, Sodium & Magnesium prevents dehydration',
       clinicalIndication: 'Rehidrasi',
+      clinicalIndicationEn: 'Cellular Rehydration',
       bappenasRef: 'Bapanas: Rp 15.000/butir',
+      bappenasRefEn: 'Natl Food Agency: Rp 15,000/pc',
       defaultPortionGrams: 250,
       calories: 48,
       protein: 1.8,
@@ -430,14 +494,18 @@ const NUTRIVISION_DATA = {
     {
       id: 'pisang-ambon-segar',
       name: 'Pisang Ambon Matang',
+      nameEn: 'Ripe Cavendish Banana',
       tkpiCode: 'TKPI-BH014',
       category: 'fruit-bev',
       isPopular: true,
       popularSearchLabel: 'Pencarian Populer',
       image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=600&q=80',
       subtitle: 'Kalium 358mg & Pektin lembut untuk energi instan & relaksasi otot',
+      subtitleEn: '358mg Potassium & gentle pectin for instant energy & muscle relaxation',
       clinicalIndication: 'Kesehatan Usus',
+      clinicalIndicationEn: 'Gut Health',
       bappenasRef: 'Bapanas: Rp 24.000/sisir',
+      bappenasRefEn: 'Natl Food Agency: Rp 24,000/bunch',
       defaultPortionGrams: 100,
       calories: 96,
       protein: 1.2,
@@ -456,6 +524,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'preset-standard-nasi-ayam',
       title: '🍛 Nasi Ayam Panggang & Sayur (Menu Harian Pasca-Operasi)',
+      titleEn: '🍛 Grilled Chicken Rice & Veggies (Daily Post-Surgery Menu)',
       plateColor: '#0F172A',
       imageUrl: 'images/plate_nasi_ayam.jpg',
       confidenceOverall: 88,
@@ -464,6 +533,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-1',
           name: 'Nasi Putih',
+          nameEn: 'White Rice',
           foodId: 'nasi-putih',
           portionGrams: 175,
           confidence: 94,
@@ -477,6 +547,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-2',
           name: 'Dada Ayam Panggang',
+          nameEn: 'Grilled Chicken Breast',
           foodId: 'dada-ayam-panggang',
           portionGrams: 125,
           confidence: 91,
@@ -490,6 +561,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-3',
           name: 'Tumis Kangkung',
+          nameEn: 'Sautéed Water Spinach',
           foodId: 'tumis-kangkung',
           portionGrams: 85,
           confidence: 82,
@@ -503,6 +575,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-4',
           name: 'Telur Rebus (1/2 butir)',
+          nameEn: 'Boiled Egg (1/2 piece)',
           foodId: 'telur-rebus',
           portionGrams: 30,
           confidence: 76,
@@ -518,6 +591,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'preset-soft-bubur-gabus',
       title: '🥣 Bubur Ikan Gabus & Telur Tim (Khusus Sulit Menelan / Pasca-Bedah)',
+      titleEn: '🥣 Snakehead Fish Porridge & Steamed Egg (Dysphagia / Post-Surgery)',
       plateColor: '#0F172A',
       imageUrl: 'images/plate_bubur_gabus.jpg',
       confidenceOverall: 92,
@@ -526,6 +600,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-1',
           name: 'Bubur Beras Lembut',
+          nameEn: 'Soft Rice Porridge',
           foodId: 'bubur-ayam',
           portionGrams: 220,
           confidence: 96,
@@ -539,6 +614,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-2',
           name: 'Ikan Gabus Kukus (Tinggi Albumin)',
+          nameEn: 'Steamed Snakehead Fish (Albumin-Rich)',
           foodId: 'ikan-gabus-kukus',
           portionGrams: 110,
           confidence: 89,
@@ -552,6 +628,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-3',
           name: 'Telur Kukus Sutra (Tim)',
+          nameEn: 'Silky Steamed Egg (Chawanmushi)',
           foodId: 'telur-kukus-halus',
           portionGrams: 90,
           confidence: 90,
@@ -565,6 +642,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-4',
           name: 'Sup Krim Labu Kuning',
+          nameEn: 'Creamy Pumpkin Soup',
           foodId: 'sup-krim-wortel',
           portionGrams: 100,
           confidence: 84,
@@ -580,6 +658,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'preset-budget-tempe-telur',
       title: '🍳 Nasi Telur Dadar + Tempe Bacem + Sayur Bening (Opsi Hemat / Low-Budget)',
+      titleEn: '🍳 Omelet Rice + Braised Tempeh + Clear Soup (Low-Budget Option)',
       plateColor: '#0F172A',
       imageUrl: 'images/plate_pepes_kembung.jpg',
       confidenceOverall: 85,
@@ -588,6 +667,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-1',
           name: 'Nasi Putih',
+          nameEn: 'White Rice',
           foodId: 'nasi-putih',
           portionGrams: 160,
           confidence: 93,
@@ -601,6 +681,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-2',
           name: 'Telur Ayam Dadar Padat',
+          nameEn: 'Firm Farm Egg Omelet',
           foodId: 'telur-rebus',
           portionGrams: 65,
           confidence: 87,
@@ -614,6 +695,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-3',
           name: 'Tempe Bacem Kukus',
+          nameEn: 'Steamed Braised Tempeh',
           foodId: 'tempe-bacem-kukus',
           portionGrams: 90,
           confidence: 84,
@@ -627,6 +709,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-4',
           name: 'Sayur Bening Bayam',
+          nameEn: 'Clear Spinach Soup',
           foodId: 'sayur-bening-bayam',
           portionGrams: 100,
           confidence: 81,
@@ -642,6 +725,7 @@ const NUTRIVISION_DATA = {
     {
       id: 'preset-salmon-quinoa',
       title: '🥗 Fillet Salmon Panggang & Quinoa Bowl (Gym / High-End Recovery)',
+      titleEn: '🥗 Grilled Salmon Fillet & Quinoa Bowl (Gym / High-End Recovery)',
       plateColor: '#0F172A',
       confidenceOverall: 91,
       imagePlaceholderSvg: 'plate-salmon',
@@ -649,6 +733,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-1',
           name: 'Fillet Salmon Panggang',
+          nameEn: 'Grilled Salmon Fillet',
           foodId: 'salmon-quinoa',
           portionGrams: 140,
           confidence: 93,
@@ -662,6 +747,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-2',
           name: 'Quinoa & Edamame',
+          nameEn: 'Quinoa & Edamame',
           foodId: 'quinoa-bowl',
           portionGrams: 120,
           confidence: 89,
@@ -675,6 +761,7 @@ const NUTRIVISION_DATA = {
         {
           id: 'seg-3',
           name: 'Alpukat Potong',
+          nameEn: 'Fresh Sliced Avocado',
           foodId: 'alpukat-segar',
           portionGrams: 60,
           confidence: 88,
@@ -694,47 +781,71 @@ const NUTRIVISION_DATA = {
     standar: [
       {
         name: 'Dada Ayam Panggang Herbal + Brokoli Kukus + Nasi Merah',
+        nameEn: 'Herb Grilled Chicken Breast + Steamed Broccoli + Brown Rice',
         macro: '34 - 38g Protein · 420 - 460 kkal',
+        macroEn: '34 - 38g Protein · 420 - 460 kcal',
         price: 'Rp 28.000',
         badge: 'Tinggi Protein',
-        suitableFor: 'Makan Siang / Pemulihan Luka'
+        badgeEn: 'High Protein',
+        suitableFor: 'Makan Siang / Pemulihan Luka',
+        suitableForEn: 'Lunch / Wound Healing'
       },
       {
         name: 'Fillet Ikan Gabus Kukus + Sayur Bening Bayam + Nasi Putih',
+        nameEn: 'Steamed Snakehead Fish Fillet + Clear Spinach Soup + White Rice',
         macro: '28 - 32g Protein · 380 - 410 kkal',
+        macroEn: '28 - 32g Protein · 380 - 410 kcal',
         price: 'Rp 24.000',
         badge: 'Cepat Sembuh (Albumin)',
-        suitableFor: 'Pasca-Bedah'
+        badgeEn: 'Fast Healing (Albumin)',
+        suitableFor: 'Pasca-Bedah',
+        suitableForEn: 'Post-Surgery'
       },
       {
         name: 'Salmon Panggang Saus Lemon + Sup Krim Wortel Halus',
+        nameEn: 'Pan-Seared Lemon Salmon + Smooth Carrot Cream Soup',
         macro: '30 - 34g Protein · 440 - 480 kkal',
+        macroEn: '30 - 34g Protein · 440 - 480 kcal',
         price: 'Rp 45.000',
         badge: 'Anti-Inflamasi',
-        suitableFor: 'Makan Malam'
+        badgeEn: 'Anti-Inflammatory',
+        suitableFor: 'Makan Malam',
+        suitableForEn: 'Dinner'
       }
     ],
     hemat: [
       {
         name: 'Telur Rebus (2 butir) + Tempe Bacem Kukus + Nasi Putih',
+        nameEn: 'Hard Boiled Eggs (2 pcs) + Braised Steamed Tempeh + White Rice',
         macro: '26 - 30g Protein · 390 - 430 kkal',
+        macroEn: '26 - 30g Protein · 390 - 430 kcal',
         price: 'Rp 8.500',
         badge: 'Hemat & Padat Gizi',
-        suitableFor: 'Makan Siang Murah'
+        badgeEn: 'Budget & Nutrient-Dense',
+        suitableFor: 'Makan Siang Murah',
+        suitableForEn: 'Budget Lunch'
       },
       {
         name: 'Ikan Kembung Bakar Kunyit + Sayur Bening Oyong + Nasi',
+        nameEn: 'Turmeric Grilled Mackerel + Clear Luffa Soup + White Rice',
         macro: '24 - 28g Protein · 360 - 400 kkal',
+        macroEn: '24 - 28g Protein · 360 - 400 kcal',
         price: 'Rp 11.000',
         badge: 'Kaya Omega-3 Hemat',
-        suitableFor: 'Pemulihan Harian'
+        badgeEn: 'Budget-Friendly Omega-3',
+        suitableFor: 'Pemulihan Harian',
+        suitableForEn: 'Daily Recovery'
       },
       {
         name: 'Tahu Putih Kukus + Telur Dadar Daun Bawang + Tumis Kangkung',
+        nameEn: 'Steamed Silken Tofu + Scallion Omelet + Sautéed Water Spinach',
         macro: '20 - 24g Protein · 330 - 360 kkal',
+        macroEn: '20 - 24g Protein · 330 - 360 kcal',
         price: 'Rp 7.500',
         badge: 'Ramah Kantong',
-        suitableFor: 'Makan Malam Ringan'
+        badgeEn: 'Wallet Friendly',
+        suitableFor: 'Makan Malam Ringan',
+        suitableForEn: 'Light Dinner'
       }
     ]
   },
@@ -743,23 +854,35 @@ const NUTRIVISION_DATA = {
   symptomRules: {
     'mual': {
       title: 'Gejala: Mual / Mual Pasca-Anestesi',
+      titleEn: 'Symptom: Nausea / Post-Anesthesia Queasiness',
       text: 'Hindari makanan berminyak pekat & berbau menyengat. Disarankan porsi kecil tapi sering (small frequent meals), suhu suam-kuku, dan jahe hangat.',
-      recommendedFoods: ['Sup Bening Ayam Jahe', 'Bubur Beras Halus', 'Biskuit Gandum Kering', 'Telur Rebus Tanpa Minyak']
+      textEn: 'Avoid heavy greasy foods & pungent odors. Small frequent meals at lukewarm temperatures and warm ginger are recommended.',
+      recommendedFoods: ['Sup Bening Ayam Jahe', 'Bubur Beras Halus', 'Biskuit Gandum Kering', 'Telur Rebus Tanpa Minyak'],
+      recommendedFoodsEn: ['Clear Ginger Chicken Soup', 'Silky Rice Porridge', 'Dry Wheat Crackers', 'Oil-Free Boiled Egg']
     },
     'sulit-menelan': {
       title: 'Gejala: Sulit Menelan (Disfagia / Pasca-Intubasi)',
+      titleEn: 'Symptom: Difficulty Swallowing (Dysphagia / Post-Intubation)',
       text: 'Sistem menyaring menu menjadi tekstur lembut (puree/soft mash). Hindari bahan keras, remah kasar, atau potongan liat.',
-      recommendedFoods: ['Telur Kukus Sutra (Tim)', 'Bubur Ikan Gabus Halus', 'Sup Krim Labu Kuning', 'Puding Susu Kedelai']
+      textEn: 'The system filters menus into soft textures (puree/soft mash). Avoid hard foods, coarse crumbs, or tough chewy pieces.',
+      recommendedFoods: ['Telur Kukus Sutra (Tim)', 'Bubur Ikan Gabus Halus', 'Sup Krim Labu Kuning', 'Puding Susu Kedelai'],
+      recommendedFoodsEn: ['Silky Steamed Egg (Tim)', 'Smooth Snakehead Fish Porridge', 'Creamy Pumpkin Soup', 'Soy Milk Pudding']
     },
     'konstipasi': {
       title: 'Gejala: Konstipasi / Sembelit Pasca-Operasi',
+      titleEn: 'Symptom: Post-Operative Constipation',
       text: 'Tingkatkan serat larut lembut (labu siam, bayam) dan air putih hangat minimal 2-2.5 liter/hari untuk melancarkan peristaltik usus.',
-      recommendedFoods: ['Sayur Bening Labu Siam & Bayam', 'Pepaya Matang', 'Oatmeal Lembut', 'Tempe Kukus']
+      textEn: 'Increase gentle soluble fiber (chayote, spinach) and drink warm water at least 2-2.5 liters/day to stimulate intestinal peristalsis.',
+      recommendedFoods: ['Sayur Bening Labu Siam & Bayam', 'Pepaya Matang', 'Oatmeal Lembut', 'Tempe Kukus'],
+      recommendedFoodsEn: ['Clear Chayote & Spinach Soup', 'Ripe Papaya', 'Soft Oatmeal', 'Steamed Tempeh']
     },
     'nafsu-rendah': {
       title: 'Gejala: Nafsu Makan Menurun',
+      titleEn: 'Symptom: Decreased Appetite',
       text: 'Fokus pada makanan padat gizi (high nutrient density) dalam volume kecil agar target protein harian tetap tercapai tanpa terasa begah.',
-      recommendedFoods: ['Smoothie Pisang + Susu Kedelai', 'Sup Kaldu Tulang Sapi/Ayam', 'Telur Kukus Keju', 'Ikan Gabus Suwir']
+      textEn: 'Focus on high nutrient-density foods in small volumes so daily protein targets are met without feeling bloated.',
+      recommendedFoods: ['Smoothie Pisang + Susu Kedelai', 'Sup Kaldu Tulang Sapi/Ayam', 'Telur Kukus Keju', 'Ikan Gabus Suwir'],
+      recommendedFoodsEn: ['Banana + Soy Milk Smoothie', 'Bone Broth Soup', 'Cheesy Steamed Egg', 'Shredded Snakehead Fish']
     }
   },
 
@@ -771,12 +894,15 @@ const NUTRIVISION_DATA = {
       initials: 'SD',
       category: 'post-surgery',
       categoryLabel: 'Pasca-Bedah Digestif · Mg 2',
+      categoryLabelEn: 'Digestive Post-Surgery · Wk 2',
       timeAgo: '2 jam yang lalu',
+      timeAgoEn: '2 hours ago',
       verified: true,
       text: 'Setelah operasi usus buntu kemarin, minggu ke-2 ini dokter minta fokus protein. Trikku: bikin telur kukus tim ala Jepang ditambah tahu sutra. Teksturnya super lembut, nggak bikin kembung, dan dapet 16g protein per porsi!',
+      textEn: 'After appendectomy last week, in this 2nd week my doctor advised prioritizing protein. My tip: make Japanese-style chawanmushi steamed egg with silken tofu. It is ultra-soft, causes no bloating, and provides 16g protein per serving!',
       likes: 18,
       comments: [
-        { author: 'Budi H.', text: 'Boleh dicoba nih resepnya, kebetulan lagi fase pemulihan juga!' }
+        { author: 'Budi H.', text: 'Boleh dicoba nih resepnya, kebetulan lagi fase pemulihan juga!', textEn: 'Will definitely try this recipe, currently in recovery phase as well!' }
       ]
     },
     {
@@ -785,12 +911,15 @@ const NUTRIVISION_DATA = {
       initials: 'AP',
       category: 'gym',
       categoryLabel: 'Gym Recovery & Hipertrofi',
+      categoryLabelEn: 'Gym Recovery & Hypertrophy',
       timeAgo: '5 jam yang lalu',
+      timeAgoEn: '5 hours ago',
       verified: true,
       text: 'Buat yang cari opsi protein hemat pasca leg day berat: ikan kembung bakar (Rp 7rb) proteinnya tembus 20g + omega 3 alami. Jauh lebih hemat dibanding suplemen whey impor!',
+      textEn: 'For anyone looking for budget protein after heavy leg days: grilled mackerel (Rp 7k) hits over 20g protein + natural omega-3. Much more cost-effective than imported whey supplements!',
       likes: 34,
       comments: [
-        { author: 'Rian M.', text: 'Setuju banget, ikan kembung kandungan gizinya juara.' }
+        { author: 'Rian M.', text: 'Setuju banget, ikan kembung kandungan gizinya juara.', textEn: 'Totally agree, mackerel nutrient profile is top tier.' }
       ]
     },
     {
@@ -799,9 +928,12 @@ const NUTRIVISION_DATA = {
       initials: 'DH',
       category: 'rehab',
       categoryLabel: 'Fisioterapi & Rehabilitasi ACL',
+      categoryLabelEn: 'Physiotherapy & ACL Rehab',
       timeAgo: '1 hari yang lalu',
+      timeAgoEn: '1 day ago',
       verified: true,
       text: 'Catatan penting untuk pasien pasca-rekonstruksi ACL: jangan kurangi kalori terlalu ekstrem karena otot paha (quadriceps) butuh nutrisi agar tidak atrofi selama latihan beban mandiri.',
+      textEn: 'Important note for post-ACL reconstruction patients: do not cut calories too drastically because your quadriceps require optimal nourishment to prevent atrophy during progressive loading exercises.',
       likes: 42,
       comments: []
     }

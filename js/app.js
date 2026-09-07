@@ -279,6 +279,18 @@ class NutriVisionApp {
     this.updateProfileUI();
     this.updateCalcUI();
     this.selectLandingPreset(this.currentLandingPreset || 'preset-soft-bubur-gabus');
+    this.renderOverviewPlate();
+    this.renderFoodCatalog();
+    if (window.mealPlanner && typeof window.mealPlanner.renderPlanner === 'function') {
+      window.mealPlanner.renderPlanner();
+      window.mealPlanner.renderSymptomFilter();
+    }
+    if (window.communityHandler && typeof window.communityHandler.renderCommunityFeed === 'function') {
+      window.communityHandler.renderCommunityFeed();
+    }
+    if (window.caregiverHandler && typeof window.caregiverHandler.renderCaregiverList === 'function') {
+      window.caregiverHandler.renderCaregiverList();
+    }
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -2070,6 +2082,7 @@ class NutriVisionApp {
     }
 
     if (!cvEngine.currentScan) return;
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const segments = cvEngine.currentScan.segments || [];
     const totalGrams = segments.reduce((sum, s) => sum + (s.portionGrams || 0), 0) || 1;
     const totalProtMin = segments.reduce((sum, s) => sum + (s.protein ? s.protein[0] : 0), 0);
@@ -2093,7 +2106,7 @@ class NutriVisionApp {
 
     const totalBadge = document.getElementById('overview-total-badge');
     if (totalBadge) {
-      totalBadge.textContent = `${segments.length} Komponen`;
+      totalBadge.textContent = `${segments.length} ${isId ? 'Komponen' : 'Components'}`;
     }
 
     // 2. Render Right Column Segment Legend with Clean Percentage Bars
@@ -2102,6 +2115,8 @@ class NutriVisionApp {
       legendBox.innerHTML = segments.map(seg => {
         const portionPct = Math.round(((seg.portionGrams || 0) / totalGrams) * 100);
         const isHovered = (cvEngine.activeHoverSegmentId === seg.id);
+        const segName = isId ? seg.name : (seg.nameEn || seg.name);
+        const portionLabel = isId ? 'Porsi' : 'Portion';
         return `
           <div class="segment-row ${isHovered ? 'hovered' : ''}" data-seg-id="${seg.id}"
                onmouseenter="cvEngine.activeHoverSegmentId='${seg.id}'; app.renderOverviewPlate();" 
@@ -2109,10 +2124,10 @@ class NutriVisionApp {
             <div class="segment-row-top">
               <div class="segment-row-left">
                 <span class="segment-swatch" style="background: ${seg.color}"></span>
-                <span class="segment-name">${seg.name}</span>
+                <span class="segment-name">${segName}</span>
               </div>
               <div class="segment-row-right">
-                <span class="segment-portion-pct">${portionPct}% Porsi</span>
+                <span class="segment-portion-pct">${portionPct}% ${portionLabel}</span>
                 <span class="confidence-pill">${seg.confidence}%</span>
                 <span class="segment-values">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot</span>
               </div>
@@ -2128,7 +2143,9 @@ class NutriVisionApp {
     // Update Confidence Note
     const confNote = document.getElementById('overview-conf-note');
     if (confNote) {
-      confNote.textContent = `Tingkat keyakinan model: ${overallConf}% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.`;
+      confNote.textContent = isId
+        ? `Tingkat keyakinan model: ${overallConf}% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.`
+        : `Model confidence: ${overallConf}% · Estimated values presented in decision-support nutritional ranges.`;
     }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -2157,14 +2174,17 @@ class NutriVisionApp {
   }
 
   renderScanModalUI() {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
     // Render presets chip
     const presetContainer = document.getElementById('scan-preset-chips');
     if (presetContainer) {
       presetContainer.innerHTML = NUTRIVISION_DATA.presetScans.map((preset, idx) => {
+        const titleStr = isId ? preset.title.split(' (')[0] : (preset.titleEn ? preset.titleEn.split(' (')[0] : preset.title.split(' (')[0]);
         return `
           <button class="preset-chip ${cvEngine.currentScan?.id === preset.id ? 'active' : ''}" 
                   onclick="app.selectScanPreset('${preset.id}')">
-            ${preset.title.split(' (')[0]}
+            ${titleStr}
           </button>
         `;
       }).join('');
@@ -2179,22 +2199,29 @@ class NutriVisionApp {
     // Render Editable Segment List (FR-07)
     const editList = document.getElementById('modal-segment-edit-list');
     if (editList && cvEngine.currentScan) {
+      const uncertainLabel = isId ? 'Belum Yakin' : 'Uncertain';
+      const confLabel = isId ? 'Keyakinan' : 'Confidence';
+      const calsUnit = isId ? 'kkal' : 'kcal';
+      const portionTitle = isId ? 'Ubah porsi gram' : 'Adjust portion grams';
+      const removeTitle = isId ? 'Hapus bahan' : 'Remove ingredient';
+
       editList.innerHTML = cvEngine.currentScan.segments.map(seg => {
+        const segName = isId ? seg.name : (seg.nameEn || seg.name);
         return `
           <div class="segment-edit-item ${seg.unrecognized ? 'unrecognized' : ''}">
             <span class="segment-color-dot" style="background: ${seg.color}"></span>
             <div class="segment-edit-info">
               <div class="name">
-                ${seg.name} 
-                ${seg.unrecognized ? '<span style="font-size:11px;color:var(--amber-600);display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-circle" class="btn-icon-sm"></i> Belum Yakin</span>' : ''}
+                ${segName} 
+                ${seg.unrecognized ? `<span style="font-size:11px;color:var(--amber-600);display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-circle" class="btn-icon-sm"></i> ${uncertainLabel}</span>` : ''}
               </div>
-              <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} kkal · Keyakinan: ${seg.confidence}%</div>
+              <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} ${calsUnit} · ${confLabel}: ${seg.confidence}%</div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
               <input type="number" value="${seg.portionGrams}" min="10" max="800" step="10" 
                      style="width:60px;padding:4px 6px;font-size:12px;border:1px solid var(--line);border-radius:6px;"
-                     onchange="app.updateSegmentGrams('${seg.id}', this.value)" title="Ubah porsi gram">
-              <button class="btn-remove-segment" onclick="app.removeSegment('${seg.id}')" title="Hapus bahan" style="display:flex;align-items:center;">
+                     onchange="app.updateSegmentGrams('${seg.id}', this.value)" title="${portionTitle}">
+              <button class="btn-remove-segment" onclick="app.removeSegment('${seg.id}')" title="${removeTitle}" style="display:flex;align-items:center;">
                 <i data-lucide="trash-2" class="btn-icon-sm"></i>
               </button>
             </div>
@@ -2207,11 +2234,15 @@ class NutriVisionApp {
     const agg = cvEngine.calculateAggregatedNutrients();
     const aggDisplay = document.getElementById('modal-aggregated-nutrients');
     if (aggDisplay) {
+      const portionLabel = isId ? 'Total Porsi:' : 'Total Portion:';
+      const calsLabel = isId ? 'Kalori:' : 'Calories:';
+      const calsUnit = isId ? 'kkal' : 'kcal';
+
       aggDisplay.innerHTML = `
         <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--line);font-size:var(--font-sm);">
-          <div><b>Total Porsi:</b> ${agg.totalGrams}g</div>
+          <div><b>${portionLabel}</b> ${agg.totalGrams}g</div>
           <div><b>Protein:</b> <span style="color:var(--teal-700);font-weight:700;">${agg.protein[0]} - ${agg.protein[1]} g</span></div>
-          <div><b>Kalori:</b> <span style="font-weight:600;">${agg.cals[0]} - ${agg.cals[1]} kkal</span></div>
+          <div><b>${calsLabel}</b> <span style="font-weight:600;">${agg.cals[0]} - ${agg.cals[1]} ${calsUnit}</span></div>
         </div>
       `;
     }
@@ -2331,6 +2362,7 @@ class NutriVisionApp {
     const body = document.getElementById('plate-catalog-modal-body');
     if (!body) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const segments = (window.cvEngine && cvEngine.currentScan && cvEngine.currentScan.segments) ? cvEngine.currentScan.segments : [];
     const db = NUTRIVISION_DATA.indonesianFoodDatabase || [];
 
@@ -2338,10 +2370,10 @@ class NutriVisionApp {
     let targetSegments = segments;
     if (targetSegments.length === 0) {
       targetSegments = [
-        { name: 'Nasi Putih Pulen', portionGrams: 175, color: '#9EA76B', protein: [4, 5], cals: [220, 250], carbs: [48, 55], fat: [0.4, 0.8], foodId: 'nasi-putih' },
-        { name: 'Dada Ayam Panggang', portionGrams: 125, color: '#9EA76B', protein: [28, 33], cals: [190, 220], carbs: [0, 1.5], fat: [3.8, 5.2], foodId: 'dada-ayam-panggang' },
-        { name: 'Tumis Kangkung', portionGrams: 85, color: '#2DD4BF', protein: [2.5, 3.5], cals: [45, 60], carbs: [3, 5], fat: [1.2, 2.0], foodId: 'tumis-kangkung' },
-        { name: 'Telur Rebus (1/2 butir)', portionGrams: 30, color: '#F59E0B', protein: [3.3, 3.8], cals: [38, 45], carbs: [0.3, 0.5], fat: [2.6, 3.0], foodId: 'telur-rebus' }
+        { name: 'Nasi Putih Pulen', nameEn: 'Steamed White Rice', portionGrams: 175, color: '#9EA76B', protein: [4, 5], cals: [220, 250], carbs: [48, 55], fat: [0.4, 0.8], foodId: 'nasi-putih' },
+        { name: 'Dada Ayam Panggang', nameEn: 'Grilled Chicken Breast', portionGrams: 125, color: '#9EA76B', protein: [28, 33], cals: [190, 220], carbs: [0, 1.5], fat: [3.8, 5.2], foodId: 'dada-ayam-panggang' },
+        { name: 'Tumis Kangkung', nameEn: 'Sautéed Water Spinach', portionGrams: 85, color: '#2DD4BF', protein: [2.5, 3.5], cals: [45, 60], carbs: [3, 5], fat: [1.2, 2.0], foodId: 'tumis-kangkung' },
+        { name: 'Telur Rebus (1/2 butir)', nameEn: 'Boiled Egg (1/2 piece)', portionGrams: 30, color: '#F59E0B', protein: [3.3, 3.8], cals: [38, 45], carbs: [0.3, 0.5], fat: [2.6, 3.0], foodId: 'telur-rebus' }
       ];
     }
 
@@ -2376,17 +2408,17 @@ class NutriVisionApp {
       // Extract price and metadata
       let priceNum = 3500;
       let priceText = 'Rp 3.500';
-      let bappenasText = 'Bapanas: Acuan Standar';
+      let bappenasText = isId ? 'Bapanas: Acuan Standar' : 'Natl Food Agency: Standard';
       let foodImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80';
-      let clinicalBenefit = 'Kaya mikronutrien dan protein esensial untuk percepatan pemulihan jaringan.';
+      let clinicalBenefit = isId ? 'Kaya mikronutrien dan protein esensial untuk percepatan pemulihan jaringan.' : 'Rich in micronutrients and essential protein for accelerated tissue repair.';
       let tkpiCode = 'TKPI 2024';
-      let displayName = seg.name;
+      let displayName = isId ? seg.name : (seg.nameEn || seg.name);
 
       if (matchedFood) {
-        displayName = matchedFood.name;
+        displayName = isId ? matchedFood.name : (matchedFood.nameEn || matchedFood.name);
         foodImage = matchedFood.image || foodImage;
-        bappenasText = matchedFood.bappenasRef || bappenasText;
-        clinicalBenefit = matchedFood.subtitle || matchedFood.clinicalIndication || clinicalBenefit;
+        bappenasText = isId ? (matchedFood.bappenasRef || bappenasText) : (matchedFood.bappenasRefEn || matchedFood.bappenasRef || bappenasText);
+        clinicalBenefit = isId ? (matchedFood.subtitle || matchedFood.clinicalIndication || clinicalBenefit) : (matchedFood.subtitleEn || matchedFood.clinicalIndicationEn || clinicalBenefit);
         tkpiCode = matchedFood.tkpiCode || tkpiCode;
         
         // Extract raw price number e.g. "Rp 4.800" -> 4800
@@ -2409,6 +2441,9 @@ class NutriVisionApp {
       totalCalsMin += cMin;
       totalCalsMax += cMax;
 
+      const calLabel = isId ? 'Kal:' : 'Cal:';
+      const calUnit = isId ? 'kkal' : 'kcal';
+
       return `
         <div class="plate-food-card">
           <div class="plate-food-thumb-box">
@@ -2429,7 +2464,7 @@ class NutriVisionApp {
               </div>
               <div class="plate-food-macros">
                 <span class="plate-macro-item">Prot: <b>${pMin}-${pMax}g</b></span> · 
-                <span class="plate-macro-item">Kal: <b>${cMin}-${cMax} kkal</b></span> · 
+                <span class="plate-macro-item">${calLabel} <b>${cMin}-${cMax} ${calUnit}</b></span> · 
                 <span class="plate-macro-item" style="color:#64748B;">${tkpiCode}</span>
               </div>
             </div>
@@ -2441,14 +2476,19 @@ class NutriVisionApp {
       `;
     }).join('');
 
+    const compLabel = isId ? 'Komponen Bahan' : 'Food Components';
+    const compUnit = isId ? 'Bahan' : 'Items';
+    const totalPortionLabel = isId ? 'Total Porsi' : 'Total Portion';
+    const estCostLabel = isId ? 'Estimasi Biaya Piring' : 'Estimated Plate Cost';
+
     body.innerHTML = `
       <div class="plate-summary-strip">
         <div>
-          <div class="plate-summary-stat-label">Komponen Bahan</div>
-          <div class="plate-summary-stat-val">${targetSegments.length} <span style="font-size:12px;font-weight:500;color:var(--text-sub);">Bahan</span></div>
+          <div class="plate-summary-stat-label">${compLabel}</div>
+          <div class="plate-summary-stat-val">${targetSegments.length} <span style="font-size:12px;font-weight:500;color:var(--text-sub);">${compUnit}</span></div>
         </div>
         <div>
-          <div class="plate-summary-stat-label">Total Porsi</div>
+          <div class="plate-summary-stat-label">${totalPortionLabel}</div>
           <div class="plate-summary-stat-val">${totalGrams} <span style="font-size:12px;font-weight:500;color:var(--text-sub);">gram</span></div>
         </div>
         <div>
@@ -2456,7 +2496,7 @@ class NutriVisionApp {
           <div class="plate-summary-stat-val" style="color:#15803D;">${totalProtMin.toFixed(1).replace('.0','')}-${totalProtMax.toFixed(1).replace('.0','')} <span style="font-size:12px;font-weight:500;color:#15803D;">g</span></div>
         </div>
         <div>
-          <div class="plate-summary-stat-label">Estimasi Biaya Piring</div>
+          <div class="plate-summary-stat-label">${estCostLabel}</div>
           <div class="plate-summary-stat-val" style="color:#0284C7;">Rp ${totalEstimatedPrice.toLocaleString('id-ID')}</div>
         </div>
       </div>
@@ -2679,17 +2719,18 @@ class NutriVisionApp {
   toggleFavoriteFood(foodId, event) {
     if (event) event.stopPropagation();
     if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
-    const foodName = food ? food.name : 'Pangan Lokal';
+    const foodName = food ? (isId ? food.name : (food.nameEn || food.name)) : (isId ? 'Pangan Lokal' : 'Local Food');
 
     if (this.favoriteFoods.has(foodId)) {
       this.favoriteFoods.delete(foodId);
       this.saveFavoriteFoods();
-      this.showToast(`Dihapus dari Favorit: ${foodName}`);
+      this.showToast(isId ? `Dihapus dari Favorit: ${foodName}` : `Removed from Favorites: ${foodName}`);
     } else {
       this.favoriteFoods.add(foodId);
       this.saveFavoriteFoods();
-      this.showToast(`❤️ Disimpan ke Favorit: ${foodName}`);
+      this.showToast(isId ? `❤️ Disimpan ke Favorit: ${foodName}` : `❤️ Saved to Favorites: ${foodName}`);
     }
     const searchVal = document.getElementById('food-catalog-search')?.value || '';
     this.renderFoodCatalog(searchVal);
@@ -2699,6 +2740,7 @@ class NutriVisionApp {
     const grid = document.getElementById('food-catalog-grid');
     if (!grid) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     if (!this.activeCatalogCategory) this.activeCatalogCategory = 'all';
     if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
 
@@ -2712,6 +2754,12 @@ class NutriVisionApp {
       }
       if (bannerContainer) {
         bannerContainer.style.display = 'block';
+        const bannerTitle = isId ? 'Pilihan Pangan Sesuai Komposisi Piring Anda' : 'Foods Matching Your Plate Composition';
+        const bannerSub = isId 
+          ? `Menampilkan <strong>${baseList.length} bahan pangan lokal</strong> yang cocok dengan hasil segmentasi piring (${segmentNames.join(', ')}).`
+          : `Showing <strong>${baseList.length} local food ingredients</strong> matching your plate segmentation (${segmentNames.join(', ')}).`;
+        const bannerBtn = isId ? 'Tampilkan Semua Pangan Lokal' : 'Show All Local Foods';
+
         bannerContainer.innerHTML = `
           <div class="catalog-matched-alert" style="background:linear-gradient(135deg, rgba(158,167,107,0.16) 0%, rgba(158,167,107,0.06) 100%);border:1.5px solid #9EA76B;border-radius:14px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(158,167,107,0.12);margin-bottom:18px;">
             <div style="display:flex;align-items:center;gap:12px;">
@@ -2719,12 +2767,12 @@ class NutriVisionApp {
                 <i data-lucide="sparkles" style="width:18px;height:18px;"></i>
               </div>
               <div>
-                <b style="color:var(--text-main, #2D3748);font-size:13.5px;display:block;">Pilihan Pangan Sesuai Komposisi Piring Anda</b>
-                <span style="font-size:12px;color:var(--text-sub, #64748B);">Menampilkan <strong>${baseList.length} bahan pangan lokal</strong> yang cocok dengan hasil segmentasi piring (${segmentNames.join(', ')}).</span>
+                <b style="color:var(--text-main, #2D3748);font-size:13.5px;display:block;">${bannerTitle}</b>
+                <span style="font-size:12px;color:var(--text-sub, #64748B);">${bannerSub}</span>
               </div>
             </div>
             <button type="button" class="btn-sm-teal" style="background:var(--card-bg, #FFFFFF);border:1.5px solid #9EA76B;color:var(--text-main, #2D3748);font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;" onclick="app.clearCatalogPlateFilter()">
-              <i data-lucide="layout-grid" style="width:14px;height:14px;"></i> Tampilkan Semua Pangan Lokal
+              <i data-lucide="layout-grid" style="width:14px;height:14px;"></i> ${bannerBtn}
             </button>
           </div>
         `;
@@ -2750,34 +2798,46 @@ class NutriVisionApp {
       }
       const matchSearch = !term || 
         food.name.toLowerCase().includes(term) || 
+        (food.nameEn && food.nameEn.toLowerCase().includes(term)) || 
         (food.subtitle && food.subtitle.toLowerCase().includes(term)) || 
+        (food.subtitleEn && food.subtitleEn.toLowerCase().includes(term)) || 
         (food.clinicalIndication && food.clinicalIndication.toLowerCase().includes(term)) ||
+        (food.clinicalIndicationEn && food.clinicalIndicationEn.toLowerCase().includes(term)) ||
         (food.tkpiCode && food.tkpiCode.toLowerCase().includes(term));
       return matchCat && matchSearch;
     });
 
     if (items.length === 0) {
       if (this.activeCatalogCategory === 'favorite') {
+        const favEmptyTitle = isId ? 'Belum Ada Pangan Favorit' : 'No Favorite Foods Yet';
+        const favEmptyDesc = isId 
+          ? 'Klik tombol hati di pojok kiri bawah kartu makanan untuk menyimpan menu lokal favorit Anda untuk perencanaan gizi cepat.'
+          : 'Click the heart button on the food card to save your favorite recovery foods for quick meal planning.';
+        const favEmptyBtn = isId ? 'Jelajahi Semua Pangan Lokal' : 'Explore All Local Foods';
+
         grid.innerHTML = `
           <div class="catalog-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: rgba(255,255,255,0.7); border-radius: 18px; border: 1.5px dashed #E2E8F0;">
             <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEE2E2; color: #EF4444; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
               <iconify-icon icon="solar:heart-broken-bold" style="font-size: 28px;"></iconify-icon>
             </div>
-            <h4 style="margin: 0 0 6px; font-size: 16px; color: #1E293B; font-weight: 700;">Belum Ada Pangan Favorit</h4>
+            <h4 style="margin: 0 0 6px; font-size: 16px; color: #1E293B; font-weight: 700;">${favEmptyTitle}</h4>
             <p style="margin: 0 0 16px; font-size: 13px; color: #64748B; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5;">
-              Klik tombol hati di pojok kiri bawah kartu makanan untuk menyimpan menu lokal favorit Anda untuk perencanaan gizi cepat.
+              ${favEmptyDesc}
             </p>
             <button type="button" class="btn-sm-teal" style="background: #0F766E; color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-weight: 700; font-size: 12px; cursor: pointer;" onclick="document.querySelector('.cat-pill-btn[data-category=\\'all\\']')?.click()">
-              Jelajahi Semua Pangan Lokal
+              ${favEmptyBtn}
             </button>
           </div>
         `;
       } else {
+        const searchEmptyTitle = isId ? 'Menu tidak ditemukan' : 'No Foods Found';
+        const searchEmptyDesc = isId ? 'Coba kata kunci lain atau pilih kategori menu di atas.' : 'Try another search keyword or select a category above.';
+
         grid.innerHTML = `
           <div class="catalog-empty-state" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px;">
             <i data-lucide="search-x" style="width:40px;height:40px;color:#94A3B8;margin-bottom:8px;"></i>
-            <h4>Menu tidak ditemukan</h4>
-            <p>Coba kata kunci lain atau pilih kategori menu di atas.</p>
+            <h4>${searchEmptyTitle}</h4>
+            <p>${searchEmptyDesc}</p>
           </div>
         `;
       }
@@ -2790,24 +2850,36 @@ class NutriVisionApp {
 
     grid.innerHTML = items.map(food => {
       const isFav = this.favoriteFoods.has(food.id);
-      const subtitle = food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kkal`;
-      const clinicalTag = food.clinicalIndication || 'Pemulihan Klinis';
-      const bappenasRef = food.bappenasRef || 'Bapanas: Standar Nasional';
-      const tkpiCode = food.tkpiCode || 'TKPI 2024';
-      const clicks = this.getMenuClicks(food.id);
-      const formattedClicks = this.formatClicks(clicks);
+      const displayName = isId ? food.name : (food.nameEn || food.name);
+      const subtitle = isId 
+        ? (food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kkal`)
+        : (food.subtitleEn || food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kcal`);
+      const clinicalTag = isId 
+        ? (food.clinicalIndication || 'Pemulihan Klinis')
+        : (food.clinicalIndicationEn || food.clinicalIndication || 'Clinical Recovery');
+      const bappenasRef = isId 
+        ? (food.bappenasRef || 'Bapanas: Standar Nasional')
+        : (food.bappenasRefEn || food.bappenasRef || 'Natl Food Agency: Standard');
+      const cardTitle = isId ? 'Klik kartu untuk tambahkan ke piring scan' : 'Click card to add to plate scan';
+      const favTitle = isFav 
+        ? (isId ? 'Hapus dari Pangan Favorit' : 'Remove from Favorites') 
+        : (isId ? 'Simpan ke Pangan Favorit' : 'Save to Favorites');
+      const recipeTitle = isId ? 'Buka Resep & Panduan Memasak Klinis' : 'Open Clinical Recipe & Cooking Guide';
+      const portionUnit = isId ? 'porsi' : 'portion';
+      const carbUnit = isId ? 'Karbo' : 'Carbs';
+      const calUnit = isId ? 'kkal' : 'kcal';
 
       return `
-        <div class="popular-food-card" onclick="app.handleCardClick('${food.id}')" title="Klik kartu untuk tambahkan ke piring scan">
+        <div class="popular-food-card" onclick="app.handleCardClick('${food.id}')" title="${cardTitle}">
           <!-- Floating Round Dish Image & Side Header (Hanya Tag Indikasi Klinis) -->
           <div class="food-card-top">
             <div class="food-dish-plate-wrap">
-              <img src="${food.image}" alt="${food.name}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
+              <img src="${food.image}" alt="${displayName}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
             </div>
 
             <!-- Sisi Kanan Atas: Hanya Tag Indikasi Terapi Klinis -->
             <div class="food-card-header-side" onclick="event.stopPropagation();">
-              <span class="food-clinical-tag" title="Indikasi Terapi Klinis: ${clinicalTag}">
+              <span class="food-clinical-tag" title="${isId ? 'Indikasi Terapi Klinis:' : 'Clinical Therapy Indication:'} ${clinicalTag}">
                 <iconify-icon icon="solar:shield-check-bold" style="font-size:11.5px;color:#64748B;flex-shrink:0;"></iconify-icon>
                 <span>${clinicalTag}</span>
               </span>
@@ -2816,13 +2888,13 @@ class NutriVisionApp {
 
           <!-- Card Content -->
           <div class="food-card-body">
-            <h4 class="food-card-title">${food.name}</h4>
+            <h4 class="food-card-title">${displayName}</h4>
             <p class="food-card-sub">${subtitle}</p>
 
             <div class="food-macro-pills-row">
               <span class="macro-pill-item prot">${food.protein}g Prot</span>
-              <span class="macro-pill-item carb">${food.carbs}g Karbo</span>
-              <span class="macro-pill-item cal">${food.calories} kkal</span>
+              <span class="macro-pill-item carb">${food.carbs}g ${carbUnit}</span>
+              <span class="macro-pill-item cal">${food.calories} ${calUnit}</span>
             </div>
 
             <!-- Card Footer: Love Icon & Resep Pembuatan Samping-Sampingan -->
@@ -2830,20 +2902,20 @@ class NutriVisionApp {
               <div class="food-footer-left-actions">
                 <button type="button" class="food-fav-action-btn ${isFav ? 'active' : ''}" 
                         onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
-                        title="${isFav ? 'Hapus dari Pangan Favorit' : 'Simpan ke Pangan Favorit'}"
-                        aria-label="Favorit">
+                        title="${favTitle}"
+                        aria-label="${isId ? 'Favorit' : 'Favorite'}">
                   <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-action-icon"></iconify-icon>
                 </button>
                 <button type="button" class="food-recipe-action-btn" 
                         onclick="event.stopPropagation(); app.handleRecipeClick('${food.id}');" 
-                        title="Buka Resep & Panduan Memasak Klinis"
-                        aria-label="Lihat Resep Pembuatan">
+                        title="${recipeTitle}"
+                        aria-label="${isId ? 'Lihat Resep Pembuatan' : 'View Cooking Guide'}">
                   <iconify-icon icon="solar:alt-arrow-right-bold" class="recipe-btn-arrow"></iconify-icon>
                 </button>
               </div>
               <div class="food-card-price-group">
-                <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
-                <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran Bapanas RI">${bappenasRef}</span>
+                <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/${portionUnit}</small></span>
+                <span class="food-bappenas-ref" title="${isId ? 'Acuan Harga Pasar Eceran Bapanas RI' : 'National Food Agency Retail Benchmark'}">${bappenasRef}</span>
               </div>
             </div>
           </div>
@@ -2859,13 +2931,15 @@ class NutriVisionApp {
   }
 
   addCatalogItemToScan(foodId) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
     if (!food) return;
 
     cvEngine.addSegment(food, food.defaultPortionGrams);
     this.renderScanModalUI();
     this.renderOverviewPlate();
-    this.showToast(`Ditambahkan ke piring: ${food.name} (${food.defaultPortionGrams}g)`);
+    const foodName = isId ? food.name : (food.nameEn || food.name);
+    this.showToast(isId ? `Ditambahkan ke piring: ${foodName} (${food.defaultPortionGrams}g)` : `Added to plate: ${foodName} (${food.defaultPortionGrams}g)`);
   }
 
   // =========================================================================
@@ -3057,43 +3131,50 @@ class NutriVisionApp {
     if (!modalContent) return;
 
     this.initRecipeState();
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const foodId = this.recipeState.foodId;
     const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
     if (!food) return;
 
     const recipe = (NUTRIVISION_DATA.recipeBook && NUTRIVISION_DATA.recipeBook[foodId]) || {
-      title: `Panduan Memasak: ${food.name}`,
-      author: 'Tim Gizi Klinis NutriVision RI',
+      title: isId ? `Panduan Memasak: ${food.name}` : `Cooking Guide: ${food.nameEn || food.name}`,
+      author: isId ? 'Tim Gizi Klinis NutriVision RI' : 'NutriVision Clinical Nutrition Team',
       prepTime: '10m',
       cookTime: '15m',
       totalTime: '25m Time',
       caloriesBase: food.calories || 150,
       rating: '4.9/5 Rating',
       parameters: [
-        { label: 'Kukus/Rebus', icon: 'solar:stopwatch-bold', value: '15:00', bg: '#FEF3C7', color: '#92400E' },
-        { label: 'Suhu', icon: 'solar:thermometer-bold', value: '95°C', bg: '#E0F2FE', color: '#0369A1' },
+        { label: isId ? 'Kukus/Rebus' : 'Steam/Boil', icon: 'solar:stopwatch-bold', value: '15:00', bg: '#FEF3C7', color: '#92400E' },
+        { label: isId ? 'Suhu' : 'Temp', icon: 'solar:thermometer-bold', value: '95°C', bg: '#E0F2FE', color: '#0369A1' },
         { label: 'Resting', icon: 'solar:clock-circle-bold', value: '3:00', bg: '#F1F5F9', color: '#475569' }
       ],
       ingredients: [
-        { name: `${food.name} segar terstandar`, amount: food.defaultPortionGrams || 100, unit: 'gram' },
-        { name: 'Air bersih higienis', amount: 300, unit: 'ml' },
-        { name: 'Bumbu rempah aromatik alami', amount: 1, unit: 'porsi' }
+        { name: isId ? `${food.name} segar terstandar` : `Standard fresh ${food.nameEn || food.name}`, amount: food.defaultPortionGrams || 100, unit: 'gram' },
+        { name: isId ? 'Air bersih higienis' : 'Purified hygienic water', amount: 300, unit: 'ml' },
+        { name: isId ? 'Bumbu rempah aromatik alami' : 'Natural aromatic herbs & seasoning', amount: 1, unit: isId ? 'porsi' : 'portion' }
       ],
       steps: [
         {
           step: 1,
-          title: 'Persiapan Bahan & Higienitas',
-          instruction: `Cuci bersih ${food.name} di bawah air mengalir. Siapkan peralatan higienis tanpa minyak jenuh berlebih.`,
+          title: isId ? 'Persiapan Bahan & Higienitas' : 'Ingredient Prep & Hygiene',
+          instruction: isId 
+            ? `Cuci bersih ${food.name} di bawah air mengalir. Siapkan peralatan higienis tanpa minyak jenuh berlebih.`
+            : `Rinse ${food.nameEn || food.name} thoroughly under running water. Prepare hygienic utensils free from excess saturated fat.`,
           timer: 0,
           tip: null
         },
         {
           step: 2,
-          title: 'Pengolahan Termal Terkontrol',
-          instruction: `Masak dengan metode pengukusan / perebusan api sedang selama 15 menit hingga matang empuk merata dan zat gizi terjaga.`,
+          title: isId ? 'Pengolahan Termal Terkontrol' : 'Controlled Thermal Cooking',
+          instruction: isId 
+            ? `Masak dengan metode pengukusan / perebusan api sedang selama 15 menit hingga matang empuk merata dan zat gizi terjaga.`
+            : `Cook via steaming / gentle boiling over medium heat for 15 minutes until tender and nutrients are fully preserved.`,
           timer: 900,
-          timerLabel: 'Mulai Timer Memasak (15m)',
-          tip: `Pemanasan terkontrol mempertahankan densitas zat gizi makro (${food.protein}g protein) untuk pemulihan sel optimal.`
+          timerLabel: isId ? 'Mulai Timer Memasak (15m)' : 'Start Cooking Timer (15m)',
+          tip: isId 
+            ? `Pemanasan terkontrol mempertahankan densitas zat gizi makro (${food.protein}g protein) untuk pemulihan sel optimal.`
+            : `Controlled heating preserves macronutrient density (${food.protein}g protein) for optimal cellular healing.`
         }
       ]
     };
@@ -3102,22 +3183,30 @@ class NutriVisionApp {
     const isFav = this.favoriteFoods && this.favoriteFoods.has(foodId);
     const totalCalories = Math.round((recipe.caloriesBase || food.calories) * servings);
     const activeTab = this.recipeState.activeTab || 'ingredients';
+    const servingsLabel = isId ? 'porsi' : 'servings';
+    const calsLabel = isId ? 'kkal' : 'kcal';
+    const closeTitle = isId ? 'Tutup Modal' : 'Close Modal';
+    const favTitle = isFav ? (isId ? 'Hapus dari Favorit' : 'Remove from Favorites') : (isId ? 'Simpan ke Favorit' : 'Save to Favorites');
+    const ingTabLabel = isId ? 'Bahan-Bahan' : 'Ingredients';
+    const dirTabLabel = isId ? 'Cara Memasak' : 'Instructions';
+    const stepsLabel = isId ? 'Langkah' : 'Steps';
+    const addPlateLabel = isId ? `Tambahkan ke Piring Scan (${servings} Porsi)` : `Add to Plate Scan (${servings} Servings)`;
 
     modalContent.innerHTML = `
       <!-- 1. Hero Food Photo with Floating Circular Nav Buttons -->
       <div class="recipe-hero-wrap">
-        <img src="${food.image}" alt="${food.name}" class="recipe-hero-img" onerror="this.src='icons/icon-192.png'" />
+        <img src="${food.image}" alt="${isId ? food.name : (food.nameEn || food.name)}" class="recipe-hero-img" onerror="this.src='icons/icon-192.png'" />
         <div class="recipe-hero-gradient"></div>
         
         <!-- Floating Close Button (Top-Left) -->
-        <button type="button" class="recipe-floating-btn recipe-close-btn" onclick="app.closeModal('food-recipe-modal')" title="Tutup Modal" aria-label="Tutup">
+        <button type="button" class="recipe-floating-btn recipe-close-btn" onclick="app.closeModal('food-recipe-modal')" title="${closeTitle}" aria-label="${closeTitle}">
           <iconify-icon icon="solar:close-circle-bold"></iconify-icon>
         </button>
 
         <!-- Floating Favorite Heart Button (Top-Right) -->
         <button type="button" class="recipe-floating-btn recipe-fav-btn ${isFav ? 'active' : ''}" 
                 onclick="app.toggleFavoriteFood('${food.id}', event); app.renderRecipeModal();" 
-                title="${isFav ? 'Hapus dari Favorit' : 'Simpan ke Favorit'}" aria-label="Favorit">
+                title="${favTitle}" aria-label="${isId ? 'Favorit' : 'Favorite'}">
           <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}"></iconify-icon>
         </button>
       </div>
@@ -3135,21 +3224,21 @@ class NutriVisionApp {
         <!-- 3. Stepper Porsi & Quick Stats Badges Row -->
         <div class="recipe-meta-row">
           <div class="recipe-servings-stepper">
-            <button type="button" class="recipe-servings-btn" onclick="app.changeRecipeServings(-1)" title="Kurangi Porsi" aria-label="Kurangi">-</button>
-            <span class="recipe-servings-text">${servings} porsi</span>
-            <button type="button" class="recipe-servings-btn" onclick="app.changeRecipeServings(1)" title="Tambah Porsi" aria-label="Tambah">+</button>
+            <button type="button" class="recipe-servings-btn" onclick="app.changeRecipeServings(-1)" title="${isId ? 'Kurangi Porsi' : 'Reduce Servings'}" aria-label="${isId ? 'Kurangi' : 'Reduce'}">-</button>
+            <span class="recipe-servings-text">${servings} ${servingsLabel}</span>
+            <button type="button" class="recipe-servings-btn" onclick="app.changeRecipeServings(1)" title="${isId ? 'Tambah Porsi' : 'Increase Servings'}" aria-label="${isId ? 'Tambah' : 'Increase'}">+</button>
           </div>
 
           <div class="recipe-stats-badges">
-            <span class="recipe-stat-pill" title="Total Waktu Pengolahan">
+            <span class="recipe-stat-pill" title="${isId ? 'Total Waktu Pengolahan' : 'Total Cooking Time'}">
               <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
               <span>${recipe.totalTime || recipe.cookTime}</span>
             </span>
-            <span class="recipe-stat-pill calories" title="Total Kalori untuk ${servings} porsi">
+            <span class="recipe-stat-pill calories" title="${isId ? `Total Kalori untuk ${servings} porsi` : `Total Calories for ${servings} servings`}">
               <iconify-icon icon="solar:flame-bold"></iconify-icon>
-              <span>${totalCalories} kkal</span>
+              <span>${totalCalories} ${calsLabel}</span>
             </span>
-            <span class="recipe-stat-pill rating" title="Rating Klinis Teruji">
+            <span class="recipe-stat-pill rating" title="${isId ? 'Rating Klinis Teruji' : 'Clinical Rating'}">
               <iconify-icon icon="solar:star-bold"></iconify-icon>
               <span>${recipe.rating || '4.9/5'}</span>
             </span>
@@ -3160,11 +3249,11 @@ class NutriVisionApp {
         <div class="recipe-segmented-nav">
           <button type="button" class="recipe-tab-btn ${activeTab === 'ingredients' ? 'active' : ''}" 
                   onclick="app.switchRecipeTab('ingredients')">
-            Bahan-Bahan (${recipe.ingredients.length})
+            ${ingTabLabel} (${recipe.ingredients.length})
           </button>
           <button type="button" class="recipe-tab-btn ${activeTab === 'directions' ? 'active' : ''}" 
                   onclick="app.switchRecipeTab('directions')">
-            Cara Memasak (${recipe.steps.length} Langkah)
+            ${dirTabLabel} (${recipe.steps.length} ${stepsLabel})
           </button>
         </div>
 
@@ -3186,7 +3275,7 @@ class NutriVisionApp {
                 <div class="recipe-ingredient-item ${isChecked ? 'checked' : ''}" 
                      id="recipe-ing-item-${idx}" 
                      onclick="app.toggleRecipeIngredient(${idx})"
-                     title="Klik untuk menandai bahan sudah siap">
+                     title="${isId ? 'Klik untuk menandai bahan sudah siap' : 'Click to check off prepared ingredient'}">
                   <div class="recipe-ing-left">
                     <iconify-icon icon="solar:hamburger-menu-linear" class="recipe-ing-bullet"></iconify-icon>
                     <span class="recipe-ing-name">${ing.name}</span>
@@ -3207,7 +3296,7 @@ class NutriVisionApp {
             <button type="button" class="recipe-add-plate-btn" 
                     onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
               <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
-              <span>Tambahkan ke Piring Scan (${servings} Porsi)</span>
+              <span>${addPlateLabel}</span>
             </button>
           </div>
         ` : `
@@ -3232,11 +3321,14 @@ class NutriVisionApp {
               const isRunning = timer && timer.isRunning;
               const remainingSec = timer ? timer.remaining : st.timer;
               const hasTimer = st.timer && st.timer > 0;
+              const pauseLabel = isId ? 'Jeda' : 'Pause';
+              const startTimerLabel = isId ? 'Mulai Timer' : 'Start Timer';
+              const bioLabel = isId ? 'Tips Bioavailabilitas:' : 'Bioavailability Tip:';
 
               return `
                 <div class="recipe-step-card ${isRunning ? 'active-timer' : ''}">
                   <div class="recipe-step-header">
-                    <h4 class="recipe-step-num">Langkah ${st.step}</h4>
+                    <h4 class="recipe-step-num">${isId ? 'Langkah' : 'Step'} ${st.step}</h4>
                     <span class="recipe-step-title">${st.title}</span>
                   </div>
                   <p class="recipe-step-desc">${st.instruction}</p>
@@ -3244,7 +3336,7 @@ class NutriVisionApp {
                   ${st.tip ? `
                     <div class="recipe-step-tip">
                       <iconify-icon icon="solar:shield-warning-bold" style="font-size:16px;flex-shrink:0;color:#D97706;margin-top:1px;"></iconify-icon>
-                      <span><strong>Tips Bioavailabilitas:</strong> ${st.tip}</span>
+                      <span><strong>${bioLabel}</strong> ${st.tip}</span>
                     </div>
                   ` : ''}
 
@@ -3252,10 +3344,10 @@ class NutriVisionApp {
                     <div class="recipe-timer-control-row">
                       <button type="button" class="recipe-step-timer-btn ${isRunning ? 'running' : ''}" 
                               id="recipe-timer-btn-${idx}"
-                              onclick="app.startRecipeTimer(${idx}, ${st.timer}, '${st.title}')">
+                              onclick="app.startRecipeTimer(${idx}, ${st.timer}, '${st.title.replace(/'/g, "\\'")}')">
                         <iconify-icon icon="${isRunning ? 'solar:pause-bold' : 'solar:play-bold'}" style="font-size:14px;"></iconify-icon>
                         <span id="recipe-timer-text-${idx}">
-                          ${isRunning ? `Jeda (${this.formatTimerTime(remainingSec)})` : (st.timerLabel || `Mulai Timer (${this.formatTimerTime(st.timer)})`)}
+                          ${isRunning ? `${pauseLabel} (${this.formatTimerTime(remainingSec)})` : (st.timerLabel || `${startTimerLabel} (${this.formatTimerTime(st.timer)})`)}
                         </span>
                       </button>
                       ${timer ? `
@@ -3275,7 +3367,7 @@ class NutriVisionApp {
             <button type="button" class="recipe-add-plate-btn" 
                     onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
               <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
-              <span>Tambahkan ke Piring Scan (${servings} Porsi)</span>
+              <span>${addPlateLabel}</span>
             </button>
           </div>
         `}
