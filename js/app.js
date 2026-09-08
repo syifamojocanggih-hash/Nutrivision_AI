@@ -1992,10 +1992,10 @@ class NutriVisionApp {
       this.toggleConsentValidation();
     }
 
-    // Kontrol tombol Close X: hanya boleh muncul jika profil sudah pernah selesai sebelumnya
+    // Kontrol tombol Close X: selalu tampilkan agar pengguna bebas keluar/menutup onboarding kapan saja
     const closeBtn = document.getElementById('onboarding-close-btn');
     if (closeBtn) {
-      closeBtn.style.display = (this.userProfile?.hasCompletedQuiz && this.userProfile?.name) ? 'inline-flex' : 'none';
+      closeBtn.style.display = 'inline-flex';
     }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -2048,11 +2048,7 @@ class NutriVisionApp {
   }
 
   tryCloseOnboardingModal() {
-    if (this.userProfile?.hasCompletedQuiz && this.userProfile?.name) {
-      this.closeModal('onboarding-modal');
-    } else {
-      this.showToast('Pengisian profil wajib diselesaikan untuk membuka Dasbor.', 'warning');
-    }
+    this.closeModal('onboarding-modal');
   }
 
   selectGender(gender) {
@@ -3602,15 +3598,31 @@ class NutriVisionApp {
   }
 
   closeModal(modalId) {
+    if (!modalId) {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open');
+        m.style.display = '';
+      });
+      return;
+    }
     const modal = document.getElementById(modalId);
     if (modal) {
       modal.classList.remove('open');
+      modal.style.display = '';
     }
     if (modalId === 'food-recipe-modal') {
       this.clearAllRecipeTimers();
     }
     if (modalId === 'scan-modal') {
       this.deactivateLiveCamera();
+    }
+    if (modalId === 'modal-db-sync') {
+      const syncModal = document.getElementById('modal-db-sync');
+      if (syncModal) syncModal.classList.remove('open');
+    }
+    if (modalId === 'modal-pdf-report') {
+      const pdfModal = document.getElementById('modal-pdf-report');
+      if (pdfModal) pdfModal.classList.remove('open');
     }
   }
 
@@ -4531,13 +4543,40 @@ class NutriVisionApp {
       });
     }
 
-    // Modal background click to close
+    // Modal background click to close (works for all modals)
     document.querySelectorAll('.modal-overlay').forEach(modal => {
       modal.addEventListener('click', (e) => {
-        if (e.target === modal && modal.id !== 'onboarding-modal') {
+        if (e.target === modal) {
           this.closeModal(modal.id);
         }
       });
+    });
+
+    // Global Exit / Close Button Delegator: ensures any close button or child icon immediately closes the target modal
+    document.addEventListener('click', (e) => {
+      const closeBtn = e.target.closest('.modal-close-btn, .auth-split-close-btn, .db-modal-close, .recipe-close-btn, .close-btn, [data-close-modal]');
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const targetModalId = closeBtn.getAttribute('data-close-modal');
+        if (targetModalId) {
+          this.closeModal(targetModalId);
+          return;
+        }
+        const parentModal = closeBtn.closest('.modal-overlay');
+        if (parentModal) {
+          this.closeModal(parentModal.id);
+          return;
+        }
+      }
+    });
+
+    // ESC Key to close any active modal dialog
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+        const activeModals = document.querySelectorAll('.modal-overlay.open');
+        activeModals.forEach(m => this.closeModal(m.id));
+      }
     });
 
     // Supabase real-time background sync error listener

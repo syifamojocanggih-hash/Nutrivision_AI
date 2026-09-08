@@ -2251,7 +2251,7 @@
             <p style="margin:2px 0 0;font-size:12px;color:var(--text-sub,#64748B);">Rincian bahan pangan, nilai gizi TKPI Bappenas, dan acuan harga pasar Badan Pangan Nasional (Bapanas RI).</p>
           </div>
         </div>
-        <button class="modal-close-btn" onclick="app.closeModal('plate-catalog-modal')" title="Tutup">
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('plate-catalog-modal')" data-close-modal="plate-catalog-modal" title="Tutup" aria-label="Tutup">
           <i data-lucide="x"></i>
         </button>
       </div>
@@ -2280,7 +2280,7 @@
         <h3 style="display:flex;align-items:center;gap:8px;">
           <i data-lucide="scan-line" style="color:var(--teal-500);"></i> Segmentasi & Pindai Makanan
         </h3>
-        <button class="modal-close-btn" onclick="app.closeModal('scan-modal')"><i data-lucide="x"></i></button>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('scan-modal')" data-close-modal="scan-modal" title="Tutup" aria-label="Tutup"><i data-lucide="x"></i></button>
       </div>
 
       <!-- Mode Uji Cepat Preset Demo -->
@@ -2382,8 +2382,8 @@
             <span class="bullet-sub">Biometrik &amp; Target</span>
           </div>
         </div>
-        <!-- Close button: only accessible if profile already exists -->
-        <button class="modal-close-btn" id="onboarding-close-btn" onclick="app.tryCloseOnboardingModal()" style="display:none;margin-left:12px;" title="Tutup"><i data-lucide="x"></i></button>
+        <!-- Close button: always accessible so user can exit anytime -->
+        <button type="button" class="modal-close-btn" id="onboarding-close-btn" onclick="app.closeModal('onboarding-modal')" data-close-modal="onboarding-modal" style="display:inline-flex;margin-left:12px;" title="Tutup" aria-label="Tutup"><i data-lucide="x"></i></button>
       </div>
 
       <!-- =====================================================================
@@ -2616,7 +2616,7 @@
         <h3 style="display:flex;align-items:center;gap:8px;">
           <i data-lucide="pen-tool" style="color:var(--teal-500);"></i> Bagikan Tips / Resep Pemulihan
         </h3>
-        <button class="modal-close-btn" onclick="app.closeModal('create-post-modal')"><i data-lucide="x"></i></button>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('create-post-modal')" data-close-modal="create-post-modal" title="Tutup" aria-label="Tutup"><i data-lucide="x"></i></button>
       </div>
 
       <form
@@ -2686,7 +2686,7 @@
             <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);">DistilBERT Multilingual (<code style="color:var(--teal-700);font-weight:600;">model.safetensors</code> · 516 MB)</p>
           </div>
         </div>
-        <button class="modal-close-btn" onclick="app.closeModal('ai-tester-modal')"><i data-lucide="x"></i></button>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('ai-tester-modal')" data-close-modal="ai-tester-modal" title="Tutup" aria-label="Tutup"><i data-lucide="x"></i></button>
       </div>
 
       <!-- Health Status Bar -->
@@ -2740,6 +2740,9 @@
      ========================================================================= -->
   <div class="modal-overlay" id="auth-modal">
     <div class="modal-box auth-split-modal">
+      <button type="button" class="auth-split-close-btn" onclick="app.closeModal('auth-modal')" data-close-modal="auth-modal" aria-label="Tutup Modal" title="Tutup">
+        <i data-lucide="x" style="width:17px;height:17px;"></i>
+      </button>
 
       <!-- LEFT VISUAL ARTWORK PANEL (TEAL GRADIENT + MULTI-TIER CLOUD WAVES + GLOW) -->
       <div class="auth-split-visual">
@@ -2779,10 +2782,6 @@
 
       <!-- RIGHT FORM PANEL (WHITE CANVAS WITH PILL SWITCHER) -->
       <div class="auth-split-form-panel">
-        <button class="auth-split-close-btn" onclick="app.closeModal('auth-modal')" aria-label="Tutup Modal"
-          title="Tutup">
-          <i data-lucide="x" style="width:17px;height:17px;"></i>
-        </button>
 
         <!-- Segmented Tab Switcher (Pill Style) -->
         <div class="auth-pill-switcher">
@@ -2938,7 +2937,7 @@
           <h3>Database &amp; Supabase Cloud</h3>
           <p>Hubungkan, sinkronkan, dan pantau data PostgreSQL cloud Anda</p>
         </div>
-        <button type="button" class="db-modal-close" onclick="app.closeDatabaseSyncModal()" aria-label="Tutup">
+        <button type="button" class="db-modal-close" onclick="app.closeDatabaseSyncModal()" data-close-modal="modal-db-sync" title="Tutup" aria-label="Tutup">
           <i data-lucide="x" style="width:16px;height:16px;"></i>
         </button>
       </div>
@@ -3189,7 +3188,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
           <button type="button" class="btn-outline-glass" onclick="app.printPDFReport()" style="font-size:13px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;border-color:var(--line);background:var(--card);color:var(--ink);">
             <i data-lucide="printer" class="btn-icon-sm"></i> Cetak
           </button>
-          <button type="button" class="close-btn" onclick="app.closePDFReportModal()" aria-label="Tutup" style="margin-left:4px;">
+          <button type="button" class="close-btn modal-close-btn" onclick="app.closePDFReportModal()" data-close-modal="modal-pdf-report" title="Tutup" aria-label="Tutup" style="margin-left:4px;">
             <i data-lucide="x" style="width:18px;height:18px;"></i>
           </button>
         </div>

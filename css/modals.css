@@ -231,26 +231,36 @@
 
 .auth-split-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   background: #EFE8CA;
   border: none;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ink-mute);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 10;
+  color: var(--ink-mute, #687346);
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .auth-split-close-btn:hover {
   background: #DDD4B0;
-  color: var(--ink);
-  transform: rotate(90deg);
+  color: var(--ink, #1C200E);
+  transform: rotate(90deg) scale(1.08);
+}
+
+.auth-split-close-btn:active {
+  transform: scale(0.92);
+}
+
+.auth-split-close-btn * {
+  pointer-events: none !important;
 }
 
 /* Interactive Pill Segmented Control Switcher */
@@ -525,16 +535,35 @@
 
 .modal-close-btn {
   all: unset;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-xs);
-  background: var(--bg);
-  color: var(--ink-mute);
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #EFE8CA;
+  color: #5D6738;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  user-select: none;
+}
+
+.modal-close-btn:hover {
+  background: #DDD4B0;
+  color: #1C200E;
+  transform: rotate(90deg) scale(1.06);
+}
+
+.modal-close-btn:active {
+  transform: scale(0.92);
+}
+
+.modal-close-btn * {
+  pointer-events: none !important;
 }
 
 .camera-capture-viewport {
@@ -1572,6 +1601,10 @@
 
 .recipe-floating-btn:active {
   transform: scale(0.92);
+}
+
+.recipe-floating-btn * {
+  pointer-events: none !important;
 }
 
 .recipe-close-btn {

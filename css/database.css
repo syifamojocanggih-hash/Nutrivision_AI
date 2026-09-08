@@ -213,9 +213,10 @@
 
 .db-modal-close {
   all: unset;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #EFE8CA;
   color: #687346;
@@ -224,13 +225,22 @@
   justify-content: center;
   margin-left: auto;
   flex-shrink: 0;
-  transition: all 0.18s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .db-modal-close:hover {
   background: #DDD4B0;
-  color: #9EA76B;
-  transform: rotate(90deg);
+  color: #1C200E;
+  transform: rotate(90deg) scale(1.06);
+}
+
+.db-modal-close:active {
+  transform: scale(0.92);
+}
+
+.db-modal-close * {
+  pointer-events: none !important;
 }
 
 /* ── Scrollable Body ── */
