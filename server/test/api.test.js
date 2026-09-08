@@ -171,6 +171,68 @@ async function runTests() {
     assert(auditLogs.status === 200, 'GET /api/telemetry/audit-logs returned HTTP 200');
     assert(auditLogs.data?.logs?.length >= 3, 'Audit trail logs populated');
 
+    // 10. Smart Clinical Notifications
+    console.log('\n10. Smart Clinical Notifications (Pagi 06:00, Malam 18:00, Harga, Info):');
+    const notifsRes = await request('GET', '/api/notifications', null, userToken);
+    assert(notifsRes.status === 200, 'GET /api/notifications returned HTTP 200');
+    assert(notifsRes.data?.notifications !== undefined, 'Received notifications array');
+
+    // Test Morning 06:00 AM target reminder trigger
+    const morningTrigger = await request('POST', '/api/notifications/simulate-trigger', {
+      type: 'morning_reminder'
+    }, userToken);
+    assert(morningTrigger.status === 201, 'POST /api/notifications/simulate-trigger (morning_reminder) returned HTTP 201');
+    assert(morningTrigger.data?.notification?.icon === 'sun', 'Morning notification uses "sun" icon and morning target');
+
+    // Test Evening 18:00 PM deficit reminder trigger
+    const eveningTrigger = await request('POST', '/api/notifications/simulate-trigger', {
+      type: 'evening_reminder'
+    }, userToken);
+    assert(eveningTrigger.status === 201, 'POST /api/notifications/simulate-trigger (evening_reminder) returned HTTP 201');
+    assert(
+      eveningTrigger.data?.notification?.icon === 'moon' || eveningTrigger.data?.notification?.icon === 'shield-check',
+      `Evening notification evaluated condition (icon: "${eveningTrigger.data?.notification?.icon}", title: "${eveningTrigger.data?.notification?.title}")`
+    );
+
+    // Test Food Price Change trigger
+    const priceTrigger = await request('POST', '/api/notifications/simulate-trigger', {
+      type: 'price_change'
+    }, userToken);
+    assert(priceTrigger.status === 201, 'POST /api/notifications/simulate-trigger (price_change) returned HTTP 201');
+    assert(priceTrigger.data?.notification?.type === 'price_change', 'Price notification generated with local discount savings');
+
+    // Test Clinical Info trigger
+    const infoTrigger = await request('POST', '/api/notifications/simulate-trigger', {
+      type: 'info'
+    }, userToken);
+    assert(infoTrigger.status === 201, 'POST /api/notifications/simulate-trigger (info) returned HTTP 201');
+
+    // Test Mark All as Read
+    const readAllRes = await request('PUT', '/api/notifications/read-all', {}, userToken);
+    assert(readAllRes.status === 200, 'PUT /api/notifications/read-all returned HTTP 200');
+
+    // 11. Safetensors DistilBERT AI Model Service
+    console.log('\n11. Safetensors AI Model (DistilBERT Sequence Classification):');
+    const aiHealth = await request('GET', '/api/ai/health');
+    assert(aiHealth.status === 200, 'GET /api/ai/health returned HTTP 200');
+    assert(aiHealth.data?.success === true, 'AI Health success is true');
+    assert(aiHealth.data?.modelLoaded === true, 'Safetensors weights (104 tensors) successfully loaded in Python runtime');
+
+    const aiSafeTest = await request('POST', '/api/ai/classify', {
+      text: 'Sup kaldu bening labu siam dengan ikan gabus kukus halus dan telur rebus',
+      patientId: 'P-88219'
+    });
+    assert(aiSafeTest.status === 200, 'POST /api/ai/classify (Safe meal) returned HTTP 200');
+    assert(aiSafeTest.data?.result?.predictedClass === 0, 'Classified as AMAN_TINGGI_GIZI (Class 0)');
+    assert(aiSafeTest.data?.result?.confidence >= 50, 'Confidence score >= 50%');
+
+    const aiWarningTest = await request('POST', '/api/ai/classify', {
+      text: 'Ayam goreng krispi pedas ekstra sambal korek minyak panas',
+      patientId: 'P-88219'
+    });
+    assert(aiWarningTest.status === 200, 'POST /api/ai/classify (Warning meal) returned HTTP 200');
+    assert(aiWarningTest.data?.result?.predictedClass === 2, 'Classified as PERINGATAN_PANTANGAN (Class 2)');
+
     console.log('\n==================================================');
     console.log(`🎉 TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
     console.log('==================================================\n');

@@ -484,6 +484,66 @@
   color: #9EA76B;
 }
 
+.smart-notif-sim-panel {
+  padding: 8px 12px 10px;
+  background: #FFFFFF;
+  border-top: 1px dashed var(--line);
+}
+
+.btn-notif-sim {
+  background: #F8FAFC;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-notif-sim:hover {
+  background: #F7F9EC;
+  border-color: #9EA76B;
+  color: #434B22;
+  transform: translateY(-1px);
+}
+
+.btn-notif-sim.urgent {
+  background: #FFF1F2;
+  border-color: #FECDD3;
+  color: #BE123C;
+}
+
+.btn-notif-sim.urgent:hover {
+  background: #FFE4E6;
+  border-color: #FDA4AF;
+}
+
+.notif-icon-box.morning {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.notif-icon-box.evening {
+  background: #FFE4E6;
+  color: #E11D48;
+}
+
+.notif-icon-box.price {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.notif-icon-box.info {
+  background: #F0FDFA;
+  color: #0D9488;
+}
+
 .btn-view-profile {
   all: unset;
   cursor: pointer;

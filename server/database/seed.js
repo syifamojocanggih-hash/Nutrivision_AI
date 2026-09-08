@@ -9,9 +9,12 @@ const bcrypt = require('bcryptjs');
 
 async function seedDatabase(db) {
   try {
+    // Always ensure smart notifications are seeded if table is empty
+    await seedNotifications(db);
+
     const userCountResult = await db.get('SELECT COUNT(*) as count FROM users');
     if (userCountResult && userCountResult.count > 0) {
-      console.log('ℹ️ MySQL database already contains data. Skipping initial seeding.');
+      console.log('ℹ️ MySQL database already contains data. Skipping initial user seeding.');
       return;
     }
 
@@ -530,9 +533,87 @@ async function seedDatabase(db) {
       '127.0.0.1'
     ]);
 
+    // 7. Initial Smart Notifications
+    await seedNotifications(db);
+
     console.log('✅ NutriVision AI clinical database seeded to MySQL successfully!');
   } catch (err) {
     console.error('Error seeding MySQL database:', err);
+  }
+}
+
+async function seedNotifications(db) {
+  try {
+    const notifCount = await db.get('SELECT COUNT(*) as count FROM notifications').catch(() => null);
+    if (notifCount && notifCount.count > 0) {
+      return;
+    }
+
+    const insertNotifSql = `
+      INSERT INTO notifications (
+        id, user_id, type, title, message, icon, badge_color, data_json, is_read, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    // 1. Info Terbaru Klinis
+    await db.run(insertNotifSql, [
+      'notif_info_1',
+      null, // Broadcast to all users
+      'info',
+      'Update Protokol Klinis ERAS 2026',
+      'Rekomendasi terbaru ESPEN & Kemenkes RI: Peningkatan asupan albumin dari ikan lokal (Gabus) terbukti mempercepat re-epitelisasi luka bedah hingga 40%.',
+      'sparkles',
+      'teal',
+      JSON.stringify({ category: 'clinical_protocol', source: 'Kemenkes RI & ESPEN' }),
+      0,
+      new Date(Date.now() - 3600000 * 3) // 3 hours ago
+    ]);
+
+    // 2. Perubahan Harga Makanan Sehat
+    await db.run(insertNotifSql, [
+      'notif_price_1',
+      'usr_patient_siti',
+      'price_change',
+      'Hemat Nutrisi: Harga Ikan Gabus Turun!',
+      'Harga Ikan Gabus segar di pasar lokal hari ini turun menjadi Rp 24.000/ekor (sebelumnya Rp 30.000). Kesempatan terbaik untuk stok albumin pemulihan luka!',
+      'trending-down',
+      'emerald',
+      JSON.stringify({ foodName: 'Ikan Gabus', oldPrice: 30000, newPrice: 24000, savings: 6000 }),
+      0,
+      new Date(Date.now() - 3600000 * 2) // 2 hours ago
+    ]);
+
+    // 3. Pengingat Target Harian Jam 6 Pagi
+    await db.run(insertNotifSql, [
+      'notif_morning_1',
+      'usr_patient_siti',
+      'morning_reminder',
+      'Target Pemulihan Pagi (06:00 WIB)',
+      'Selamat Pagi Siti! Target pemulihan Anda hari ini: 93g Protein & 1.820 kkal. Awali sarapan dengan sumber albumin lembut (contoh: Bubur Ikan Gabus Saring atau Putih Telur Rebus).',
+      'sun',
+      'amber',
+      JSON.stringify({ targetProtein: 93, dailyCalories: 1820, targetHour: 6 }),
+      0,
+      new Date(Date.now() - 3600000 * 5) // 5 hours ago (earlier morning)
+    ]);
+
+    // 4. Pengingat Jam 6 Malam Ketika Gizi Belum Terpenuhi
+    await db.run(insertNotifSql, [
+      'notif_evening_1',
+      'usr_patient_siti',
+      'evening_reminder',
+      'Pengingat Gizi Makan Malam (18:00 WIB)',
+      'Perhatian: Asupan protein Anda hari ini baru mencapai 52g dari target 93g (Defisit 41g). Disarankan makan malam dengan Tim Ikan Gabus (32g) + Tempe Kukus (12g) sebelum jam 20:00 untuk mendukung regenerasi jaringan saat tidur!',
+      'moon',
+      'rose',
+      JSON.stringify({ currentProtein: 52, targetProtein: 93, deficitGrams: 41, targetHour: 18, isUrgent: true }),
+      0,
+      new Date(Date.now() - 600000) // 10 minutes ago
+    ]);
+
+    console.log('✅ Smart clinical notifications seeded to MySQL.');
+  } catch (err) {
+    console.error('Error seeding notifications:', err);
   }
 }
 

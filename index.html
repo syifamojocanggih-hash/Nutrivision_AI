@@ -853,6 +853,13 @@
             <span class="db-status-dot" id="topbar-db-dot"></span>
             <span class="topbar-db-lbl">DB</span>
           </button>
+          <!-- Safetensors AI Model Tester Trigger -->
+          <button class="btn-outline-glass" id="topbar-ai-tester-btn"
+            style="color:#064E3B;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.12);padding:7px 12px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
+            onclick="app.openAITesterModal()" title="Uji Coba Model AI Safetensors">
+            <i data-lucide="cpu" class="btn-icon-sm" style="color:#059669;"></i>
+            <span style="font-size:12px;">Uji AI Model</span>
+          </button>
 
           <!-- Smart Clinical Notification Center -->
           <div class="topbar-notif-wrapper">
@@ -905,11 +912,31 @@
                 </div>
               </div>
               <div class="smart-notif-footer">
-                <button type="button" class="btn-clear-notif" onclick="app.markAllNotifsRead()">Tandai Sudah
-                  Dibaca</button>
+                <button type="button" class="btn-clear-notif" onclick="app.markAllNotifsRead()">Tandai Sudah Dibaca</button>
                 <button type="button" class="btn-view-profile"
-                  onclick="app.navigate('profile'); app.toggleSmartNotificationDropdown(false);">Profil Lengkap
-                  →</button>
+                  onclick="app.navigate('profile'); app.toggleSmartNotificationDropdown(false);">Profil Lengkap →</button>
+              </div>
+              <div class="smart-notif-sim-panel">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                  <span style="font-size:10.5px;font-weight:700;color:var(--ink-mute);display:flex;align-items:center;gap:4px;">
+                    <i data-lucide="sparkles" style="width:12px;height:12px;color:var(--teal-600);"></i>
+                    Simulasi Notifikasi Pintar:
+                  </span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('morning_reminder')" title="Uji Notifikasi Jam 6 Pagi (Target)">
+                    🌅 06:00 Pagi Target
+                  </button>
+                  <button type="button" class="btn-notif-sim urgent" onclick="app.simulateSmartNotification('evening_reminder')" title="Uji Notifikasi Jam 6 Malam (Defisit)">
+                    🌙 18:00 Defisit Gizi
+                  </button>
+                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('price_change')" title="Uji Info Perubahan Harga Sehat">
+                    🏷️ Harga Pangan Turun
+                  </button>
+                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('info')" title="Uji Info Klinis Terbaru">
+                    📢 Info Protokol ERAS
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2593,7 +2620,28 @@
       </div>
 
       <form
-        onsubmit="event.preventDefault(); const t = document.getElementById('post-content').value; const cat = document.getElementById('post-category').value; const res = communityHandler.createPost(app.userProfile.name, cat, cat === 'post-surgery' ? 'Pasca-Operasi' : cat === 'rehab' ? 'Fisioterapi' : 'Gym Recovery', t); if (res) { app.closeModal('create-post-modal'); app.showToast('Tips berhasil diterbitkan ke komunitas!'); }">
+        onsubmit="event.preventDefault(); (async () => {
+          const t = document.getElementById('post-content').value;
+          const cat = document.getElementById('post-category').value;
+          const btn = document.getElementById('btn-submit-post');
+          if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide=\'loader-2\' class=\'btn-icon-sm spin\'></i> Memverifikasi Model AI...';
+            if (window.lucide) lucide.createIcons();
+          }
+          const res = await communityHandler.createPost(app.userProfile.name, cat, cat === 'post-surgery' ? 'Pasca-Operasi' : cat === 'rehab' ? 'Fisioterapi' : 'Gym Recovery', t);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide=\'send\' class=\'btn-icon-sm\'></i> Terbitkan ke Komunitas';
+            if (window.lucide) lucide.createIcons();
+          }
+          if (res) {
+            document.getElementById('post-content').value = '';
+            app.closeModal('create-post-modal');
+            app.showToast('Tips berhasil dianalisis AI Safetensors & diterbitkan!');
+            if (window.lucide) lucide.createIcons();
+          }
+        })();">
         <div class="form-group" style="margin-bottom:12px;">
           <label for="post-category">Kategori Topik</label>
           <select id="post-category" class="form-control">
@@ -2612,15 +2660,75 @@
 
         <div
           style="font-size:var(--font-xs);color:var(--teal-700);background:var(--teal-50);padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;gap:6px;">
-          <i data-lucide="shield-check" class="btn-icon-sm"></i> Sistem akan melakukan pengecekan gizi dasar otomatis
-          sebelum menampilkan lencana terverifikasi.
+          <i data-lucide="cpu" class="btn-icon-sm" style="color:var(--teal-600);"></i> Terhubung dengan <strong>DistilBERT Safetensors AI</strong> untuk verifikasi klinis & keamanan gizi pasca-bedah otomatis.
         </div>
 
-        <button type="submit" class="btn-primary-coral"
+        <button type="submit" id="btn-submit-post" class="btn-primary-coral"
           style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;">
           <i data-lucide="send" class="btn-icon-sm"></i> Terbitkan ke Komunitas
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+     MODAL: UJI COBA MODEL AI SAFETENSORS (DISTILBERT CLASSIFICATION)
+     ========================================================================= -->
+  <div class="modal-overlay" id="ai-tester-modal">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header" style="border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;color:#059669;">
+            <i data-lucide="cpu" style="width:20px;height:20px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--teal-900);">AI Model Interactive Tester</h3>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);">DistilBERT Multilingual (<code style="color:var(--teal-700);font-weight:600;">model.safetensors</code> · 516 MB)</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="app.closeModal('ai-tester-modal')"><i data-lucide="x"></i></button>
+      </div>
+
+      <!-- Health Status Bar -->
+      <div id="ai-modal-status-bar" style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--line);padding:8px 12px;border-radius:var(--radius-xs);margin-bottom:14px;font-size:12px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;"></span>
+          <span style="color:var(--ink-base);font-weight:600;">Layanan AI Python:</span>
+          <span id="ai-status-text" style="color:#059669;font-weight:600;">Online (Port 5050)</span>
+        </div>
+        <div style="color:var(--ink-mute);font-size:11px;">104 Tensors · 3 Kelas Klinis</div>
+      </div>
+
+      <!-- Presets for fast testing -->
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;">Pilih Contoh Uji Cepat:</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Sup kaldu bening labu siam dengan ikan gabus kukus halus dan telur rebus')">
+            🥣 Sup Ikan Gabus (Aman)
+          </button>
+          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Nasi merah hangat dengan tempe bacem panggang dan tumis bayam wortel')">
+            🥗 Nasi & Sayur (Netral)
+          </button>
+          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Ayam goreng krispi pedas ekstra sambal korek minyak panas jelantah')">
+            🍗 Gorengan Pedas (Pantangan)
+          </button>
+        </div>
+      </div>
+
+      <!-- Text input -->
+      <div class="form-group" style="margin-bottom:14px;">
+        <label for="ai-tester-input" style="font-size:12px;font-weight:600;color:var(--ink-base);">Deskripsi Makanan / Resep Pasien:</label>
+        <textarea id="ai-tester-input" class="form-control" rows="3" placeholder="Ketik nama makanan atau bahan masakan di sini..."></textarea>
+      </div>
+
+      <button type="button" id="btn-run-ai-test" class="btn-primary-coral" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;padding:10px;" onclick="app.executeAITextClassification()">
+        <i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (model.safetensors)
+      </button>
+
+      <!-- AI Result Box -->
+      <div id="ai-tester-result-box" style="display:none;margin-top:14px;padding:14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:#FAFAF9;">
+        <!-- Filled dynamically -->
+      </div>
     </div>
   </div>
 

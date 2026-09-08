@@ -111,3 +111,19 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_audit_time (timestamp)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id VARCHAR(64) PRIMARY KEY,
+  user_id VARCHAR(64) NULL,
+  type VARCHAR(32) NOT NULL DEFAULT 'info',
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  icon VARCHAR(64) DEFAULT 'bell',
+  badge_color VARCHAR(32) DEFAULT 'teal',
+  data_json LONGTEXT,
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_notif_user_read (user_id, is_read),
+  INDEX idx_notif_created (created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

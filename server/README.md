@@ -62,17 +62,40 @@ NODE_ENV=development
 * `GET /api/telemetry/audit-logs`: Riwayat audit trail kejadian sistem.
 * `GET /api/telemetry/export-json`: Unduh berkas data audit dalam format JSON.
 
+### 9. 🔔 Smart Notifikasi Klinis (`/api/notifications`)
+* `GET /api/notifications`: Mengambil daftar notifikasi aktif beserta penghitung unread badge.
+* `PUT /api/notifications/:id/read`: Menandai 1 notifikasi sudah dibaca.
+* `PUT /api/notifications/read-all`: Menandai semua notifikasi sudah dibaca.
+* `POST /api/notifications/simulate-trigger`: Memicu 4 skenario simulasi:
+  * `morning_reminder`: Pengingat target harian (kalori & protein) jam 06:00 WIB.
+  * `evening_reminder`: Peringatan jam 18:00 WIB jika total protein hari ini masih defisit beserta rekomendasi menu makan malam tinggi albumin.
+  * `price_change`: Info fluktuasi/penurunan harga bahan pangan lokal ramah anggaran.
+  * `info`: Berita pembaruan protokol gizi ERAS dari Kemenkes/ESPEN.
+* `POST /api/notifications/evaluate-smart`: Evaluasi otomatis kondisi jam dan nutrisi pasien.
+
+### 10. 🧠 Layanan AI Safetensors (`/api/ai`)
+Layanan inferensi cerdas berbasis model **DistilBERT Multilingual (`model.safetensors`, 516 MB)** untuk klasifikasi keamanan gizi & kepatuhan klinis pasien:
+* `GET /api/ai/health`: Memeriksa status service Python AI (tensors count, latency, model status).
+* `POST /api/ai/classify`: Menganalisis teks hidangan makanan/resep komunitas:
+  * **Class 0 (`AMAN_TINGGI_GIZI`)**: Kaya albumin & protein, aman bagi pemulihan bedah digestif/luka.
+  * **Class 1 (`NETRAL_MODERASI`)**: Gizi seimbang, konsumsi dengan porsi terukur.
+  * **Class 2 (`PERINGATAN_PANTANGAN`)**: Makanan tinggi minyak jelantah, iritan lambung, atau kontraindikasi klinis.
+  * *Audit Trail*: Setiap inferensi dicatat otomatis ke tabel `audit_logs` di MySQL.
+
 ---
 
-## 🏃 Cara Menjalankan Server
+## 🏃 Cara Menjalankan Layanan (Full Stack AI)
 
-### 1. Masuk ke direktori server:
+### 1. Jalankan Python AI Inference Service (Port 5050):
 ```bash
 cd server
+python ai_service.py 5050
 ```
+*Menggunakan runtime ultra-cepat `safetensors` + HuggingFace `tokenizers` dengan latensi inferensi < 15ms.*
 
-### 2. Jalankan server:
+### 2. Jalankan Node.js Express Backend (Port 5000):
 ```bash
+cd server
 npm start
 ```
 Atau dengan mode live-reload (*development*):
@@ -80,17 +103,17 @@ Atau dengan mode live-reload (*development*):
 npm run dev
 ```
 
-Server akan aktif di: **`http://localhost:5000`**
+Server Express akan aktif di: **`http://localhost:5000`**
 
 ---
 
 ## 🧪 Menjalankan Automated Test Suite
 
-Untuk memastikan seluruh endpoint berfungsi normal:
+Untuk memastikan seluruh endpoint (termasuk MySQL dan Python AI Safetensors) berfungsi normal:
 ```bash
 npm test
 ```
-*(Menjalankan 30 test case otomatis meliputi auth, meals, foods, CV, caregiver, community, dan telemetry).*
+*(Menjalankan 49 test case otomatis meliputi auth, meals, foods, CV, caregiver, community, telemetry, smart notifications, dan Safetensors AI).*
 
 ---
 

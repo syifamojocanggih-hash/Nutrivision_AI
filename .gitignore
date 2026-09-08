@@ -3,3 +3,5 @@ node_modules/
 .next/
 build/
 dist/
+
+model.safetensors

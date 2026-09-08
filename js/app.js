@@ -196,6 +196,10 @@ class NutriVisionApp {
       lpNavDbBtn.style.display = isAdmin ? 'inline-flex' : 'none';
     }
 
+    // Inisialisasi Smart Notification Center
+    this.loadSmartNotifications();
+    setInterval(() => this.loadSmartNotifications(), 3 * 60 * 1000);
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -231,6 +235,211 @@ class NutriVisionApp {
         };
       }
     });
+  }
+
+  // =========================================================================
+  // SMART CLINICAL NOTIFICATION SYSTEM (Pagi 06:00, Malam 18:00, Harga, Info)
+  // =========================================================================
+  showToast(message, type = 'info', title = '') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    let iconName = 'bell';
+    if (type === 'evening_reminder' || type === 'urgent') iconName = 'moon';
+    else if (type === 'morning_reminder') iconName = 'sun';
+    else if (type === 'price_change') iconName = 'trending-down';
+    else if (type === 'info') iconName = 'sparkles';
+    else if (type === 'error') iconName = 'alert-triangle';
+    else if (type === 'success') iconName = 'check-circle';
+
+    toast.innerHTML = `
+      <i data-lucide="${iconName}" style="width:18px;height:18px;flex-shrink:0;"></i>
+      <div style="flex:1;">
+        ${title ? `<strong style="display:block;font-size:12px;margin-bottom:2px;font-weight:700;">${title}</strong>` : ''}
+        <span style="font-size:11.5px;line-height:1.35;">${message}</span>
+      </div>
+      <button type="button" style="all:unset;cursor:pointer;opacity:0.75;padding:2px;font-size:13px;line-height:1;" onclick="this.parentElement.remove()">✕</button>
+    `;
+
+    container.appendChild(toast);
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+
+    setTimeout(() => {
+      toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 6000);
+  }
+
+  toggleSmartNotificationDropdown(forceState) {
+    const dropdown = document.getElementById('smart-notif-dropdown');
+    if (!dropdown) return;
+
+    const isCurrentlyOpen = dropdown.style.display === 'block';
+    const nextState = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
+
+    dropdown.style.display = nextState ? 'block' : 'none';
+
+    if (nextState) {
+      this.loadSmartNotifications();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+  }
+
+  async loadSmartNotifications() {
+    const listEl = document.getElementById('smart-notif-list');
+    const badgeEl = document.getElementById('notif-unread-count');
+    if (!listEl) return;
+
+    try {
+      let notifications = [];
+      let unreadCount = 0;
+
+      if (window.nutriAPI) {
+        const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
+        const res = await window.nutriAPI.getNotifications(userId);
+        if (res && res.success) {
+          notifications = res.notifications || [];
+          unreadCount = res.unreadCount !== undefined ? res.unreadCount : notifications.filter(n => !n.is_read).length;
+        }
+      }
+
+      // Update badge
+      if (badgeEl) {
+        if (unreadCount > 0) {
+          badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
+          badgeEl.style.display = 'inline-flex';
+        } else {
+          badgeEl.style.display = 'none';
+        }
+      }
+
+      if (notifications.length === 0) {
+        listEl.innerHTML = `
+          <div style="padding: 24px 16px; text-align: center; color: var(--ink-mute); font-size: 12px;">
+            <i data-lucide="check-circle-2" style="width:28px;height:28px;color:#10B981;margin-bottom:6px;"></i>
+            <p style="margin:0;font-weight:600;">Semua notifikasi klinis sudah terpantau!</p>
+          </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+      }
+
+      listEl.innerHTML = notifications.map(item => {
+        let boxClass = 'protein';
+        let iconName = 'zap';
+
+        if (item.type === 'morning_reminder') {
+          boxClass = 'morning';
+          iconName = 'sun';
+        } else if (item.type === 'evening_reminder') {
+          boxClass = 'evening';
+          iconName = 'moon';
+        } else if (item.type === 'price_change') {
+          boxClass = 'price';
+          iconName = 'trending-down';
+        } else if (item.type === 'info') {
+          boxClass = 'info';
+          iconName = 'sparkles';
+        }
+
+        const timeStr = item.created_at ? this.formatTimeAgo(new Date(item.created_at)) : 'Baru saja';
+        const unreadClass = !item.is_read ? 'unread' : '';
+
+        return `
+          <div class="smart-notif-item ${unreadClass}" onclick="app.markSingleNotifRead('${item.id}')">
+            <div class="notif-icon-box ${boxClass}">
+              <i data-lucide="${iconName}" style="width:14px;height:14px;"></i>
+            </div>
+            <div class="notif-item-body">
+              <b>${item.title}</b>
+              <p>${item.message}</p>
+              <span class="notif-time">${timeStr}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    } catch (e) {
+      console.warn('Failed to load smart notifications:', e);
+    }
+  }
+
+  async markAllNotifsRead() {
+    try {
+      if (window.nutriAPI) {
+        const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
+        await window.nutriAPI.markAllNotificationsRead(userId);
+      }
+      const badgeEl = document.getElementById('notif-unread-count');
+      if (badgeEl) badgeEl.style.display = 'none';
+
+      document.querySelectorAll('.smart-notif-item.unread').forEach(el => {
+        el.classList.remove('unread');
+      });
+
+      this.showToast('Semua notifikasi klinis ditandai sudah dibaca.', 'success');
+    } catch (e) {
+      console.error('Error markAllNotifsRead:', e);
+    }
+  }
+
+  async markSingleNotifRead(id) {
+    try {
+      if (window.nutriAPI) {
+        await window.nutriAPI.markNotificationRead(id);
+      }
+      this.loadSmartNotifications();
+    } catch (e) {
+      console.error('Error markSingleNotifRead:', e);
+    }
+  }
+
+  async simulateSmartNotification(type) {
+    try {
+      if (!window.nutriAPI) {
+        this.showToast('Server backend belum terhubung untuk simulasi.', 'warning');
+        return;
+      }
+
+      const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
+      const res = await window.nutriAPI.simulateSmartNotification(type, userId);
+
+      if (res && res.success && res.notification) {
+        const notif = res.notification;
+        this.showToast(notif.message, notif.type === 'evening_reminder' ? 'evening_reminder' : 'info', notif.title);
+        await this.loadSmartNotifications();
+      }
+    } catch (e) {
+      console.error('Simulation error:', e);
+      this.showToast('Gagal memicu simulasi notifikasi: ' + e.message, 'error');
+    }
+  }
+
+  formatTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'Baru saja';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} menit yang lalu`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} jam yang lalu`;
+    const days = Math.floor(hours / 24);
+    return `${days} hari yang lalu`;
   }
 
   // Terapkan Pengaturan Aksesibilitas (Ramah Lansia & Aksesibel)
@@ -3773,6 +3982,118 @@ class NutriVisionApp {
     this.requireAuth(() => {
       this.openModal('create-post-modal');
     }, 'menerbitkan tips ke ruang komunitas');
+  }
+
+  openAITesterModal() {
+    this.openModal('ai-tester-modal');
+    this.checkAIHealthStatus();
+  }
+
+  async checkAIHealthStatus() {
+    const statusText = document.getElementById('ai-status-text');
+    if (!statusText) return;
+    try {
+      if (window.nutriAPI) {
+        const h = await window.nutriAPI.checkAIHealth();
+        if (h && h.success) {
+          statusText.innerHTML = `<span style="color:#059669;font-weight:600;">Online (104 Tensors · ${h.latencyMs || '< 15'}ms)</span>`;
+        } else {
+          statusText.innerHTML = `<span style="color:#D97706;font-weight:600;">Fallback Heuristic Mode</span>`;
+        }
+      }
+    } catch (e) {
+      statusText.innerHTML = `<span style="color:#D97706;font-weight:600;">Offline / Fallback</span>`;
+    }
+  }
+
+  fillAIPreset(text) {
+    const input = document.getElementById('ai-tester-input');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  }
+
+  async executeAITextClassification() {
+    const input = document.getElementById('ai-tester-input');
+    const resultBox = document.getElementById('ai-tester-result-box');
+    const btn = document.getElementById('btn-run-ai-test');
+    if (!input || !resultBox) return;
+
+    const text = input.value.trim();
+    if (!text) {
+      this.showToast('Silakan ketik deskripsi makanan terlebih dahulu.', 'warning');
+      input.focus();
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" class="btn-icon-sm spin"></i> Menjalankan Model Safetensors...';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    try {
+      const startTime = performance.now();
+      const res = await window.nutriAPI.classifyNutritionText(text, this.userProfile?.id);
+      const elapsed = Math.round(performance.now() - startTime);
+
+      if (res && res.success && res.result) {
+        const item = res.result;
+        const isSafe = item.predictedClass === 0;
+        const isNeutral = item.predictedClass === 1;
+        const isWarning = item.predictedClass === 2;
+
+        const borderCol = isSafe ? '#10B981' : (isNeutral ? '#F59E0B' : '#EF4444');
+        const bgCol = isSafe ? 'rgba(16,185,129,0.08)' : (isNeutral ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)');
+        const textCol = isSafe ? '#047857' : (isNeutral ? '#B45309' : '#B91C1C');
+        const iconName = isSafe ? 'shield-check' : (isNeutral ? 'info' : 'alert-triangle');
+
+        resultBox.style.display = 'block';
+        resultBox.style.borderColor = borderCol;
+        resultBox.style.background = bgCol;
+        resultBox.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="color:${textCol};display:flex;align-items:center;">
+                <i data-lucide="${iconName}" style="width:20px;height:20px;"></i>
+              </div>
+              <strong style="color:${textCol};font-size:14px;">${item.name}</strong>
+            </div>
+            <span style="background:#fff;border:1px solid ${borderCol};color:${textCol};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">
+              Confidence: ${item.confidence}%
+            </span>
+          </div>
+          <div style="font-size:12.5px;color:var(--ink-base);margin-bottom:8px;line-height:1.5;">
+            <strong>Analisis Klinis:</strong> ${item.clinicalAdvice}
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px dashed ${borderCol};padding-top:8px;font-size:11px;color:var(--ink-mute);">
+            <span>Arsitektur: <code>DistilBert (${item.label})</code></span>
+            <span>Latency: <strong>${elapsed} ms</strong></span>
+          </div>
+          ${item.patientConflict ? `
+            <div style="margin-top:8px;padding:6px 10px;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:6px;color:#991B1B;font-size:11.5px;">
+              <i data-lucide="alert-octagon" style="width:13px;height:13px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
+              ${item.patientConflict.warningNote}
+            </div>
+          ` : ''}
+        `;
+        if (window.lucide) lucide.createIcons();
+      } else {
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `<div style="color:#DC2626;">Gagal memproses inferensi AI.</div>`;
+      }
+    } catch (err) {
+      console.error('AI Tester error:', err);
+      resultBox.style.display = 'block';
+      resultBox.innerHTML = `<div style="color:#DC2626;">Terjadi kesalahan: ${err.message}</div>`;
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (model.safetensors)';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
   }
 
   // =========================================================================

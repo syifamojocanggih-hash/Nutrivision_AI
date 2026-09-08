@@ -273,6 +273,57 @@ class NutriVisionAPIClient {
   getExportTelemetryUrl() {
     return `${this.baseUrl}/api/telemetry/export-json`;
   }
+
+  // =========================================================================
+  // 8. SMART CLINICAL NOTIFICATIONS
+  // =========================================================================
+  async getNotifications(userId = null, limit = 30) {
+    const params = new URLSearchParams();
+    if (userId) params.append('userId', userId);
+    params.append('limit', limit);
+    return await this.request(`/api/notifications?${params.toString()}`);
+  }
+
+  async markNotificationRead(id) {
+    return await this.request(`/api/notifications/${id}/read`, {
+      method: 'PUT'
+    });
+  }
+
+  async markAllNotificationsRead(userId = null) {
+    return await this.request('/api/notifications/read-all', {
+      method: 'PUT',
+      body: userId ? { userId } : {}
+    });
+  }
+
+  async simulateSmartNotification(type, userId = null) {
+    return await this.request('/api/notifications/simulate-trigger', {
+      method: 'POST',
+      body: { type, userId }
+    });
+  }
+
+  async evaluateSmartNotifications(hour = null, userId = null) {
+    return await this.request('/api/notifications/evaluate-smart', {
+      method: 'POST',
+      body: { hour, userId }
+    });
+  }
+
+  // =========================================================================
+  // 9. AI CLINICAL INFERENCE ENGINE (.safetensors DistilBERT)
+  // =========================================================================
+  async checkAIHealth() {
+    return await this.request('/api/ai/health');
+  }
+
+  async classifyNutritionText(text, patientId = null) {
+    return await this.request('/api/ai/classify', {
+      method: 'POST',
+      body: { text, patientId }
+    });
+  }
 }
 
 // Global instance
