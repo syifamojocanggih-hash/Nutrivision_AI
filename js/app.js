@@ -1097,7 +1097,7 @@ class NutriVisionApp {
             id: 'veg',
             tagId: 'lp-showcase-tag-1',
             name: isId ? 'Tumis Kangkung' : 'Stir-Fried Water Spinach',
-            portion: isId ? 'Kaya Vit A/C &amp; Serat' : 'Vit A/C &amp; Balanced Fiber',
+            portion: isId ? 'Kaya Vit A/C & Serat' : 'Vit A/C & Balanced Fiber',
             points: '26,26 44,18 64,20 64,36 46,42 30,40 24,32',
             color: '#10B981',
             fill: 'rgba(16, 185, 129, 0.28)',
@@ -1172,7 +1172,7 @@ class NutriVisionApp {
             id: 'veg',
             tagId: 'lp-showcase-tag-3',
             name: isId ? 'Sayur Bening Bayam' : 'Clear Spinach Soup',
-            portion: isId ? 'Kaya Zat Besi &amp; Folat' : 'Iron Rich &amp; Folate',
+            portion: isId ? 'Kaya Zat Besi & Folat' : 'Iron Rich & Folate',
             points: '36,54 58,52 68,60 66,78 48,82 34,74',
             color: '#10B981',
             fill: 'rgba(16, 185, 129, 0.28)',
@@ -1227,7 +1227,7 @@ class NutriVisionApp {
             id: 'veg',
             tagId: 'lp-showcase-tag-3',
             name: isId ? 'Brokoli Kukus' : 'Steamed Broccoli',
-            portion: isId ? '90g · Vit C &amp; Sulforaphane' : '90g · Vit C &amp; Sulforaphane',
+            portion: isId ? '90g · Vit C & Sulforaphane' : '90g · Vit C & Sulforaphane',
             points: '18,34 38,28 38,72 26,74 18,56 16,42',
             color: '#10B981',
             fill: 'rgba(16, 185, 129, 0.28)',
@@ -4589,7 +4589,7 @@ class NutriVisionApp {
     document.body.appendChild(dlAnchor);
     dlAnchor.click();
     dlAnchor.remove();
-    this.showToast('📥 Berkas telemetri &amp; jejak audit JSON berhasil diunduh.');
+    this.showToast('📥 Berkas telemetri & jejak audit JSON berhasil diunduh.');
   }
 
   async resetDemoAccountsAdmin() {

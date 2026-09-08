@@ -35,7 +35,7 @@
       hero_title: 'Scan meals, don\'t guess your <span class="highlight-coral">recovery</span> nutrition.',
       hero_desc: 'After surgery, physical injury, or during post-hospital eldercare, daily protein requirements should never be left to guesswork. NutriVision AI identifies plate contents from photos, computes instant nutrition ranges, and aligns meals with local nutrient-dense foods.',
       hero_cta_primary: 'Sign In & Calibrate Dashboard',
-      hero_cta_secondary: 'View Dashboard Preview →',
+      hero_cta_secondary: 'View Dashboard Preview',
 
       // Hero Preview Card
       preview_title: 'AI Plate Segmentation Result',
@@ -299,13 +299,13 @@
       nav_scan: 'Pindai Piring',
 
       // Transparency Alert Banner
-      banner_notice: '<strong>Pemberitahuan Layanan Publik &amp; Pendukung Keputusan:</strong> Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (<em>clinical decision-support</em>), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.',
+      banner_notice: '<strong>Pemberitahuan Layanan Publik & Pendukung Keputusan:</strong> Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (<em>clinical decision-support</em>), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.',
 
       // Hero Section
       hero_title: 'Scan makanan, bukan tebak-tebak gizi <span class="highlight-coral">pemulihan</span>.',
       hero_desc: 'Ketika baru melewati operasi, cedera fisik, atau merawat lansia pasca-rawat inap, takaran protein tubuh tidak boleh sekadar tebakan. NutriVision AI mengenali isi piring Anda melalui foto, menghitung rentang gizi instan, dan menyesuaikan menu ramah gejala dengan pangan lokal nusantara.',
-      hero_cta_primary: 'Masuk &amp; Kalibrasi Dasbor',
-      hero_cta_secondary: 'Lihat Pratinjau Dasbor →',
+      hero_cta_primary: 'Masuk & Kalibrasi Dasbor',
+      hero_cta_secondary: 'Lihat Pratinjau Dasbor',
 
       // Hero Preview Card
       preview_title: 'Hasil Segmentasi Piring AI',
@@ -608,7 +608,8 @@
           if (val.includes('<') && val.includes('>')) {
             el.innerHTML = val;
           } else {
-            el.textContent = val;
+            // Defensively sanitize any encoded HTML entities so they never render literally
+            el.textContent = val.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
           }
         }
       });
