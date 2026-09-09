@@ -23,6 +23,14 @@ class NutriVisionApp {
     this.currentLandingPreset = 'preset-soft-bubur-gabus';
     this.favoriteFoods = this.loadFavoriteFoods();
     this.menuClicks = this.loadMenuClicks();
+    this.journeyCondition = this.userProfile.conditionId || 'post-surgery';
+    this.calendarMonthOffset = 0;
+    this.selectedCalendarDate = null;
+    this.calendarViewMode = 'month';
+    this.activeRecoveryMonthIndex = 1;
+    this.calendarMonthDate = new Date();
+    this.completedScheduleItems = this.loadCompletedSchedules();
+    this.customDailySchedules = this.loadCustomDailySchedules();
   }
 
   // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin atau pasien login)
@@ -185,6 +193,11 @@ class NutriVisionApp {
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
     this.updateFavoriteBadge();
+
+    // Inisialisasi Peta Perjalanan Pemulihan Klinis & Jadwal/Kalender Suite (FR-09)
+    const activeCond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    this.renderJourneyRoadmap(activeCond);
+    this.renderClinicalCalendarAndScheduleSuite();
 
     // Inisialisasi Kalkulator Mini Landing Page
     this.updateCalcUI();
@@ -796,6 +809,12 @@ class NutriVisionApp {
       if (window.nutriVisionDB) {
         this.renderAdminAuditLogs(window.nutriVisionDB.getAuditLogs());
       }
+    }
+
+    if (sectionId === 'progress') {
+      const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+      this.renderJourneyRoadmap(cond);
+      this.renderClinicalCalendarAndScheduleSuite();
     }
 
     // Update Desktop Nav Active State
@@ -5245,6 +5264,823 @@ class NutriVisionApp {
     } catch (err) {
       console.warn('Error rendering clinical menu analytics:', err);
     }
+  }
+
+  // =========================================================================
+  // RECOVERY JOURNEY ROADMAP & DUAL CALENDAR CONTROLLERS (FR-09)
+  // =========================================================================
+  setJourneyCondition(conditionId) {
+    if (!NUTRIVISION_DATA.recoveryProfiles[conditionId]) {
+      conditionId = 'post-surgery';
+    }
+    this.journeyCondition = conditionId;
+
+    // Update state tombol tab
+    document.querySelectorAll('#journey-condition-tabs .journey-cond-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.condition === conditionId);
+    });
+
+    const prof = NUTRIVISION_DATA.recoveryProfiles[conditionId];
+    if (prof) {
+      const subEl = document.getElementById('journey-roadmap-sub');
+      if (subEl) subEl.textContent = prof.protocol;
+      const badgeEl = document.getElementById('journey-active-badge-text');
+      if (badgeEl) badgeEl.textContent = prof.activeBadge || 'Fase 2 Aktif';
+    }
+
+    this.renderJourneyRoadmap(conditionId);
+    this.renderClinicalCalendarAndScheduleSuite();
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'id') === 'id';
+    const toastMsg = isId 
+      ? `Jalur pemulihan beralih ke protokol: ${prof ? prof.title : conditionId}`
+      : `Recovery path switched to: ${prof ? (prof.titleEn || prof.title) : conditionId}`;
+    this.showToast(toastMsg, 'info');
+  }
+
+  renderJourneyRoadmap(conditionId) {
+    const gridEl = document.getElementById('journey-timeline-grid');
+    if (!gridEl) return;
+
+    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
+    if (!profile || !profile.phases) return;
+
+    // Sinkronkan tab aktif jika belum aktif
+    document.querySelectorAll('#journey-condition-tabs .journey-cond-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.condition === cond);
+    });
+
+    const subEl = document.getElementById('journey-roadmap-sub');
+    if (subEl) subEl.textContent = profile.protocol;
+    const badgeEl = document.getElementById('journey-active-badge-text');
+    if (badgeEl) badgeEl.textContent = profile.activeBadge || 'Fase 2 Aktif';
+
+    const phasesHtml = profile.phases.map((p) => {
+      const isActive = p.status === 'active';
+      const isCompleted = p.status === 'completed';
+
+      let cardBorder = '1px solid #E6EAD6';
+      let cardBg = '#FAFDF5';
+      let badgeHtml = '';
+      let progressColor = '#9EA76B';
+
+      if (isActive) {
+        cardBorder = '2px solid #233917';
+        cardBg = '#FFFFFF';
+        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#233917;color:#FFFFFF;"><i data-lucide="zap" style="width:11px;height:11px;"></i> ${p.badgeText || 'Aktif'}</span>`;
+        progressColor = 'var(--coral-500, #D45B3A)';
+      } else if (isCompleted) {
+        cardBorder = '1px solid #C8D4A8';
+        cardBg = '#FAFBF7';
+        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#E8EED6;color:#3F4D1C;"><i data-lucide="check" style="width:11px;height:11px;"></i> ${p.badgeText || 'Selesai'}</span>`;
+        progressColor = '#4A5623';
+      } else {
+        cardBorder = '1px solid #EFE8CA';
+        cardBg = '#FCFCF9';
+        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:12px;background:#F1EFE7;color:#7A786E;"><i data-lucide="lock" style="width:11px;height:11px;"></i> ${p.badgeText || 'Tahap Lanjut'}</span>`;
+        progressColor = '#C2C8AE';
+      }
+
+      const superfoodsList = (p.superfoods || []).map(sf => `<span style="display:inline-block;padding:2px 6px;border-radius:4px;background:rgba(35,57,23,0.06);font-size:10px;font-weight:600;color:#233917;">${sf}</span>`).join(' ');
+
+      return `
+        <div class="journey-step-box" data-phase="${p.phaseNum}" onclick="app.selectJourneyPhase('${cond}', ${p.phaseNum})"
+             style="background:${cardBg};border:${cardBorder};border-radius:12px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px;box-shadow:${isActive ? '0 4px 16px rgba(35,57,23,0.08)' : 'none'};">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+            <span style="font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.3px;">
+              ${p.chip}
+            </span>
+            ${badgeHtml}
+          </div>
+
+          <div>
+            <h4 style="margin:0 0 5px 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.35;">${p.title}</h4>
+            <p style="margin:0;font-size:11.5px;color:var(--ink-soft);line-height:1.45;">${p.desc}</p>
+          </div>
+
+          <!-- Progress Bar -->
+          <div style="margin-top:auto;padding-top:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;">
+              <span>Target Tercapai</span>
+              <span style="color:var(--ink);font-weight:700;">${p.progressPct}%</span>
+            </div>
+            <div style="width:100%;height:6px;background:#EAECE0;border-radius:3px;overflow:hidden;">
+              <div style="width:${p.progressPct}%;height:100%;background:${progressColor};border-radius:3px;transition:width 0.4s ease;"></div>
+            </div>
+          </div>
+
+          <!-- Metadata Nutrisi & Klinis Spesifik -->
+          <div style="padding-top:8px;border-top:1px dashed #E2E6D0;display:flex;flex-direction:column;gap:5px;font-size:11px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="color:var(--ink-soft);font-size:10.5px;">Target Protein:</span>
+              <strong style="color:#233917;font-size:11px;">${p.proteinTarget}</strong>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="color:var(--ink-soft);font-size:10.5px;">Tekstur Pangan:</span>
+              <span style="color:var(--ink);font-size:10.5px;font-weight:600;">${p.texture}</span>
+            </div>
+            <div style="margin-top:2px;">
+              <div style="color:var(--ink-soft);font-size:10px;margin-bottom:3px;">Makanan Super Anjuran:</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${superfoodsList}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    gridEl.innerHTML = phasesHtml;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: gridEl });
+    }
+  }
+
+  selectJourneyPhase(conditionId, phaseNum) {
+    const profile = NUTRIVISION_DATA.recoveryProfiles[conditionId] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
+    if (!profile) return;
+    const phase = profile.phases.find(p => p.phaseNum === phaseNum);
+    if (!phase) return;
+
+    // Visual selection
+    document.querySelectorAll('#journey-timeline-grid .journey-step-box').forEach(box => {
+      const isTarget = parseInt(box.dataset.phase, 10) === phaseNum;
+      box.classList.toggle('selected-phase', isTarget);
+    });
+
+    this.showToast(`Panduan ${phase.chip}: ${phase.title}`, 'info');
+  }
+
+  // =========================================================================
+  // CLINICAL SCHEDULE SUITE & INTEGRATED CALENDAR CONTROLLERS
+  // =========================================================================
+  loadCompletedSchedules() {
+    try {
+      const raw = localStorage.getItem('nutrivision_completed_schedules');
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  saveCompletedSchedules() {
+    try {
+      localStorage.setItem('nutrivision_completed_schedules', JSON.stringify(this.completedScheduleItems || {}));
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
+  }
+
+  loadCustomDailySchedules() {
+    try {
+      const raw = localStorage.getItem('nutrivision_custom_schedules');
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  saveCustomDailySchedules() {
+    try {
+      localStorage.setItem('nutrivision_custom_schedules', JSON.stringify(this.customDailySchedules || []));
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
+  }
+
+  getConditionSchedules(conditionId) {
+    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
+    const defaults = (profile && profile.defaultDailySchedules) ? profile.defaultDailySchedules : [];
+    const custom = (this.customDailySchedules || []).filter(s => !s.conditionId || s.conditionId === cond);
+    return [...defaults, ...custom];
+  }
+
+  renderRecoveryMonthPills(conditionId) {
+    const container = document.getElementById('recovery-month-pills');
+    if (!container) return;
+
+    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
+    const milestones = profile?.monthlyMilestones || [];
+
+    container.innerHTML = milestones.map(m => {
+      const isActive = m.monthIndex === (this.activeRecoveryMonthIndex || 1);
+      return `
+        <button type="button" class="month-pill-btn ${isActive ? 'active' : ''}"
+                onclick="app.switchRecoveryMonth(${m.monthIndex})"
+                title="${m.phaseName}">
+          <span>Bulan ${m.monthIndex} (${m.durationDays})</span>
+        </button>
+      `;
+    }).join('');
+  }
+
+  renderActiveMonthBanner(conditionId, monthIndex) {
+    const bannerEl = document.getElementById('recovery-month-target-banner');
+    if (!bannerEl) return;
+
+    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
+    const milestones = profile?.monthlyMilestones || [];
+    const idx = monthIndex || this.activeRecoveryMonthIndex || 1;
+    const milestone = milestones.find(m => m.monthIndex === idx) || milestones[0];
+
+    if (!milestone) return;
+
+    const menuPills = (milestone.nutritionTarget.recommendedMenu || []).map(item => `
+      <span style="display:inline-block;padding:3px 8px;border-radius:6px;background:#FFFFFF;border:1px solid #DCE5B8;font-size:11px;font-weight:600;color:#233917;">
+        ${item}
+      </span>
+    `).join(' ');
+
+    bannerEl.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #E2E6D0;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:#233917;color:#FFFFFF;text-transform:uppercase;">
+            ${milestone.monthLabel}
+          </span>
+          <h4 style="margin:0;font-size:14px;font-weight:700;color:var(--ink);">${milestone.phaseName}</h4>
+        </div>
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:#15803D;background:#EAF6EC;padding:3px 8px;border-radius:6px;font-weight:600;">
+          <i data-lucide="shield-check" style="width:12px;height:12px;"></i> ${milestone.scientificCitation}
+        </span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:14px;">
+        <!-- Card 1: Target Penyembuhan Klinis -->
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#233917;margin-bottom:6px;">
+            <i data-lucide="activity" style="width:14px;height:14px;color:#15803D;"></i>
+            <span>Target Penyembuhan Medis</span>
+          </div>
+          <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#0F172A;">${milestone.healingTarget.title}</p>
+          <div style="font-size:11.5px;color:#475569;line-height:1.45;margin-bottom:6px;">
+            <strong>Indikator Klinis:</strong> ${milestone.healingTarget.markers}
+          </div>
+          <div style="font-size:11px;color:#15803D;background:#F0FDF4;padding:4px 8px;border-radius:6px;font-weight:600;">
+            🎯 Tujuan: ${milestone.healingTarget.clinicalGoal}
+          </div>
+        </div>
+
+        <!-- Card 2: Target Makanan & Gizi -->
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#233917;margin-bottom:6px;">
+            <i data-lucide="utensils" style="width:14px;height:14px;color:#D97706;"></i>
+            <span>Target Makanan &amp; Nutrisi Klinis</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px;">
+            <span style="color:#64748B;">Target Protein:</span>
+            <strong style="color:#233917;">${milestone.nutritionTarget.protein}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px;">
+            <span style="color:#64748B;">Kebutuhan Energi:</span>
+            <span style="font-weight:600;color:#0F172A;">${milestone.nutritionTarget.calories}</span>
+          </div>
+          <div style="font-size:11px;color:#475569;margin-bottom:6px;">
+            <strong>Mikronutrien &amp; Kofaktor:</strong> ${milestone.nutritionTarget.micronutrients}
+          </div>
+          <div>
+            <div style="font-size:10.5px;color:#64748B;margin-bottom:4px;">Pilihan Pangan Tervalidasi:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+              ${menuPills}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: bannerEl });
+    }
+  }
+
+  switchRecoveryMonth(monthIndex) {
+    this.activeRecoveryMonthIndex = monthIndex;
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    this.renderRecoveryMonthPills(cond);
+    this.renderActiveMonthBanner(cond, monthIndex);
+
+    // Geser tanggal kalender ke bulan yang bersesuaian
+    const base = new Date();
+    this.calendarMonthDate = new Date(base.getFullYear(), base.getMonth() + (monthIndex - 1), 1);
+    this.renderClinicalCalendar(this.calendarViewMode);
+
+    this.showToast(`Menampilkan Target Klinis: Bulan ke-${monthIndex}`, 'info');
+  }
+
+  renderUpcomingEvents(dateStr) {
+    const listEl = document.getElementById('upcoming-events-list');
+    const badgeTextEl = document.getElementById('upcoming-date-text');
+    if (!listEl) return;
+
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const schedules = this.getConditionSchedules(cond);
+
+    const targetDate = dateStr || this.selectedCalendarDate || new Date().toISOString().split('T')[0];
+    this.selectedCalendarDate = targetDate;
+
+    // Format tanggal Indonesia
+    const dateParts = targetDate.split('-');
+    const dateObj = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
+    const monthNames = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const now = new Date();
+    const isToday = (dateObj.getFullYear() === now.getFullYear() && dateObj.getMonth() === now.getMonth() && dateObj.getDate() === now.getDate());
+
+    const formattedDateText = `${dayNames[dateObj.getDay()]}, ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}${isToday ? ' (Hari Ini)' : ''}`;
+    if (badgeTextEl) {
+      badgeTextEl.textContent = formattedDateText;
+    }
+
+    if (!schedules || schedules.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center;padding:24px 12px;color:#64748B;">
+          <p style="margin:0;font-size:12px;">Belum ada jadwal pemulihan untuk tanggal ini.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const itemsHtml = schedules.map(s => {
+      const key = `${targetDate}_${s.id}`;
+      const isCompleted = Boolean(this.completedScheduleItems && this.completedScheduleItems[key]);
+
+      return `
+        <div class="upcoming-event-item ${isCompleted ? 'completed' : ''}" data-event-id="${s.id}">
+          <div class="event-item-top">
+            <span class="event-item-badge">
+              <span class="event-item-dot" style="background:${s.dotColor || '#15803D'};"></span>
+              <span>${s.time}</span>
+            </span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <input type="checkbox" ${isCompleted ? 'checked' : ''}
+                     onchange="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
+                     title="Tandai Selesai" style="cursor:pointer;width:15px;height:15px;accent-color:#15803D;" />
+              ${s.isCustom ? `
+                <button type="button" class="btn-action-icon" style="width:20px;height:20px;"
+                        onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus Jadwal Kustom">
+                  <i data-lucide="trash-2" style="width:12px;height:12px;color:#DC2626;"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+          <h4 class="event-item-title">${s.title}</h4>
+          <p class="event-item-desc">${s.desc}</p>
+          <div class="event-item-footer">
+            <span style="color:#64748B;font-size:10.5px;">💡 ${s.scientificRationale || 'Protokol Nutrisi'}</span>
+            ${isCompleted ? '<span style="color:#15803D;font-weight:700;">✓ Selesai</span>' : '<span style="color:#D97706;font-weight:600;">Tertunda</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listEl.innerHTML = itemsHtml;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: listEl });
+    }
+  }
+
+  renderClinicalCalendar(viewMode) {
+    const bodyEl = document.getElementById('integrated-cal-body');
+    const titleEl = document.getElementById('calendar-month-year-title');
+    if (!bodyEl) return;
+
+    const mode = viewMode || this.calendarViewMode || 'month';
+    this.calendarViewMode = mode;
+
+    // Update view toggle button active states
+    document.querySelectorAll('.cal-view-switchers .cal-view-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.view === mode);
+    });
+
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const schedules = this.getConditionSchedules(cond);
+
+    const monthNames = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+    const targetDateObj = this.calendarMonthDate || new Date();
+    const year = targetDateObj.getFullYear();
+    const month = targetDateObj.getMonth();
+
+    if (titleEl) {
+      titleEl.textContent = `${monthNames[month]} ${year}`;
+    }
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const selectedDateStr = this.selectedCalendarDate || todayStr;
+
+    if (mode === 'month') {
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Min
+
+      let daysHtml = '';
+      // Empty slots before first day
+      for (let b = 0; b < firstDayOfWeek; b++) {
+        daysHtml += `<div class="cal-day-cell compact-box empty"></div>`;
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = currentDateStr === todayStr;
+        const isSelected = currentDateStr === selectedDateStr;
+
+        daysHtml += `
+          <div class="cal-day-cell compact-box ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+               onclick="app.selectCalendarDate('${currentDateStr}')"
+               title="${day} ${monthNames[month]} ${year} - Klik untuk melihat rekomendasi & pantangan">
+            <span class="cal-day-num">${day}</span>
+            <span class="cal-dot-indicator"></span>
+          </div>
+        `;
+      }
+
+      bodyEl.innerHTML = `
+        <div class="integrated-cal-grid" style="margin-bottom:6px;">
+          ${dayNames.map(d => `<div class="integrated-cal-th">${d}</div>`).join('')}
+        </div>
+        <div class="integrated-cal-grid">
+          ${daysHtml}
+        </div>
+      `;
+    } else if (mode === 'week') {
+      // Week View: renders 7 days around selected date or today
+      const dateParts = selectedDateStr.split('-');
+      const anchorDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
+      const startOfWeek = new Date(anchorDate);
+      startOfWeek.setDate(anchorDate.getDate() - anchorDate.getDay());
+
+      let daysHtml = '';
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        const dStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const isToday = dStr === todayStr;
+        const isSelected = dStr === selectedDateStr;
+
+        const pillsHtml = schedules.map(s => {
+          return `<div class="cell-event-pill ${s.category || 'nutrition'}" style="margin-bottom:3px;" title="${s.time}: ${s.title}">${s.time} · ${s.title}</div>`;
+        }).join('');
+
+        daysHtml += `
+          <div class="cal-day-cell ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+               style="min-height:160px;"
+               onclick="app.selectCalendarDate('${dStr}')">
+            <div class="cal-day-top">
+              <div>
+                <span class="integrated-cal-th" style="display:block;text-align:left;padding:0;">${dayNames[d.getDay()]}</span>
+                <span class="cal-day-num" style="font-size:13.5px;">${d.getDate()}</span>
+              </div>
+              ${isToday ? '<span style="font-size:9.5px;font-weight:700;color:#4F46E5;">Hari Ini</span>' : ''}
+            </div>
+            <div class="cell-event-pills-wrap" style="margin-top:6px;">
+              ${pillsHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      bodyEl.innerHTML = `
+        <div class="integrated-cal-grid">
+          ${daysHtml}
+        </div>
+      `;
+    } else {
+      // Day View
+      const dateParts = selectedDateStr.split('-');
+      const anchorDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
+      const pillsHtml = schedules.map(s => `
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid ${s.dotColor || '#15803D'};border-radius:8px;padding:10px 14px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748B;margin-bottom:3px;">
+            <strong>${s.time}</strong>
+            <span style="text-transform:uppercase;font-size:10px;font-weight:700;">${s.category}</span>
+          </div>
+          <h4 style="margin:0 0 3px;font-size:13.5px;color:#0F172A;">${s.title}</h4>
+          <p style="margin:0;font-size:12px;color:#475569;">${s.desc}</p>
+        </div>
+      `).join('');
+
+      bodyEl.innerHTML = `
+        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <h4 style="margin:0;font-size:14.5px;color:#0F172A;">Rincian Jadwal Harian (${dayNames[anchorDate.getDay()]}, ${anchorDate.getDate()} ${monthNames[anchorDate.getMonth()]})</h4>
+            <span class="badge teal">${schedules.length} Kegiatan</span>
+          </div>
+          ${pillsHtml}
+        </div>
+      `;
+    }
+  }
+
+  switchCalendarView(viewMode) {
+    this.calendarViewMode = viewMode;
+    this.renderClinicalCalendar(viewMode);
+  }
+
+  shiftCalendarMonth(delta) {
+    const cur = this.calendarMonthDate || new Date();
+    this.calendarMonthDate = new Date(cur.getFullYear(), cur.getMonth() + delta, 1);
+    this.renderClinicalCalendar(this.calendarViewMode);
+  }
+
+  selectCalendarDate(dateKey) {
+    this.selectedCalendarDate = dateKey;
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    this.renderUpcomingEvents(dateKey);
+    this.renderPantanganMakanan(cond);
+    this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
+    this.renderClinicalCalendar(this.calendarViewMode);
+  }
+
+  switchCalendarDetailTab(tab) {
+    this.calendarDetailTab = tab || 'meals';
+    const tabBtns = {
+      meals: document.getElementById('btn-tab-meals'),
+      restrictions: document.getElementById('btn-tab-restrictions'),
+      validation: document.getElementById('btn-tab-validation')
+    };
+    const tabPanes = {
+      meals: document.getElementById('pane-tab-meals'),
+      restrictions: document.getElementById('pane-tab-restrictions'),
+      validation: document.getElementById('pane-tab-validation')
+    };
+
+    Object.keys(tabBtns).forEach(k => {
+      if (tabBtns[k]) tabBtns[k].classList.toggle('active', k === this.calendarDetailTab);
+      if (tabPanes[k]) tabPanes[k].style.display = (k === this.calendarDetailTab) ? 'block' : 'none';
+    });
+
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    if (this.calendarDetailTab === 'restrictions') {
+      this.renderPantanganMakanan(cond);
+    } else if (this.calendarDetailTab === 'validation') {
+      this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
+    } else {
+      this.renderUpcomingEvents(this.selectedCalendarDate);
+    }
+  }
+
+  renderPantanganMakanan(conditionId) {
+    const listEl = document.getElementById('pantangan-events-list');
+    if (!listEl) return;
+
+    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond];
+    const contraindications = profile?.contraindications || [];
+
+    if (contraindications.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align:center;padding:24px 12px;color:#64748B;">
+          <p style="margin:0;font-size:12px;">Tidak ada catatan pantangan khusus untuk kondisi ini.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const itemsHtml = contraindications.map((c, idx) => {
+      const isCritical = c.risk.includes('Kritis') || c.risk.includes('Total');
+      const badgeBg = isCritical ? '#FEF2F2' : '#FFFBEB';
+      const badgeColor = isCritical ? '#DC2626' : '#D97706';
+      const borderColor = isCritical ? '#FCA5A5' : '#FDE68A';
+
+      return `
+        <div class="pantangan-item-card" style="background:#FFFFFF;border:1px solid ${borderColor};border-left:4px solid ${badgeColor};border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:11px;font-weight:700;background:${badgeBg};color:${badgeColor};padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;">
+              <i data-lucide="shield-alert" style="width:12px;height:12px;"></i> ${c.risk}
+            </span>
+            <span style="font-size:10px;color:#64748B;font-weight:600;">Pantangan #${idx + 1}</span>
+          </div>
+          <h4 style="margin:2px 0 0;font-size:13px;font-weight:700;color:#0F172A;">${c.food}</h4>
+          <p style="margin:0;font-size:11.5px;color:#475569;line-height:1.5;">${c.reason}</p>
+          <div style="margin-top:4px;padding-top:6px;border-top:1px dashed #E2E8F0;font-size:10.5px;color:#059669;font-weight:600;display:flex;align-items:center;gap:4px;">
+            <i data-lucide="book-open" style="width:11px;height:11px;"></i>
+            <span>Validasi Medis: ${c.citation}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listEl.innerHTML = `
+      <div style="margin-bottom:10px;padding:10px 12px;background:#FEF2F2;border-radius:8px;border:1px solid #FECACA;display:flex;align-items:center;gap:8px;">
+        <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#DC2626;flex-shrink:0;"></i>
+        <p style="margin:0;font-size:11.5px;color:#991B1B;line-height:1.4;">
+          <strong>Peringatan Klinis Dokter:</strong> Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.
+        </p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${itemsHtml}
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: listEl });
+    }
+  }
+
+  renderValidationSummary(conditionId, monthIndex) {
+    const listEl = document.getElementById('validation-events-list');
+    if (!listEl) return;
+
+    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond];
+    const mIdx = monthIndex || this.activeRecoveryMonthIndex || 1;
+    const milestone = profile?.monthlyMilestones?.find(m => m.monthIndex === mIdx) || profile?.monthlyMilestones?.[0];
+
+    if (!profile || !milestone) {
+      listEl.innerHTML = `<p style="font-size:12px;color:#64748B;">Data validasi tidak ditemukan.</p>`;
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <i data-lucide="check-circle-2" style="width:16px;height:16px;color:#16A34A;"></i>
+            <h4 style="margin:0;font-size:13px;font-weight:700;color:#166534;">Konsensus Ilmiah & Acuan Klinis</h4>
+          </div>
+          <p style="margin:0;font-size:11.5px;color:#14532D;line-height:1.5;">
+            ${milestone.scientificCitation}
+          </p>
+        </div>
+
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+          <h4 style="margin:0 0 6px;font-size:12.5px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="target" style="width:14px;height:14px;color:#233917;"></i>
+            <span>Biomarker & Target Penyembuhan</span>
+          </h4>
+          <p style="margin:0 0 4px;font-size:11.5px;color:#334155;line-height:1.5;">
+            <strong>Target:</strong> ${milestone.healingTarget.title}
+          </p>
+          <p style="margin:0 0 4px;font-size:11.5px;color:#475569;line-height:1.5;">
+            <strong>Indikator:</strong> ${milestone.healingTarget.markers}
+          </p>
+          <p style="margin:0;font-size:11px;color:#64748B;line-height:1.5;">
+            <strong>Tujuan Klinis:</strong> ${milestone.healingTarget.clinicalGoal}
+          </p>
+        </div>
+
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
+          <h4 style="margin:0 0 6px;font-size:12.5px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="pie-chart" style="width:14px;height:14px;color:#233917;"></i>
+            <span>Parameter Target Nutrisi</span>
+          </h4>
+          <ul style="margin:0;padding-left:18px;font-size:11.5px;color:#334155;line-height:1.6;">
+            <li><strong>Protein Target:</strong> ${milestone.nutritionTarget.protein}</li>
+            <li><strong>Kebutuhan Kalori:</strong> ${milestone.nutritionTarget.calories}</li>
+            <li><strong>Mikronutrien Kunci:</strong> ${milestone.nutritionTarget.micronutrients}</li>
+            <li><strong>Tekstur Makanan:</strong> ${milestone.nutritionTarget.texture}</li>
+          </ul>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: listEl });
+    }
+  }
+
+
+  toggleScheduleCompletion(scheduleId, dateKey) {
+    const key = `${dateKey}_${scheduleId}`;
+    if (!this.completedScheduleItems) this.completedScheduleItems = {};
+    this.completedScheduleItems[key] = !this.completedScheduleItems[key];
+    this.saveCompletedSchedules();
+    this.renderUpcomingEvents(dateKey);
+
+    const isDone = this.completedScheduleItems[key];
+    this.showToast(isDone ? '✓ Jadwal diselesaikan!' : 'Status jadwal diperbarui', 'info');
+  }
+
+  openCalendarModal() {
+    const modal = document.getElementById('modal-clinical-calendar');
+    if (modal) {
+      modal.style.display = 'flex';
+      this.renderClinicalCalendarAndScheduleSuite();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ root: modal });
+      }
+    }
+  }
+
+  closeCalendarModal() {
+    const modal = document.getElementById('modal-clinical-calendar');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
+  openAddScheduleModal() {
+    const modal = document.getElementById('modal-add-schedule');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  closeAddScheduleModal() {
+    const modal = document.getElementById('modal-add-schedule');
+    if (modal) modal.style.display = 'none';
+  }
+
+  saveCustomSchedule() {
+    const timeVal = document.getElementById('add-sched-time')?.value;
+    const titleVal = document.getElementById('add-sched-title')?.value;
+    const descVal = document.getElementById('add-sched-desc')?.value;
+    const catVal = document.getElementById('add-sched-category')?.value;
+
+    if (!timeVal || !titleVal) {
+      this.showToast('Mohon lengkapi waktu dan judul jadwal.', 'warning');
+      return;
+    }
+
+    const catColors = {
+      nutrition: '#15803D',
+      therapy: '#7C3AED',
+      snack: '#D97706',
+      hydration: '#0284C7',
+      rest: '#475569'
+    };
+
+    const newSched = {
+      id: 'custom-' + Date.now(),
+      time: timeVal,
+      title: titleVal,
+      desc: descVal || '-',
+      category: catVal || 'nutrition',
+      dotColor: catColors[catVal] || '#15803D',
+      scientificRationale: 'Jadwal kustom pasien',
+      isCustom: true,
+      conditionId: this.journeyCondition || 'post-surgery'
+    };
+
+    if (!this.customDailySchedules) this.customDailySchedules = [];
+    this.customDailySchedules.push(newSched);
+    this.saveCustomDailySchedules();
+
+    this.closeAddScheduleModal();
+    const form = document.getElementById('form-add-schedule');
+    if (form) form.reset();
+
+    this.renderUpcomingEvents(this.selectedCalendarDate);
+    this.renderClinicalCalendar(this.calendarViewMode);
+
+    this.showToast('Jadwal baru berhasil ditambahkan!', 'success');
+  }
+
+  deleteCustomSchedule(schedId) {
+    if (!this.customDailySchedules) return;
+    this.customDailySchedules = this.customDailySchedules.filter(s => s.id !== schedId);
+    this.saveCustomDailySchedules();
+    this.renderUpcomingEvents(this.selectedCalendarDate);
+    this.renderClinicalCalendar(this.calendarViewMode);
+    this.showToast('Jadwal kustom dihapus.', 'info');
+  }
+
+  resetToDefaultClinicalSchedule() {
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    if (this.customDailySchedules) {
+      this.customDailySchedules = this.customDailySchedules.filter(s => s.conditionId && s.conditionId !== cond);
+      this.saveCustomDailySchedules();
+    }
+    this.renderUpcomingEvents(this.selectedCalendarDate);
+    this.renderClinicalCalendar(this.calendarViewMode);
+    this.showToast('Jadwal harian dikembalikan ke default klinis.', 'info');
+  }
+
+  renderClinicalCalendarAndScheduleSuite() {
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+
+    // Sync quick condition switcher in modal header
+    document.querySelectorAll('#modal-cond-switcher .cond-pill-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.cond === cond);
+    });
+
+    // Update condition tag in detail panel
+    const condTagEl = document.getElementById('cal-detail-condition-tag');
+    if (condTagEl) {
+      const condNames = {
+        'post-surgery': 'PROFIL PASCA-OPERASI & BEDAH',
+        'rehab': 'PROFIL REHABILITASI & FISIOTERAPI',
+        'gym': 'PROFIL GYM & MUSCLE RECOVERY'
+      };
+      condTagEl.textContent = condNames[cond] || 'PROFIL PEMULIHAN KLINIS';
+    }
+
+    this.renderRecoveryMonthPills(cond);
+    this.renderActiveMonthBanner(cond, this.activeRecoveryMonthIndex || 1);
+    this.renderUpcomingEvents(this.selectedCalendarDate);
+    this.renderPantanganMakanan(cond);
+    this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
+    this.renderClinicalCalendar(this.calendarViewMode || 'month');
   }
 }
 

@@ -2,60 +2,629 @@
 // Basis Data Gizi Pangan Lokal Indonesia & Pedoman Pemulihan Pasca-Operasi / Fisioterapi / Gym
 
 const NUTRIVISION_DATA = {
-  // Profil Pemulihan Bawaan
+  // Profil Pemulihan Bawaan Klinis Berbasis Protokol Medis
   recoveryProfiles: {
     'post-surgery': {
       id: 'post-surgery',
-      title: 'Pasca-Operasi (Penyembuhan Luka & Jaringan)',
-      defaultPhase: 'Minggu ke-2 (Fase Proliferasi)',
+      title: 'Pasca-Operasi & Bedah Jaringan',
+      titleEn: 'Post-Surgical & Tissue Wound Healing',
+      protocol: 'Protokol ERAS (Enhanced Recovery After Surgery) & Konsensus ESPEN',
+      protocolEn: 'ERAS Protocol & ESPEN Clinical Nutrition Consensus',
+      activeBadge: 'Fase 2 Aktif',
+      icon: 'heart-pulse',
+      accentColor: '#233917',
+      defaultPhase: 'Minggu ke-2 (Fase Proliferasi & Sintesis)',
       recommendedTargets: {
         calories: 1850,
         protein: 75,
         carbs: 240,
         fat: 55
       },
-      proteinMultiplier: 1.5, // 1.5g per kg BB
-      description: 'Fokus pada sintesis kolagen, pemulihan integritas jaringan, dan pencegahan infeksi serta sembelit.',
+      proteinMultiplier: 1.5, // 1.5 - 2.0 g/kg BB
+      description: 'Fokus pada sintesis kolagen fibroblas, pembentukan pembuluh kapiler baru, regenerasi albumin serum, dan pencegahan konstipasi pasca-anestesi.',
       guidelines: [
-        'Tingkatkan asupan protein berkualitas tinggi (asam amino esensial) untuk percepat penutupan luka.',
-        'Cukupi asupan vitamin C (buah jeruk, jambu) dan Zinc untuk sintesis kolagen.',
-        'Pilih serat larut & hidrasi cukup untuk mencegah konstipasi akibat anestesi/analgetik.'
+        'Tingkatkan asupan protein tinggi asam amino esensial (L-Arginin, Glutamin) untuk akselerasi penutupan luka sayatan.',
+        'Cukupi asupan vitamin C (jambu, jeruk) dan Zinc untuk memperkuat ikatan silang kolagen baru.',
+        'Pilih serat larut air dan cairan cukup untuk mencegah konstipasi akibat efek obat analgetik/anestesi.'
+      ],
+      phases: [
+        {
+          phaseNum: 1,
+          chip: 'Fase 1 · Hari 1–5',
+          title: 'Fase Inflamasi & Respon Akut',
+          desc: 'Meredakan edema jaringan, hemostasis luka, adaptasi diet cair jernih hingga saring lunak, serta stabilisasi cairan elektrolit.',
+          status: 'completed',
+          progressPct: 100,
+          icon: 'check-circle',
+          badgeText: 'Selesai',
+          dayRange: [1, 5],
+          clinicalFocus: 'Kontrol edema, hemostasis, & stabilisasi sirkulasi',
+          proteinTarget: '1.2 - 1.4 g/kgBB',
+          texture: 'Cair jernih, kaldu bening, sup saring lunak',
+          superfoods: ['Kaldu Bening Temu Kunci', 'Air Kelapa Murni', 'Puree Labu Kuning & Wortel']
+        },
+        {
+          phaseNum: 2,
+          chip: 'Fase 2 · Hari 6–21 (Aktif)',
+          title: 'Fase Proliferasi & Sintesis Jaringan',
+          desc: 'Target tinggi albumin & asam amino spesifik untuk pembentukan jaringan granulasi baru, angiogenesis, dan penutupan luka.',
+          status: 'active',
+          progressPct: 68,
+          icon: 'zap',
+          badgeText: 'Fase Berjalan',
+          dayRange: [6, 21],
+          clinicalFocus: 'Biosintesis kolagen tipe III & granulasi jaringan baru',
+          proteinTarget: '1.5 - 2.0 g/kgBB (Tinggi Albumin)',
+          texture: 'Lunak padat, kukus, tim, rebus tanpa minyak jenuh',
+          superfoods: ['Ikan Gabus Tim Albumin', 'Putih Telur Rebus', 'Sup Ayam Kampung Bening']
+        },
+        {
+          phaseNum: 3,
+          chip: 'Fase 3 · Minggu 4–8',
+          title: 'Fase Remodeling & Maturasi Kolagen',
+          desc: 'Pematangan serabut kolagen (tensile strength), elastisitas jaringan parut, dan transisi ke makanan padat seimbang.',
+          status: 'upcoming',
+          progressPct: 0,
+          icon: 'lock',
+          badgeText: 'Tahap Lanjut',
+          dayRange: [22, 56],
+          clinicalFocus: 'Kekuatan regang jaringan parut & penguatan daya tahan imun',
+          proteinTarget: '1.2 - 1.5 g/kgBB',
+          texture: 'Padat bergizi seimbang normal',
+          superfoods: ['Dada Ayam Panggang', 'Tahu Tempe Rebus Probiotik', 'Nasi Merah & Sayur Bening Bayam']
+        }
+      ],
+      monthlyMilestones: [
+        {
+          monthIndex: 1,
+          monthLabel: 'Bulan ke-1 (Hari 1–30)',
+          phaseName: 'Fase Inflamasi Akut & Granulasi Jaringan Primer',
+          durationDays: 'Hari 1 – 30',
+          scientificCitation: 'ESPEN Guideline: Clinical Nutrition in Surgery (2021) & ERAS Society Protocol',
+          healingTarget: {
+            title: 'Penutupan Luka Insisi Primer & Hemostasis',
+            markers: 'Kadar Albumin serum > 3.5 g/dL, resolusi edema luka, granulasi kolagen tipe III, tensile strength mencapai 20–30% dari jaringan utuh normal.',
+            clinicalGoal: 'Mencegah dehisiensi jahitan insisi dan risiko Surgical Site Infection (SSI).'
+          },
+          nutritionTarget: {
+            protein: '1.5 – 2.0 g/kg BB/hari (Tinggi Albumin & Asam Amino Esensial)',
+            calories: '1850 – 2000 kkal/hari',
+            micronutrients: 'Zinc 15–22 mg, Vitamin C 500 mg, L-Arginin, L-Glutamin',
+            texture: 'Diet cair jernih bertransisi ke diet saring lunak & tim bergizi',
+            recommendedMenu: ['Ikan Gabus Tim Albumin', 'Putih Telur Rebus', 'Sup Kaldu Temu Kunci', 'Puree Labu Kuning']
+          }
+        },
+        {
+          monthIndex: 2,
+          monthLabel: 'Bulan ke-2 (Hari 31–60)',
+          phaseName: 'Fase Remodeling Dini & Pematangan Serabut Kolagen',
+          durationDays: 'Hari 31 – 60',
+          scientificCitation: 'Weimann A. et al., ESPEN Guidelines & Surgical Wound Healing Consensus',
+          healingTarget: {
+            title: 'Peningkatan Tensile Strength Parut (50–70%)',
+            markers: 'Pematangan ikatan silang kolagen tipe I, neovaskularisasi stabil, elastisitas jaringan parut insisi.',
+            clinicalGoal: 'Mobilisasi mandiri bebas nyeri regang dan pemulihan massa otot bebas lemak (LBM).'
+          },
+          nutritionTarget: {
+            protein: '1.4 – 1.6 g/kg BB/hari',
+            calories: '1900 – 2100 kkal/hari',
+            micronutrients: 'Vitamin A, Vitamin C 250 mg, Antioksidan Polifenol, Serat Larut 25g/hari',
+            texture: 'Makanan padat teratur berkuah hangat tanpa minyak jenuh berlebih',
+            recommendedMenu: ['Dada Ayam Fillet Kukus', 'Tahu Tempe Rebus Probiotik', 'Nasi Merah Lunak', 'Sayur Bening Bayam']
+          }
+        },
+        {
+          monthIndex: 3,
+          monthLabel: 'Bulan ke-3 (Hari 61–90)',
+          phaseName: 'Fase Maturasi Penuh & Pemulihan Fungsional Total',
+          durationDays: 'Hari 61 – 90',
+          scientificCitation: 'ERAS Society Consensus on Long-Term Functional Recovery Post-Surgery',
+          healingTarget: {
+            title: 'Maturasi Akhir Jaringan & Kekuatan Parut Maksimal',
+            markers: 'Kekuatan jaringan parut mencapai ~80% kekuatan kulit asli (maksimum biologis parut), resolusi bekas luka mature.',
+            clinicalGoal: 'Kembali ke kapasitas fungsional penuh dan pencegahan komplikasi hernia insisional.'
+          },
+          nutritionTarget: {
+            protein: '1.2 – 1.4 g/kg BB/hari (Pemeliharaan Jangka Panjang)',
+            calories: '2000 kkal/hari (Keseimbangan Energi)',
+            micronutrients: 'Multivitamin harian lengkap, Kalsium 1000 mg, Hidrasi 2.0–2.5 L/hari',
+            texture: 'Makanan padat gizi seimbang harian',
+            recommendedMenu: ['Ikan Kembung Bakar', 'Pepes Tahu Jamur', 'Capcay Brokoli Wortel', 'Buah Pepaya Segar']
+          }
+        }
+      ],
+      defaultDailySchedules: [
+        {
+          id: 'sched-ps-1',
+          time: '07:00 - 08:00',
+          title: 'Sarapan Tinggi Albumin & Protein',
+          desc: 'Ikan gabus tim albumin (120g) + 2 butir putih telur rebus + bubur gandum halus (Target: 28g Protein).',
+          category: 'nutrition',
+          dotColor: '#15803D',
+          scientificRationale: 'Memicu sintesis albumin hati pasca-puasa nokturnal (ESPEN, 2021).'
+        },
+        {
+          id: 'sched-ps-2',
+          time: '10:00 - 10:30',
+          title: 'Hidrasi Seluler & Vitamin C Alami',
+          desc: 'Air kelapa murni (250ml) kaya kalium + jus jambu biji segar tanpa gula tambahan (Vit C 200mg).',
+          category: 'hydration',
+          dotColor: '#0284C7',
+          scientificRationale: 'Kofaktor penting hidroksilasi prolin dalam pembentukan serabut kolagen.'
+        },
+        {
+          id: 'sched-ps-3',
+          time: '12:30 - 13:30',
+          title: 'Makan Siang Gizi Seimbang & Seng (Zinc)',
+          desc: 'Sup ayam kampung bening + tahu kukus + wortel labu siam + nasi tim beras merah (Target: 25g Protein).',
+          category: 'nutrition',
+          dotColor: '#D97706',
+          scientificRationale: 'Kecukupan seng (zinc) menjaga proliferasi fibroblas dan integritas sel imun.'
+        },
+        {
+          id: 'sched-ps-4',
+          time: '16:00 - 16:30',
+          title: 'Snack Pemulihan & Asam Amino Bebas',
+          desc: 'Puding puree labu kuning + susu kedelai hangat rendah gula (Target: 10g Protein).',
+          category: 'snack',
+          dotColor: '#7C3AED',
+          scientificRationale: 'Distribusi protein teratur mencegah katabolisme massa otot pasca-operasi.'
+        },
+        {
+          id: 'sched-ps-5',
+          time: '19:00 - 20:00',
+          title: 'Makan Malam Regeneratif & Serat Larut',
+          desc: 'Ikan tenggiri kukus kuah jahe + sup bayam bening + kentang rebus tumbuk (Target: 24g Protein).',
+          category: 'nutrition',
+          dotColor: '#059669',
+          scientificRationale: 'Serat larut air mencegah konstipasi sekunder akibat efek anestesi/analgetik.'
+        },
+        {
+          id: 'sched-ps-6',
+          time: '21:30 - 22:00',
+          title: 'Hidrasi Penutup & Kesiapan Tidur Anabolik',
+          desc: 'Air putih hangat 300ml + relaksasi pernapasan klinis (Target: 8 jam tidur anabolik).',
+          category: 'rest',
+          dotColor: '#475569',
+          scientificRationale: 'Pelepasan puncak Human Growth Hormone (HGH) terjadi pada fase slow-wave sleep.'
+        }
+      ],
+      contraindications: [
+        {
+          food: 'Gorengan, Makanan Minyak Jelantah & Lemak Trans Tinggi',
+          risk: 'Tinggi (Hindari Total)',
+          reason: 'Memperlambat pengosongan lambung pasca-anestesi, memicu stres oksidatif endotel, dan menekan migrasi fibroblas pada tepi luka operasi.',
+          citation: 'ESPEN Surgical Nutrition Guidelines (2021) & British Journal of Surgery'
+        },
+        {
+          food: 'Makanan Tinggi Gula Rafinasi, Sirup Kental & Minuman Manis',
+          risk: 'Tinggi (Hindari Total)',
+          reason: 'Memicu hiperglikemia transient yang melumpuhkan kapasitas fagositosis neutrofil, melipatgandakan risiko Surgical Site Infection (SSI).',
+          citation: 'ERAS Society Consensus on Perioperative Glycemic Control'
+        },
+        {
+          food: 'Minuman Beralkohol & Produk Nikotin',
+          risk: 'Kritis (Kontraindikasi Mutlak)',
+          reason: 'Menurunkan sintesis kolagen tipe I & III hingga 40% dan menginduksi vasokonstriksi mikrovaskular yang menghambat perfusi oksigen ke luka.',
+          citation: 'Sørensen LT et al., Annals of Surgery (Smoking and Alcohol in Wound Healing)'
+        },
+        {
+          food: 'Makanan Mentah / Setengah Matang (Sashimi, Telur Mentah Tanpa Pasteurisasi)',
+          risk: 'Tinggi (Hindari)',
+          reason: 'Risiko kontaminasi Salmonella, Listeria, dan patogen oportunistik di saat sistem imun pasien tersupresi akibat trauma pembedahan.',
+          citation: 'CDC & WHO Clinical Food Safety Guidelines for Post-Operative Patients'
+        },
+        {
+          food: 'Makanan Sangat Pedas, Asam Ekstrem & Bergas Tinggi (Kol Mentah, Durian, Minuman Soda)',
+          risk: 'Sedang (Batasi Ketat)',
+          reason: 'Memicu iritasi mukosa lambung, distensi usus pasca-ileus hipoperistaltik, dan peningkatan tekanan intra-abdomen yang menekan luka jahitan.',
+          citation: 'Konsensus Bedah Digestif Indonesia & ASPEN Clinical Guidelines'
+        }
       ]
     },
     'rehab': {
       id: 'rehab',
-      title: 'Rehabilitasi Medis / Fisioterapi (Cedera & Sendi)',
-      defaultPhase: 'Fase Remodeling (Bulan ke-1)',
+      title: 'Rehabilitasi Medis & Fisioterapi',
+      titleEn: 'Orthopedic Rehabilitation & Joint Therapy',
+      protocol: 'Protokol Rekonstruksi Muskuloskeletal & Regenerasi Matriks Sendi',
+      protocolEn: 'Musculoskeletal Reconstruction & Synovial Joint Matrix Protocol',
+      activeBadge: 'Fase 2 Aktif',
+      icon: 'activity',
+      accentColor: '#15803D',
+      defaultPhase: 'Fase Regenerasi Matriks (Minggu ke-3)',
       recommendedTargets: {
         calories: 2000,
-        protein: 80,
+        protein: 85,
         carbs: 260,
         fat: 60
       },
-      proteinMultiplier: 1.6,
-      description: 'Menjaga massa otot di sekitar sendi yang cedera serta memberi energi optimal untuk sesi fisioterapi.',
+      proteinMultiplier: 1.6, // 1.4 - 1.7 g/kg BB
+      description: 'Menjaga massa otot di sekitar sendi yang cedera, sintesis kolagen ligamen/tendon, serta memberi energi optimal untuk sesi latihan fisioterapi.',
       guidelines: [
-        'Konsumsi protein terdistribusi merata setiap 3-4 jam untuk memicu protein synthesis otot.',
-        'Penuhi kalsium dan vitamin D jika pemulihan melibatkan tulang atau fraktur.',
-        'Konsumsi anti-inflamasi alami seperti kurkumin dan omega-3.'
+        'Konsumsi protein terdistribusi merata setiap 3–4 jam untuk memicu sintesis protein otot penyangga sendi.',
+        'Penuhi kalsium, fosfor, dan vitamin D3 jika pemulihan melibatkan fraktur tulang atau demineralisasi.',
+        'Konsumsi anti-inflamasi alami seperti kurkumin dan asam lemak omega-3 untuk mobilitas sendi optimal.'
+      ],
+      phases: [
+        {
+          phaseNum: 1,
+          chip: 'Fase 1 · Minggu 1–2',
+          title: 'Fase Proteksi & Anti-Edema Sendi',
+          desc: 'Meredakan efusi pembengkakan sendi, proteksi cairan sinovial, menekan stres oksidatif pasca-cedera, dan kontrol nyeri gerak.',
+          status: 'completed',
+          progressPct: 100,
+          icon: 'check-circle',
+          badgeText: 'Selesai',
+          dayRange: [1, 14],
+          clinicalFocus: 'Anti-inflamasi alami & reduksi efusi intra-artikular',
+          proteinTarget: '1.3 - 1.5 g/kgBB',
+          texture: 'Lunak, sup kaya kuah kaldu kolagen',
+          superfoods: ['Sup Kaldu Tulang (Bone Broth)', 'Ikan Kembung Kaya Omega-3', 'Jus Buah Beri Antioksidan']
+        },
+        {
+          phaseNum: 2,
+          chip: 'Fase 2 · Minggu 3–6 (Aktif)',
+          title: 'Fase Regenerasi Matriks & Mobilitas',
+          desc: 'Sintesis kolagen tipe I & II pada tendon dan tulang rawan sendi. Asupan gelatin/kaldu bersama vitamin C sebelum latihan fisioterapi.',
+          status: 'active',
+          progressPct: 55,
+          icon: 'zap',
+          badgeText: 'Fase Berjalan',
+          dayRange: [15, 42],
+          clinicalFocus: 'Sintesis matriks ekstraseluler, kondroitin, & remodeling ligamen',
+          proteinTarget: '1.5 - 1.7 g/kgBB',
+          texture: 'Padat teratur, kaya mikronutrien kolagen & gelatin',
+          superfoods: ['Gelatin Buah + Vitamin C', 'Ikan Gabus Kukus', 'Tahu Tempe Sumber Isoflavon']
+        },
+        {
+          phaseNum: 3,
+          chip: 'Fase 3 · Minggu 7–12',
+          title: 'Fase Penguatan Fungsional & Rekondisi',
+          desc: 'Peningkatan daya tahan beban fungsional, adaptasi neuromuskular gerak, dan pencegahan atrofi otot penyangga sendi.',
+          status: 'upcoming',
+          progressPct: 0,
+          icon: 'lock',
+          badgeText: 'Tahap Lanjut',
+          dayRange: [43, 84],
+          clinicalFocus: 'Kapasitas beban biomekanik & pencegahan cedera berulang',
+          proteinTarget: '1.4 - 1.6 g/kgBB',
+          texture: 'Padat bergizi seimbang tinggi kalsium & vitamin D3',
+          superfoods: ['Dada Ayam Fillet', 'Telur Rebus Omega-3', 'Yogurt Rendah Lemak & Bayam']
+        }
+      ],
+      monthlyMilestones: [
+        {
+          monthIndex: 1,
+          monthLabel: 'Bulan ke-1 (Hari 1–30)',
+          phaseName: 'Fase Proteksi Sendi & Anti-Edema Intra-Artikular',
+          durationDays: 'Hari 1 – 30',
+          scientificCitation: 'Baar K., Sports Med (2017) & Konsensus Fisioterapi Ortopedi',
+          healingTarget: {
+            title: 'Reduksi Efusi Sendi & Kontrol Peradangan Akut',
+            markers: 'Penurunan lingkar pembengkakan sendi > 50%, proteksi integritas cairan sinovial, pencegahan atrofi otot penyangga dini.',
+            clinicalGoal: 'Meminimalkan inhibisi otot artrogenik (Arthrogenic Muscle Inhibition / AMI).'
+          },
+          nutritionTarget: {
+            protein: '1.4 – 1.5 g/kg BB/hari',
+            calories: '2000 kkal/hari',
+            micronutrients: 'Asam Lemak Omega-3 EPA/DHA 2g/hari, Kurkuminoid 500mg, Antioksidan Polifenol',
+            texture: 'Lunak kaya cairan kaldu kolagen alami (Bone Broth)',
+            recommendedMenu: ['Sup Kaldu Tulang Sapi (Bone Broth)', 'Ikan Kembung Kukus Omega-3', 'Jus Buah Beri Antioksidan']
+          }
+        },
+        {
+          monthIndex: 2,
+          monthLabel: 'Bulan ke-2 (Hari 31–60)',
+          phaseName: 'Fase Regenerasi Matriks Kartilago, Tendon, & Ligamen',
+          durationDays: 'Hari 31 – 60',
+          scientificCitation: 'Shaw G et al., Am J Clin Nutr (2017) & Close GL et al. (2019)',
+          healingTarget: {
+            title: 'Sintesis Kolagen Tipe I/II & Mobilitas Sendi (ROM 75–90%)',
+            markers: 'Peningkatan fleksibilitas gerak sendi tanpa efusi ulang, sintesis matriks proteoglikan.',
+            clinicalGoal: 'Load-induced collagen uptake: asupan gelatin/kolagen 30–60 menit sebelum latihan gerak.'
+          },
+          nutritionTarget: {
+            protein: '1.5 – 1.7 g/kg BB/hari (Tinggi Glisin, Prolin, Hidroksiprolin)',
+            calories: '2100 kkal/hari',
+            micronutrients: 'Gelatin Hidrolisat 10–15g + Vitamin C 50mg (Pre-Therapy Window), Glukosamin',
+            texture: 'Makanan padat seimbang teratur',
+            recommendedMenu: ['Gelatin Buah + Jeruk Segar', 'Ikan Gabus Tim', 'Tahu Tempe Kedelai Isoflavon', 'Brokoli Kukus']
+          }
+        },
+        {
+          monthIndex: 3,
+          monthLabel: 'Bulan ke-3 (Hari 61–90)',
+          phaseName: 'Fase Rekondisi Neuromuskular & Adaptasi Beban Fungsional',
+          durationDays: 'Hari 61 – 90',
+          scientificCitation: 'ACSM Musculoskeletal Rehabilitation & Bone Matrix Consolidation Protocol',
+          healingTarget: {
+            title: 'Penguatan Otot Penopang & Stabilitas Biomekanik',
+            markers: 'Kekuatan kontraksi isometrik/isokinetik otot penopang sendi mencapai 80–90% sisi sehat kontralateral.',
+            clinicalGoal: 'Menahan beban gravitasi penuh dan kesiapan transisi aktivitas dinamis tanpa nyeri.'
+          },
+          nutritionTarget: {
+            protein: '1.5 – 1.7 g/kg BB/hari',
+            calories: '2200 kkal/hari',
+            micronutrients: 'Kalsium 1000–1200 mg, Vitamin D3 2000 IU, Magnesium 350 mg, Fosfor',
+            texture: 'Padat berenergi tinggi mikronutrien tulang-otot',
+            recommendedMenu: ['Dada Ayam Fillet Panggang', 'Telur Rebus Omega-3', 'Yogurt Rendah Lemak + Bayam', 'Pisang Ambon']
+          }
+        }
+      ],
+      defaultDailySchedules: [
+        {
+          id: 'sched-rh-1',
+          time: '07:00 - 08:00',
+          title: 'Sarapan Penguat Matriks Sendi',
+          desc: '2 butir telur rebus omega-3 + oatmeal kaldu bening + bayam kukus (Target: 22g Protein, Kalsium & Lutein).',
+          category: 'nutrition',
+          dotColor: '#15803D',
+          scientificRationale: 'Menjaga ketersediaan asam amino esensial sebelum mobilitas pagi hari.'
+        },
+        {
+          id: 'sched-rh-2',
+          time: '09:30 - 10:00',
+          title: 'Protokol Nutrisi Pre-Fisioterapi (Gelatin + Vit C)',
+          desc: 'Gelatin buah kaya kolagen (15g) + perasan jeruk lemon (Vit C 50mg) dikonsumsi 45 menit sebelum latihan.',
+          category: 'therapy',
+          dotColor: '#7C3AED',
+          scientificRationale: 'Memaksimalkan sirkulasi asam amino kolagen ke tendon/tulang rawan saat sendi dilatih (Shaw et al., 2017).'
+        },
+        {
+          id: 'sched-rh-3',
+          time: '12:30 - 13:30',
+          title: 'Makan Siang Anti-Inflamasi & Regeneratif',
+          desc: 'Ikan kembung bakar kunyit (Omega-3 EPA/DHA) + sup kacang merah + tumis buncis + nasi merah (Target: 28g Protein).',
+          category: 'nutrition',
+          dotColor: '#D97706',
+          scientificRationale: 'Kombinasi asam lemak omega-3 dan kurkuminoid menekan sitokin inflamasi pasca-latihan gerak.'
+        },
+        {
+          id: 'sched-rh-4',
+          time: '16:00 - 16:30',
+          title: 'Snack Mobilitas & Hidrasi Sendi',
+          desc: 'Smoothie alpukat buah naga + segenggam kacang almond panggang (Target: Lemak tak jenuh & Magnesium).',
+          category: 'snack',
+          dotColor: '#0284C7',
+          scientificRationale: 'Magnesium dan elektrolit merelaksasi spasme otot di sekitar sendi yang direhabilitasi.'
+        },
+        {
+          id: 'sched-rh-5',
+          time: '19:00 - 20:00',
+          title: 'Makan Malam Pembentukan Massa Otot',
+          desc: 'Dada ayam panggang rempah (130g) + sup kaldu tulang sapi + kentang kukus brokoli (Target: 30g Protein).',
+          category: 'nutrition',
+          dotColor: '#059669',
+          scientificRationale: 'Penyediaan asam amino glisin dan prolin berkelanjutan sepanjang malam.'
+        },
+        {
+          id: 'sched-rh-6',
+          time: '21:30 - 22:00',
+          title: 'Mineral Tulang & Kesiapan Tidur Nyenyak',
+          desc: 'Susu rendah lemak kalsium tinggi + vitamin D3 (2000 IU) + hidrasi 300ml air.',
+          category: 'rest',
+          dotColor: '#475569',
+          scientificRationale: 'Sintesis dan remineralisasi tulang berlangsung aktif selama istirahat malam.'
+        }
+      ],
+      contraindications: [
+        {
+          food: 'Daging Olahan Berpengawet Nitrit (Sosis, Kornet, Daging Asap) & Asam Arakidonat Tinggi',
+          risk: 'Tinggi (Hindari)',
+          reason: 'Kandungan asam arakidonat dan AGEs tinggi memicu kaskade enzim COX-2 & PGE2 yang memperparah nyeri sendi kronis dan kekakuan kapsul sendi.',
+          citation: 'Arthritis & Rheumatology Nutrition Review (2021)'
+        },
+        {
+          food: 'Gula Rafinasi, Sirup Jagung Fruktosa Tinggi (HFCS) & Manisan Buatan',
+          risk: 'Tinggi (Hindari)',
+          reason: 'Membentuk cross-linking glikasi pada serat kolagen (AGEs) yang menyebabkan tendon dan ligamen menjadi kaku, getas, dan rentan re-rupture saat fisioterapi.',
+          citation: 'Shaw G, Baar K et al., Am J Sports Med'
+        },
+        {
+          food: 'Makanan Tinggi Natrium / Garam Berlebih (>2000mg/hari) & Makanan Kemasan Asin',
+          risk: 'Sedang (Batasi Ketat)',
+          reason: 'Menyebabkan retensi cairan ekstraseluler yang memperparah efusi intra-artikular (pembengkakan cairan sendi) pasca-latihan mobilitas gerak.',
+          citation: 'Orthopaedic Physical Therapy Clinical Consensus'
+        },
+        {
+          food: 'Konsumsi Kafein Berlebih (>400mg / >3 cangkir kopi pekat) & Energy Drinks',
+          risk: 'Sedang (Batasi)',
+          reason: 'Meningkatkan ekskresi kalsium melalui urin, mengganggu remodeling osifikasi trabekular tulang dan dehidrasi fibroblas.',
+          citation: 'Journal of Bone and Mineral Research'
+        }
       ]
     },
     'gym': {
       id: 'gym',
-      title: 'Gym Recovery (Hipertrofi & Pemulihan Otot)',
-      defaultPhase: 'Fase Pemulihan Intensif',
+      title: 'Gym & Muscle Recovery',
+      titleEn: 'Gym Recovery & Myofibrillar Hypertrophy',
+      protocol: 'Protokol Hipertrofi Myofibril & Nutrisi Olahraga ISSN',
+      protocolEn: 'Myofibrillar Hypertrophy & Sports Nutrition ISSN Protocol',
+      activeBadge: 'Fase 2 Aktif',
+      icon: 'dumbbell',
+      accentColor: '#B45309',
+      defaultPhase: 'Fase Hipertrofi Myofibril (Hari ke-4)',
       recommendedTargets: {
-        calories: 2300,
-        protein: 110,
+        calories: 2350,
+        protein: 115,
         carbs: 290,
         fat: 65
       },
-      proteinMultiplier: 1.8,
-      description: 'Pemulihan glikogen otot dan perbaikan mikrorobekan serat otot setelah latihan beban berat.',
+      proteinMultiplier: 1.8, // 1.8 - 2.2 g/kg BB
+      description: 'Pemulihan cepat glikogen otot, perbaikan mikrorobekan serat otot (muscle protein synthesis), keseimbangan elektrolit, dan adaptasi beban progresif.',
       guidelines: [
-        'Kombinasikan protein cepat serap dan karbohidrat kompleks pasca-latihan.',
-        'Pastikan elektrolit (Kalium, Natrium, Magnesium) tercukupi untuk mencegah kram.',
-        'Kualitas tidur 7-8 jam sangat esensial untuk hormon pertumbuhan.'
+        'Kombinasikan protein cepat serap tinggi leusin (minimal 3g) dan karbohidrat pasca-latihan dalam rasio 3:1.',
+        'Pastikan elektrolit (Kalium, Natrium, Magnesium) tercukupi optimal untuk mencegah kram dan spasme otot.',
+        'Kualitas tidur 7–8 jam dan distribusi protein teratur per 3–4 jam sangat esensial untuk regenerasi serat otot tipe II.'
+      ],
+      phases: [
+        {
+          phaseNum: 1,
+          chip: 'Fase 1 · Hari 1–2 (Akut)',
+          title: 'Resintesis Glikogen & Reduksi DOMS',
+          desc: 'Pengisian cepat cadangan glikogen otot yang terkuras, aktivasi jalur mTOR via asam amino leusin (3g), dan hidrasi elektrolit kalium-magnesium.',
+          status: 'completed',
+          progressPct: 100,
+          icon: 'check-circle',
+          badgeText: 'Selesai',
+          dayRange: [1, 2],
+          clinicalFocus: 'Jendela anabolik, resintesis glikogen otot, & relaksasi miofasial',
+          proteinTarget: '1.6 - 1.8 g/kgBB',
+          texture: 'Protein shake / makanan cepat cerna + karbohidrat sederhana sehat',
+          superfoods: ['Pisang Ambon + Madu', 'Putih Telur & Susu Kedelai', 'Air Kelapa Elektrolit']
+        },
+        {
+          phaseNum: 2,
+          chip: 'Fase 2 · Hari 3–7 (Aktif)',
+          title: 'Hipertrofi Myofibril & MPS Puncak',
+          desc: 'Perbaikan mikrorobekan serat aktin-miosin. Distribusi protein merata setiap 3–4 jam untuk mempertahankan status anabolik positif.',
+          status: 'active',
+          progressPct: 60,
+          icon: 'zap',
+          badgeText: 'Fase Berjalan',
+          dayRange: [3, 7],
+          clinicalFocus: 'Puncak Muscle Protein Synthesis (MPS) & hipertrofi serat otot',
+          proteinTarget: '1.8 - 2.2 g/kgBB',
+          texture: 'Padat kaya protein tinggi asam amino esensial',
+          superfoods: ['Dada Ayam Fillet Panggang', 'Daging Sapi Tanpa Lemak', 'Tempe Bacem Rebus & Telur']
+        },
+        {
+          phaseNum: 3,
+          chip: 'Fase 3 · Minggu 2–4',
+          title: 'Adaptasi Neuromuskular & Superkompensasi',
+          desc: 'Peningkatan densitas jaringan otot baru, konsolidasi kapasitas angkat beban lebih berat, dan nutrisi regenerasi fase deload aktif.',
+          status: 'upcoming',
+          progressPct: 0,
+          icon: 'lock',
+          badgeText: 'Tahap Lanjut',
+          dayRange: [8, 28],
+          clinicalFocus: 'Superkompensasi glikogenik & adaptasi resistensi neuromuskular',
+          proteinTarget: '1.6 - 1.8 g/kgBB',
+          texture: 'Padat seimbang makronutrisi kompleks',
+          superfoods: ['Ikan Salmon / Tuna Lokal', 'Nasi Merah & Ubi Jalar', 'Kacang Almond & Sayuran Hijau']
+        }
+      ],
+      monthlyMilestones: [
+        {
+          monthIndex: 1,
+          monthLabel: 'Bulan ke-1 (Hari 1–30)',
+          phaseName: 'Siklus Akumulasi Volume & Hipertrofi Myofibril',
+          durationDays: 'Hari 1 – 30',
+          scientificCitation: 'Jäger R et al., ISSN Position Stand on Protein and Exercise (2017) & Phillips SM (2020)',
+          healingTarget: {
+            title: 'Resintesis Glikogen Penuh & Puncak Muscle Protein Synthesis (MPS)',
+            markers: 'Resolusi DOMS dalam 48 jam, pemulihan kadar glikogen intramuskular > 95%, keseimbangan nitrogen positif.',
+            clinicalGoal: 'Perbaikan mikrorobekan serabut aktin-miosin dan stimulasi jalur mTORC1 via asam amino Leusin.'
+          },
+          nutritionTarget: {
+            protein: '1.8 – 2.2 g/kg BB/hari (3–4 porsi @ 0.4–0.5g/kg BB)',
+            calories: '2350 – 2600 kkal/hari (Surplus Ringan)',
+            micronutrients: 'Leusin minimal 3.0g per waktu makan (Leucine Trigger), Elektrolit Kalium-Magnesium-Natrium',
+            texture: 'Padat kaya protein tinggi asam amino esensial (EAA)',
+            recommendedMenu: ['Dada Ayam Fillet Panggang', 'Putih Telur & Susu Kedelai', 'Daging Sapi Has Luar', 'Pisang Ambon + Madu']
+          }
+        },
+        {
+          monthIndex: 2,
+          monthLabel: 'Bulan ke-2 (Hari 31–60)',
+          phaseName: 'Siklus Superkompensasi, Deload, & Adaptasi Neuromuskular',
+          durationDays: 'Hari 31 – 60',
+          scientificCitation: 'Schoenfeld BJ et al. (2021) & ISSN Sports Nutrition Deload & Recovery Guidelines',
+          healingTarget: {
+            title: 'Konsolidasi Jaringan Otot Baru & Restorasi Sistem Saraf Pusat (CNS)',
+            markers: 'Peningkatan cross-sectional area (CSA) serabut otot, hilangnya kelelahan sistemik, pencegahan sindrom overtraining.',
+            clinicalGoal: 'Adaptasi beban progresif yang lebih tinggi dengan risiko cedera ligamen mendekati nol.'
+          },
+          nutritionTarget: {
+            protein: '1.6 – 1.8 g/kg BB/hari (Maintenance Pemulihan)',
+            calories: '2200 – 2400 kkal/hari (Isokalorik Seimbang)',
+            micronutrients: 'Omega-3 (EPA/DHA 2g), Zinc 20mg, Magnesium Bisglisinat 400mg, Asam Askorbat',
+            texture: 'Padat seimbang kaya karbohidrat kompleks indeks glikemik rendah-sedang',
+            recommendedMenu: ['Ikan Salmon / Tuna Lokal', 'Nasi Merah & Ubi Jalar Panggang', 'Tempe Bacem Rebus', 'Kacang Almond & Sayuran Hijau']
+          }
+        }
+      ],
+      defaultDailySchedules: [
+        {
+          id: 'sched-gym-1',
+          time: '07:00 - 08:00',
+          title: 'Sarapan Pemicu Anabolik (Leucine Trigger)',
+          desc: '4 butir putih telur + 1 telur utuh + oatmeal pisang madu (Target: 32g Protein, Leusin > 3.2g).',
+          category: 'nutrition',
+          dotColor: '#15803D',
+          scientificRationale: 'Memicu sinyal mTORC1 pertama hari itu untuk menghentikan katabolisme nokturnal (Phillips, 2020).'
+        },
+        {
+          id: 'sched-gym-2',
+          time: '10:30 - 11:00',
+          title: 'Snack Nutrisi & Elektrolit Pra-Latihan',
+          desc: 'Air kelapa murni (300ml) + 3 butir kurma + segenggam almond (Target: Kalsium, Kalium & Karbohidrat Cepat).',
+          category: 'snack',
+          dotColor: '#0284C7',
+          scientificRationale: 'Menjamin ketersediaan glukosa darah dan elektrolit mencegah kram saat kontraksi eksentrik.'
+        },
+        {
+          id: 'sched-gym-3',
+          time: '13:00 - 13:45',
+          title: 'Nutrisi Jendela Anabolik Pasca-Latihan',
+          desc: 'Protein shake cepat cerna (25g isolate) + pisang ambon / madu rasio karbo:protein 3:1.',
+          category: 'nutrition',
+          dotColor: '#D97706',
+          scientificRationale: 'Memaksimalkan laju resintesis glikogen otot yang terkuras (Ivy et al. Sports Nutrition).'
+        },
+        {
+          id: 'sched-gym-4',
+          time: '15:30 - 16:30',
+          title: 'Makan Siang Utama Regenerasi Myofibril',
+          desc: 'Dada ayam bakar bumbu lengkuas (150g) + nasi merah + tumis buncis tempe (Target: 38g Protein).',
+          category: 'nutrition',
+          dotColor: '#7C3AED',
+          scientificRationale: 'Asam amino esensial berkelanjutan untuk sintesis protein otot fase puncak (MPS peak 3–5 jam post-exercise).'
+        },
+        {
+          id: 'sched-gym-5',
+          time: '19:00 - 20:00',
+          title: 'Makan Malam Perbaikan Jaringan & Antioksidan',
+          desc: 'Daging sapi tanpa lemak / ikan tuna kukus (130g) + kentang panggang + brokoli wortel (Target: 32g Protein).',
+          category: 'nutrition',
+          dotColor: '#059669',
+          scientificRationale: 'Zat besi heme dan seng mendukung sintesis hemoglobin dan pemulihan mioglobin otot.'
+        },
+        {
+          id: 'sched-gym-6',
+          time: '21:30 - 22:00',
+          title: 'Kasein Pelepasan Lambat & Kualitas Tidur Anabolik',
+          desc: 'Susu kedelai kental hangat / tahu sutra + magnesium bisglisinat (Target: 8 jam tidur restorasi CNS).',
+          category: 'rest',
+          dotColor: '#475569',
+          scientificRationale: 'Menjaga kadar asam amino plasma tetap stabil selama tidur, mencegah pemecahan otot nocturne.'
+        }
+      ],
+      contraindications: [
+        {
+          food: 'Alkohol Pasca-Latihan (Post-Workout Alcohol Consumption)',
+          risk: 'Kritis (Kontraindikasi Total)',
+          reason: 'Menekan fosforilasi mTORC1 dan menurunkan sintesis protein otot (MPS) sebesar 24–37% meskipun diimbangi nutrisi protein cukup.',
+          citation: 'Parr EB et al., Alcohol Impairs Muscle Protein Synthesis, PLOS ONE (2014)'
+        },
+        {
+          food: 'Pola Makan Defisit Protein Ekstrem & Melewatkan Nutrisi Pasca-Latihan',
+          risk: 'Tinggi (Hindari)',
+          reason: 'Memicu katabolisme massa otot bebas lemak (LBM), peningkatan hormon kortisol, dan pembatalan fase adaptasi hipertrofi.',
+          citation: 'ISSN Position Stand on Protein and Exercise (2017) & Phillips SM (2020)'
+        },
+        {
+          food: 'Fast Food Tinggi Lemak Jenuh & Minyak Teroksidasi (Trans-Fat)',
+          risk: 'Sedang (Hindari)',
+          reason: 'Menginduksi resistensi anabolik transien pada membran sarkolema dan memperpanjang inflamasi nyeri otot tertunda (DOMS).',
+          citation: 'Frontiers in Sports Nutrition & Muscle Biology'
+        },
+        {
+          food: 'Minuman Manis Kemasan / Soda Tanpa Elektrolit (Empty Calories)',
+          risk: 'Sedang (Batasi)',
+          reason: 'Memicu lonjakan gula darah dan crash hipoglikemia reaktif tanpa menyediakan kalium, magnesium, atau natrium untuk repolarisasi sel otot.',
+          citation: 'American College of Sports Medicine (ACSM)'
+        }
       ]
     }
   },

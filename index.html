@@ -846,13 +846,6 @@
             <span class="db-status-dot" id="topbar-db-dot"></span>
             <span class="topbar-db-lbl">DB</span>
           </button>
-          <!-- Safetensors AI Model Tester Trigger -->
-          <button class="btn-outline-glass" id="topbar-ai-tester-btn"
-            style="color:#064E3B;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.12);padding:7px 12px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
-            onclick="app.openAITesterModal()" title="Uji Coba Model AI Safetensors">
-            <i data-lucide="cpu" class="btn-icon-sm" style="color:#059669;"></i>
-            <span style="font-size:12px;">Uji AI Model</span>
-          </button>
 
           <!-- Smart Clinical Notification Center -->
           <div class="topbar-notif-wrapper">
@@ -1816,55 +1809,57 @@
         <div class="card" style="margin-bottom:18px;">
           <div class="card-head">
             <div class="card-title-group">
-              <h2 data-i18n="prog_journey_title">Peta Perjalanan Fase Pemulihan Klinis</h2>
-              <div class="card-subtitle" data-i18n="prog_journey_sub">Jalur adaptif berbasis protokol ERAS &amp; regenerasi biologis jaringan</div>
+              <h2 id="journey-roadmap-title" data-i18n="prog_journey_title">Peta Perjalanan Fase Pemulihan Klinis</h2>
+              <div class="card-subtitle" id="journey-roadmap-sub" data-i18n="prog_journey_sub">Jalur adaptif berbasis protokol ERAS &amp; regenerasi biologis jaringan</div>
             </div>
-            <span class="badge teal"><i data-lucide="compass" class="btn-icon-sm"></i> <span data-i18n="prog_journey_active_badge">Fase 2 Aktif</span></span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button type="button" class="btn-direct-calendar-header" onclick="app.openCalendarModal()" title="Buka Kalender &amp; Jadwal Pemulihan">
+                <i data-lucide="calendar" style="width:14px;height:14px;"></i>
+                <span>Kalender &amp; Jadwal</span>
+                <i data-lucide="arrow-up-right" style="width:13px;height:13px;"></i>
+              </button>
+              <span class="badge teal" id="journey-active-badge"><i data-lucide="compass" class="btn-icon-sm"></i> <span id="journey-active-badge-text" data-i18n="prog_journey_active_badge">Fase 2 Aktif</span></span>
+            </div>
           </div>
 
-          <div class="journey-timeline-grid"
-            style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;margin-top:14px;">
-            <div class="journey-step-box completed"
-              style="background:#F4FAF7;border:1px solid var(--teal-200);border-radius:12px;padding:14px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <span
-                  style="font-size:11px;font-weight:700;color:var(--teal-700);text-transform:uppercase;letter-spacing:0.5px;" data-i18n="prog_phase1_chip">Fase 1 · Hari 1–5</span>
-                <i data-lucide="check-circle" style="width:16px;height:16px;color:var(--teal-600);"></i>
-              </div>
-              <b style="font-size:13.5px;color:var(--ink);display:block;margin-bottom:3px;" data-i18n="prog_phase1_title">Fase Inflamasi &amp; Akut</b>
-              <p style="font-size:11.5px;color:var(--ink-soft);line-height:1.4;margin:0;" data-i18n="prog_phase1_desc">Meredakan edema jaringan,
-                adaptasi diet cair-lunak, dan stabilisasi elektrolit.</p>
-              <div style="margin-top:10px;height:4px;background:var(--teal-500);border-radius:2px;"></div>
-            </div>
+          <!-- Interactive Condition Selector Tabs -->
+          <div class="journey-condition-tabs" id="journey-condition-tabs">
+            <button type="button" class="journey-cond-btn active" data-condition="post-surgery" onclick="app.setJourneyCondition('post-surgery')">
+              <i data-lucide="heart-pulse" style="width:14px;height:14px;"></i>
+              <span>Pasca-Operasi &amp; Bedah</span>
+            </button>
+            <button type="button" class="journey-cond-btn" data-condition="rehab" onclick="app.setJourneyCondition('rehab')">
+              <i data-lucide="activity" style="width:14px;height:14px;"></i>
+              <span>Rehabilitasi &amp; Fisioterapi</span>
+            </button>
+            <button type="button" class="journey-cond-btn" data-condition="gym" onclick="app.setJourneyCondition('gym')">
+              <i data-lucide="dumbbell" style="width:14px;height:14px;"></i>
+              <span>Gym &amp; Muscle Recovery</span>
+            </button>
+          </div>
 
-            <div class="journey-step-box active"
-              style="background:#FFF9F5;border:2px solid var(--coral-300);border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(212,91,58,0.08);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <span
-                  style="font-size:11px;font-weight:700;color:var(--coral-600);text-transform:uppercase;letter-spacing:0.5px;" data-i18n="prog_phase2_chip">Fase 2 · Hari 6–21 (Aktif)</span>
-                <i data-lucide="zap" style="width:16px;height:16px;color:var(--coral-500);"></i>
-              </div>
-              <b style="font-size:13.5px;color:var(--ink);display:block;margin-bottom:3px;" data-i18n="prog_phase2_title">Fase Proliferasi &amp; Sintesis</b>
-              <p style="font-size:11.5px;color:var(--ink-soft);line-height:1.4;margin:0;" data-i18n="prog_phase2_desc">Target tinggi albumin &amp; asam
-                amino spesifik untuk penutupan jaringan baru.</p>
-              <div style="margin-top:10px;height:4px;background:#E1EAE5;border-radius:2px;overflow:hidden;">
-                <div style="width:68%;height:100%;background:linear-gradient(90deg,var(--coral-400),var(--coral-500));">
-                </div>
-              </div>
-            </div>
+          <!-- Dynamic 3-Phase Roadmap Grid -->
+          <div class="journey-timeline-grid" id="journey-timeline-grid"
+            style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;margin-top:4px;">
+            <!-- Rendered dynamically by app.renderJourneyRoadmap() -->
+          </div>
 
-            <div class="journey-step-box upcoming"
-              style="background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px;opacity:0.85;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <span
-                  style="font-size:11px;font-weight:600;color:var(--ink-mute);text-transform:uppercase;letter-spacing:0.5px;" data-i18n="prog_phase3_chip">Fase 3 · Minggu 4–8</span>
-                <i data-lucide="lock" style="width:15px;height:15px;color:var(--ink-mute);"></i>
+          <!-- Sleek Compact Direct Banner to Calendar & Schedule Modal -->
+          <div class="calendar-direct-banner" style="margin-top:14px;background:linear-gradient(135deg, #F9FBF5 0%, #F4F7EB 100%);border:1px solid #DCE5B8;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:#233917;color:#FFFFFF;">
+                <i data-lucide="calendar-clock" style="width:18px;height:18px;"></i>
+              </span>
+              <div>
+                <h4 style="margin:0;font-size:13.5px;font-weight:700;color:var(--ink);">Kalender Siklus Pemulihan &amp; Jadwal Harian Pasien</h4>
+                <p style="margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);">Target klinis 3 bulan terukur, anjuran gizi tervalidasi dokter, &amp; checklist rutinitas harian.</p>
               </div>
-              <b style="font-size:13.5px;color:var(--ink);display:block;margin-bottom:3px;" data-i18n="prog_phase3_title">Fase Remodeling &amp; Kolagen</b>
-              <p style="font-size:11.5px;color:var(--ink-soft);line-height:1.4;margin:0;" data-i18n="prog_phase3_desc">Penguatan elastisitas jaringan
-                parut dan transisi ke makanan padat seimbang.</p>
-              <div style="margin-top:10px;height:4px;background:var(--line);border-radius:2px;"></div>
             </div>
+            <button type="button" class="btn-direct-calendar-pill" onclick="app.openCalendarModal()" title="Buka Kalender &amp; Jadwal Harian">
+              <i data-lucide="calendar" style="width:14px;height:14px;"></i>
+              <span>Buka Kalender &amp; Jadwal</span>
+              <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+            </button>
           </div>
         </div>
 
@@ -2691,66 +2686,6 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-     MODAL: UJI COBA MODEL AI SAFETENSORS (DISTILBERT CLASSIFICATION)
-     ========================================================================= -->
-  <div class="modal-overlay" id="ai-tester-modal">
-    <div class="modal-box" style="max-width:540px;">
-      <div class="modal-header" style="border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;color:#059669;">
-            <i data-lucide="cpu" style="width:20px;height:20px;"></i>
-          </div>
-          <div>
-            <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--teal-900);">AI Model Interactive Tester</h3>
-            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);">DistilBERT Multilingual (<code style="color:var(--teal-700);font-weight:600;">model.safetensors</code> · 516 MB)</p>
-          </div>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="app.closeModal('ai-tester-modal')" data-close-modal="ai-tester-modal" title="Tutup" aria-label="Tutup"><i data-lucide="x"></i></button>
-      </div>
-
-      <!-- Health Status Bar -->
-      <div id="ai-modal-status-bar" style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--line);padding:8px 12px;border-radius:var(--radius-xs);margin-bottom:14px;font-size:12px;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;"></span>
-          <span style="color:var(--ink-base);font-weight:600;">Layanan AI Python:</span>
-          <span id="ai-status-text" style="color:#059669;font-weight:600;">Online (Port 5050)</span>
-        </div>
-        <div style="color:var(--ink-mute);font-size:11px;">104 Tensors · 3 Kelas Klinis</div>
-      </div>
-
-      <!-- Presets for fast testing -->
-      <div style="margin-bottom:12px;">
-        <label style="font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;">Pilih Contoh Uji Cepat:</label>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Sup kaldu bening labu siam dengan ikan gabus kukus halus dan telur rebus')">
-            🥣 Sup Ikan Gabus (Aman)
-          </button>
-          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Nasi merah hangat dengan tempe bacem panggang dan tumis bayam wortel')">
-            🥗 Nasi & Sayur (Netral)
-          </button>
-          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Ayam goreng krispi pedas ekstra sambal korek minyak panas jelantah')">
-            🍗 Gorengan Pedas (Pantangan)
-          </button>
-        </div>
-      </div>
-
-      <!-- Text input -->
-      <div class="form-group" style="margin-bottom:14px;">
-        <label for="ai-tester-input" style="font-size:12px;font-weight:600;color:var(--ink-base);">Deskripsi Makanan / Resep Pasien:</label>
-        <textarea id="ai-tester-input" class="form-control" rows="3" placeholder="Ketik nama makanan atau bahan masakan di sini..."></textarea>
-      </div>
-
-      <button type="button" id="btn-run-ai-test" class="btn-primary-coral" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;padding:10px;" onclick="app.executeAITextClassification()">
-        <i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (model.safetensors)
-      </button>
-
-      <!-- AI Result Box -->
-      <div id="ai-tester-result-box" style="display:none;margin-top:14px;padding:14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:#FAFAF9;">
-        <!-- Filled dynamically -->
-      </div>
-    </div>
-  </div>
 
   <!-- =========================================================================
      MODAL 4: AUTH & LOGIN / REGISTER (SPLIT SCREEN LAYOUT PERSIS SCREENSHOT)
@@ -3186,6 +3121,56 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   </div>
 
   <!-- =========================================================================
+       MODAL: TAMBAH JADWAL HARIAN KUSTOM PASIEN
+       ========================================================================= -->
+  <div class="modal-overlay" id="modal-add-schedule" onclick="app.closeAddScheduleModal()" style="display:none;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
+      <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #EFE8CA;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#233917;color:#fff;">
+            <i data-lucide="calendar-plus" style="width:16px;height:16px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--ink);">Tambah Jadwal Harian</h3>
+            <p style="margin:2px 0 0;font-size:11px;color:var(--ink-soft);">Sesuaikan jadwal nutrisi &amp; rutinitas pemulihan</p>
+          </div>
+        </div>
+        <button type="button" class="btn-action-icon" onclick="app.closeAddScheduleModal()" title="Tutup" aria-label="Tutup">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+      <form id="form-add-schedule" onsubmit="event.preventDefault(); app.saveCustomSchedule();" style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:5px;">Waktu Kegiatan / Asupan</label>
+          <input type="text" id="add-sched-time" class="input-field" placeholder="Contoh: 08:00 - 08:30 atau 15:00" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid #D5DDB8;font-size:12.5px;" required />
+        </div>
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:5px;">Judul Jadwal / Aktivitas</label>
+          <input type="text" id="add-sched-title" class="input-field" placeholder="Contoh: Suplemen Albumin &amp; Vitamin C" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid #D5DDB8;font-size:12.5px;" required />
+        </div>
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:5px;">Rincian Menu / Anjuran Klinis</label>
+          <textarea id="add-sched-desc" class="input-field" rows="2" placeholder="Contoh: 2 Kapsul Ekstrak Ikan Gabus + 1 Gelas Air Hangat" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid #D5DDB8;font-size:12.5px;"></textarea>
+        </div>
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:5px;">Kategori &amp; Warna Indikator</label>
+          <select id="add-sched-category" class="input-field" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid #D5DDB8;font-size:12.5px;background:#FFF;">
+            <option value="nutrition">🟢 Nutrisi / Makanan Utama</option>
+            <option value="therapy">🟣 Terapi / Kolagen / Suplemen</option>
+            <option value="snack">🟠 Snack Pemulihan / Protein</option>
+            <option value="hydration">🔵 Hidrasi &amp; Elektrolit</option>
+            <option value="rest">⚪ Istirahat &amp; Tidur</option>
+          </select>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">
+          <button type="button" class="btn-outline-glass" onclick="app.closeAddScheduleModal()" style="padding:7px 14px;font-size:12px;border-radius:8px;">Batal</button>
+          <button type="submit" class="btn-primary-teal" style="padding:7px 16px;font-size:12px;border-radius:8px;background:#233917;color:#fff;font-weight:600;">Simpan Jadwal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
        MODAL: PRATINJAU & EKSPOR DOKUMEN LAPORAN PROGRESS PDF
        ========================================================================= -->
   <div class="modal-overlay" id="modal-pdf-report" onclick="app.closePDFReportModal()">
@@ -3220,6 +3205,201 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
           <!-- Populated dynamically via progressTracker.generatePDFReportHTML -->
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: KALENDER SIKLUS PEMULIHAN & JADWAL HARIAN KLINIS
+       ========================================================================= -->
+  <div class="modal-overlay" id="modal-clinical-calendar" onclick="app.closeCalendarModal()" style="display:none;">
+    <div class="modal-box calendar-modal-box" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="calendar-modal-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="pdf-modal-badge-icon" style="background:#233917;color:#FFFFFF;">
+            <i data-lucide="calendar" style="width:20px;height:20px;"></i>
+          </div>
+          <div>
+            <h3 style="font-size:16px;font-weight:700;color:var(--ink);margin:0;">Kalender Siklus Pemulihan &amp; Jadwal Nutrisi Pasien</h3>
+            <p style="font-size:12px;color:var(--ink-soft);margin:2px 0 0;">Target klinis terukur (ESPEN, ERAS, ISSN), rekomendasi menu, &amp; pantangan medis</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <!-- Quick Condition Switcher Pills in Modal -->
+          <div class="modal-cond-switcher" id="modal-cond-switcher" style="display:flex;align-items:center;gap:5px;">
+            <button type="button" class="cond-pill-btn active" data-cond="post-surgery" onclick="app.setJourneyCondition('post-surgery')" title="Pasca-Operasi &amp; Bedah Jaringan">
+              <i data-lucide="heart-pulse" style="width:13px;height:13px;"></i> Pasca-Bedah
+            </button>
+            <button type="button" class="cond-pill-btn" data-cond="rehab" onclick="app.setJourneyCondition('rehab')" title="Rehabilitasi &amp; Fisioterapi">
+              <i data-lucide="activity" style="width:13px;height:13px;"></i> Fisioterapi
+            </button>
+            <button type="button" class="cond-pill-btn" data-cond="gym" onclick="app.setJourneyCondition('gym')" title="Gym &amp; Muscle Recovery">
+              <i data-lucide="dumbbell" style="width:13px;height:13px;"></i> Gym Recovery
+            </button>
+          </div>
+          <button type="button" class="close-btn modal-close-btn" onclick="app.closeCalendarModal()" data-close-modal="modal-clinical-calendar" title="Tutup" aria-label="Tutup">
+            <i data-lucide="x" style="width:18px;height:18px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="calendar-modal-body">
+        <!-- Monthly Milestones Selector Pills -->
+        <div class="recovery-month-pills-wrap" id="recovery-month-pills">
+          <!-- Rendered dynamically by app.renderRecoveryMonthPills() -->
+        </div>
+
+        <!-- Scientifically Validated Active Month Target Banner -->
+        <div class="month-target-banner" id="recovery-month-target-banner">
+          <!-- Rendered dynamically by app.renderActiveMonthBanner() -->
+        </div>
+
+        <!-- 2-Column Split: Interactive Detail Panel (Left) & Compact Calendar (Right) -->
+        <div class="schedule-calendar-split-grid">
+          <!-- Left Column: Upcoming Events List & Pantangan Panel -->
+          <div class="upcoming-events-panel" id="calendar-detail-panel">
+            <div class="upcoming-events-header" style="border-bottom:1px solid #E8ECD8;padding-bottom:10px;">
+              <div>
+                <span style="font-size:10.5px;font-weight:700;color:#233917;text-transform:uppercase;letter-spacing:0.5px;" id="cal-detail-condition-tag">PROFIL PASCA-OPERASI</span>
+                <h3 class="upcoming-events-title" id="upcoming-date-text" style="font-size:14px;margin-top:2px;">Memuat jadwal...</h3>
+              </div>
+              <div class="upcoming-events-actions">
+                <button type="button" class="btn-action-pill primary" onclick="app.openAddScheduleModal()" title="Tambah Jadwal / Terapi">
+                  <i data-lucide="plus" style="width:12px;height:12px;"></i>
+                  <span>Tambah</span>
+                </button>
+                <button type="button" class="btn-action-icon" onclick="app.resetToDefaultClinicalSchedule()" title="Reset ke Default Klinis">
+                  <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Segmented Switcher Tabs: Rekomendasi Makan vs Pantangan Makanan vs Validasi Klinis -->
+            <div class="cal-detail-nav-tabs">
+              <button type="button" class="cal-detail-tab-btn active" id="btn-tab-meals" onclick="app.switchCalendarDetailTab('meals')">
+                <i data-lucide="utensils" style="width:13px;height:13px;"></i>
+                <span>Jadwal Makan</span>
+              </button>
+              <button type="button" class="cal-detail-tab-btn" id="btn-tab-restrictions" onclick="app.switchCalendarDetailTab('restrictions')">
+                <i data-lucide="shield-alert" style="width:13px;height:13px;"></i>
+                <span>Pantangan Medis</span>
+              </button>
+              <button type="button" class="cal-detail-tab-btn" id="btn-tab-validation" onclick="app.switchCalendarDetailTab('validation')">
+                <i data-lucide="award" style="width:13px;height:13px;"></i>
+                <span>Validasi Riset</span>
+              </button>
+            </div>
+
+            <!-- Tab 1: Recommended Meals List -->
+            <div class="cal-detail-tab-pane" id="pane-tab-meals">
+              <div class="upcoming-events-list" id="upcoming-events-list">
+                <!-- Rendered dynamically by app.renderUpcomingEvents() -->
+              </div>
+            </div>
+
+            <!-- Tab 2: Clinical Contraindications / Pantangan Makanan -->
+            <div class="cal-detail-tab-pane" id="pane-tab-restrictions" style="display:none;">
+              <div class="pantangan-list-wrap" id="pantangan-events-list">
+                <!-- Rendered dynamically by app.renderPantanganMakanan() -->
+              </div>
+            </div>
+
+            <!-- Tab 3: Medical Consensus Validation Summary -->
+            <div class="cal-detail-tab-pane" id="pane-tab-validation" style="display:none;">
+              <div class="validation-summary-wrap" id="validation-events-list">
+                <!-- Rendered dynamically by app.renderValidationSummary() -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Compact Clinical Calendar Grid -->
+          <div class="integrated-calendar-panel">
+            <div class="integrated-cal-header">
+              <div class="cal-month-nav">
+                <h3 class="cal-month-title" id="calendar-month-year-title">September 2026</h3>
+                <div class="cal-nav-btns">
+                  <button type="button" class="cal-nav-btn" onclick="app.shiftCalendarMonth(-1)" title="Bulan Sebelumnya">
+                    <i data-lucide="chevron-left" style="width:14px;height:14px;"></i>
+                  </button>
+                  <button type="button" class="cal-nav-btn" onclick="app.shiftCalendarMonth(1)" title="Bulan Berikutnya">
+                    <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Helper Hint -->
+              <span style="font-size:11.5px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="mouse-pointer-click" style="width:13px;height:13px;color:#233917;"></i>
+                <span>Klik kotak tanggal untuk melihat jadwal &amp; pantangan</span>
+              </span>
+            </div>
+
+            <!-- Calendar Days Compact Boxes Grid -->
+            <div class="integrated-cal-body" id="integrated-cal-body">
+              <!-- Rendered dynamically by app.renderClinicalCalendar() -->
+            </div>
+
+            <!-- Legend Category Dots -->
+            <div class="cal-legend-bar" style="margin-top:12px;padding-top:10px;border-top:1px solid #E8ECD8;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:#64748B;">
+                <span class="cal-legend-item"><span class="legend-dot" style="background:#233917;border-radius:2px;"></span> Terpilih (Aktif)</span>
+                <span class="cal-legend-item"><span class="legend-dot" style="background:#16A34A;"></span> Terjadwal Nutrisi</span>
+                <span class="cal-legend-item"><span class="legend-dot" style="background:#4F46E5;"></span> Hari Ini</span>
+              </div>
+              <span style="font-size:11px;color:#233917;font-weight:600;">ESPEN · ERAS · ISSN Validated</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tambah Rutinitas / Terapi Harian Kustom -->
+  <div class="modal-overlay" id="modal-add-schedule" onclick="app.closeAddScheduleModal()" style="display:none;z-index:9999;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:#233917;color:#FFFFFF;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="plus-circle" style="width:18px;height:18px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--ink);">Tambah Rutinitas Harian</h3>
+            <p style="margin:2px 0 0;font-size:11px;color:var(--ink-soft);">Tambahkan jadwal makan khusus atau terapi dokter</p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" onclick="app.closeAddScheduleModal()">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+      <form id="form-add-schedule" onsubmit="event.preventDefault(); app.saveCustomSchedule();" style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px;">Waktu Kegiatan *</label>
+          <input type="text" id="add-sched-time" placeholder="Contoh: 08:30 atau 14:00" class="input-glass" required style="width:100%;font-size:12.5px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px;">Judul Kegiatan / Menu *</label>
+          <input type="text" id="add-sched-title" placeholder="Contoh: Infus Albumin / Sup Salmon" class="input-glass" required style="width:100%;font-size:12.5px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px;">Kategori</label>
+          <select id="add-sched-category" class="input-glass" style="width:100%;font-size:12.5px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);">
+            <option value="nutrition">Nutrisi Utama (Hijau)</option>
+            <option value="snack">Snack Pemulihan (Kuning)</option>
+            <option value="therapy">Fisioterapi / Obat (Ungu)</option>
+            <option value="hydration">Hidrasi Seluler (Biru)</option>
+            <option value="rest">Istirahat / Tidur (Abu-abu)</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px;">Deskripsi / Takaran Gizi</label>
+          <textarea id="add-sched-desc" rows="2" placeholder="Catatan bahan atau instruksi perawat..." class="input-glass" style="width:100%;font-size:12px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          <button type="button" class="btn-outline-glass" onclick="app.closeAddScheduleModal()" style="font-size:12px;padding:8px 14px;">Batal</button>
+          <button type="submit" class="btn-primary-teal" style="font-size:12px;padding:8px 18px;background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;">Simpan Jadwal</button>
+        </div>
+      </form>
     </div>
   </div>
 
