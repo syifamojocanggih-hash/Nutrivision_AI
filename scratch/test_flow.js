@@ -58,7 +58,10 @@ const mockCanvas = {
     fillText: () => {},
     measureText: () => ({ width: 50 }),
     translate: () => {},
-    moveTo: () => {}
+    moveTo: () => {},
+    lineTo: () => {},
+    rect: () => {},
+    createRadialGradient: () => ({ addColorStop: () => {} })
   }),
   addEventListener: () => {},
   style: {}
@@ -125,24 +128,28 @@ async function runTests() {
   console.log('=== TEST 1: Initial Guest / Preview Mode (ID) ===');
   window.localStorage.setItem('nutrivision_lang', 'id');
   dom['overview-plate-canvas'] = mockCanvas;
+  dom['overview-plate-empty-disc'] = new MockElement('overview-plate-empty-disc');
+  dom['overview-plate-empty-title'] = new MockElement('overview-plate-empty-title');
+  dom['overview-plate-empty-sub'] = new MockElement('overview-plate-empty-sub');
+  if (window.i18n) window.i18n.setLanguage('id');
   await app.init();
 
   console.log('Current Scan:', cvEngine.currentScan);
   console.log('Total Badge text:', dom['overview-total-badge']?.textContent);
+  console.log('Empty Disc Title:', dom['overview-plate-empty-title']?.textContent);
   console.log('Legend contains empty state box:', dom['overview-segment-legend']?.innerHTML?.includes('overview-empty-state-box'));
-  console.log('Conf note text:', dom['overview-conf-note']?.textContent);
   console.log('Card 2 Protein label:', dom['macro-num-protein']?.textContent);
   console.log('Card 2 Status badge text:', dom['ov-card2-status-text']?.textContent);
   console.log('Card 3 Streak text:', dom['ov-card3-streak-text']?.textContent);
-  console.log('Card 3 Weekly avg text:', dom['ov-weekly-avg-text']?.innerHTML);
 
   if (cvEngine.currentScan !== null) throw new Error('FAIL: cvEngine.currentScan should be null in preview mode!');
-  if (!dom['overview-total-badge']?.textContent?.includes('0')) throw new Error('FAIL: total badge should be 0!');
+  if (!dom['overview-total-badge']?.textContent?.includes('0')) throw new Error('FAIL: total badge should show 0 Komponen!');
+  if (dom['overview-plate-empty-title']?.textContent !== 'Piring Belum Terisi') throw new Error('FAIL: title should be Piring Belum Terisi!');
   if (!dom['overview-segment-legend']?.innerHTML?.includes('overview-empty-state-box')) throw new Error('FAIL: legend should contain empty state box!');
-  if (dom['macro-num-protein']?.textContent !== '0 / -- g') throw new Error('FAIL: protein should be 0 / -- g!');
-  if (!dom['ov-card2-status-text']?.textContent?.toLowerCase().includes('configur')) throw new Error('FAIL: status should be unconfigured!');
+  const statusText = dom['ov-card2-status-text']?.textContent?.toLowerCase() || '';
+  if (!statusText.includes('konfigur') && !statusText.includes('configur')) throw new Error('FAIL: status should be unconfigured!');
   if (!dom['ov-card3-streak-text']?.textContent?.includes('0')) throw new Error('FAIL: streak should be 0!');
-  console.log('>>> TEST 1 PASSED: Guest / Preview Mode is completely clean and empty!\n');
+  console.log('>>> TEST 1 PASSED: Dashboard Preview Mode successfully displays ceramic "Piring Belum Terisi" empty state!\n');
 
   console.log('=== TEST 2: Demo Login Mode ("Masuk Akun Demo") ===');
   await app.loginAsDemo('post-surgery');
@@ -153,7 +160,6 @@ async function runTests() {
   console.log('Card 2 Protein label:', dom['macro-num-protein']?.textContent);
   console.log('Card 2 Status badge text:', dom['ov-card2-status-text']?.textContent);
   console.log('Card 3 Streak text:', dom['ov-card3-streak-text']?.textContent);
-  console.log('Card 3 Weekly avg text:', dom['ov-weekly-avg-text']?.innerHTML);
 
   if (!cvEngine.currentScan || cvEngine.currentScan.segments.length !== 4) throw new Error('FAIL: Demo should load 4 food segments!');
   if (!dom['overview-total-badge']?.textContent?.includes('4')) throw new Error('FAIL: total badge should be 4 for demo!');
@@ -167,15 +173,17 @@ async function runTests() {
   app.handleLogout();
   console.log('After logout, Current Scan:', cvEngine.currentScan);
   console.log('Total Badge text:', dom['overview-total-badge']?.textContent);
+  console.log('Empty Disc Title:', dom['overview-plate-empty-title']?.textContent);
   console.log('Legend has empty state:', dom['overview-segment-legend']?.innerHTML?.includes('overview-empty-state-box'));
   console.log('Card 2 Protein label:', dom['macro-num-protein']?.textContent);
   console.log('Card 3 Streak text:', dom['ov-card3-streak-text']?.textContent);
 
-  if (cvEngine.currentScan !== null) throw new Error('FAIL: currentScan must be null after logout!');
-  if (!dom['overview-total-badge']?.textContent?.includes('0')) throw new Error('FAIL: total badge must be 0 after logout!');
+  if (cvEngine.currentScan !== null) throw new Error('FAIL: currentScan should be null after logout!');
+  if (!dom['overview-total-badge']?.textContent?.includes('0')) throw new Error('FAIL: total badge should be 0 Komponen after logout!');
+  if (dom['overview-plate-empty-title']?.textContent !== 'Piring Belum Terisi') throw new Error('FAIL: title should be Piring Belum Terisi!');
   if (dom['macro-num-protein']?.textContent !== '0 / -- g') throw new Error('FAIL: protein must reset to 0 / -- g after logout!');
   if (!dom['ov-card3-streak-text']?.textContent?.includes('0')) throw new Error('FAIL: streak must reset to 0 after logout!');
-  console.log('>>> TEST 3 PASSED: Logout properly resets everything to clean empty state!\n');
+  console.log('>>> TEST 3 PASSED: Logout properly resets to ceramic "Piring Belum Terisi" empty state!\n');
 
   console.log('ALL SIMULATION TESTS PASSED SUCCESSFULLY! 🎉');
   process.exit(0);

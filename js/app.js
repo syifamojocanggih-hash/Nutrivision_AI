@@ -76,6 +76,7 @@ class NutriVisionApp {
           hasAcceptedConsent: parsed.hasAcceptedConsent || false,
           bmi: parsed.bmi || '--',
           bmiCategory: parsed.bmiCategory || '--',
+          isDemo: Boolean(parsed.isDemo),
           targets: parsed.targets || null,
           fontSize: parsed.fontSize || 'normal',
           highContrast: parsed.highContrast || false,
@@ -86,6 +87,7 @@ class NutriVisionApp {
       }
     }
     return {
+      isDemo: false,
       hasCompletedQuiz: false,
       role: 'patient',
       name: '',
@@ -159,11 +161,15 @@ class NutriVisionApp {
     const hasData = Boolean(this.userProfile && this.userProfile.name && this.userProfile.hasCompletedQuiz && this.userProfile.targets);
 
     if (hasData) {
-      if (!cvEngine.currentScan) {
-        cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+      if (this.userProfile.isDemo) {
+        if (!cvEngine.currentScan) {
+          cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+        }
+        progressTracker.loadDemoData(this.userProfile);
+      } else {
+        progressTracker.loadUserProgress(this.userProfile);
       }
       this.renderOverviewPlate();
-      progressTracker.loadDemoData(this.userProfile);
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
     } else {
@@ -518,12 +524,7 @@ class NutriVisionApp {
     }
 
     // 2. Update Topbar Buttons Visibility (Humanized Logic)
-    const topbarLoginBtn = document.getElementById('topbar-login-btn');
     const topbarProfileChip = document.getElementById('topbar-profile-chip');
-
-    if (topbarLoginBtn) {
-      topbarLoginBtn.style.display = hasData ? 'none' : 'inline-flex';
-    }
     if (topbarProfileChip) {
       topbarProfileChip.style.display = hasData ? 'inline-flex' : 'none';
     }
@@ -2239,6 +2240,7 @@ class NutriVisionApp {
     this.userProfile.bmiCategory = diag.bmiCat;
     this.userProfile.hasAcceptedConsent = true;
     this.userProfile.hasCompletedQuiz = true;
+    this.userProfile.isDemo = false;
 
     this.userProfile.targets = {
       protein: diag.protein,
@@ -2271,7 +2273,8 @@ class NutriVisionApp {
 
     this.updateProfileUI();
     this.renderAuthUI();
-    progressTracker.setTargets(this.userProfile.targets);
+    progressTracker.initUserProgress(this.userProfile.targets, this.userProfile.contact || this.userProfile.email);
+    cvEngine.currentScan = null;
     progressTracker.renderMacroDonut(this.userProfile.targets);
     progressTracker.renderWeeklyBarChart();
     this.renderOverviewPlate();
@@ -2302,18 +2305,26 @@ class NutriVisionApp {
   // Render Piring Segmentasi di Dashboard Utama (Simple 2-Column Split)
   renderOverviewPlate() {
     const canvas = document.getElementById('overview-plate-canvas');
-    if (canvas) {
-      cvEngine.renderCanvas(canvas, 170, 170, true);
-    }
-
+    const emptyDisc = document.getElementById('overview-plate-empty-disc');
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const diagramStatsBox = document.getElementById('overview-diagram-stats');
     const totalBadge = document.getElementById('overview-total-badge');
     const legendBox = document.getElementById('overview-segment-legend');
     const confNote = document.getElementById('overview-conf-note');
 
-    // JIKA BELUM ADA SCAN MAKANAN / BELUM LOGIN: TAMPILKAN STATUS KOSONG BERSIH
+    // JIKA BELUM ADA SCAN MAKANAN / BELUM LOGIN: TAMPILKAN STATUS KOSONG BERSIH ("Piring Belum Terisi" Bentuk Piring)
     if (!cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) {
+      if (emptyDisc) {
+        emptyDisc.style.display = 'flex';
+        const titleEl = document.getElementById('overview-plate-empty-title');
+        const subEl = document.getElementById('overview-plate-empty-sub');
+        if (titleEl) titleEl.textContent = isId ? 'Piring Belum Terisi' : 'Empty Plate';
+        if (subEl) subEl.textContent = isId ? 'Belum ada makanan terdeteksi' : 'No food detected yet';
+      }
+      if (canvas) {
+        canvas.style.display = emptyDisc ? 'none' : 'block';
+        cvEngine.renderCanvas(canvas, 170, 170, true);
+      }
       if (diagramStatsBox) {
         diagramStatsBox.innerHTML = `
           <div class="plate-stat-main">
@@ -2364,6 +2375,14 @@ class NutriVisionApp {
     }
 
     // JIKA ADA SCAN MAKANAN: TAMPILKAN PERSENTASE DAN BREAKDOWN
+    if (emptyDisc) {
+      emptyDisc.style.display = 'none';
+    }
+    if (canvas) {
+      canvas.style.display = 'block';
+      cvEngine.renderCanvas(canvas, 170, 170, true);
+    }
+
     const segments = cvEngine.currentScan.segments || [];
     const totalGrams = segments.reduce((sum, s) => sum + (s.portionGrams || 0), 0) || 1;
     const totalProtMin = segments.reduce((sum, s) => sum + (s.protein ? s.protein[0] : 0), 0);
@@ -2621,7 +2640,8 @@ class NutriVisionApp {
   saveScanToDailyIntake() {
     this.requireAuth(() => {
       const agg = cvEngine.calculateAggregatedNutrients();
-      progressTracker.addLoggedMeal(agg);
+      const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+      progressTracker.addLoggedMeal(agg, userKey);
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
       this.closeModal('scan-modal');
@@ -3829,9 +3849,13 @@ class NutriVisionApp {
         this.showToast(`✅ Login Berhasil! Silakan lengkapi data profil & diagnostik nutrisi untuk mengaktifkan dasbor Anda.`);
         this.openQuizModal(1);
       } else {
-        cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+        if (this.userProfile.isDemo) {
+          cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+          progressTracker.loadDemoData(this.userProfile);
+        } else {
+          progressTracker.loadUserProgress(this.userProfile);
+        }
         this.renderOverviewPlate();
-        progressTracker.loadDemoData(this.userProfile);
         progressTracker.renderMacroDonut(this.userProfile.targets);
         progressTracker.renderWeeklyBarChart();
         this.showToast(`✅ Login Berhasil! Selamat datang kembali, ${this.userProfile.name}`);
@@ -3971,6 +3995,7 @@ class NutriVisionApp {
       this.userProfile = {
         ...this.userProfile,
         ...user,
+        isDemo: true,
         contact: user.email,
         hasCompletedQuiz: true,
         targets: {
@@ -4122,16 +4147,9 @@ class NutriVisionApp {
     });
 
     // 2. Dashboard Topbar Action Buttons
-    const topbarLoginBtn = document.getElementById('topbar-login-btn');
     const topbarChip = document.getElementById('topbar-profile-chip');
-    if (topbarLoginBtn && topbarChip) {
-      if (isLoggedIn) {
-        topbarLoginBtn.style.display = 'none';
-        topbarChip.style.display = 'inline-flex';
-      } else {
-        topbarLoginBtn.style.display = 'inline-flex';
-        topbarChip.style.display = 'none';
-      }
+    if (topbarChip) {
+      topbarChip.style.display = isLoggedIn ? 'inline-flex' : 'none';
     }
 
     this.updatePreviewBanner();

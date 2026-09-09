@@ -840,13 +840,6 @@
             <i data-lucide="download" class="btn-icon-sm"></i> Install App
           </button>
 
-          <!-- Dedicated Masuk / Login Button (Hanya tampil saat BELUM login) -->
-          <button class="btn-outline-glass" id="topbar-login-btn"
-            style="color:var(--teal-700);border-color:var(--teal-200);background:var(--teal-50);padding:7px 13px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
-            onclick="app.openAuthModal('login')" title="Sign In to Patient Account">
-            <i data-lucide="log-in" class="btn-icon-sm"></i> <span data-i18n="nav_login">Sign In / Login</span>
-          </button>
-
           <!-- Supabase Cloud Database Status & Sync Modal Trigger -->
           <button type="button" class="topbar-db-btn" id="topbar-db-btn" onclick="app.openDatabaseSyncModal()" title="Status Database &amp; Cloud Sync" style="display:none;">
             <i data-lucide="database" style="width:16px;height:16px;"></i>
@@ -1468,8 +1461,16 @@
             <div class="plate-segmentation-showcase">
               <!-- BAGIAN KIRI: Visual Diagram Piring & Persentase Ringkas -->
               <div class="plate-diagram-col">
-                <div class="plate-canvas-box">
+                <div class="plate-canvas-box" id="overview-plate-box" onclick="app.openScanModal()" title="Pindai Makanan untuk Mengisi Piring">
                   <canvas id="overview-plate-canvas"></canvas>
+                  <div id="overview-plate-empty-disc" class="dashboard-empty-plate-disc" style="display:none;">
+                    <span class="dashboard-empty-plate-dashed-guide"></span>
+                    <div class="dashboard-empty-plate-icon-ring">
+                      <iconify-icon icon="solar:camera-add-bold-duotone" style="font-size:24px;color:#9EA76B;"></iconify-icon>
+                    </div>
+                    <span class="dashboard-empty-plate-title" id="overview-plate-empty-title">Piring Belum Terisi</span>
+                    <span class="dashboard-empty-plate-sub" id="overview-plate-empty-sub">Belum ada makanan terdeteksi</span>
+                  </div>
                 </div>
                 <div class="plate-diagram-stats" id="overview-diagram-stats">
                   <!-- Populated dynamically via JS -->

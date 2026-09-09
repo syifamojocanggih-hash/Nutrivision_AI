@@ -6,6 +6,32 @@ class NutriVisionProgress {
     this.setEmptyState();
   }
 
+  // Buat array 7 hari dinamis untuk akun nyata
+  create7DayLogs(targetProt = 75, targetCal = 1850) {
+    const dayNamesId = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const now = new Date();
+    const logs = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const isToday = (i === 0);
+      const dayLabel = isToday ? 'Hari Ini' : dayNamesId[d.getDay()];
+      const dateLabel = isToday ? 'Hari Ini' : `${d.getDate()} ${d.toLocaleDateString('id-ID', { month: 'short' })}`;
+      logs.push({
+        day: dayLabel,
+        date: dateLabel,
+        dateKey: d.toISOString().split('T')[0],
+        protein: 0,
+        targetProt,
+        calories: 0,
+        targetCal,
+        compliancePct: 0,
+        isToday
+      });
+    }
+    return logs;
+  }
+
   // Setel status dasbor ke Kosong / Belum Ada Data (Tamu / Belum Login)
   setEmptyState() {
     this.isConfigured = false;
@@ -24,6 +50,73 @@ class NutriVisionProgress {
       { day: 'Sab', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
       { day: 'Hari Ini', date: 'Hari Ini', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0, isToday: true }
     ];
+  }
+
+  // Inisialisasi riwayat bersih untuk pengguna nyata (0 asupan, 0 streak)
+  initUserProgress(targets, userKey) {
+    this.isConfigured = true;
+    const targetProt = targets?.protein || 75;
+    const targetCal = targets?.calories || 1850;
+    this.todayIntake = {
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      calories: 0
+    };
+    this.weeklyLogs = this.create7DayLogs(targetProt, targetCal);
+    if (userKey) {
+      this.saveUserProgress(userKey);
+    }
+  }
+
+  // Simpan progres ke LocalStorage per pengguna
+  saveUserProgress(userKey) {
+    const key = userKey || (typeof app !== 'undefined' && (app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name)) || 'guest';
+    try {
+      const payload = {
+        todayIntake: this.todayIntake,
+        weeklyLogs: this.weeklyLogs,
+        dateKey: new Date().toISOString().split('T')[0]
+      };
+      localStorage.setItem('nutrivision_progress_' + key, JSON.stringify(payload));
+    } catch (e) {
+      console.warn('Progress storage warning:', e);
+    }
+  }
+
+  // Muat riwayat progres pengguna nyata (atau panggil demo jika akun demo)
+  loadUserProgress(userProfile) {
+    if (userProfile?.isDemo) {
+      this.loadDemoData(userProfile);
+      return;
+    }
+    const userKey = userProfile?.contact || userProfile?.email || userProfile?.name || 'guest';
+    const targets = userProfile?.targets || { protein: 75, calories: 1850 };
+    const todayKey = new Date().toISOString().split('T')[0];
+
+    try {
+      const stored = localStorage.getItem('nutrivision_progress_' + userKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.weeklyLogs && parsed.weeklyLogs.length === 7) {
+          this.isConfigured = true;
+          if (parsed.dateKey === todayKey) {
+            this.todayIntake = parsed.todayIntake || { protein: 0, carbs: 0, fat: 0, calories: 0 };
+            this.weeklyLogs = parsed.weeklyLogs;
+          } else {
+            this.todayIntake = { protein: 0, carbs: 0, fat: 0, calories: 0 };
+            this.weeklyLogs = this.create7DayLogs(targets.protein, targets.calories);
+            this.saveUserProgress(userKey);
+          }
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Load progress issue:', e);
+    }
+
+    // Default: inisialisasi progres bersih 0 intake untuk akun nyata
+    this.initUserProgress(targets, userKey);
   }
 
   // Muat data sampel klinis aktif saat pengguna masuk via Akun Demo
@@ -63,7 +156,7 @@ class NutriVisionProgress {
   }
 
   // Tambahkan hasil scan baru ke asupan hari ini
-  addLoggedMeal(aggregatedNutrients) {
+  addLoggedMeal(aggregatedNutrients, userKey) {
     const avgProt = (aggregatedNutrients.protein[0] + aggregatedNutrients.protein[1]) / 2;
     const avgCarbs = (aggregatedNutrients.carbs[0] + aggregatedNutrients.carbs[1]) / 2;
     const avgFat = (aggregatedNutrients.fat[0] + aggregatedNutrients.fat[1]) / 2;
@@ -82,6 +175,8 @@ class NutriVisionProgress {
       const targetProt = todayLog.targetProt || (typeof app !== 'undefined' && app.userProfile?.targets?.protein) || 75;
       todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / targetProt) * 100));
     }
+
+    this.saveUserProgress(userKey);
   }
 
   // Render Grafik Batang Tren Mingguan (FR-09)
@@ -91,17 +186,38 @@ class NutriVisionProgress {
     if (!container1 && !container2) return;
 
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    const hasLogs = Boolean(this.weeklyLogs && this.weeklyLogs.some(l => (l.protein || 0) > 0));
     const streakBadge = document.getElementById('ov-card3-streak-badge');
     const streakText = document.getElementById('ov-card3-streak-text');
     const avgText = document.getElementById('ov-weekly-avg-text');
 
-    if (!hasLogs) {
+    // Hitung streak & rata-rata kepatuhan secara dinamis
+    const logs = this.weeklyLogs || [];
+    const loggedDays = logs.filter(l => (l.protein || 0) > 0);
+
+    let streak = 0;
+    // Hitung streak dari hari-hari lampau yang tercatat secara berurutan
+    const pastLogs = logs.filter(l => !l.isToday);
+    for (let i = pastLogs.length - 1; i >= 0; i--) {
+      if ((pastLogs[i].protein || 0) > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    const todayLog = logs.find(l => l.isToday);
+    if (todayLog && (todayLog.protein || 0) > 0) {
+      const tgt = todayLog.targetProt || 75;
+      if (streak === 0 || ((todayLog.protein || 0) >= tgt * 0.9)) {
+        streak += 1;
+      }
+    }
+
+    if (loggedDays.length === 0) {
       if (streakBadge) streakBadge.className = 'badge gray';
       if (streakText) streakText.textContent = isId ? 'Streak: 0 Hari' : 'Streak: 0 Days';
-      if (avgText) avgText.innerHTML = isId ? 'Rata-rata mingguan: <b>Belum ada data</b>' : 'Weekly average: <b>No history yet</b>';
+      if (avgText) avgText.innerHTML = isId ? 'Rata-rata mingguan: <b>Belum ada riwayat</b>' : 'Weekly average: <b>No history yet</b>';
 
-      const emptyHtml = this.weeklyLogs.map(log => `
+      const emptyHtml = logs.map(log => `
         <div class="bar-column ${log.isToday ? 'today' : ''}">
           <div class="bar-wrapper" title="${log.day}: ${isId ? 'Belum ada data riwayat' : 'No history log yet'}">
             <div class="bar-fill" style="height: 0%; background: rgba(158, 167, 107, 0.2);"></div>
@@ -115,18 +231,21 @@ class NutriVisionProgress {
       return;
     }
 
-    if (streakBadge) streakBadge.className = 'badge teal';
-    if (streakText) streakText.textContent = isId ? 'Streak: 6 Hari' : 'Streak: 6 Days';
-    if (avgText) avgText.innerHTML = isId ? 'Rata-rata mingguan: <b>92% tercapai</b>' : 'Weekly average: <b>92% achieved</b>';
+    const totalPct = loggedDays.reduce((acc, l) => acc + (l.compliancePct || Math.min(100, Math.round((l.protein / (l.targetProt || 75)) * 100))), 0);
+    const avgCompliance = Math.round(totalPct / loggedDays.length);
 
-    const maxProt = Math.max(100, ...this.weeklyLogs.map(l => (l.targetProt || 75) * 1.15));
+    if (streakBadge) streakBadge.className = streak > 0 ? 'badge teal' : 'badge gray';
+    if (streakText) streakText.textContent = isId ? `Streak: ${streak} Hari` : `Streak: ${streak} Day${streak > 1 ? 's' : ''}`;
+    if (avgText) avgText.innerHTML = isId ? `Rata-rata mingguan: <b>${avgCompliance}% tercapai</b>` : `Weekly average: <b>${avgCompliance}% achieved</b>`;
 
-    const html = this.weeklyLogs.map(log => {
-      const heightPct = Math.min(100, Math.round((log.protein / maxProt) * 100));
+    const maxProt = Math.max(100, ...logs.map(l => (l.targetProt || 75) * 1.15));
+
+    const html = logs.map(log => {
+      const heightPct = (log.protein || 0) > 0 ? Math.min(100, Math.round((log.protein / maxProt) * 100)) : 0;
       return `
         <div class="bar-column ${log.isToday ? 'today' : ''}">
-          <div class="bar-wrapper" title="${log.date}: ${log.protein}g / ${log.targetProt || 75}g protein (${log.compliancePct}%)">
-            <div class="bar-fill" style="height: ${heightPct}%"></div>
+          <div class="bar-wrapper" title="${log.date || log.day}: ${log.protein || 0}g / ${log.targetProt || 75}g protein (${log.compliancePct || 0}%)">
+            <div class="bar-fill" style="height: ${heightPct}%; ${heightPct === 0 ? 'background: rgba(158, 167, 107, 0.2);' : ''}"></div>
           </div>
           <span class="day-label">${log.day}</span>
         </div>
@@ -240,20 +359,35 @@ class NutriVisionProgress {
 
     // Update Badge Status
     if (card2Badge) {
-      card2Badge.className = protPct >= 80 ? 'badge teal' : 'badge amber';
+      if (protPct >= 80) {
+        card2Badge.className = 'badge teal';
+      } else if (protPct > 0) {
+        card2Badge.className = 'badge amber';
+      } else {
+        card2Badge.className = 'badge gray';
+      }
     }
     if (card2BadgeText) {
       if (protPct >= 80) {
         card2BadgeText.textContent = isId ? 'On Track' : 'On Track';
-      } else {
+      } else if (protPct > 0) {
         card2BadgeText.textContent = isId ? 'Perlu Asupan' : 'Needs Intake';
+      } else {
+        card2BadgeText.textContent = isId ? 'Belum Ada Asupan' : 'No Intake Yet';
       }
     }
 
     // Update Recovery Recommendation Indicator (FR-05)
     if (tipBox) {
       const remainingProt = targets.protein - this.todayIntake.protein;
-      if (remainingProt > 0) {
+      if (this.todayIntake.protein === 0) {
+        tipBox.innerHTML = `
+          <i data-lucide="utensils" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
+          <div>
+            <strong>${isId ? 'Target Pemulihan Hari Ini Aktif:' : 'Daily Recovery Target Active:'}</strong> ${isId ? `Kebutuhan harian Anda adalah <b>${targets.protein}g protein</b> dan <b>${targets.calories.toLocaleString()} kkal</b>. Silakan scan makanan atau catat asupan untuk mulai memantau pemulihan.` : `Your daily goal is <b>${targets.protein}g protein</b> and <b>${targets.calories.toLocaleString()} kcal</b>. Scan a meal or log food to begin tracking.`}
+          </div>
+        `;
+      } else if (remainingProt > 0) {
         tipBox.innerHTML = `
           <i data-lucide="lightbulb" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
           <div>
@@ -276,15 +410,16 @@ class NutriVisionProgress {
 
   // Buat Teks Ringkasan Laporan untuk Dibagikan ke Nakes / Fisioterapis
   generateCaregiverReportText(userProfile) {
-    const avgProt = Math.round(this.weeklyLogs.reduce((acc, l) => acc + l.protein, 0) / this.weeklyLogs.length);
+    const logged = this.weeklyLogs.filter(l => (l.protein || 0) > 0);
+    const avgProt = logged.length > 0 ? Math.round(logged.reduce((acc, l) => acc + l.protein, 0) / logged.length) : 0;
     const targetProt = userProfile?.targets?.protein || 75;
     const avgPct = Math.round((avgProt / targetProt) * 100);
     const text = `📋 LAPORAN KEPATUHAN GIZI PEMULIHAN NUTRIVISION AI
-Pasien: ${userProfile?.name || 'Rangga Pratama'}
-Kondisi: ${userProfile?.conditionTitle || 'Pasca-Operasi Minggu ke-2'}
+Pasien: ${userProfile?.name || 'Pasien NutriVision'}
+Kondisi: ${userProfile?.conditionTitle || 'Dalam Pemulihan'}
 Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
 
-• Rata-rata Asupan Protein 7 Hari: ${avgProt}g / ${targetProt}g (${avgPct}%)
+• Rata-rata Asupan Protein Tercatat: ${avgProt}g / ${targetProt}g (${avgPct}%)
 • Asupan Hari Ini: Protein ${this.todayIntake.protein}g | Kalori ${this.todayIntake.calories} kkal
 • Status Pantangan/Alergi: ${userProfile?.restrictions || 'Tidak ada pantangan khusus'}
 • Catatan: Data dicatat secara mandiri melalui segmentasi foto NutriVision AI sebagai pendukung keputusan klinis.`;
@@ -295,23 +430,24 @@ Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
   // Buat Template HTML Dokumen PDF Laporan & Progress Resmi
   generatePDFReportHTML(userProfile, mealPlanner) {
     const profile = userProfile || (typeof app !== 'undefined' ? app.userProfile : {}) || {};
-    const patientName = profile.name || 'Rangga Pratama';
-    const condition = profile.conditionTitle || 'Pasca-Operasi Laparotomi & Rekonstruksi Jaringan';
-    const phase = profile.phase || 'Fase 2 (Hari 6–21) · Proliferasi & Sintesis';
+    const patientName = profile.name || 'Pasien NutriVision';
+    const condition = profile.conditionTitle || 'Pasca-Operasi & Pemulihan Jaringan';
+    const phase = profile.phase || 'Fase Pemulihan Aktif';
     const targets = profile.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
     const weight = profile.weightKg || 65;
     const height = profile.heightCm || 170;
     const bmi = profile.bmi || (weight / Math.pow(height / 100, 2)).toFixed(1);
     const bmiCat = profile.bmiCategory || 'Normal';
-    const restrictions = profile.restrictions || 'Bebas Santan Kental, Rendah Garam & Lemak Trans';
-    const contact = profile.contact || 'rangga.p@example.com';
+    const restrictions = profile.restrictions || 'Tidak ada pantangan khusus';
+    const contact = profile.contact || 'pasien@nutrivision.id';
     const docDate = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const docTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const docRef = `NV-TELE-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const totalProt = this.weeklyLogs.reduce((acc, l) => acc + l.protein, 0);
-    const avgProt = Math.round(totalProt / this.weeklyLogs.length);
-    const avgCompliance = Math.round((avgProt / (targets.protein || 75)) * 100);
+    const logged = this.weeklyLogs.filter(l => (l.protein || 0) > 0);
+    const totalProt = logged.reduce((acc, l) => acc + (l.protein || 0), 0);
+    const avgProt = logged.length > 0 ? Math.round(totalProt / logged.length) : 0;
+    const avgCompliance = logged.length > 0 ? Math.round((avgProt / (targets.protein || 75)) * 100) : 0;
 
     const activeSymptomsList = [];
     if (mealPlanner && mealPlanner.activeSymptoms) {
@@ -320,15 +456,20 @@ Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
       if (mealPlanner.activeSymptoms.has('konstipasi')) activeSymptomsList.push('Konstipasi / Sembelit');
       if (mealPlanner.activeSymptoms.has('nafsu-rendah')) activeSymptomsList.push('Nafsu Makan Rendah');
     }
-    if (activeSymptomsList.length === 0) activeSymptomsList.push('Sulit Menelan (Disfagia)');
+    if (activeSymptomsList.length === 0) activeSymptomsList.push('Tidak Ada Gejala Akut');
 
     const tableRows = this.weeklyLogs.map(log => {
       const tgt = log.targetProt || targets.protein || 75;
-      const pct = Math.min(100, Math.round((log.protein / tgt) * 100));
-      const isReached = pct >= 90;
-      const statusBadge = isReached 
-        ? `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#EAF5E9;color:#1B5E20;font-size:11px;font-weight:700;">✓ Tercapai</span>`
-        : `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#FFF3E0;color:#E65100;font-size:11px;font-weight:700;">⚠ Terpantau</span>`;
+      const pct = Math.min(100, Math.round(((log.protein || 0) / tgt) * 100));
+      const isReached = pct >= 80;
+      let statusBadge;
+      if ((log.protein || 0) === 0) {
+        statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#F1F3ED;color:#7A8553;font-size:11px;font-weight:600;">Belum Dicatat</span>`;
+      } else if (isReached) {
+        statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#EAF5E9;color:#1B5E20;font-size:11px;font-weight:700;">✓ Tercapai</span>`;
+      } else {
+        statusBadge = `<span style="display:inline-block;padding:3px 8px;border-radius:12px;background:#FFF3E0;color:#E65100;font-size:11px;font-weight:700;">⚠ Terpantau</span>`;
+      }
       
       return `
         <tr style="border-bottom:1px solid #EFE8CA;font-size:12px;">

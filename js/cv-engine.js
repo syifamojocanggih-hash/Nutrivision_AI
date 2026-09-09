@@ -73,45 +73,105 @@ class NutriVisionCVEngine {
     const rimWidth = Math.max(3, Math.round(minDim * 0.035));
     const plateRadius = outerRadius - rimWidth;
 
-    // 1. Gambar Bingkai Piring Bulat Keramik Luar
+    // 1. Gambar Bingkai Piring Bulat Keramik Luar (Ceramic Plate Depth)
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, outerRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#212F16';
+    ctx.fillStyle = '#263016';
     ctx.fill();
     ctx.lineWidth = rimWidth;
-    ctx.strokeStyle = 'rgba(198, 206, 156, 0.45)';
+    ctx.strokeStyle = 'rgba(158, 167, 107, 0.5)';
     ctx.stroke();
 
-    // 2. Lingkaran Dasar Piring
+    // 2. Lingkaran Dasar Piring (Plate Basin dengan Radial Gradient)
+    let basinGrad = '#1E2512';
+    if (typeof ctx.createRadialGradient === 'function') {
+      const grad = ctx.createRadialGradient(cx, cy, 5, cx, cy, plateRadius);
+      grad.addColorStop(0, 'rgba(158, 167, 107, 0.12)');
+      grad.addColorStop(0.7, '#1E2512');
+      grad.addColorStop(1, '#151A0C');
+      basinGrad = grad;
+    }
+
     ctx.beginPath();
     ctx.arc(cx, cy, plateRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#15210F';
+    ctx.fillStyle = basinGrad;
     ctx.fill();
 
-    // 3. Garis Panduan Melingkar Putus-putus
+    // 3. Garis Panduan Melingkar Putus-putus (Dashed Guide Circle)
     ctx.beginPath();
-    ctx.arc(cx, cy, plateRadius * 0.68, 0, Math.PI * 2);
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = 'rgba(198, 206, 156, 0.35)';
+    ctx.arc(cx, cy, plateRadius * 0.72, 0, Math.PI * 2);
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(158, 167, 107, 0.42)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 4. Ikon & Label Piring Kosong
-    ctx.font = `${Math.round(minDim * 0.15)}px sans-serif`;
+    // 4. Ring Ikon Kamera Bercahaya (Camera-Add Pulsing Ring)
+    const ringRadius = Math.max(16, Math.round(minDim * 0.13));
+    const iconCenterY = cy - Math.round(minDim * 0.12);
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(158, 167, 107, 0.35)';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(cx, iconCenterY, ringRadius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(158, 167, 107, 0.16)';
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(158, 167, 107, 0.45)';
+    ctx.stroke();
+    ctx.restore();
+
+    // Gambar Ikon Kamera + Plus Vektor di Dalam Ring
+    const camW = ringRadius * 1.05;
+    const camH = ringRadius * 0.75;
+    const camX = cx - (camW / 2);
+    const camY = iconCenterY - (camH / 2) + 1;
+
+    ctx.save();
+    ctx.fillStyle = '#9EA76B';
+    // Badan kamera
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(camX, camY, camW, camH, 3) : ctx.rect(camX, camY, camW, camH);
+    ctx.fill();
+
+    // Lensa kamera
+    ctx.beginPath();
+    ctx.arc(cx, iconCenterY + 1, camH * 0.32, 0, Math.PI * 2);
+    ctx.fillStyle = '#1E2512';
+    ctx.fill();
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = '#9EA76B';
+    ctx.stroke();
+
+    // Tanda Plus (+) di dalam lensa kamera
+    const plusSize = camH * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(cx - plusSize, iconCenterY + 1);
+    ctx.lineTo(cx + plusSize, iconCenterY + 1);
+    ctx.moveTo(cx, iconCenterY + 1 - plusSize);
+    ctx.lineTo(cx, iconCenterY + 1 + plusSize);
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = '#DDE2B9';
+    ctx.stroke();
+    ctx.restore();
+
+    // 5. Teks: "Piring Belum Terisi" & "Belum ada makanan terdeteksi"
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const textTitle = isId ? 'Piring Belum Terisi' : 'Empty Plate';
+    const textSub = isId ? 'Belum ada makanan terdeteksi' : 'No food detected yet';
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('🍽️', cx, cy - 8);
 
-    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    ctx.font = `600 ${Math.max(10, Math.round(minDim * 0.068))}px system-ui, -apple-system, sans-serif`;
-    ctx.fillStyle = '#EEF1D8';
-    ctx.fillText(isId ? 'Piring Kosong' : 'Empty Plate', cx, cy + 16);
+    ctx.font = `bold ${Math.max(10, Math.round(minDim * 0.07))}px Plus Jakarta Sans, system-ui, sans-serif`;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(textTitle, cx, cy + Math.round(minDim * 0.12));
 
-    ctx.font = `400 ${Math.max(9, Math.round(minDim * 0.055))}px system-ui, -apple-system, sans-serif`;
-    ctx.fillStyle = 'rgba(198, 206, 156, 0.75)';
-    ctx.fillText(isId ? 'Siap Scan Makanan' : 'Ready to Scan', cx, cy + 30);
+    ctx.font = `500 ${Math.max(8.5, Math.round(minDim * 0.054))}px Plus Jakarta Sans, system-ui, sans-serif`;
+    ctx.fillStyle = '#DDE2B9';
+    ctx.fillText(textSub, cx, cy + Math.round(minDim * 0.22));
 
     ctx.restore();
   }

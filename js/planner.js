@@ -147,12 +147,13 @@ class NutriVisionPlanner {
       if (protMatch) prot = parseInt(protMatch[1], 10);
       if (calsMatch) cals = parseInt(calsMatch[1], 10);
 
+      const userKey = app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name;
       progressTracker.addLoggedMeal({
         protein: [prot, prot],
         carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
         fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
         cals: [cals, cals]
-      });
+      }, userKey);
 
       progressTracker.renderMacroDonut(app.userProfile.targets);
       progressTracker.renderWeeklyBarChart();

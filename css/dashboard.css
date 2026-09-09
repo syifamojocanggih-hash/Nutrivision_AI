@@ -151,6 +151,72 @@
   display: block;
 }
 
+/* Ceramic Empty Plate ("Piring Belum Terisi" Bentuk Piring Keramik Elegan) */
+.dashboard-empty-plate-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  background: radial-gradient(circle, rgba(158, 167, 107, 0.12) 0%, #1e2612 65%, #151b0c 100%);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.12);
+  border: 3px solid rgba(158, 167, 107, 0.4);
+  padding: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dashboard-empty-plate-disc:hover {
+  border-color: rgba(158, 167, 107, 0.7);
+  box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.65), 0 0 20px rgba(158, 167, 107, 0.25);
+}
+
+.dashboard-empty-plate-dashed-guide {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(158, 167, 107, 0.45);
+  pointer-events: none;
+}
+
+.dashboard-empty-plate-icon-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(158, 167, 107, 0.16);
+  border: 1.5px solid rgba(158, 167, 107, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+  box-shadow: 0 0 16px rgba(158, 167, 107, 0.22);
+  animation: emptyPulse 2.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+.dashboard-empty-plate-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.2px;
+  line-height: 1.25;
+  z-index: 1;
+}
+
+.dashboard-empty-plate-sub {
+  font-size: 9.5px;
+  color: #DDE2B9;
+  margin-top: 2px;
+  line-height: 1.2;
+  opacity: 0.9;
+  z-index: 1;
+}
+
 .plate-diagram-stats {
   display: flex;
   flex-direction: column;
