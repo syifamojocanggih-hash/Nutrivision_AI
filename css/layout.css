@@ -768,3 +768,9 @@
   color: #D97706;
   border: 1px solid #FEF3C7;
 }
+
+.badge.gray {
+  background: rgba(255, 255, 255, 0.12);
+  color: #C6CE9C;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}

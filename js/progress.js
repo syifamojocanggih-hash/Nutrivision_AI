@@ -3,8 +3,34 @@
 
 class NutriVisionProgress {
   constructor() {
-    const targetProt = 75;
-    const targetCal = 1850;
+    this.setEmptyState();
+  }
+
+  // Setel status dasbor ke Kosong / Belum Ada Data (Tamu / Belum Login)
+  setEmptyState() {
+    this.isConfigured = false;
+    this.todayIntake = {
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      calories: 0
+    };
+    this.weeklyLogs = [
+      { day: 'Sen', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
+      { day: 'Sel', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
+      { day: 'Rab', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
+      { day: 'Kam', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
+      { day: 'Jum', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
+      { day: 'Sab', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
+      { day: 'Hari Ini', date: 'Hari Ini', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0, isToday: true }
+    ];
+  }
+
+  // Muat data sampel klinis aktif saat pengguna masuk via Akun Demo
+  loadDemoData(userProfile) {
+    this.isConfigured = true;
+    const targetProt = userProfile?.targets?.protein || 75;
+    const targetCal = userProfile?.targets?.calories || 1850;
     this.weeklyLogs = [
       { day: 'Sen', date: '24 Agt', protein: 68, targetProt, calories: 1790, targetCal, compliancePct: 91 },
       { day: 'Sel', date: '25 Agt', protein: 72, targetProt, calories: 1840, targetCal, compliancePct: 96 },
@@ -21,6 +47,19 @@ class NutriVisionProgress {
       fat: 42,
       calories: 1650
     };
+  }
+
+  // Perbarui target setelah pengisian kuesioner profil diagnostik
+  setTargets(targets) {
+    if (targets && targets.protein) {
+      this.isConfigured = true;
+      const todayLog = this.weeklyLogs.find(l => l.isToday);
+      if (todayLog) {
+        todayLog.targetProt = targets.protein;
+        todayLog.targetCal = targets.calories || 1850;
+        todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / targets.protein) * 100));
+      }
+    }
   }
 
   // Tambahkan hasil scan baru ke asupan hari ini
@@ -40,7 +79,8 @@ class NutriVisionProgress {
     if (todayLog) {
       todayLog.protein = this.todayIntake.protein;
       todayLog.calories = this.todayIntake.calories;
-      todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / (todayLog.targetProt || 75)) * 100));
+      const targetProt = todayLog.targetProt || (typeof app !== 'undefined' && app.userProfile?.targets?.protein) || 75;
+      todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / targetProt) * 100));
     }
   }
 
@@ -49,6 +89,35 @@ class NutriVisionProgress {
     const container1 = document.getElementById('weekly-bar-chart-box');
     const container2 = document.getElementById('weekly-bar-chart-box-full');
     if (!container1 && !container2) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const hasLogs = Boolean(this.weeklyLogs && this.weeklyLogs.some(l => (l.protein || 0) > 0));
+    const streakBadge = document.getElementById('ov-card3-streak-badge');
+    const streakText = document.getElementById('ov-card3-streak-text');
+    const avgText = document.getElementById('ov-weekly-avg-text');
+
+    if (!hasLogs) {
+      if (streakBadge) streakBadge.className = 'badge gray';
+      if (streakText) streakText.textContent = isId ? 'Streak: 0 Hari' : 'Streak: 0 Days';
+      if (avgText) avgText.innerHTML = isId ? 'Rata-rata mingguan: <b>Belum ada data</b>' : 'Weekly average: <b>No history yet</b>';
+
+      const emptyHtml = this.weeklyLogs.map(log => `
+        <div class="bar-column ${log.isToday ? 'today' : ''}">
+          <div class="bar-wrapper" title="${log.day}: ${isId ? 'Belum ada data riwayat' : 'No history log yet'}">
+            <div class="bar-fill" style="height: 0%; background: rgba(158, 167, 107, 0.2);"></div>
+          </div>
+          <span class="day-label">${log.day}</span>
+        </div>
+      `).join('');
+
+      if (container1) container1.innerHTML = emptyHtml;
+      if (container2) container2.innerHTML = emptyHtml;
+      return;
+    }
+
+    if (streakBadge) streakBadge.className = 'badge teal';
+    if (streakText) streakText.textContent = isId ? 'Streak: 6 Hari' : 'Streak: 6 Days';
+    if (avgText) avgText.innerHTML = isId ? 'Rata-rata mingguan: <b>92% tercapai</b>' : 'Weekly average: <b>92% achieved</b>';
 
     const maxProt = Math.max(100, ...this.weeklyLogs.map(l => (l.targetProt || 75) * 1.15));
 
@@ -68,22 +137,79 @@ class NutriVisionProgress {
     if (container2) container2.innerHTML = html;
   }
 
-  // Render Macro Progress Bars & Center Donut
+  // Render Macro Progress Bars & Center Donut (Mendukung Zero/Preview Mode & Configured State)
   renderMacroDonut(currentTargets) {
-    const isConfigured = currentTargets && currentTargets.protein > 0;
-    const targets = isConfigured ? currentTargets : { protein: 0, carbs: 0, fat: 0, calories: 0 };
-    
-    const protPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.protein / targets.protein) * 100)) : 0;
-    const carbsPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.carbs / targets.carbs) * 100)) : 0;
-    const fatPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.fat / targets.fat) * 100)) : 0;
-    const calsPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.calories / targets.calories) * 100)) : 0;
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const isConfigured = Boolean(currentTargets && currentTargets.protein > 0);
+
+    const donutVal = document.getElementById('macro-donut-value');
+    const donutCircle = document.getElementById('macro-donut-circle-prot');
+    const elProt = document.getElementById('macro-num-protein');
+    const elCarbs = document.getElementById('macro-num-carbs');
+    const elFat = document.getElementById('macro-num-fat');
+    const elCals = document.getElementById('macro-num-cals');
+    const barProt = document.getElementById('bar-fill-protein');
+    const barCarbs = document.getElementById('bar-fill-carbs');
+    const barFat = document.getElementById('bar-fill-fat');
+    const barCals = document.getElementById('bar-fill-cals');
+    const elVit = document.getElementById('macro-num-vitamins');
+    const barVit = document.getElementById('bar-fill-vitamins');
+    const elMin = document.getElementById('macro-num-minerals');
+    const barMin = document.getElementById('bar-fill-minerals');
+    const card2Badge = document.getElementById('ov-card2-status-badge');
+    const card2BadgeText = document.getElementById('ov-card2-status-text');
+    const tipBox = document.getElementById('recovery-target-advice');
+
+    // JIKA BELUM LOGIN / BELUM ISI DATA: TAMPILKAN STATUS KOSONG BERSIH
+    if (!isConfigured) {
+      if (donutVal) donutVal.textContent = '0%';
+      if (donutCircle) {
+        const circumference = 2 * Math.PI * 48;
+        donutCircle.style.strokeDashoffset = circumference;
+      }
+      if (elProt) elProt.textContent = '0 / -- g';
+      if (elCarbs) elCarbs.textContent = '0 / -- g';
+      if (elFat) elFat.textContent = '0 / -- g';
+      if (elCals) elCals.textContent = isId ? '0 / -- kkal' : '0 / -- kcal';
+      if (barProt) barProt.style.width = '0%';
+      if (barCarbs) barCarbs.style.width = '0%';
+      if (barFat) barFat.style.width = '0%';
+      if (barCals) barCals.style.width = '0%';
+      if (elVit) elVit.textContent = isId ? '0% Target' : '0% Target';
+      if (barVit) barVit.style.width = '0%';
+      if (elMin) elMin.textContent = isId ? '0% Target' : '0% Target';
+      if (barMin) barMin.style.width = '0%';
+
+      if (card2Badge) card2Badge.className = 'badge gray';
+      if (card2BadgeText) card2BadgeText.textContent = isId ? 'Belum Dikonfigurasi' : 'Not Configured';
+
+      if (tipBox) {
+        tipBox.innerHTML = `
+          <i data-lucide="sparkles" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
+          <div>
+            <strong>${isId ? 'Profil Gizi Belum Diisi:' : 'Nutrition Profile Pending:'}</strong> ${isId ? 'Masuk dan isi' : 'Sign in and complete the'} 
+            <a href="javascript:void(0)" onclick="app.openQuizModal(1)" style="color:var(--teal-700);font-weight:700;text-decoration:underline;">${isId ? 'Diagnostik Gizi Pemulihan' : 'Clinical Nutrition Diagnostic'}</a> 
+            ${isId ? 'untuk menghitung target protein dan kalori presisi fase pemulihan Anda.' : 'to calculate your daily protein and caloric targets.'}
+          </div>
+        `;
+      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      return;
+    }
+
+    // JIKA SUDAH LOGIN & ISI DATA: HITUNG PERSENTASE SECARA REAL
+    const targets = currentTargets;
+    const protPct = Math.min(100, Math.round((this.todayIntake.protein / targets.protein) * 100));
+    const carbsPct = Math.min(100, Math.round((this.todayIntake.carbs / targets.carbs) * 100));
+    const fatPct = Math.min(100, Math.round((this.todayIntake.fat / targets.fat) * 100));
+    const calsPct = Math.min(100, Math.round((this.todayIntake.calories / targets.calories) * 100));
 
     // Update Donut Center Text
-    const donutVal = document.getElementById('macro-donut-value');
-    if (donutVal) donutVal.textContent = isConfigured ? `${protPct}%` : `0%`;
+    if (donutVal) donutVal.textContent = `${protPct}%`;
 
     // Update Circle Stroke Dashoffset
-    const donutCircle = document.getElementById('macro-donut-circle-prot');
     if (donutCircle) {
       const circumference = 2 * Math.PI * 48; // r=48 -> ~301.6
       const offset = circumference - (circumference * protPct / 100);
@@ -91,75 +217,56 @@ class NutriVisionProgress {
     }
 
     // Update Macro Numerical Labels
-    const elProt = document.getElementById('macro-num-protein');
-    if (elProt) elProt.textContent = isConfigured ? `${this.todayIntake.protein} / ${targets.protein} g` : `${this.todayIntake.protein} / -- g`;
-
-    const elCarbs = document.getElementById('macro-num-carbs');
-    if (elCarbs) elCarbs.textContent = isConfigured ? `${this.todayIntake.carbs} / ${targets.carbs} g` : `${this.todayIntake.carbs} / -- g`;
-
-    const elFat = document.getElementById('macro-num-fat');
-    if (elFat) elFat.textContent = isConfigured ? `${this.todayIntake.fat} / ${targets.fat} g` : `${this.todayIntake.fat} / -- g`;
-
-    const elCals = document.getElementById('macro-num-cals');
-    if (elCals) elCals.textContent = isConfigured ? `${this.todayIntake.calories.toLocaleString()} / ${targets.calories.toLocaleString()} kkal` : `${this.todayIntake.calories} / -- kkal`;
+    if (elProt) elProt.textContent = `${this.todayIntake.protein} / ${targets.protein} g`;
+    if (elCarbs) elCarbs.textContent = `${this.todayIntake.carbs} / ${targets.carbs} g`;
+    if (elFat) elFat.textContent = `${this.todayIntake.fat} / ${targets.fat} g`;
+    if (elCals) elCals.textContent = `${this.todayIntake.calories.toLocaleString()} / ${targets.calories.toLocaleString()} ${isId ? 'kkal' : 'kcal'}`;
 
     // Update Macro Bar Tracks
-    const barProt = document.getElementById('bar-fill-protein');
     if (barProt) barProt.style.width = `${protPct}%`;
-
-    const barCarbs = document.getElementById('bar-fill-carbs');
     if (barCarbs) barCarbs.style.width = `${carbsPct}%`;
-
-    const barFat = document.getElementById('bar-fill-fat');
     if (barFat) barFat.style.width = `${fatPct}%`;
-
-    const barCals = document.getElementById('bar-fill-cals');
     if (barCals) barCals.style.width = `${calsPct}%`;
 
     // Update 3 Primary Clinical Recovery Assessment Factors (Protein, Vitamins, Minerals)
-    const vitPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.protein / (targets.protein || 75)) * 94)) : 0;
-    const minPct = isConfigured ? Math.min(100, Math.round((this.todayIntake.protein / (targets.protein || 75)) * 91)) : 0;
+    const vitPct = Math.min(100, Math.round((this.todayIntake.protein / (targets.protein || 75)) * 94));
+    const minPct = Math.min(100, Math.round((this.todayIntake.protein / (targets.protein || 75)) * 91));
 
-    const elVit = document.getElementById('macro-num-vitamins');
-    if (elVit) elVit.textContent = isConfigured ? `${vitPct}% Target` : '0% Target';
-    const barVit = document.getElementById('bar-fill-vitamins');
+    if (elVit) elVit.textContent = `${vitPct}% Target`;
     if (barVit) barVit.style.width = `${vitPct}%`;
 
-    const elMin = document.getElementById('macro-num-minerals');
-    if (elMin) elMin.textContent = isConfigured ? `${minPct}% Target` : '0% Target';
-    const barMin = document.getElementById('bar-fill-minerals');
+    if (elMin) elMin.textContent = `${minPct}% Target`;
     if (barMin) barMin.style.width = `${minPct}%`;
 
+    // Update Badge Status
+    if (card2Badge) {
+      card2Badge.className = protPct >= 80 ? 'badge teal' : 'badge amber';
+    }
+    if (card2BadgeText) {
+      if (protPct >= 80) {
+        card2BadgeText.textContent = isId ? 'On Track' : 'On Track';
+      } else {
+        card2BadgeText.textContent = isId ? 'Perlu Asupan' : 'Needs Intake';
+      }
+    }
+
     // Update Recovery Recommendation Indicator (FR-05)
-    const tipBox = document.getElementById('recovery-target-advice');
     if (tipBox) {
-      if (!isConfigured) {
+      const remainingProt = targets.protein - this.todayIntake.protein;
+      if (remainingProt > 0) {
         tipBox.innerHTML = `
-          <i data-lucide="sparkles" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
+          <i data-lucide="lightbulb" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
           <div>
-            <strong>Profil Gizi Belum Diisi:</strong> Lengkapi 
-            <a href="javascript:void(0)" onclick="app.openQuizModal(1)" style="color:var(--teal-700);font-weight:700;text-decoration:underline;">Kuesioner Diagnostik (Foodvisor Style)</a> 
-            untuk mendapatkan target harian dan rekomendasi piring makan.
+            <strong>${isId ? 'Saran Gizi Pemulihan:' : 'Clinical Advice:'}</strong> ${isId ? `Protein masih kurang <b>${remainingProt}g</b> untuk target hari ini. Disarankan menambah <i>2 butir telur rebus (14g)</i> atau <i>1 porsi ikan gabus kukus (18g)</i> saat makan malam.` : `Protein is short by <b>${remainingProt}g</b> of today's target. Consider adding <i>2 boiled eggs (14g)</i> or <i>steamed snakehead fish (18g)</i>.`}
           </div>
         `;
       } else {
-        const remainingProt = targets.protein - this.todayIntake.protein;
-        if (remainingProt > 0) {
-          tipBox.innerHTML = `
-            <i data-lucide="lightbulb" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
-            <div>
-              <strong>Saran Gizi Pemulihan:</strong> Protein masih kurang <b>${remainingProt}g</b> untuk target hari ini. 
-              Disarankan menambah <i>2 butir telur rebus (14g)</i> atau <i>1 porsi tahu kukus (8g)</i> saat makan malam.
-            </div>
-          `;
-        } else {
-          tipBox.innerHTML = `
-            <i data-lucide="check-circle" style="color:var(--teal-500);width:20px;height:20px;flex-shrink:0;"></i>
-            <div>
-              <strong>Target Protein Tercapai!</strong> Kebutuhan asam amino hari ini telah terpenuhi optimal untuk proses regenerasi sel.
-            </div>
-          `;
-        }
+        tipBox.innerHTML = `
+          <i data-lucide="check-circle" style="color:var(--teal-500);width:20px;height:20px;flex-shrink:0;"></i>
+          <div>
+            <strong>${isId ? 'Target Protein Tercapai!' : 'Protein Target Achieved!'}</strong> ${isId ? 'Kebutuhan asam amino hari ini telah terpenuhi optimal untuk proses regenerasi sel.' : 'Daily amino acid requirements are met to optimize cell regeneration.'}
+          </div>
+        `;
       }
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();

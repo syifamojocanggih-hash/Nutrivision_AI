@@ -8,11 +8,33 @@ class NutriVisionPlanner {
   }
 
   setMode(mode) {
+    if (window.app && typeof window.app.requireAuth === 'function') {
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      if (!window.app.requireAuth(() => {
+        this.currentMode = (mode === 'hemat') ? 'hemat' : 'standar';
+        this.renderPlanner();
+      }, isId ? 'atur mode menu' : 'switch meal mode')) {
+        return;
+      }
+    }
     this.currentMode = (mode === 'hemat') ? 'hemat' : 'standar';
     this.renderPlanner();
   }
 
   toggleSymptom(symptomKey) {
+    if (window.app && typeof window.app.requireAuth === 'function') {
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      if (!window.app.requireAuth(() => {
+        if (this.activeSymptoms.has(symptomKey)) {
+          this.activeSymptoms.delete(symptomKey);
+        } else {
+          this.activeSymptoms.add(symptomKey);
+        }
+        this.renderSymptomFilter();
+      }, isId ? 'filter gejala' : 'filter symptoms')) {
+        return;
+      }
+    }
     if (this.activeSymptoms.has(symptomKey)) {
       this.activeSymptoms.delete(symptomKey);
     } else {
@@ -134,8 +156,8 @@ class NutriVisionPlanner {
 
       progressTracker.renderMacroDonut(app.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
-      app.showToast(isId ? `Menu "${mealName}" berhasil dicatat ke progres asupan harian!` : `Meal "${mealName}" successfully logged to daily recovery intake!`);
-    }, isId ? `mencatat menu "${mealName}"` : `logging meal "${mealName}"`);
+      app.showToast(isId ? `Menu "${mealName}" berhasil dicatat!` : `Meal "${mealName}" logged!`);
+    }, isId ? 'catat menu' : 'log meal');
   }
 
   // Render Symptom-Aware Feedback

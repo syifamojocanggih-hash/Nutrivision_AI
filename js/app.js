@@ -25,15 +25,28 @@ class NutriVisionApp {
     this.menuClicks = this.loadMenuClicks();
   }
 
-  // Auth Guard / Gatekeeper: Memastikan pengguna sudah login & mengisi data klinis valid
-  requireAuth(callback, actionDescription = 'menggunakan fitur ini') {
-    const hasData = Boolean(this.userProfile.hasCompletedQuiz && this.userProfile.name);
-    if (hasData) {
+  // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin atau pasien login)
+  isAuthenticated() {
+    if (!this.userProfile) return false;
+    if (this.userProfile.role === 'admin') return true;
+    return Boolean(this.userProfile.name && (this.userProfile.contact || this.userProfile.email));
+  }
+
+  // Auth Guard / Gatekeeper: Memastikan pengguna sudah login sebelum menggunakan fitur interaktif
+  requireAuth(callback, actionDescription = '') {
+    if (this.isAuthenticated()) {
       if (typeof callback === 'function') callback();
       return true;
     } else {
       this.pendingAuthCallback = callback;
-      this.showToast(`Silakan masuk atau lengkapi data profil untuk ${actionDescription}.`);
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      let msg;
+      if (actionDescription) {
+        msg = isId ? `Silakan masuk untuk ${actionDescription}.` : `Please sign in to ${actionDescription}.`;
+      } else {
+        msg = isId ? 'Silakan masuk terlebih dahulu.' : 'Please sign in first.';
+      }
+      this.showToast(msg, 'warning');
       this.openAuthModal('login');
       return false;
     }
@@ -142,13 +155,24 @@ class NutriVisionApp {
 
     this.renderAuthUI();
 
-    // Inisialisasi CV Engine dengan preset default
-    cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
-    this.renderOverviewPlate();
+    // Inisialisasi Status Dasbor (Empty State jika belum login / belum isi data)
+    const hasData = Boolean(this.userProfile && this.userProfile.name && this.userProfile.hasCompletedQuiz && this.userProfile.targets);
 
-    // Render Sub-modul
-    progressTracker.renderMacroDonut(this.userProfile.targets);
-    progressTracker.renderWeeklyBarChart();
+    if (hasData) {
+      if (!cvEngine.currentScan) {
+        cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+      }
+      this.renderOverviewPlate();
+      progressTracker.loadDemoData(this.userProfile);
+      progressTracker.renderMacroDonut(this.userProfile.targets);
+      progressTracker.renderWeeklyBarChart();
+    } else {
+      cvEngine.currentScan = null;
+      this.renderOverviewPlate();
+      progressTracker.setEmptyState();
+      progressTracker.renderMacroDonut(null);
+      progressTracker.renderWeeklyBarChart();
+    }
     mealPlanner.renderPlanner();
     mealPlanner.renderSymptomFilter();
     communityHandler.renderCommunityFeed();
@@ -240,46 +264,6 @@ class NutriVisionApp {
   // =========================================================================
   // SMART CLINICAL NOTIFICATION SYSTEM (Pagi 06:00, Malam 18:00, Harga, Info)
   // =========================================================================
-  showToast(message, type = 'info', title = '') {
-    let container = document.getElementById('toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'toast-container';
-      container.className = 'toast-container';
-      document.body.appendChild(container);
-    }
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    let iconName = 'bell';
-    if (type === 'evening_reminder' || type === 'urgent') iconName = 'moon';
-    else if (type === 'morning_reminder') iconName = 'sun';
-    else if (type === 'price_change') iconName = 'trending-down';
-    else if (type === 'info') iconName = 'sparkles';
-    else if (type === 'error') iconName = 'alert-triangle';
-    else if (type === 'success') iconName = 'check-circle';
-
-    toast.innerHTML = `
-      <i data-lucide="${iconName}" style="width:18px;height:18px;flex-shrink:0;"></i>
-      <div style="flex:1;">
-        ${title ? `<strong style="display:block;font-size:12px;margin-bottom:2px;font-weight:700;">${title}</strong>` : ''}
-        <span style="font-size:11.5px;line-height:1.35;">${message}</span>
-      </div>
-      <button type="button" style="all:unset;cursor:pointer;opacity:0.75;padding:2px;font-size:13px;line-height:1;" onclick="this.parentElement.remove()">✕</button>
-    `;
-
-    container.appendChild(toast);
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
-    }
-
-    setTimeout(() => {
-      toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-10px)';
-      setTimeout(() => toast.remove(), 300);
-    }, 6000);
-  }
 
   toggleSmartNotificationDropdown(forceState) {
     const dropdown = document.getElementById('smart-notif-dropdown');
@@ -411,6 +395,9 @@ class NutriVisionApp {
   }
 
   async simulateSmartNotification(type) {
+    if (!this.requireAuth(() => this.simulateSmartNotification(type), 'menguji notifikasi')) {
+      return;
+    }
     try {
       if (!window.nutriAPI) {
         this.showToast('Server backend belum terhubung untuk simulasi.', 'warning');
@@ -489,6 +476,10 @@ class NutriVisionApp {
     this.updateCalcUI();
     this.selectLandingPreset(this.currentLandingPreset || 'preset-soft-bubur-gabus');
     this.renderOverviewPlate();
+    if (window.progressTracker) {
+      progressTracker.renderMacroDonut(this.userProfile.targets);
+      progressTracker.renderWeeklyBarChart();
+    }
     this.renderFoodCatalog();
     if (window.mealPlanner && typeof window.mealPlanner.renderPlanner === 'function') {
       window.mealPlanner.renderPlanner();
@@ -724,6 +715,8 @@ class NutriVisionApp {
       btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
     });
 
+    this.updatePreviewBanner();
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -897,6 +890,8 @@ class NutriVisionApp {
 
     this.isLanding = true;
     document.body.classList.add('is-landing-active');
+    const guestBanner = document.getElementById('dashboard-preview-banner');
+    if (guestBanner) guestBanner.style.display = 'none';
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (window.history.pushState) {
       window.history.pushState(null, null, '#landing');
@@ -909,25 +904,10 @@ class NutriVisionApp {
     }
   }
 
-  // Pindah ke Mode Dasbor Aplikasi
+  // Pindah ke Mode Dasbor Aplikasi (Mendukung Mode Pratinjau Tamu / Guest Preview)
   goToDashboard(sectionId = 'overview', triggerModal = null) {
     if (this.userProfile && this.userProfile.role === 'admin' && sectionId === 'overview' && !this.isAdminPreviewMode) {
       this.goToAdminPortal();
-      return;
-    }
-
-    // Validasi Wajib Isi: User biasa harus menyelesaikan 3 langkah pengisian profil sebelum masuk dashboard
-    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
-    const hasCompleted = Boolean(this.userProfile && this.userProfile.hasCompletedQuiz && this.userProfile.name);
-
-    if (!isAdmin && !hasCompleted) {
-      this.isLanding = false;
-      document.body.classList.remove('is-landing-active');
-      this.navigate(sectionId);
-      setTimeout(() => {
-        this.openQuizModal(1);
-        this.showToast('Lengkapi 3 langkah profil pemulihan untuk mengaktifkan dasbor.', 'info');
-      }, 100);
       return;
     }
 
@@ -941,11 +921,45 @@ class NutriVisionApp {
       window.history.pushState(null, null, `#${sectionId}`);
     }
 
+    this.updatePreviewBanner();
+
     if (triggerModal === 'quiz') {
       setTimeout(() => this.openQuizModal(1), 120);
     } else if (triggerModal === 'scan') {
       setTimeout(() => this.openScanModal(), 120);
     }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Update Status & Visibilitas Banner Pratinjau Dasbor (Guest Mode)
+  updatePreviewBanner() {
+    const banner = document.getElementById('dashboard-preview-banner');
+    if (!banner) return;
+
+    const isAuth = this.isAuthenticated();
+    if (isAuth || this.isLanding) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    banner.style.display = 'flex';
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile ? this.userProfile.language : 'id');
+    const isId = lang === 'id';
+
+    const badgeText = document.getElementById('guest-banner-badge-text');
+    const title = document.getElementById('guest-banner-title');
+    const desc = document.getElementById('guest-banner-desc');
+    const btnLogin = document.getElementById('guest-banner-login-btn-text');
+    const btnHome = document.getElementById('guest-banner-home-btn-text');
+
+    if (badgeText) badgeText.textContent = isId ? 'Mode Pratinjau' : 'Preview Mode';
+    if (title) title.textContent = isId ? 'Anda sedang menjelajahi Dasbor dalam Mode Pratinjau (Tamu).' : 'You are currently browsing the Dashboard in Preview Mode (Guest).';
+    if (desc) desc.textContent = isId ? 'Silakan cek visualisasi & tata letak dasbor. Masuk atau buat akun baru untuk mengaktifkan seluruh fitur interaktif.' : 'Feel free to explore the dashboard layout and visual charts. Sign in or register to enable all interactive clinical features.';
+    if (btnLogin) btnLogin.textContent = isId ? 'Masuk / Daftar' : 'Sign In / Register';
+    if (btnHome) btnHome.textContent = isId ? 'Beranda' : 'Home';
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -1814,6 +1828,9 @@ class NutriVisionApp {
   // FOODVISOR-STYLE DIAGNOSTIC QUIZ METHODS (3 STEPS WITH BULLET PAGINATION)
   // =========================================================================
   openQuizModal(step = 1) {
+    if (!this.requireAuth(() => this.openQuizModal(step), 'diagnostik gizi')) {
+      return;
+    }
     const onboardName = document.getElementById('onboard-name');
     const onboardContact = document.getElementById('onboard-contact');
     const consentCheck = document.getElementById('onboard-consent-check');
@@ -2254,7 +2271,10 @@ class NutriVisionApp {
 
     this.updateProfileUI();
     this.renderAuthUI();
+    progressTracker.setTargets(this.userProfile.targets);
     progressTracker.renderMacroDonut(this.userProfile.targets);
+    progressTracker.renderWeeklyBarChart();
+    this.renderOverviewPlate();
     this.closeModal('onboarding-modal');
     this.showToast('✅ Rencana diagnostik gizi pemulihan berhasil disimpan & diterapkan ke dasbor!');
     this.goToDashboard('overview');
@@ -2286,8 +2306,64 @@ class NutriVisionApp {
       cvEngine.renderCanvas(canvas, 170, 170, true);
     }
 
-    if (!cvEngine.currentScan) return;
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const diagramStatsBox = document.getElementById('overview-diagram-stats');
+    const totalBadge = document.getElementById('overview-total-badge');
+    const legendBox = document.getElementById('overview-segment-legend');
+    const confNote = document.getElementById('overview-conf-note');
+
+    // JIKA BELUM ADA SCAN MAKANAN / BELUM LOGIN: TAMPILKAN STATUS KOSONG BERSIH
+    if (!cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) {
+      if (diagramStatsBox) {
+        diagramStatsBox.innerHTML = `
+          <div class="plate-stat-main">
+            <span class="stat-big-val" style="color:var(--ink-mute);letter-spacing:1px;">--%</span>
+            <span class="stat-big-lbl">${isId ? 'Belum Ada Scan' : 'No Active Scan'}</span>
+          </div>
+          <div class="plate-mini-pills">
+            <span class="p-pill"><i data-lucide="scale" style="width:12px;height:12px;"></i> 0g Total</span>
+            <span class="p-pill"><i data-lucide="zap" style="width:12px;height:12px;"></i> 0g Protein</span>
+          </div>
+        `;
+      }
+
+      if (totalBadge) {
+        totalBadge.textContent = isId ? '0 Komponen' : '0 Components';
+      }
+
+      if (legendBox) {
+        legendBox.innerHTML = `
+          <div class="overview-empty-state-box">
+            <div class="empty-state-icon-circle">
+              <i data-lucide="utensils" style="width:22px;height:22px;color:var(--teal-700);"></i>
+            </div>
+            <div class="empty-state-title">${isId ? 'Belum Ada Makanan yang Dipindai' : 'No Meal Plate Scanned Yet'}</div>
+            <p class="empty-state-desc">
+              ${isId
+                ? 'Masuk ke akun Anda dan pindai piring makanan untuk mengidentifikasi bahan serta mengestimasi kebutuhan gizi pemulihan.'
+                : 'Sign in to your account and scan your meal to detect ingredients and calculate clinical recovery nutrition.'}
+            </p>
+            <button class="btn-empty-scan" onclick="app.openScanModal()">
+              <i data-lucide="camera" style="width:15px;height:15px;"></i>
+              <span>${isId ? 'Scan Piring Pertama' : 'Scan First Meal'}</span>
+            </button>
+          </div>
+        `;
+      }
+
+      if (confNote) {
+        confNote.textContent = isId
+          ? 'Menunggu pemindaian makanan pertama · Estimasi gizi akan muncul otomatis di sini.'
+          : 'Awaiting first meal scan · Nutrition breakdown will appear automatically here.';
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      return;
+    }
+
+    // JIKA ADA SCAN MAKANAN: TAMPILKAN PERSENTASE DAN BREAKDOWN
     const segments = cvEngine.currentScan.segments || [];
     const totalGrams = segments.reduce((sum, s) => sum + (s.portionGrams || 0), 0) || 1;
     const totalProtMin = segments.reduce((sum, s) => sum + (s.protein ? s.protein[0] : 0), 0);
@@ -2295,7 +2371,6 @@ class NutriVisionApp {
     const overallConf = cvEngine.currentScan.confidenceOverall || 88;
 
     // 1. Render Left Column Diagram Stats
-    const diagramStatsBox = document.getElementById('overview-diagram-stats');
     if (diagramStatsBox) {
       diagramStatsBox.innerHTML = `
         <div class="plate-stat-main">
@@ -2309,13 +2384,11 @@ class NutriVisionApp {
       `;
     }
 
-    const totalBadge = document.getElementById('overview-total-badge');
     if (totalBadge) {
       totalBadge.textContent = `${segments.length} ${isId ? 'Komponen' : 'Components'}`;
     }
 
     // 2. Render Right Column Segment Legend with Clean Percentage Bars
-    const legendBox = document.getElementById('overview-segment-legend');
     if (legendBox) {
       legendBox.innerHTML = segments.map(seg => {
         const portionPct = Math.round(((seg.portionGrams || 0) / totalGrams) * 100);
@@ -2346,7 +2419,6 @@ class NutriVisionApp {
     }
 
     // Update Confidence Note
-    const confNote = document.getElementById('overview-conf-note');
     if (confNote) {
       confNote.textContent = isId
         ? `Tingkat keyakinan model: ${overallConf}% · Format estimasi disajikan dalam rentang gizi pendukung keputusan.`
@@ -2374,8 +2446,10 @@ class NutriVisionApp {
   // SCAN & CAMERA WORKFLOW (FR-01, FR-02, FR-03, FR-07)
   // =========================================================================
   openScanModal() {
-    this.openModal('scan-modal');
-    this.renderScanModalUI();
+    this.requireAuth(() => {
+      this.openModal('scan-modal');
+      this.renderScanModalUI();
+    }, 'memindai makanan');
   }
 
   renderScanModalUI() {
@@ -2552,15 +2626,17 @@ class NutriVisionApp {
       progressTracker.renderWeeklyBarChart();
       this.closeModal('scan-modal');
       this.showToast('✅ Asupan makanan berhasil dicatat ke progres pemulihan harian!');
-    }, 'mencatat asupan makanan ke progres harian');
+    }, 'mencatat asupan');
   }
 
   // =========================================================================
   // OUR POPULAR MENU / KATALOG GIZI MAKANAN MODERN (MATCHING MOCKUP)
   // =========================================================================
   openPlateCatalogModal() {
-    this.renderPlateCatalogModal();
-    this.openModal('plate-catalog-modal');
+    this.requireAuth(() => {
+      this.renderPlateCatalogModal();
+      this.openModal('plate-catalog-modal');
+    }, 'katalog pangan');
   }
 
   renderPlateCatalogModal() {
@@ -2787,6 +2863,11 @@ class NutriVisionApp {
   }
 
   filterCatalogCategory(category, btnElement) {
+    if (category === 'favorite') {
+      if (!this.requireAuth(() => this.filterCatalogCategory('favorite', btnElement), 'akses favorit')) {
+        return;
+      }
+    }
     this.activeCatalogCategory = category;
     this.isPlateMatchedCatalogMode = false;
     document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => b.classList.remove('active'));
@@ -2881,8 +2962,10 @@ class NutriVisionApp {
   }
 
   handleCardClick(foodId) {
-    this.trackMenuClick(foodId);
-    this.addCatalogItemToScan(foodId);
+    this.requireAuth(() => {
+      this.trackMenuClick(foodId);
+      this.addCatalogItemToScan(foodId);
+    }, 'tambah ke piring');
   }
 
   handleRecipeClick(foodId) {
@@ -2923,6 +3006,9 @@ class NutriVisionApp {
 
   toggleFavoriteFood(foodId, event) {
     if (event) event.stopPropagation();
+    if (!this.requireAuth(() => this.toggleFavoriteFood(foodId, null), 'simpan favorit')) {
+      return;
+    }
     if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
@@ -3136,15 +3222,17 @@ class NutriVisionApp {
   }
 
   addCatalogItemToScan(foodId) {
-    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
-    if (!food) return;
+    this.requireAuth(() => {
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
+      if (!food) return;
 
-    cvEngine.addSegment(food, food.defaultPortionGrams);
-    this.renderScanModalUI();
-    this.renderOverviewPlate();
-    const foodName = isId ? food.name : (food.nameEn || food.name);
-    this.showToast(isId ? `Ditambahkan ke piring: ${foodName} (${food.defaultPortionGrams}g)` : `Added to plate: ${foodName} (${food.defaultPortionGrams}g)`);
+      cvEngine.addSegment(food, food.defaultPortionGrams);
+      this.renderScanModalUI();
+      this.renderOverviewPlate();
+      const foodName = isId ? food.name : (food.nameEn || food.name);
+      this.showToast(isId ? `Ditambahkan ke piring: ${foodName} (${food.defaultPortionGrams}g)` : `Added to plate: ${foodName} (${food.defaultPortionGrams}g)`);
+    }, 'tambah ke piring');
   }
 
   // =========================================================================
@@ -3717,9 +3805,6 @@ class NutriVisionApp {
       this.saveUserProfile();
       this.updateProfileUI();
       this.renderAuthUI();
-      if (this.userProfile.targets) {
-        progressTracker.renderMacroDonut(this.userProfile.targets);
-      }
       this.closeModal('auth-modal');
 
       if (this.userProfile.role === 'admin') {
@@ -3736,9 +3821,19 @@ class NutriVisionApp {
       this.goToDashboard('overview');
 
       if (!hasQuiz || !this.userProfile.targets) {
+        cvEngine.currentScan = null;
+        this.renderOverviewPlate();
+        progressTracker.setEmptyState();
+        progressTracker.renderMacroDonut(null);
+        progressTracker.renderWeeklyBarChart();
         this.showToast(`✅ Login Berhasil! Silakan lengkapi data profil & diagnostik nutrisi untuk mengaktifkan dasbor Anda.`);
-        this.openDiagnosticQuiz(1);
+        this.openQuizModal(1);
       } else {
+        cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+        this.renderOverviewPlate();
+        progressTracker.loadDemoData(this.userProfile);
+        progressTracker.renderMacroDonut(this.userProfile.targets);
+        progressTracker.renderWeeklyBarChart();
         this.showToast(`✅ Login Berhasil! Selamat datang kembali, ${this.userProfile.name}`);
       }
 
@@ -3787,7 +3882,8 @@ class NutriVisionApp {
         ...newUser,
         contact: newUser.email,
         name: newUser.name,
-        hasCompletedQuiz: false
+        hasCompletedQuiz: false,
+        targets: null
       };
 
       this.saveUserProfile();
@@ -3796,10 +3892,21 @@ class NutriVisionApp {
       this.closeModal('auth-modal');
       this.goToDashboard('overview');
 
-      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan lengkapi data kebutuhan dasbor Anda.`);
+      cvEngine.currentScan = null;
+      this.renderOverviewPlate();
+      progressTracker.setEmptyState();
+      progressTracker.renderMacroDonut(null);
+      progressTracker.renderWeeklyBarChart();
 
-      // Buka Diagnostik Quiz langkah 1
-      this.openDiagnosticQuiz(1);
+      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan lengkapi data diagnostik untuk mengaktifkan dasbor Anda.`);
+
+      if (typeof this.pendingAuthCallback === 'function') {
+        const cb = this.pendingAuthCallback;
+        this.pendingAuthCallback = null;
+        cb();
+      } else {
+        this.openQuizModal(1);
+      }
     } catch (err) {
       console.warn('Register issue:', err);
       this.showToast(`⚠️ ${err.message || 'Gagal mendaftar.'}`);
@@ -3812,14 +3919,28 @@ class NutriVisionApp {
       ...this.userProfile,
       name: `Pengguna ${provider}`,
       contact: `user@${provider.toLowerCase()}.com`,
-      hasCompletedQuiz: false
+      hasCompletedQuiz: false,
+      targets: null
     };
+
+    cvEngine.currentScan = null;
+    this.renderOverviewPlate();
+    progressTracker.setEmptyState();
+    progressTracker.renderMacroDonut(null);
+    progressTracker.renderWeeklyBarChart();
+
     this.saveUserProfile();
     this.updateProfileUI();
     this.renderAuthUI();
     this.goToDashboard('overview');
-    this.showToast(`✅ Berhasil masuk dengan akun ${provider}! Silakan lengkapi data dasbor Anda.`);
-    this.openDiagnosticQuiz(1);
+    this.showToast(`✅ Berhasil masuk dengan akun ${provider}! Silakan lengkapi data diagnostik Anda.`);
+    if (typeof this.pendingAuthCallback === 'function') {
+      const cb = this.pendingAuthCallback;
+      this.pendingAuthCallback = null;
+      cb();
+    } else {
+      this.openQuizModal(1);
+    }
   }
 
   async loginAsDemo(conditionKey) {
@@ -3865,12 +3986,34 @@ class NutriVisionApp {
       this.renderAuthUI();
       this.closeModal('auth-modal');
 
-      this.showToast(`✅ Masuk sebagai akun demo DB: ${this.userProfile.name}`);
+      // Terapkan data ke dasbor
+      cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+      this.renderOverviewPlate();
+      progressTracker.loadDemoData(this.userProfile);
+      progressTracker.renderMacroDonut(this.userProfile.targets);
+      progressTracker.renderWeeklyBarChart();
+
+      this.showToast(`✅ Masuk sebagai akun demo: ${this.userProfile.name}`);
       this.goToDashboard('overview');
+      if (typeof this.pendingAuthCallback === 'function') {
+        const cb = this.pendingAuthCallback;
+        this.pendingAuthCallback = null;
+        cb();
+      }
     } catch (e) {
       console.error(e);
+      cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
+      this.renderOverviewPlate();
+      progressTracker.loadDemoData(this.userProfile);
+      progressTracker.renderMacroDonut(this.userProfile.targets);
+      progressTracker.renderWeeklyBarChart();
       this.showToast(`✅ Masuk sebagai profil demo ${conditionKey}`);
       this.goToDashboard('overview');
+      if (typeof this.pendingAuthCallback === 'function') {
+        const cb = this.pendingAuthCallback;
+        this.pendingAuthCallback = null;
+        cb();
+      }
     }
   }
 
@@ -3916,6 +4059,12 @@ class NutriVisionApp {
       bmiCategory: '--',
       targets: null
     };
+
+    cvEngine.currentScan = null;
+    this.renderOverviewPlate();
+    progressTracker.setEmptyState();
+    progressTracker.renderMacroDonut(null);
+    progressTracker.renderWeeklyBarChart();
 
     this.updateProfileUI();
     this.renderAuthUI();
@@ -3985,6 +4134,8 @@ class NutriVisionApp {
       }
     }
 
+    this.updatePreviewBanner();
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -3993,12 +4144,14 @@ class NutriVisionApp {
   openCreatePostModal() {
     this.requireAuth(() => {
       this.openModal('create-post-modal');
-    }, 'menerbitkan tips ke ruang komunitas');
+    }, 'menerbitkan tips');
   }
 
   openAITesterModal() {
-    this.openModal('ai-tester-modal');
-    this.checkAIHealthStatus();
+    this.requireAuth(() => {
+      this.openModal('ai-tester-modal');
+      this.checkAIHealthStatus();
+    }, 'menguji AI');
   }
 
   async checkAIHealthStatus() {
@@ -4111,9 +4264,14 @@ class NutriVisionApp {
   // =========================================================================
   // UTILITIES & NOTIFICATIONS
   // =========================================================================
-  showToast(message, type = 'auto') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+  showToast(message, type = 'auto', customDuration = 2000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
 
     let isError = type === 'error' || /❌|gagal|error|batal|peringatan/i.test(message);
     let isWarning = type === 'warning' || /⚠️|perhatian|notice/i.test(message);
@@ -4125,20 +4283,26 @@ class NutriVisionApp {
     const iconName = isError ? 'alert-triangle' : (isWarning ? 'alert-circle' : (isSuccess ? 'check-circle' : 'info'));
     const iconColor = isError ? '#FCA5A5' : (isWarning ? '#FDE68A' : (isSuccess ? '#86EFAC' : 'var(--teal-300)'));
 
-    toast.innerHTML = `<i data-lucide="${iconName}" style="color:${iconColor};width:18px;height:18px;flex-shrink:0;"></i><span>${message}</span>`;
+    toast.innerHTML = `<i data-lucide="${iconName}" style="color:${iconColor};width:16px;height:16px;flex-shrink:0;"></i><span>${message}</span>`;
     container.appendChild(toast);
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons({ root: toast });
     }
 
-    const duration = isError ? 5500 : (isWarning ? 4200 : 3200);
+    // Durasi cepat & secukupnya ("trus bentar" ~ 2 detik)
+    let duration = 2000;
+    if (typeof customDuration === 'number') {
+      duration = customDuration;
+    } else if (typeof customDuration === 'object' && customDuration !== null && customDuration.duration) {
+      duration = customDuration.duration;
+    }
 
     setTimeout(() => {
       toast.style.opacity = '0';
-      toast.style.transform = 'translateY(-10px)';
-      toast.style.transition = 'all 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
+      toast.style.transform = 'translateY(-10px) scale(0.96)';
+      toast.style.transition = 'all 0.25s ease';
+      setTimeout(() => toast.remove(), 250);
     }, duration);
   }
 
@@ -4150,7 +4314,7 @@ class NutriVisionApp {
       }).catch(() => {
         alert(text);
       });
-    }, 'mengekspor laporan telehealth pasien');
+    }, 'ekspor laporan');
   }
 
   copyCaregiverShareLink() {
@@ -4161,7 +4325,7 @@ class NutriVisionApp {
       }).catch(() => {
         alert('Tautan akses: ' + link);
       });
-    }, 'membagikan tautan pendamping pasien');
+    }, 'berbagi akses');
   }
 
   openPDFReportModal() {
@@ -4178,7 +4342,7 @@ class NutriVisionApp {
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
-    }, 'mengekspor dokumen laporan PDF pasien');
+    }, 'unduh PDF');
   }
 
   closePDFReportModal() {

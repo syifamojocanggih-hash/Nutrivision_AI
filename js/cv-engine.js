@@ -53,9 +53,76 @@ class NutriVisionCVEngine {
     };
   }
 
+  // Render Piring Kosong saat belum ada makanan di-scan
+  renderEmptyPlate(canvasElement, width = 300, height = 300) {
+    if (!canvasElement) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvasElement.width = width * dpr;
+    canvasElement.height = height * dpr;
+    canvasElement.style.width = width + 'px';
+    canvasElement.style.height = height + 'px';
+
+    const ctx = canvasElement.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+
+    const cx = width / 2;
+    const cy = height / 2;
+    const minDim = Math.min(width, height);
+    const outerRadius = (minDim / 2) - 3;
+    const rimWidth = Math.max(3, Math.round(minDim * 0.035));
+    const plateRadius = outerRadius - rimWidth;
+
+    // 1. Gambar Bingkai Piring Bulat Keramik Luar
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#212F16';
+    ctx.fill();
+    ctx.lineWidth = rimWidth;
+    ctx.strokeStyle = 'rgba(198, 206, 156, 0.45)';
+    ctx.stroke();
+
+    // 2. Lingkaran Dasar Piring
+    ctx.beginPath();
+    ctx.arc(cx, cy, plateRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#15210F';
+    ctx.fill();
+
+    // 3. Garis Panduan Melingkar Putus-putus
+    ctx.beginPath();
+    ctx.arc(cx, cy, plateRadius * 0.68, 0, Math.PI * 2);
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = 'rgba(198, 206, 156, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 4. Ikon & Label Piring Kosong
+    ctx.font = `${Math.round(minDim * 0.15)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🍽️', cx, cy - 8);
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    ctx.font = `600 ${Math.max(10, Math.round(minDim * 0.068))}px system-ui, -apple-system, sans-serif`;
+    ctx.fillStyle = '#EEF1D8';
+    ctx.fillText(isId ? 'Piring Kosong' : 'Empty Plate', cx, cy + 16);
+
+    ctx.font = `400 ${Math.max(9, Math.round(minDim * 0.055))}px system-ui, -apple-system, sans-serif`;
+    ctx.fillStyle = 'rgba(198, 206, 156, 0.75)';
+    ctx.fillText(isId ? 'Siap Scan Makanan' : 'Ready to Scan', cx, cy + 30);
+
+    ctx.restore();
+  }
+
   // Render Canvas Segmentasi Interaktif (Model Piring Bulat Penuh / Pizza Slices)
   renderCanvas(canvasElement, width = 300, height = 300, isInteractive = true) {
-    if (!canvasElement || !this.currentScan) return;
+    if (!canvasElement) return;
+    if (!this.currentScan || !this.currentScan.segments || this.currentScan.segments.length === 0) {
+      this.renderEmptyPlate(canvasElement, width, height);
+      return;
+    }
 
     // Retina / HiDPI sharp rendering
     const dpr = window.devicePixelRatio || 1;

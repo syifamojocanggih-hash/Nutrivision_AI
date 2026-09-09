@@ -960,8 +960,29 @@
         </div>
       </header>
 
-
-
+      <!-- Sticky / Top Banner: Dashboard Guest Preview Mode -->
+      <div class="dashboard-guest-preview-banner" id="dashboard-preview-banner" style="display:none;">
+        <div class="guest-banner-left">
+          <span class="guest-banner-badge">
+            <i data-lucide="eye" style="width:13px;height:13px;"></i>
+            <span id="guest-banner-badge-text">Mode Pratinjau</span>
+          </span>
+          <div class="guest-banner-text">
+            <strong id="guest-banner-title">Anda sedang menjelajahi Dasbor dalam Mode Pratinjau (Tamu).</strong>
+            <span id="guest-banner-desc">Silakan cek visualisasi &amp; tata letak dasbor. Masuk atau buat akun baru untuk mengaktifkan seluruh fitur interaktif.</span>
+          </div>
+        </div>
+        <div class="guest-banner-actions">
+          <button type="button" class="guest-banner-btn-login" onclick="app.openAuthModal('login')">
+            <i data-lucide="log-in" style="width:14px;height:14px;"></i>
+            <span id="guest-banner-login-btn-text">Masuk / Daftar</span>
+          </button>
+          <button type="button" class="guest-banner-btn-home" onclick="app.goToLanding()" title="Kembali ke Beranda (Landing Page)">
+            <i data-lucide="home" style="width:14px;height:14px;"></i>
+            <span id="guest-banner-home-btn-text">Beranda</span>
+          </button>
+        </div>
+      </div>
       <!-- =========================================================================
          VIEW 0: SUPER ADMIN COMMAND CENTER & MONITORING PORTAL
          ========================================================================= -->
@@ -1459,14 +1480,13 @@
               <div class="segment-legend-grid">
                 <div class="segment-legend-header">
                   <span class="legend-hdr-title" data-i18n="ov_legend_title">Breakdown Komposisi &amp; Keyakinan AI</span>
-                  <span class="legend-hdr-badge" id="overview-total-badge">4 Komponen</span>
+                  <span class="legend-hdr-badge" id="overview-total-badge">0 Komponen</span>
                 </div>
                 <div id="overview-segment-legend">
                   <!-- Populated dynamically via JS with percentage progress bars -->
                 </div>
                 <div class="model-confidence-bar">
-                  <span id="overview-conf-note">Tingkat keyakinan model: 88% · Format estimasi disajikan dalam rentang
-                    gizi pendukung keputusan.</span>
+                  <span id="overview-conf-note">Menunggu pemindaian makanan pertama · Estimasi gizi akan muncul otomatis di sini.</span>
                   <button class="btn-sm-teal"
                     style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;"
                     onclick="app.openScanModal()">
@@ -1482,10 +1502,9 @@
             <div class="card-head">
               <div class="card-title-group">
                 <h2 data-i18n="ov_card2_title">Target Gizi Pemulihan Hari Ini</h2>
-                <div class="card-subtitle"><span data-i18n="ov_phase_prefix">Fase aktif:</span> <span class="user-condition-placeholder">Pasca-Operasi & Bedah ·
-                    Minggu ke-2 (Fase Proliferasi & Jaringan)</span></div>
+                <div class="card-subtitle"><span data-i18n="ov_phase_prefix">Fase aktif:</span> <span class="user-condition-placeholder">Belum dikonfigurasi (Mulai Diagnostik Gizi)</span></div>
               </div>
-              <span class="badge teal"><i data-lucide="check-circle-2" class="btn-icon-sm"></i> <span data-i18n="ov_card2_badge">On Track</span></span>
+              <span class="badge gray" id="ov-card2-status-badge"><i data-lucide="help-circle" class="btn-icon-sm"></i> <span id="ov-card2-status-text">Belum Dikonfigurasi</span></span>
             </div>
 
             <div class="macro-ring-container">
@@ -1507,7 +1526,7 @@
                   <div class="macro-item-head">
                     <span class="macro-name"><span
                         style="width:8px;height:8px;border-radius:2px;background:#9EA76B;"></span><strong data-i18n="factor_protein_title">Protein &amp; Albumin</strong></span>
-                    <span class="macro-num" id="macro-num-protein">0 / 98 g</span>
+                    <span class="macro-num" id="macro-num-protein">0 / -- g</span>
                   </div>
                   <div class="macro-bar-track">
                     <div class="macro-bar-fill" id="bar-fill-protein" style="width:0%;background:#9EA76B;"></div>
@@ -1543,7 +1562,7 @@
                   <div class="macro-item-head">
                     <span class="macro-name"><span
                         style="width:8px;height:8px;border-radius:2px;background:#8B968F;"></span><span data-i18n="macro_calories">Kalori Total (Energi Basal)</span></span>
-                    <span class="macro-num" id="macro-num-cals">0 / 1.972 kkal</span>
+                    <span class="macro-num" id="macro-num-cals">0 / -- kkal</span>
                   </div>
                   <div class="macro-bar-track">
                     <div class="macro-bar-fill" id="bar-fill-cals" style="width:0%;background:#8B968F;"></div>
@@ -1552,9 +1571,9 @@
 
                 <!-- Supporting Metrics (Carbs & Fat - preserved for script compatibility) -->
                 <div style="display:none;">
-                  <span id="macro-num-carbs">0 / 271 g</span>
+                  <span id="macro-num-carbs">0 / -- g</span>
                   <div id="bar-fill-carbs"></div>
-                  <span id="macro-num-fat">0 / 55 g</span>
+                  <span id="macro-num-fat">0 / -- g</span>
                   <div id="bar-fill-fat"></div>
                 </div>
               </div>
@@ -1578,7 +1597,7 @@
                 <h2 data-i18n="ov_card3_title">Tren Kepatuhan Gizi 7 Hari</h2>
                 <div class="card-subtitle" data-i18n="ov_card3_subtitle">Konsistensi pencapaian protein &amp; mikronutrien pemulihan</div>
               </div>
-              <span class="badge teal"><i data-lucide="flame" class="btn-icon-sm"></i> <span data-i18n="ov_card3_streak">Streak: 6 Hari</span></span>
+              <span class="badge gray" id="ov-card3-streak-badge"><i data-lucide="flame" class="btn-icon-sm"></i> <span id="ov-card3-streak-text">Streak: 0 Hari</span></span>
             </div>
 
             <div class="progress-chart-container">
@@ -1588,7 +1607,7 @@
             </div>
 
             <div class="streak-card-footer">
-              <span data-i18n="ov_weekly_avg">Rata-rata mingguan: <b>92% tercapai</b></span>
+              <span id="ov-weekly-avg-text">Rata-rata mingguan: <b>Belum ada data</b></span>
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <button class="btn-export-share" style="background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;" onclick="app.openPDFReportModal()">
                   <i data-lucide="file-down" class="btn-icon-sm"></i> <span data-i18n="ov_btn_pdf">Ekspor Dokumen PDF</span>
