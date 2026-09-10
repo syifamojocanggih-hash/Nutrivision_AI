@@ -52,7 +52,7 @@
 
 /* Left Visual Artwork Panel */
 .auth-split-visual {
-  background: linear-gradient(145deg, #9EA76B 0%, #9EA76B 50%, #9EA76B 100%);
+  background: linear-gradient(145deg, #353C1B 0%, #9EA76B 50%, #9EA76B 100%);
   color: #FFFFFF;
   padding: 44px 36px 36px;
   display: flex;
@@ -361,7 +361,7 @@
 .auth-custom-input:focus {
   border-color: #9EA76B;
   background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(158, 167, 107, 0.14);
+  box-shadow: 0 0 0 3px rgba(158, 167, 107, 0.18);
 }
 
 .auth-checkbox-row {
@@ -394,6 +394,7 @@
   font-size: 14.5px;
   font-weight: 700;
   color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
   background: linear-gradient(135deg, #9EA76B 0%, #9EA76B 100%);
   box-shadow: 0 6px 18px rgba(158, 167, 107, 0.28);
   transition: all 0.2s ease;
@@ -465,7 +466,7 @@
 }
 
 .auth-switch-footer-text a {
-  color: #9EA76B;
+  color: #2D3A15;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -715,24 +716,40 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Preset Chips */
+/* Preset Chips (Original Milky & Matcha Design with High Font Contrast) */
 .preset-chip {
   all: unset;
   cursor: pointer;
-  font-size: var(--font-xs);
-  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 16px;
   border-radius: var(--radius-pill);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  color: var(--ink-soft);
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  color: #242C10;
   white-space: nowrap;
   transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.preset-chip:hover {
+  background: #F7F9EC;
+  border-color: #C6CE9C;
+  color: #141808;
 }
 
 .preset-chip.active {
   background: #9EA76B;
   color: #FFFFFF;
   border-color: #9EA76B;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
+  box-shadow: 0 2px 8px rgba(158, 167, 107, 0.35);
 }
 
 /* Onboarding Modal Form */
@@ -768,6 +785,7 @@
 .form-control:focus {
   border-color: #9EA76B;
   background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(158, 167, 107, 0.16);
 }
 
 .form-radio-cards {
@@ -785,13 +803,20 @@
   background: var(--bg);
   transition: all 0.15s ease;
   font-size: var(--font-xs);
+  color: #242C10;
+  font-weight: 600;
+}
+
+.radio-card:hover {
+  border-color: #9EA76B;
+  background: #F7F9EC;
 }
 
 .radio-card.selected {
   border-color: #9EA76B;
   background: #F7F9EC;
-  color: #9EA76B;
-  font-weight: 600;
+  color: #1E280C;
+  font-weight: 700;
 }
 
 .disclaimer-consent-box {
@@ -1026,7 +1051,7 @@
 .gender-toggle-btn.active {
   border-color: #9EA76B;
   background: #EEF1D8;
-  color: #1C200E;
+  color: #141708;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(158, 167, 107, 0.22);
 }
@@ -1081,14 +1106,16 @@
 }
 
 .quiz-choice-text b {
-  font-size: 13px;
-  color: #1C200E;
+  font-size: 13.5px;
+  color: #141708;
+  font-weight: 700;
 }
 
 .quiz-choice-text span {
-  font-size: 11.5px;
-  color: #687346;
-  line-height: 1.35;
+  font-size: 12px;
+  color: #3B461C;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .quiz-choice-card.compact {
@@ -1152,7 +1179,7 @@
   border-radius: 12px;
   border: 1.5px solid #D5CEAE;
   background: #FFFFFF;
-  color: #4A522C;
+  color: #354018;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1176,6 +1203,7 @@
   color: #FFFFFF;
   font-size: 13.5px;
   font-weight: 700;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
   cursor: pointer;
   display: inline-flex;
   align-items: center;

@@ -243,8 +243,9 @@
 }
 
 .topbar-greeting p {
-  color: var(--ink-soft);
-  font-size: var(--font-sm);
+  color: #2D3616;
+  font-size: 13.5px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -733,44 +734,46 @@
 }
 
 .card-title-group .card-subtitle {
-  font-size: var(--font-xs);
-  color: var(--ink-mute);
+  font-size: 13px;
+  color: #354018;
+  font-weight: 550;
   margin-top: 3px;
+  line-height: 1.4;
 }
 
-/* Refined Badges */
+/* Refined High-Contrast Badges (Original Palette, Sharp Legible Font) */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--font-xs);
+  font-size: 12px;
   padding: 3px 8px;
   border-radius: var(--radius-xs);
-  font-weight: 600;
-  line-height: 1;
+  font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
 .badge.teal {
   background: #F7F9EC;
-  color: #9EA76B;
-  border: 1px solid #EEF1D8;
+  color: #263812;
+  border: 1px solid #DDE2B9;
 }
 
 .badge.coral {
-  background: #F7F9EC;
-  color: #9EA76B;
-  border: 1px solid #DDE2B9;
+  background: #F7F3DE;
+  color: #8A2D16;
+  border: 1px solid #EFE8CA;
 }
 
 .badge.amber {
   background: #FFFBEB;
-  color: #D97706;
+  color: #92400E;
   border: 1px solid #FEF3C7;
 }
 
 .badge.gray {
-  background: rgba(255, 255, 255, 0.12);
-  color: #C6CE9C;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(40, 48, 20, 0.08);
+  color: #2A3314;
+  border: 1px solid rgba(40, 48, 20, 0.16);
 }

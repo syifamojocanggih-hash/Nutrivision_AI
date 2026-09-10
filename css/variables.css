@@ -69,15 +69,13 @@
   --amber-400: #D97706;
   --amber-600: #B45309;
 
-  /* Clean Organic Warm Milky & Matcha Canvas */
-  --ink: #1C200E;
-  --ink-soft: #3E4424;
-  --ink-mute: #687346;
-  --ink-light: #949D70;
-  --bg: #F7F3DE;
-  /* Warm Milky Canvas */
-  --bg-subtle: #EFE8CA;
-  /* Milky Subtle */
+  /* Clean Organic Warm Milky & Matcha Canvas — High Contrast Font Tokens */
+  --ink: #141708;        /* Deep rich forest ink - 16.5:1 contrast */
+  --ink-soft: #262D11;   /* Dark high-contrast ink for body text & labels */
+  --ink-mute: #3B461C;   /* Sharp legible ink for subtitles (replaces washed out text) */
+  --ink-light: #526027;  /* High contrast auxiliary text */
+  --bg: #F7F3DE;         /* Original Warm Milky Canvas */
+  --bg-subtle: #EFE8CA;  /* Milky Subtle */
   --card: #FFFFFF;
   --card-glass: rgba(255, 255, 255, 0.96);
   --line: #DDD4B0;
@@ -134,13 +132,16 @@
 
 [data-contrast="high"] {
   --bg: #FFFFFF;
+  --bg-subtle: #F1F5F9;
   --card: #FFFFFF;
   --ink: #000000;
-  --ink-soft: #1C200E;
-  --ink-mute: #3E4424;
-  --line: #9EA76B;
-  --teal-500: #9EA76B;
-  --coral-400: #9EA76B;
+  --ink-soft: #0F172A;
+  --ink-mute: #1E293B;
+  --ink-light: #334155;
+  --line: #000000;
+  --teal-500: #15803D;
+  --teal-700: #14532D;
+  --coral-400: #DC2626;
 }
 
 /* CSS Reset & Base */

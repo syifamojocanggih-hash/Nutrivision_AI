@@ -46,12 +46,12 @@
 }
 
 .bottom-nav-btn.active {
-  color: #9EA76B;
+  color: #2D3616;
   font-weight: 700;
 }
 
 .bottom-nav-btn.active .nav-icon {
-  color: #9EA76B;
+  color: #2D3616;
 }
 
 .bottom-nav-btn.active::after {

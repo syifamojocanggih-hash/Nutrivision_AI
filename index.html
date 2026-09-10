@@ -1654,19 +1654,19 @@
             </div>
 
             <!-- Empty State when budget plan is not yet generated -->
-            <div id="budget-empty-state" class="budget-empty-box" style="display:none;padding:28px 20px;text-align:center;background:#FCFDFB;border:1.5px dashed #D9E1B2;border-radius:16px;margin:8px 0 10px;">
-              <div style="width:48px;height:48px;border-radius:14px;background:#F1F5E8;color:#233917;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 2px 8px rgba(35,57,23,0.08);">
+            <div id="budget-empty-state" class="budget-empty-box" style="display:none;padding:28px 20px;text-align:center;background:#FCFDFB;border:1.5px dashed #DDD4B0;border-radius:16px;margin:8px 0 10px;">
+              <div style="width:48px;height:48px;border-radius:14px;background:#F1F5E8;color:#233917;border:1px solid #DDE2B9;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 2px 8px rgba(35,57,23,0.08);">
                 <i data-lucide="wallet" style="width:24px;height:24px;"></i>
               </div>
-              <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#1E293B;">Belum Ada Rencana Anggaran &amp; Menu Makanan</h3>
-              <p style="margin:0 auto 16px;font-size:12.5px;color:#64748B;max-width:500px;line-height:1.5;">
+              <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#141708;">Belum Ada Rencana Anggaran &amp; Menu Makanan</h3>
+              <p style="margin:0 auto 16px;font-size:13px;color:#3B461C;max-width:500px;line-height:1.5;font-weight:500;">
                 Tentukan nominal uang yang Anda miliki pada kolom <b>Budget</b> di atas, pilih durasi (Seminggu/Sebulan), lalu klik tombol <b>Perbarui</b> untuk merancang pilihan menu makanan sesuai kebutuhan gizi Anda.
               </p>
               <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-                <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:6px 14px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;" onclick="budgetPlanner.selectPresetQuick(200000, 7)">
+                <button type="button" class="btn-outline-glass" style="font-size:12px;padding:7px 16px;border-radius:8px;background:#FDFAF2;border:1.5px solid #DDD4B0;color:#242C10;font-weight:700;cursor:pointer;" onclick="budgetPlanner.selectPresetQuick(200000, 7)">
                   💡 Rekomendasi: Rp 200.000 (Seminggu)
                 </button>
-                <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:6px 14px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;" onclick="budgetPlanner.selectPresetQuick(1000000, 30)">
+                <button type="button" class="btn-outline-glass" style="font-size:12px;padding:7px 16px;border-radius:8px;background:#FDFAF2;border:1.5px solid #DDD4B0;color:#242C10;font-weight:700;cursor:pointer;" onclick="budgetPlanner.selectPresetQuick(1000000, 30)">
                   💡 Rekomendasi: Rp 1.000.000 (Sebulan)
                 </button>
               </div>
@@ -3614,8 +3614,8 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
         <!-- Populated dynamically -->
       </div>
 
-      <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-        <span id="budget-grocery-total-text" style="font-size:12.5px;color:#166534;font-weight:600;">Total Est. Belanja: <b>Rp 198.000</b></span>
+      <div style="background:#F7F9EC;border:1px solid #DDE2B9;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span id="budget-grocery-total-text" style="font-size:13px;color:#233917;font-weight:700;">Total Est. Belanja: <b>Rp 198.000</b></span>
         <span class="badge teal" style="font-size:11px;"><i data-lucide="check-circle" class="btn-icon-sm"></i> On-Budget 100%</span>
       </div>
 

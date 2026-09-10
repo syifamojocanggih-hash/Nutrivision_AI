@@ -101,7 +101,7 @@ body:not(.is-landing-active) #landing-page-view {
   text-decoration: none;
   color: var(--ink-soft);
   font-size: 13.5px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   transition: all 0.15s ease;
@@ -109,7 +109,7 @@ body:not(.is-landing-active) #landing-page-view {
 }
 
 .lp-nav-link:hover {
-  color: #9EA76B;
+  color: #2D3616;
   background: #F7F9EC;
 }
 
@@ -137,15 +137,16 @@ body:not(.is-landing-active) #landing-page-view {
   padding: 0 16px;
   border-radius: var(--radius-pill);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
   background: linear-gradient(135deg, #9EA76B, #9EA76B);
   box-shadow: 0 2px 8px rgba(158, 167, 107, 0.3);
   transition: all 0.15s ease;
 }
 
 .lp-btn-nav-primary:hover {
-  background: linear-gradient(135deg, #9EA76B, #9EA76B);
+  background: linear-gradient(135deg, #8B9456, #9EA76B);
   transform: translateY(-1px);
 }
 
@@ -1231,7 +1232,7 @@ body:not(.is-landing-active) #landing-page-view {
   height: 34px;
   border-radius: 10px;
   background: #F7F9EC;
-  border: 1px solid #EEF1D8;
+  border: 1px solid #DDE2B9;
   color: #9EA76B;
   display: flex;
   align-items: center;
@@ -1327,11 +1328,11 @@ body:not(.is-landing-active) #landing-page-view {
 .lp-evidence-source {
   font-size: 11px;
   font-weight: 600;
-  color: #9EA76B;
+  color: #263412;
   background: #F7F9EC;
   padding: 3px 10px;
   border-radius: var(--radius-pill);
-  border: 1px solid #EEF1D8;
+  border: 1px solid #DDE2B9;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1396,8 +1397,9 @@ body:not(.is-landing-active) #landing-page-view {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
   background: linear-gradient(135deg, #9EA76B, #8B9456);
   padding: 6px 13px;
   border-radius: var(--radius-pill);

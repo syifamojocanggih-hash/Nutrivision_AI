@@ -603,24 +603,25 @@
 
 .community-post {
   display: flex;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--card, #FFFFFF);
+  border: 1px solid var(--line, #DDD4B0);
   border-radius: var(--radius-md);
+  box-shadow: 0 1px 3px rgba(28, 32, 14, 0.04);
 }
 
 .comm-avatar {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-circle);
-  background: var(--teal-100);
-  color: var(--teal-900);
+  background: #EEF1D8;
+  color: #232D10;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
@@ -637,46 +638,49 @@
 }
 
 .comm-author {
-  font-weight: 600;
-  font-size: var(--font-sm);
-  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+  color: #141708;
 }
 
 .comm-condition-tag {
-  font-size: 10px;
-  background: var(--teal-50);
-  color: var(--teal-700);
-  padding: 2px 6px;
+  font-size: 11px;
+  background: #F7F9EC;
+  color: #263412;
+  padding: 2.5px 8px;
   border-radius: var(--radius-xs);
-  font-weight: 500;
-  border: 1px solid var(--teal-100);
+  font-weight: 600;
+  border: 1px solid #DDE2B9;
 }
 
 .comm-text {
-  font-size: var(--font-sm);
-  color: var(--ink-soft);
-  margin: 5px 0 8px;
-  line-height: 1.45;
+  font-size: 13.5px;
+  color: #242B10;
+  margin: 6px 0 10px;
+  line-height: 1.5;
   word-break: break-word;
 }
 
 .comm-verified-badge {
-  font-size: 10px;
-  color: var(--teal-700);
+  font-size: 11px;
+  color: #263412;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  background: var(--teal-50);
-  padding: 2px 6px;
+  gap: 4px;
+  background: #F7F9EC;
+  padding: 2.5px 8px;
   border-radius: var(--radius-xs);
+  border: 1px solid #DDE2B9;
   margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .comm-actions {
   display: flex;
   gap: 14px;
-  font-size: var(--font-xs);
-  color: var(--ink-mute);
+  font-size: 12.5px;
+  color: #3B461C;
+  font-weight: 550;
 }
 
 .comm-action-btn {
@@ -879,20 +883,20 @@ input:checked+.toggle-slider:before {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-pill);
   background: #FDFAF2;
-  border: 1px solid #DDD4B0;
-  font-size: 12.5px;
+  border: 1.5px solid #DDD4B0;
+  font-size: 13px;
   font-weight: 600;
-  color: #9EA76B;
+  color: #242C10;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cat-pill-btn:hover {
   background: #F7F9EC;
-  border-color: #DDE2B9;
-  color: #9EA76B;
+  border-color: #C6CE9C;
+  color: #141808;
   transform: translateY(-1px);
 }
 
@@ -1419,17 +1423,17 @@ input:checked+.toggle-slider:before {
   background: #F1F5F0;
   border: 1px solid #E2E8D8;
   border-radius: 9px;
-  padding: 2.5px;
-  gap: 2px;
+  padding: 3px;
+  gap: 3px;
 }
 
 .budget-compact-durations .budget-duration-pill {
-  padding: 4px 11px;
-  font-size: 11.5px;
+  padding: 5px 12px;
+  font-size: 12px;
   border-radius: 7px;
   border: none;
   background: transparent;
-  color: #4A5636;
+  color: #3B461C;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1437,7 +1441,7 @@ input:checked+.toggle-slider:before {
 }
 
 .budget-compact-durations .budget-duration-pill:hover {
-  color: #1B3917;
+  color: #141708;
 }
 
 .budget-compact-durations .budget-duration-pill.active {
@@ -1455,13 +1459,12 @@ input:checked+.toggle-slider:before {
   color: #FFFFFF;
   border: 1px solid #16260E;
   border-radius: 9px;
-  padding: 5.5px 13px;
-  font-size: 11.5px;
+  padding: 6px 14px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s ease;
   box-shadow: 0 2px 6px rgba(35, 57, 23, 0.18);
-  font-family: inherit;
+  transition: all 0.18s ease;
 }
 
 .btn-budget-update:hover {
@@ -1469,6 +1472,7 @@ input:checked+.toggle-slider:before {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(35, 57, 23, 0.25);
 }
+
 
 .btn-budget-update:active {
   transform: translateY(0);

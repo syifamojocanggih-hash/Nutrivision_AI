@@ -445,12 +445,12 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #FFFFFF;
+  background: #FDFAF2;
   border: 1.5px solid #9EA76B;
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
-  color: #9EA76B;
+  color: #242C10;
   transition: all 0.18s ease;
   white-space: nowrap;
   flex-shrink: 0;
@@ -459,6 +459,7 @@
 .db-test-btn:hover {
   background: #9EA76B;
   color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
   border-color: #9EA76B;
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(158, 167, 107, 0.35);
@@ -570,7 +571,7 @@
 }
 
 .db-input::placeholder {
-  color: #B1BB81;
+  color: #687346;
   font-size: 12.5px;
 }
 
@@ -579,7 +580,7 @@
   cursor: pointer;
   position: absolute;
   right: 12px;
-  color: #949D70;
+  color: #526027;
   display: flex;
   align-items: center;
   padding: 4px;
@@ -588,7 +589,7 @@
 }
 
 .db-input-toggle-vis:hover {
-  color: #9EA76B;
+  color: #141708;
 }
 
 .db-form-actions {
@@ -606,6 +607,7 @@
   color: #FFFFFF;
   font-size: 13.5px;
   font-weight: 700;
+  text-shadow: 0 1px 2px rgba(28, 36, 12, 0.45);
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
@@ -617,7 +619,7 @@
 }
 
 .db-btn-connect:hover {
-  background: linear-gradient(135deg, #9EA76B, #9EA76B);
+  background: linear-gradient(135deg, #8B9456, #9EA76B);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(158, 167, 107, 0.45);
 }
@@ -633,7 +635,7 @@
   padding: 0 16px;
   background: #FFFFFF;
   border: 1.5px solid #DDD4B0;
-  color: #687346;
+  color: #3B461C;
   font-size: 12.5px;
   font-weight: 600;
   border-radius: 10px;
@@ -653,7 +655,7 @@
 .db-section-title-standalone {
   font-size: 12.5px;
   font-weight: 700;
-  color: #3E4424;
+  color: #141708;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -712,11 +714,11 @@
 }
 
 .db-action-icon-matcha {
-  background: linear-gradient(135deg, #9EA76B, #9EA76B);
+  background: linear-gradient(135deg, #9EA76B, #8B9456);
 }
 
 .db-action-icon-green {
-  background: linear-gradient(135deg, #9EA76B, #22C55E);
+  background: linear-gradient(135deg, #8B9456, #747C44);
 }
 
 .db-action-text {

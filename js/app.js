@@ -2042,8 +2042,8 @@ class NutriVisionApp {
         box.style.borderColor = '#9EA76B';
         box.style.backgroundColor = '#F6F9ED';
       } else {
-        box.style.borderColor = '#EFE8CA';
-        box.style.backgroundColor = '#FFFCF0';
+        box.style.borderColor = '#DDD4B0';
+        box.style.backgroundColor = '#FDFAF2';
       }
     }
   }
@@ -3194,11 +3194,11 @@ class NutriVisionApp {
                 <i data-lucide="sparkles" style="width:18px;height:18px;"></i>
               </div>
               <div>
-                <b style="color:var(--text-main, #2D3748);font-size:13.5px;display:block;">${bannerTitle}</b>
-                <span style="font-size:12px;color:var(--text-sub, #64748B);">${bannerSub}</span>
+                <b style="color:#141708;font-size:13.5px;display:block;">${bannerTitle}</b>
+                <span style="font-size:12px;color:#3B461C;font-weight:550;">${bannerSub}</span>
               </div>
             </div>
-            <button type="button" class="btn-sm-teal" style="background:var(--card-bg, #FFFFFF);border:1.5px solid #9EA76B;color:var(--text-main, #2D3748);font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;" onclick="app.clearCatalogPlateFilter()">
+            <button type="button" class="btn-sm-teal" style="background:#FDFAF2;border:1.5px solid #DDD4B0;color:#242C10;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;" onclick="app.clearCatalogPlateFilter()">
               <i data-lucide="layout-grid" style="width:14px;height:14px;"></i> ${bannerBtn}
             </button>
           </div>
@@ -5173,8 +5173,8 @@ class NutriVisionApp {
     tbody.innerHTML = scans.map(scan => {
       const timeStr = scan.timestamp ? new Date(scan.timestamp).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '--';
       const comps = scan.components && scan.components.length > 0
-        ? scan.components.map(c => `<span style="display:inline-block;padding:1px 6px;margin:2px;background:#F0FDF4;color:#166534;border:1px solid #DCFCE7;border-radius:4px;font-size:10.5px;">${c.name} (${c.grams}g)</span>`).join('')
-        : '<span style="color:var(--ink-mute);font-size:11px;">1 Porsi Terintegrasi</span>';
+        ? scan.components.map(c => `<span style="display:inline-block;padding:1px 6px;margin:2px;background:#F7F9EC;color:#233412;border:1px solid #DDE2B9;border-radius:4px;font-size:11px;font-weight:600;">${c.name} (${c.grams}g)</span>`).join('')
+        : '<span style="color:#3B461C;font-size:11px;font-weight:600;">1 Porsi Terintegrasi</span>';
 
       const statusBadge = scan.status === 'manual_corrected'
         ? '<span class="admin-pill-badge corrected"><i data-lucide="edit-3"></i> Koreksi Manual</span>'
@@ -6327,12 +6327,12 @@ class NutriVisionApp {
 
     listEl.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;">
+        <div style="background:#F7F9EC;border:1px solid #DDE2B9;border-radius:10px;padding:12px 14px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <i data-lucide="check-circle-2" style="width:16px;height:16px;color:#16A34A;"></i>
-            <h4 style="margin:0;font-size:13px;font-weight:700;color:#166534;">Konsensus Ilmiah & Acuan Klinis</h4>
+            <i data-lucide="check-circle-2" style="width:16px;height:16px;color:#9EA76B;"></i>
+            <h4 style="margin:0;font-size:13.5px;font-weight:700;color:#141708;">Konsensus Ilmiah &amp; Acuan Klinis</h4>
           </div>
-          <p style="margin:0;font-size:11.5px;color:#14532D;line-height:1.5;">
+          <p style="margin:0;font-size:12.5px;color:#233412;line-height:1.5;font-weight:500;">
             ${milestone.scientificCitation}
           </p>
         </div>
