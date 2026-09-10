@@ -1502,93 +1502,312 @@
   box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
 }
 
+/* =========================================================================
+   CLINICAL TIMELINE (Reference Design: Vertical Timeline with Active Green Card)
+   ========================================================================= */
 .upcoming-events-list {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 0;
   max-height: unset;
   overflow-y: auto;
-  padding-right: 2px;
+  padding: 4px 6px 6px 2px;
 }
 
-.upcoming-event-item {
-  background: #FAFBFD;
-  border: 1px solid #EDF1F7;
-  border-radius: 9px;
-  padding: 8px 11px;
+.timeline-event-row {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  position: relative;
+  cursor: pointer;
+}
+
+.timeline-axis {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  transition: all 0.15s ease;
-  position: relative;
-}
-.upcoming-event-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-  border-color: #CBD5E1;
-  background: #FFFFFF;
-}
-.upcoming-event-item.completed {
-  background: #F8FAFC;
-  opacity: 0.65;
-  border-left: 3px solid #16A34A;
-}
-.upcoming-event-item.completed .event-item-title {
-  text-decoration: line-through;
-  color: #64748B;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
 }
 
-.event-item-top {
+.timeline-node {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid #8FA89B;
+  background: #FFFFFF;
+  z-index: 2;
+  margin-top: 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
-  color: #64748B;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.event-item-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
+.timeline-event-row.is-active .timeline-node {
+  width: 17px;
+  height: 17px;
+  border: 2.5px solid #3F6F52;
   background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  padding: 1px 6px;
-  border-radius: 5px;
-  font-size: 10.5px;
-  color: #334155;
+  margin-top: 16px;
 }
 
-.event-item-dot {
+.timeline-node-inner {
   width: 7px;
   height: 7px;
   border-radius: 50%;
+  background: #3F6F52;
+  display: block;
 }
 
-.event-item-title {
+.timeline-event-row.completed:not(.is-active) .timeline-node {
+  border-color: #15803D;
+  background: #DCFCE7;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 26px;
+  bottom: -6px;
+  width: 2px;
+  background: #C4D6CB;
+  z-index: 1;
+}
+
+.timeline-event-row:last-child .timeline-line {
+  display: none;
+}
+
+/* Timeline Content Card Area */
+.timeline-content-wrap {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 14px;
+}
+
+/* Active Highlighted Green Card (Matches User Reference Image) */
+.timeline-card-active {
+  background: #4E8064;
+  border-radius: 16px;
+  padding: 15px 17px;
+  color: #FFFFFF;
+  box-shadow: 0 8px 22px -4px rgba(50, 95, 68, 0.22);
+  transition: all 0.2s ease;
+}
+.timeline-card-active:hover {
+  background: #47775D;
+}
+
+.timeline-card-active .timeline-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timeline-card-active .timeline-title {
   margin: 0;
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 700;
-  color: #0F172A;
+  color: #FFFFFF;
   line-height: 1.35;
 }
 
-.event-item-desc {
-  margin: 0;
-  font-size: 11.5px;
-  color: #475569;
-  line-height: 1.4;
+.timeline-card-active .timeline-time {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
 }
 
-.event-item-footer {
+.timeline-card-active .timeline-desc {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.48;
+}
+
+/* Standard Inactive Timeline Row (Clean Minimalist List) */
+.timeline-card-standard {
+  padding: 10px 4px 4px 4px;
+  transition: all 0.15s ease;
+  border-radius: 8px;
+}
+.timeline-event-row:hover .timeline-card-standard {
+  background: #F4F8F5;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.timeline-card-standard .timeline-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 3px;
-  padding-top: 5px;
-  border-top: 1px dashed #F1F5F9;
-  font-size: 10.5px;
+  gap: 12px;
 }
+
+.timeline-card-standard .timeline-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.35;
+}
+
+.timeline-card-standard .timeline-time {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.timeline-card-standard .timeline-desc {
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: #6B7280;
+  line-height: 1.45;
+}
+
+/* Completed item styling */
+.timeline-event-row.completed .timeline-card-standard .timeline-title {
+  text-decoration: line-through;
+  color: #94A3B8;
+}
+.timeline-event-row.completed .timeline-card-standard .timeline-desc {
+  color: #94A3B8;
+}
+.timeline-event-row.completed .timeline-card-active .timeline-title {
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+/* =========================================================================
+   RESTRICTIONS TIMELINE (Red/Warning Theme for Pantangan Medis)
+   ========================================================================= */
+.timeline-event-row.is-restriction .timeline-node {
+  border-color: #F87171;
+  background: #FFFFFF;
+}
+
+.timeline-event-row.is-restriction.is-active .timeline-node {
+  border-color: #DC2626;
+  background: #FFFFFF;
+}
+
+.timeline-event-row.is-restriction.is-active .timeline-node-inner {
+  background: #DC2626;
+}
+
+.timeline-event-row.is-restriction .timeline-line {
+  background: #FECDD3;
+}
+
+.timeline-card-active.is-restriction {
+  background: #B91C1C;
+  box-shadow: 0 8px 22px -4px rgba(185, 28, 28, 0.28);
+}
+.timeline-card-active.is-restriction:hover {
+  background: #A81B1B;
+}
+
+.restriction-badge-active {
+  font-size: 11px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 3px 9px;
+  border-radius: 12px;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+
+.restriction-forbidden-box-active {
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 10px 0 8px;
+}
+
+.restriction-forbidden-header-active {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FEE2E2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.restriction-forbidden-tags-active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.restriction-tag-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.restriction-citation-active {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+/* Standard Inactive Restriction Row (Compact / Short) */
+.timeline-event-row.is-restriction:hover .timeline-card-standard {
+  background: #FFF5F5;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.restriction-badge-standard {
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.restriction-badge-standard.critical {
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-color: #FCA5A5;
+}
+
+.restriction-expand-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #DC2626;
+  transition: all 0.15s ease;
+}
+.timeline-event-row.is-restriction:hover .restriction-expand-hint {
+  color: #B91C1C;
+  transform: translateX(2px);
+}
+
 
 /* Integrated Calendar Right Column */
 .integrated-calendar-panel {

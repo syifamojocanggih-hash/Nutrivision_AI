@@ -136,7 +136,7 @@ const NUTRIVISION_DATA = {
       defaultDailySchedules: [
         {
           id: 'sched-ps-1',
-          time: '07:00 - 08:00',
+          time: '07:00',
           title: 'Sarapan Tinggi Albumin & Protein',
           desc: 'Ikan gabus tim albumin (120g) + 2 butir putih telur rebus + bubur gandum halus (Target: 28g Protein).',
           category: 'nutrition',
@@ -145,7 +145,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-ps-2',
-          time: '10:00 - 10:30',
+          time: '10:00',
           title: 'Hidrasi Seluler & Vitamin C Alami',
           desc: 'Air kelapa murni (250ml) kaya kalium + jus jambu biji segar tanpa gula tambahan (Vit C 200mg).',
           category: 'hydration',
@@ -154,7 +154,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-ps-3',
-          time: '12:30 - 13:30',
+          time: '12:30',
           title: 'Makan Siang Gizi Seimbang & Seng (Zinc)',
           desc: 'Sup ayam kampung bening + tahu kukus + wortel labu siam + nasi tim beras merah (Target: 25g Protein).',
           category: 'nutrition',
@@ -163,7 +163,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-ps-4',
-          time: '16:00 - 16:30',
+          time: '16:00',
           title: 'Snack Pemulihan & Asam Amino Bebas',
           desc: 'Puding puree labu kuning + susu kedelai hangat rendah gula (Target: 10g Protein).',
           category: 'snack',
@@ -172,7 +172,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-ps-5',
-          time: '19:00 - 20:00',
+          time: '19:00',
           title: 'Makan Malam Regeneratif & Serat Larut',
           desc: 'Ikan tenggiri kukus kuah jahe + sup bayam bening + kentang rebus tumbuk (Target: 24g Protein).',
           category: 'nutrition',
@@ -181,7 +181,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-ps-6',
-          time: '21:30 - 22:00',
+          time: '21:30',
           title: 'Hidrasi Penutup & Kesiapan Tidur Anabolik',
           desc: 'Air putih hangat 300ml + relaksasi pernapasan klinis (Target: 8 jam tidur anabolik).',
           category: 'rest',
@@ -191,33 +191,66 @@ const NUTRIVISION_DATA = {
       ],
       contraindications: [
         {
+          id: 'contra-ps-1',
           food: 'Gorengan, Makanan Minyak Jelantah & Lemak Trans Tinggi',
           risk: 'Tinggi (Hindari Total)',
           reason: 'Memperlambat pengosongan lambung pasca-anestesi, memicu stres oksidatif endotel, dan menekan migrasi fibroblas pada tepi luka operasi.',
+          forbiddenItems: [
+            'Gorengan pinggir jalan (bakwan, cireng, mendoan, tahu krispi)',
+            'Ayam goreng tepung deep-fried / crispy fast-food',
+            'Santan kental yang dihangatkan berulang (gulai, rendang pekat)',
+            'Keripik usus, kulit ayam goreng, & camilan minyak jelantah'
+          ],
           citation: 'ESPEN Surgical Nutrition Guidelines (2021) & British Journal of Surgery'
         },
         {
+          id: 'contra-ps-2',
           food: 'Makanan Tinggi Gula Rafinasi, Sirup Kental & Minuman Manis',
           risk: 'Tinggi (Hindari Total)',
           reason: 'Memicu hiperglikemia transient yang melumpuhkan kapasitas fagositosis neutrofil, melipatgandakan risiko Surgical Site Infection (SSI).',
+          forbiddenItems: [
+            'Minuman boba, milk tea, thai tea manis, & es kopi susu gula aren',
+            'Minuman bersoda / berkarbonasi manis & sirup berperisa kental',
+            'Donat berglazuur, kue tart manis, martabak manis, & bolu manis',
+            'Jus buah kemasan berpemanis buatan & krimer kental manis'
+          ],
           citation: 'ERAS Society Consensus on Perioperative Glycemic Control'
         },
         {
+          id: 'contra-ps-3',
           food: 'Minuman Beralkohol & Produk Nikotin',
           risk: 'Kritis (Kontraindikasi Mutlak)',
           reason: 'Menurunkan sintesis kolagen tipe I & III hingga 40% dan menginduksi vasokonstriksi mikrovaskular yang menghambat perfusi oksigen ke luka.',
+          forbiddenItems: [
+            'Bir, anggur merah/putih, soju, arak, & minuman fermentasi keras',
+            'Masakan yang menggunakan arak masak tanpa evaporasi panas sempurna',
+            'Rokok tembakau konvensional, cerutu, & rokok elektrik / vape nikotin'
+          ],
           citation: 'Sørensen LT et al., Annals of Surgery (Smoking and Alcohol in Wound Healing)'
         },
         {
-          food: 'Makanan Mentah / Setengah Matang (Sashimi, Telur Mentah Tanpa Pasteurisasi)',
+          id: 'contra-ps-4',
+          food: 'Makanan Mentah / Setengah Matang Tanpa Pasteurisasi',
           risk: 'Tinggi (Hindari)',
           reason: 'Risiko kontaminasi Salmonella, Listeria, dan patogen oportunistik di saat sistem imun pasien tersupresi akibat trauma pembedahan.',
+          forbiddenItems: [
+            'Sashimi, sushi ikan mentah, tiram mentah (fresh oysters)',
+            'Telur setengah matang, telur mata sapi mentah, & mayones segar tanpa pasteurisasi',
+            'Steak daging sapi rare / medium rare (harus well-done)',
+            'Lalapan mentah yang tidak dicuci dengan air mengalir dan disinfeksi higienis'
+          ],
           citation: 'CDC & WHO Clinical Food Safety Guidelines for Post-Operative Patients'
         },
         {
-          food: 'Makanan Sangat Pedas, Asam Ekstrem & Bergas Tinggi (Kol Mentah, Durian, Minuman Soda)',
+          id: 'contra-ps-5',
+          food: 'Makanan Sangat Pedas, Asam Ekstrem & Bergas Tinggi',
           risk: 'Sedang (Batasi Ketat)',
           reason: 'Memicu iritasi mukosa lambung, distensi usus pasca-ileus hipoperistaltik, dan peningkatan tekanan intra-abdomen yang menekan luka jahitan.',
+          forbiddenItems: [
+            'Makanan pedas cabai rawit level tinggi (sambal pedas ekstrem, seblak)',
+            'Kol mentah, sawi mentah, nangka muda, durian, tape singkong',
+            'Cuka pempek pekat, asinan asam pekat, & minuman soda bergas'
+          ],
           citation: 'Konsensus Bedah Digestif Indonesia & ASPEN Clinical Guidelines'
         }
       ]
@@ -354,7 +387,7 @@ const NUTRIVISION_DATA = {
       defaultDailySchedules: [
         {
           id: 'sched-rh-1',
-          time: '07:00 - 08:00',
+          time: '07:00',
           title: 'Sarapan Penguat Matriks Sendi',
           desc: '2 butir telur rebus omega-3 + oatmeal kaldu bening + bayam kukus (Target: 22g Protein, Kalsium & Lutein).',
           category: 'nutrition',
@@ -363,7 +396,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-rh-2',
-          time: '09:30 - 10:00',
+          time: '09:30',
           title: 'Protokol Nutrisi Pre-Fisioterapi (Gelatin + Vit C)',
           desc: 'Gelatin buah kaya kolagen (15g) + perasan jeruk lemon (Vit C 50mg) dikonsumsi 45 menit sebelum latihan.',
           category: 'therapy',
@@ -372,7 +405,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-rh-3',
-          time: '12:30 - 13:30',
+          time: '12:30',
           title: 'Makan Siang Anti-Inflamasi & Regeneratif',
           desc: 'Ikan kembung bakar kunyit (Omega-3 EPA/DHA) + sup kacang merah + tumis buncis + nasi merah (Target: 28g Protein).',
           category: 'nutrition',
@@ -381,7 +414,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-rh-4',
-          time: '16:00 - 16:30',
+          time: '16:00',
           title: 'Snack Mobilitas & Hidrasi Sendi',
           desc: 'Smoothie alpukat buah naga + segenggam kacang almond panggang (Target: Lemak tak jenuh & Magnesium).',
           category: 'snack',
@@ -390,7 +423,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-rh-5',
-          time: '19:00 - 20:00',
+          time: '19:00',
           title: 'Makan Malam Pembentukan Massa Otot',
           desc: 'Dada ayam panggang rempah (130g) + sup kaldu tulang sapi + kentang kukus brokoli (Target: 30g Protein).',
           category: 'nutrition',
@@ -399,7 +432,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-rh-6',
-          time: '21:30 - 22:00',
+          time: '21:30',
           title: 'Mineral Tulang & Kesiapan Tidur Nyenyak',
           desc: 'Susu rendah lemak kalsium tinggi + vitamin D3 (2000 IU) + hidrasi 300ml air.',
           category: 'rest',
@@ -409,27 +442,51 @@ const NUTRIVISION_DATA = {
       ],
       contraindications: [
         {
-          food: 'Daging Olahan Berpengawet Nitrit (Sosis, Kornet, Daging Asap) & Asam Arakidonat Tinggi',
+          id: 'contra-rh-1',
+          food: 'Daging Olahan Berpengawet Nitrit & Asam Arakidonat Tinggi',
           risk: 'Tinggi (Hindari)',
           reason: 'Kandungan asam arakidonat dan AGEs tinggi memicu kaskade enzim COX-2 & PGE2 yang memperparah nyeri sendi kronis dan kekakuan kapsul sendi.',
+          forbiddenItems: [
+            'Sosis industri, kornet kaleng, daging asap (smoked beef)',
+            'Nugget ayam beku ultra-proses & bakso daging berpengawet boraks/nitrit',
+            'Jeroan sapi (otak, babat, usus) & gajih lemak jenuh tinggi'
+          ],
           citation: 'Arthritis & Rheumatology Nutrition Review (2021)'
         },
         {
-          food: 'Gula Rafinasi, Sirup Jagung Fruktosa Tinggi (HFCS) & Manisan Buatan',
+          id: 'contra-rh-2',
+          food: 'Gula Rafinasi & Sirup Jagung Fruktosa Tinggi (HFCS)',
           risk: 'Tinggi (Hindari)',
           reason: 'Membentuk cross-linking glikasi pada serat kolagen (AGEs) yang menyebabkan tendon dan ligamen menjadi kaku, getas, dan rentan re-rupture saat fisioterapi.',
+          forbiddenItems: [
+            'Minuman manis dalam kemasan botol/kaleng sirup fruktosa',
+            'Kue kering, pastry mentega manis, biskuit isi krim gula',
+            'Permen manis pekat & selai manis industri buatan'
+          ],
           citation: 'Shaw G, Baar K et al., Am J Sports Med'
         },
         {
-          food: 'Makanan Tinggi Natrium / Garam Berlebih (>2000mg/hari) & Makanan Kemasan Asin',
+          id: 'contra-rh-3',
+          food: 'Makanan Tinggi Natrium / Garam Berlebih (>2000mg/hari)',
           risk: 'Sedang (Batasi Ketat)',
           reason: 'Menyebabkan retensi cairan ekstraseluler yang memperparah efusi intra-artikular (pembengkakan cairan sendi) pasca-latihan mobilitas gerak.',
+          forbiddenItems: [
+            'Mie instan beserta kuah bumbu gurih pekat micin',
+            'Keripik kentang / tortilla asin kemasan komersial',
+            'Ikan asin, telur asin, serta kecap asin berlebih pada masakan'
+          ],
           citation: 'Orthopaedic Physical Therapy Clinical Consensus'
         },
         {
-          food: 'Konsumsi Kafein Berlebih (>400mg / >3 cangkir kopi pekat) & Energy Drinks',
+          id: 'contra-rh-4',
+          food: 'Konsumsi Kafein Berlebih & Energy Drinks',
           risk: 'Sedang (Batasi)',
           reason: 'Meningkatkan ekskresi kalsium melalui urin, mengganggu remodeling osifikasi trabekular tulang dan dehidrasi fibroblas.',
+          forbiddenItems: [
+            'Minuman berenergi (energy drinks kemasan botol/kaleng)',
+            'Konsumsi kopi pekat lebih dari 3 cangkir sehari (>400mg kafein)',
+            'Suplemen pre-workout dengan stimulan kafein anorganik dosis tinggi'
+          ],
           citation: 'Journal of Bone and Mineral Research'
         }
       ]
@@ -547,7 +604,7 @@ const NUTRIVISION_DATA = {
       defaultDailySchedules: [
         {
           id: 'sched-gym-1',
-          time: '07:00 - 08:00',
+          time: '07:00',
           title: 'Sarapan Pemicu Anabolik (Leucine Trigger)',
           desc: '4 butir putih telur + 1 telur utuh + oatmeal pisang madu (Target: 32g Protein, Leusin > 3.2g).',
           category: 'nutrition',
@@ -556,7 +613,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-gym-2',
-          time: '10:30 - 11:00',
+          time: '10:30',
           title: 'Snack Nutrisi & Elektrolit Pra-Latihan',
           desc: 'Air kelapa murni (300ml) + 3 butir kurma + segenggam almond (Target: Kalsium, Kalium & Karbohidrat Cepat).',
           category: 'snack',
@@ -565,7 +622,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-gym-3',
-          time: '13:00 - 13:45',
+          time: '13:00',
           title: 'Nutrisi Jendela Anabolik Pasca-Latihan',
           desc: 'Protein shake cepat cerna (25g isolate) + pisang ambon / madu rasio karbo:protein 3:1.',
           category: 'nutrition',
@@ -574,7 +631,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-gym-4',
-          time: '15:30 - 16:30',
+          time: '15:30',
           title: 'Makan Siang Utama Regenerasi Myofibril',
           desc: 'Dada ayam bakar bumbu lengkuas (150g) + nasi merah + tumis buncis tempe (Target: 38g Protein).',
           category: 'nutrition',
@@ -583,7 +640,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-gym-5',
-          time: '19:00 - 20:00',
+          time: '19:00',
           title: 'Makan Malam Perbaikan Jaringan & Antioksidan',
           desc: 'Daging sapi tanpa lemak / ikan tuna kukus (130g) + kentang panggang + brokoli wortel (Target: 32g Protein).',
           category: 'nutrition',
@@ -592,7 +649,7 @@ const NUTRIVISION_DATA = {
         },
         {
           id: 'sched-gym-6',
-          time: '21:30 - 22:00',
+          time: '21:30',
           title: 'Kasein Pelepasan Lambat & Kualitas Tidur Anabolik',
           desc: 'Susu kedelai kental hangat / tahu sutra + magnesium bisglisinat (Target: 8 jam tidur restorasi CNS).',
           category: 'rest',
@@ -602,27 +659,51 @@ const NUTRIVISION_DATA = {
       ],
       contraindications: [
         {
+          id: 'contra-gym-1',
           food: 'Alkohol Pasca-Latihan (Post-Workout Alcohol Consumption)',
           risk: 'Kritis (Kontraindikasi Total)',
           reason: 'Menekan fosforilasi mTORC1 dan menurunkan sintesis protein otot (MPS) sebesar 24–37% meskipun diimbangi nutrisi protein cukup.',
+          forbiddenItems: [
+            'Bir, soju, cocktail beralkohol pasca-latihan sesi beban',
+            'Minuman berkarbonasi keras (hard seltzer / cider beralkohol)',
+            'Kue / dessert beraroma rum atau alkohol tanpa pemanasan'
+          ],
           citation: 'Parr EB et al., Alcohol Impairs Muscle Protein Synthesis, PLOS ONE (2014)'
         },
         {
+          id: 'contra-gym-2',
           food: 'Pola Makan Defisit Protein Ekstrem & Melewatkan Nutrisi Pasca-Latihan',
           risk: 'Tinggi (Hindari)',
           reason: 'Memicu katabolisme massa otot bebas lemak (LBM), peningkatan hormon kortisol, dan pembatalan fase adaptasi hipertrofi.',
+          forbiddenItems: [
+            'Melewatkan makanan bergizi > 3–4 jam setelah sesi latihan intensif',
+            'Hanya meminum air putih tanpa asupan asam amino pemulihan otot',
+            'Diet ekstrem nol karbohidrat & rendah protein saat fase beban berat'
+          ],
           citation: 'ISSN Position Stand on Protein and Exercise (2017) & Phillips SM (2020)'
         },
         {
+          id: 'contra-gym-3',
           food: 'Fast Food Tinggi Lemak Jenuh & Minyak Teroksidasi (Trans-Fat)',
           risk: 'Sedang (Hindari)',
           reason: 'Menginduksi resistensi anabolik transien pada membran sarkolema dan memperpanjang inflamasi nyeri otot tertunda (DOMS).',
+          forbiddenItems: [
+            'Burger fast-food berlemak trans, kentang goreng deep-fried',
+            'Pizza keju olahan tinggi lemak jenuh & daging olahan berlemak',
+            'Camilan keripik gurih berlemak trans / minyak terhidrogenasi'
+          ],
           citation: 'Frontiers in Sports Nutrition & Muscle Biology'
         },
         {
+          id: 'contra-gym-4',
           food: 'Minuman Manis Kemasan / Soda Tanpa Elektrolit (Empty Calories)',
           risk: 'Sedang (Batasi)',
           reason: 'Memicu lonjakan gula darah dan crash hipoglikemia reaktif tanpa menyediakan kalium, magnesium, atau natrium untuk repolarisasi sel otot.',
+          forbiddenItems: [
+            'Minuman soda kaleng bergula pasir tinggi tanpa elektrolit',
+            'Minuman sachet rasa buah berpengawet & pemanis aspartam berlebih',
+            'Sirup kental manis gula rafinasi'
+          ],
           citation: 'American College of Sports Medicine (ACSM)'
         }
       ]

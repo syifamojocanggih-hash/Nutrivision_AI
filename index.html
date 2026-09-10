@@ -2095,34 +2095,6 @@
             </div>
           </div>
 
-          <!-- Akun & Manajemen Sesi Login -->
-          <div class="card" id="profile-session-card"
-            style="grid-column: 1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:var(--bg-subtle);">
-            <div>
-              <b style="font-size:var(--font-sm);color:var(--ink);display:flex;align-items:center;gap:6px;"
-                id="profile-session-status-title">
-                <i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> <span data-i18n="profile_session_title">Active Login Session</span>
-              </b>
-              <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;margin-top:2px;"
-                id="profile-session-status-desc">
-                Connected as <span class="user-name-placeholder"
-                  style="font-weight:600;color:var(--ink-soft);">Patient Profile</span> (<span
-                  id="profile-auth-email">Not connected</span>)
-              </span>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="profile-session-actions">
-              <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;"
-                onclick="app.openAuthModal('login')">
-                <i data-lucide="user-check" class="btn-icon-sm"></i> <span data-i18n="profile_session_switch">Switch Patient Account</span>
-              </button>
-              <button class="btn-outline-glass"
-                style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;"
-                onclick="app.logout()">
-                <i data-lucide="log-out" class="btn-icon-sm"></i> <span data-i18n="profile_session_logout">Sign Out (Logout)</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Pengaturan Bahasa & Aksesibilitas Tampilan (NEW) -->
           <div class="card" id="profile-language-card" style="grid-column: 1 / -1;">
             <div class="card-head">
@@ -2193,6 +2165,34 @@
                   <span>Toggle Contrast</span>
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Akun & Manajemen Sesi Login (Bagian Paling Bawah) -->
+          <div class="card" id="profile-session-card"
+            style="grid-column: 1 / -1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;background:var(--bg-subtle);">
+            <div>
+              <b style="font-size:var(--font-sm);color:var(--ink);display:flex;align-items:center;gap:6px;"
+                id="profile-session-status-title">
+                <i data-lucide="shield-check" class="btn-icon-sm" style="color:var(--teal-700);"></i> <span data-i18n="profile_session_title">Active Login Session</span>
+              </b>
+              <span style="font-size:var(--font-xs);color:var(--ink-mute);display:block;margin-top:2px;"
+                id="profile-session-status-desc">
+                Connected as <span class="user-name-placeholder"
+                  style="font-weight:600;color:var(--ink-soft);">Patient Profile</span> (<span
+                  id="profile-auth-email">Not connected</span>)
+              </span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="profile-session-actions">
+              <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;"
+                onclick="app.openAuthModal('login')">
+                <i data-lucide="user-check" class="btn-icon-sm"></i> <span data-i18n="profile_session_switch">Switch Patient Account</span>
+              </button>
+              <button class="btn-outline-glass"
+                style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;"
+                onclick="app.logout()">
+                <i data-lucide="log-out" class="btn-icon-sm"></i> <span data-i18n="profile_session_logout">Sign Out (Logout)</span>
+              </button>
             </div>
           </div>
 
@@ -3390,6 +3390,28 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
           <button type="submit" class="btn-primary-teal" style="font-size:12px;padding:8px 18px;background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;">Simpan Jadwal</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Reset Jadwal & Checklist Klinis -->
+  <div class="modal-overlay" id="modal-confirm-reset-schedule" onclick="app.closeResetScheduleModal()" style="display:none;z-index:10005;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:400px;text-align:center;padding:24px 20px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:#FEF2F2;color:#DC2626;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 0 0 8px #FFF1F2;">
+        <i data-lucide="rotate-ccw" style="width:24px;height:24px;"></i>
+      </div>
+      <h3 style="margin:0 0 8px;font-size:16px;font-weight:800;color:var(--ink);">Reset Jadwal &amp; Checklist?</h3>
+      <p style="margin:0 0 20px;font-size:12.5px;color:var(--ink-soft);line-height:1.5;">
+        Apakah Anda yakin ingin mereset seluruh status checklist selesai dan jadwal kustom hari ini kembali ke default klinis awal?
+      </p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+        <button type="button" class="btn-cancel" onclick="app.closeResetScheduleModal()" style="flex:1;padding:9px 16px;border-radius:8px;border:1px solid #CBD5E1;background:#FFFFFF;font-weight:600;font-size:12.5px;color:#475569;cursor:pointer;">
+          Batal
+        </button>
+        <button type="button" class="btn-confirm-reset" onclick="app.executeResetClinicalSchedule()" style="flex:1;padding:9px 16px;border-radius:8px;border:none;background:#DC2626;color:#FFFFFF;font-weight:700;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(220,38,38,0.25);">
+          <i data-lucide="rotate-ccw" style="width:13px;height:13px;"></i>
+          <span>Ya, Reset</span>
+        </button>
+      </div>
     </div>
   </div>
 

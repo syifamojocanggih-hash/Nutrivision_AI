@@ -5612,34 +5612,103 @@ class NutriVisionApp {
       return;
     }
 
+    // Helper to format simple time (e.g. '07:00 - 08:00' -> '07:00')
+    const formatSimpleTime = (timeStr) => {
+      if (!timeStr) return '';
+      if (timeStr.includes(' - ')) {
+        return timeStr.split(' - ')[0].trim();
+      }
+      return timeStr.trim();
+    };
+
+    // Active highlighted timeline event (default to first schedule if unset or not in list)
+    if (!this.activeTimelineEventId || !schedules.some(s => s.id === this.activeTimelineEventId)) {
+      this.activeTimelineEventId = schedules[0]?.id || null;
+    }
+
     const itemsHtml = schedules.map(s => {
       const key = `${targetDate}_${s.id}`;
       const isCompleted = Boolean(this.completedScheduleItems && this.completedScheduleItems[key]);
+      const isActive = (s.id === this.activeTimelineEventId);
+      const simpleTime = formatSimpleTime(s.time);
 
-      return `
-        <div class="upcoming-event-item ${isCompleted ? 'completed' : ''}" data-event-id="${s.id}">
-          <div class="event-item-top">
-            <span class="event-item-badge">
-              <span class="event-item-dot" style="background:${s.dotColor || '#15803D'};"></span>
-              <span>${s.time}</span>
-            </span>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <input type="checkbox" ${isCompleted ? 'checked' : ''}
-                     onchange="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
-                     title="Tandai Selesai" style="cursor:pointer;width:15px;height:15px;accent-color:#15803D;" />
-              ${s.isCustom ? `
-                <button type="button" class="btn-action-icon" style="width:20px;height:20px;"
-                        onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus Jadwal Kustom">
-                  <i data-lucide="trash-2" style="width:12px;height:12px;color:#DC2626;"></i>
-                </button>
-              ` : ''}
+      if (isActive) {
+        return `
+          <div class="timeline-event-row is-active ${isCompleted ? 'completed' : ''}"
+               data-event-id="${s.id}"
+               onclick="app.selectTimelineEvent('${s.id}')">
+            <!-- Left Timeline Track -->
+            <div class="timeline-axis">
+              <div class="timeline-node">
+                <span class="timeline-node-inner"></span>
+              </div>
+              <div class="timeline-line"></div>
+            </div>
+
+            <!-- Active Card (Sage/Forest Green matching reference design) -->
+            <div class="timeline-content-wrap">
+              <div class="timeline-card-active">
+                <div class="timeline-header">
+                  <h4 class="timeline-title">${s.title}</h4>
+                  <div class="timeline-header-right" onclick="event.stopPropagation();" style="display:flex;align-items:center;gap:8px;">
+                    <span class="timeline-time">${simpleTime}</span>
+                    <input type="checkbox" ${isCompleted ? 'checked' : ''}
+                           onchange="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
+                           title="Tandai Selesai"
+                           style="cursor:pointer;width:15px;height:15px;accent-color:#233917;" />
+                    ${s.isCustom ? `
+                      <button type="button" class="btn-action-icon" style="width:20px;height:20px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#FFFFFF;"
+                              onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus Jadwal Kustom">
+                        <i data-lucide="trash-2" style="width:12px;height:12px;color:#FCA5A5;"></i>
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+                <p class="timeline-desc">${s.desc}</p>
+                ${isCompleted ? `
+                  <div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);">
+                    <i data-lucide="check-circle-2" style="width:12px;height:12px;"></i>
+                    <span>Telah Diselesaikan</span>
+                  </div>
+                ` : ''}
+              </div>
             </div>
           </div>
-          <h4 class="event-item-title">${s.title}</h4>
-          <p class="event-item-desc">${s.desc}</p>
-          <div class="event-item-footer">
-            <span style="color:#64748B;font-size:10.5px;">💡 ${s.scientificRationale || 'Protokol Nutrisi'}</span>
-            ${isCompleted ? '<span style="color:#15803D;font-weight:700;">✓ Selesai</span>' : '<span style="color:#D97706;font-weight:600;">Tertunda</span>'}
+        `;
+      }
+
+      // Standard Timeline Row
+      return `
+        <div class="timeline-event-row ${isCompleted ? 'completed' : ''}"
+             data-event-id="${s.id}"
+             onclick="app.selectTimelineEvent('${s.id}')">
+          <!-- Left Timeline Track -->
+          <div class="timeline-axis">
+            <div class="timeline-node"></div>
+            <div class="timeline-line"></div>
+          </div>
+
+          <!-- Standard Clean Row Content -->
+          <div class="timeline-content-wrap">
+            <div class="timeline-card-standard">
+              <div class="timeline-header">
+                <h4 class="timeline-title">${s.title}</h4>
+                <div class="timeline-header-right" onclick="event.stopPropagation();" style="display:flex;align-items:center;gap:8px;">
+                  <span class="timeline-time">${simpleTime}</span>
+                  <input type="checkbox" ${isCompleted ? 'checked' : ''}
+                         onchange="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
+                         title="Tandai Selesai"
+                         style="cursor:pointer;width:15px;height:15px;accent-color:#15803D;" />
+                  ${s.isCustom ? `
+                    <button type="button" class="btn-action-icon" style="width:20px;height:20px;"
+                            onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus Jadwal Kustom">
+                      <i data-lucide="trash-2" style="width:12px;height:12px;color:#DC2626;"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+              <p class="timeline-desc">${s.desc}</p>
+            </div>
           </div>
         </div>
       `;
@@ -5655,6 +5724,11 @@ class NutriVisionApp {
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons({ root: listEl });
     }
+  }
+
+  selectTimelineEvent(eventId) {
+    this.activeTimelineEventId = eventId;
+    this.renderUpcomingEvents(this.selectedCalendarDate);
   }
 
   renderClinicalCalendar(viewMode) {
@@ -5983,38 +6057,113 @@ class NutriVisionApp {
       return;
     }
 
-    const itemsHtml = contraindications.map((c, idx) => {
-      const isCritical = c.risk.includes('Kritis') || c.risk.includes('Total');
-      const badgeBg = isCritical ? '#FEF2F2' : '#FFFBEB';
-      const badgeColor = isCritical ? '#DC2626' : '#D97706';
-      const borderColor = isCritical ? '#FCA5A5' : '#FDE68A';
+    // Active highlighted restriction (default to first on initial load)
+    if (this.activeRestrictionId === undefined) {
+      this.activeRestrictionId = contraindications[0]?.id || null;
+    }
 
-      return `
-        <div class="pantangan-item-card" style="background:#FFFFFF;border:1px solid ${borderColor};border-left:4px solid ${badgeColor};border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;flex-direction:column;gap:5px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-            <span style="font-size:11px;font-weight:700;background:${badgeBg};color:${badgeColor};padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;">
-              <i data-lucide="shield-alert" style="width:12px;height:12px;"></i> ${c.risk}
-            </span>
-            <span style="font-size:10px;color:#64748B;font-weight:600;">Pantangan #${idx + 1}</span>
+    const itemsHtml = contraindications.map(c => {
+      const isCritical = c.risk.includes('Kritis') || c.risk.includes('Total') || c.risk.includes('Mutlak');
+      const isActive = (c.id === this.activeRestrictionId);
+      const forbiddenList = c.forbiddenItems || [];
+
+      if (isActive) {
+        return `
+          <div class="timeline-event-row is-restriction is-active"
+               data-restriction-id="${c.id}"
+               onclick="app.selectRestrictionEvent('${c.id}')">
+            <!-- Left Red Timeline Track -->
+            <div class="timeline-axis">
+              <div class="timeline-node">
+                <span class="timeline-node-inner"></span>
+              </div>
+              <div class="timeline-line"></div>
+            </div>
+
+            <!-- Active Restriction Card (Crimson / Deep Warning Red) -->
+            <div class="timeline-content-wrap">
+              <div class="timeline-card-active is-restriction">
+                <div class="timeline-header">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <i data-lucide="shield-alert" style="width:15px;height:15px;color:#FECDD3;flex-shrink:0;"></i>
+                    <h4 class="timeline-title">${c.food}</h4>
+                  </div>
+                  <span class="restriction-badge-active">
+                    ${c.risk}
+                  </span>
+                </div>
+                <p class="timeline-desc">${c.reason}</p>
+
+                <!-- Detailed Forbidden Foods Box -->
+                ${forbiddenList.length > 0 ? `
+                  <div class="restriction-forbidden-box-active">
+                    <div class="restriction-forbidden-header-active">
+                      <i data-lucide="ban" style="width:12px;height:12px;color:#FECDD3;"></i>
+                      <span>Contoh Jenis Makanan yang Dilarang:</span>
+                    </div>
+                    <div class="restriction-forbidden-tags-active">
+                      ${forbiddenList.map(item => `
+                        <span class="restriction-tag-active">
+                          <span style="color:#FECDD3;">✕</span> ${item}
+                        </span>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <div class="restriction-citation-active">
+                  <i data-lucide="book-open" style="width:11px;height:11px;color:#FECDD3;"></i>
+                  <span>Validasi Medis: ${c.citation}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <h4 style="margin:2px 0 0;font-size:13px;font-weight:700;color:#0F172A;">${c.food}</h4>
-          <p style="margin:0;font-size:11.5px;color:#475569;line-height:1.5;">${c.reason}</p>
-          <div style="margin-top:4px;padding-top:6px;border-top:1px dashed #E2E8F0;font-size:10.5px;color:#059669;font-weight:600;display:flex;align-items:center;gap:4px;">
-            <i data-lucide="book-open" style="width:11px;height:11px;"></i>
-            <span>Validasi Medis: ${c.citation}</span>
+        `;
+      }
+
+      // Standard Inactive Red Timeline Row (Short & Compact)
+      return `
+        <div class="timeline-event-row is-restriction"
+             data-restriction-id="${c.id}"
+             onclick="app.selectRestrictionEvent('${c.id}')">
+          <!-- Left Red Timeline Track -->
+          <div class="timeline-axis">
+            <div class="timeline-node"></div>
+            <div class="timeline-line"></div>
+          </div>
+
+          <!-- Standard Clean Compact Row Content -->
+          <div class="timeline-content-wrap" style="padding-bottom:8px;">
+            <div class="timeline-card-standard" style="padding:8px 10px 8px 10px;">
+              <div class="timeline-header">
+                <h4 class="timeline-title" style="font-size:13.5px;">${c.food}</h4>
+                <span class="restriction-badge-standard ${isCritical ? 'critical' : ''}">
+                  ${c.risk}
+                </span>
+              </div>
+              <div class="restriction-expand-hint">
+                <i data-lucide="chevron-down" style="width:11px;height:11px;"></i>
+                <span>Klik untuk lihat jenis makanan dilarang (${forbiddenList.length})</span>
+              </div>
+            </div>
           </div>
         </div>
       `;
     }).join('');
 
     listEl.innerHTML = `
-      <div style="margin-bottom:10px;padding:10px 12px;background:#FEF2F2;border-radius:8px;border:1px solid #FECACA;display:flex;align-items:center;gap:8px;">
-        <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#DC2626;flex-shrink:0;"></i>
-        <p style="margin:0;font-size:11.5px;color:#991B1B;line-height:1.4;">
-          <strong>Peringatan Klinis Dokter:</strong> Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.
-        </p>
+      <div style="margin-bottom:12px;padding:10px 14px;background:#FEF2F2;border-radius:12px;border:1px solid #FECACA;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#DC2626;flex-shrink:0;"></i>
+          <p style="margin:0;font-size:11.5px;color:#991B1B;line-height:1.45;">
+            <strong>Peringatan Klinis Dokter:</strong> Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.
+          </p>
+        </div>
+        <span style="font-size:10.5px;color:#991B1B;font-weight:600;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;">
+          <i data-lucide="shield-check" style="width:12px;height:12px;"></i> Validasi Medis Terverifikasi
+        </span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
+      <div class="upcoming-events-list">
         ${itemsHtml}
       </div>
     `;
@@ -6022,6 +6171,12 @@ class NutriVisionApp {
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons({ root: listEl });
     }
+  }
+
+  selectRestrictionEvent(restrictionId) {
+    // Klik pada kartu yang sama akan menutupnya (collapse), klik kartu lain akan membukanya
+    this.activeRestrictionId = (this.activeRestrictionId === restrictionId) ? null : restrictionId;
+    this.renderPantanganMakanan(this.journeyCondition || this.userProfile?.conditionId || 'post-surgery');
   }
 
   renderValidationSummary(conditionId, monthIndex) {
@@ -6181,14 +6336,72 @@ class NutriVisionApp {
   }
 
   resetToDefaultClinicalSchedule() {
+    const modal = document.getElementById('modal-confirm-reset-schedule');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('open');
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons({ root: modal });
+      }
+    } else {
+      if (confirm('Apakah Anda yakin ingin mereset seluruh status checklist selesai dan jadwal hari ini kembali ke default klinis awal?')) {
+        this.executeResetClinicalSchedule();
+      }
+    }
+  }
+
+  closeResetScheduleModal() {
+    const modal = document.getElementById('modal-confirm-reset-schedule');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('open');
+    }
+  }
+
+  executeResetClinicalSchedule() {
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const targetDate = this.selectedCalendarDate || new Date().toISOString().split('T')[0];
+
+    // 1. Bersihkan seluruh status checklist selesai (completed items) untuk tanggal dan kondisi ini
+    if (this.completedScheduleItems) {
+      const conditionSchedules = this.getConditionSchedules(cond);
+      const conditionSchedIds = new Set(conditionSchedules.map(s => s.id));
+
+      Object.keys(this.completedScheduleItems).forEach(key => {
+        // Hapus jika key dimulai dengan tanggal aktif
+        if (key.startsWith(`${targetDate}_`)) {
+          delete this.completedScheduleItems[key];
+          return;
+        }
+        // Hapus juga jika key merupakan ID jadwal dari kondisi ini
+        const parts = key.split('_');
+        const schedId = parts.length > 1 ? parts.slice(1).join('_') : parts[0];
+        if (conditionSchedIds.has(schedId) || conditionSchedIds.has(key)) {
+          delete this.completedScheduleItems[key];
+        }
+      });
+      this.saveCompletedSchedules();
+    }
+
+    // 2. Bersihkan jadwal kustom khusus kondisi ini
     if (this.customDailySchedules) {
       this.customDailySchedules = this.customDailySchedules.filter(s => s.conditionId && s.conditionId !== cond);
       this.saveCustomDailySchedules();
     }
+
+    // 3. Reset active timeline item ke jadwal pertama
+    const schedules = this.getConditionSchedules(cond);
+    this.activeTimelineEventId = schedules[0]?.id || null;
+
+    // 4. Tutup modal konfirmasi
+    this.closeResetScheduleModal();
+
+    // 5. Kembalikan tab ke 'meals' dan re-render tampilan kalender serta daftar event
+    this.switchCalendarDetailTab('meals');
     this.renderUpcomingEvents(this.selectedCalendarDate);
     this.renderClinicalCalendar(this.calendarViewMode);
-    this.showToast('Jadwal harian dikembalikan ke default klinis.', 'info');
+
+    this.showToast('Jadwal dan status checklist berhasil direset ke default klinis.', 'success');
   }
 
   renderClinicalCalendarAndScheduleSuite() {
