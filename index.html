@@ -3259,16 +3259,12 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
         <div class="schedule-calendar-split-grid">
           <!-- Left Column: Upcoming Events List & Pantangan Panel -->
           <div class="upcoming-events-panel" id="calendar-detail-panel">
-            <div class="upcoming-events-header" style="border-bottom:1px solid #E8ECD8;padding-bottom:10px;">
+            <div class="upcoming-events-header">
               <div>
-                <span style="font-size:10.5px;font-weight:700;color:#233917;text-transform:uppercase;letter-spacing:0.5px;" id="cal-detail-condition-tag">PROFIL PASCA-OPERASI</span>
-                <h3 class="upcoming-events-title" id="upcoming-date-text" style="font-size:14px;margin-top:2px;">Memuat jadwal...</h3>
+                <span style="font-size:10px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.5px;display:block;" id="cal-detail-condition-tag">PROFIL PASCA-OPERASI</span>
+                <h3 class="upcoming-events-title" id="upcoming-date-text" style="font-size:13px;margin:2px 0 0;">Memuat jadwal...</h3>
               </div>
               <div class="upcoming-events-actions">
-                <button type="button" class="btn-action-pill primary" onclick="app.openAddScheduleModal()" title="Tambah Jadwal / Terapi">
-                  <i data-lucide="plus" style="width:12px;height:12px;"></i>
-                  <span>Tambah</span>
-                </button>
                 <button type="button" class="btn-action-icon" onclick="app.resetToDefaultClinicalSchedule()" title="Reset ke Default Klinis">
                   <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
                 </button>
@@ -3311,43 +3307,37 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
                 <!-- Rendered dynamically by app.renderValidationSummary() -->
               </div>
             </div>
+
+            <!-- Left Column Footer (Matches height & alignment of Right Column Footer) -->
+            <div class="upcoming-panel-footer">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="badge-dot-live"></span>
+                <span id="cal-events-counter" style="font-size:11.5px;font-weight:600;color:#4B5563;">3 Jadwal Nutrisi Aktif</span>
+              </div>
+              <button type="button" class="btn-action-pill primary" onclick="app.openAddScheduleModal()" title="Tambah Jadwal / Terapi">
+                <i data-lucide="plus" style="width:12px;height:12px;"></i>
+                <span>Tambah Jadwal</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Right Column: Interactive Compact Clinical Calendar Grid -->
-          <div class="integrated-calendar-panel">
-            <div class="integrated-cal-header">
-              <div class="cal-month-nav">
-                <h3 class="cal-month-title" id="calendar-month-year-title">September 2026</h3>
-                <div class="cal-nav-btns">
-                  <button type="button" class="cal-nav-btn" onclick="app.shiftCalendarMonth(-1)" title="Bulan Sebelumnya">
-                    <i data-lucide="chevron-left" style="width:14px;height:14px;"></i>
-                  </button>
-                  <button type="button" class="cal-nav-btn" onclick="app.shiftCalendarMonth(1)" title="Bulan Berikutnya">
-                    <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Quick Helper Hint -->
-              <span style="font-size:11.5px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:4px;">
-                <i data-lucide="mouse-pointer-click" style="width:13px;height:13px;color:#233917;"></i>
-                <span>Klik kotak tanggal untuk melihat jadwal &amp; pantangan</span>
-              </span>
+          <!-- Right Column: Interactive Dual-Month Date Range Picker (Matching Spec) -->
+          <div class="integrated-calendar-panel calendar-picker-card">
+            <!-- Header matching the left header: 'Custom' & Formatted Date Range -->
+            <div class="cal-picker-header">
+              <span class="cal-picker-subtitle" id="calendar-picker-subtitle">Custom</span>
+              <h4 class="cal-picker-range-label" id="calendar-picker-range-text">31 Mei 2026 – 29 Juni 2026</h4>
             </div>
 
-            <!-- Calendar Days Compact Boxes Grid -->
+            <!-- Dual-Month Body (Dynamically populated by app.renderClinicalCalendar()) -->
             <div class="integrated-cal-body" id="integrated-cal-body">
               <!-- Rendered dynamically by app.renderClinicalCalendar() -->
             </div>
 
-            <!-- Legend Category Dots -->
-            <div class="cal-legend-bar" style="margin-top:12px;padding-top:10px;border-top:1px solid #E8ECD8;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-              <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:#64748B;">
-                <span class="cal-legend-item"><span class="legend-dot" style="background:#233917;border-radius:2px;"></span> Terpilih (Aktif)</span>
-                <span class="cal-legend-item"><span class="legend-dot" style="background:#16A34A;"></span> Terjadwal Nutrisi</span>
-                <span class="cal-legend-item"><span class="legend-dot" style="background:#4F46E5;"></span> Hari Ini</span>
-              </div>
-              <span style="font-size:11px;color:#233917;font-weight:600;">ESPEN · ERAS · ISSN Validated</span>
+            <!-- Footer matching the left footer: Cancel & Apply buttons -->
+            <div class="cal-picker-footer">
+              <button type="button" class="cal-btn-cancel" onclick="app.cancelCalendarRange()" title="Batalkan Perubahan">Cancel</button>
+              <button type="button" class="cal-btn-apply" onclick="app.applyCalendarRange()" title="Terapkan Rentang Tanggal">Apply</button>
             </div>
           </div>
         </div>

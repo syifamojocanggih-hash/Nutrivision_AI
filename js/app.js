@@ -26,6 +26,11 @@ class NutriVisionApp {
     this.journeyCondition = this.userProfile.conditionId || 'post-surgery';
     this.calendarMonthOffset = 0;
     this.selectedCalendarDate = null;
+    this.calendarStartDate = null;
+    this.calendarEndDate = null;
+    this.calendarTempStartDate = null;
+    this.calendarTempEndDate = null;
+    this.calendarHoverDate = null;
     this.calendarViewMode = 'month';
     this.activeRecoveryMonthIndex = 1;
     this.calendarMonthDate = new Date();
@@ -5497,54 +5502,54 @@ class NutriVisionApp {
     `).join(' ');
 
     bannerEl.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #E2E6D0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #E2E6D0;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:#233917;color:#FFFFFF;text-transform:uppercase;">
+          <span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:#233917;color:#FFFFFF;text-transform:uppercase;">
             ${milestone.monthLabel}
           </span>
-          <h4 style="margin:0;font-size:14px;font-weight:700;color:var(--ink);">${milestone.phaseName}</h4>
+          <h4 style="margin:0;font-size:13px;font-weight:700;color:var(--ink);">${milestone.phaseName}</h4>
         </div>
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:#15803D;background:#EAF6EC;padding:3px 8px;border-radius:6px;font-weight:600;">
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:#15803D;background:#EAF6EC;padding:2px 7px;border-radius:5px;font-weight:600;">
           <i data-lucide="shield-check" style="width:12px;height:12px;"></i> ${milestone.scientificCitation}
         </span>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <!-- Card 1: Target Penyembuhan Klinis -->
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#233917;margin-bottom:6px;">
-            <i data-lucide="activity" style="width:14px;height:14px;color:#15803D;"></i>
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#233917;margin-bottom:4px;">
+            <i data-lucide="activity" style="width:13px;height:13px;color:#15803D;"></i>
             <span>Target Penyembuhan Medis</span>
           </div>
-          <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#0F172A;">${milestone.healingTarget.title}</p>
-          <div style="font-size:11.5px;color:#475569;line-height:1.45;margin-bottom:6px;">
+          <p style="margin:0 0 4px;font-size:11.5px;font-weight:600;color:#0F172A;">${milestone.healingTarget.title}</p>
+          <div style="font-size:11px;color:#475569;line-height:1.35;margin-bottom:4px;">
             <strong>Indikator Klinis:</strong> ${milestone.healingTarget.markers}
           </div>
-          <div style="font-size:11px;color:#15803D;background:#F0FDF4;padding:4px 8px;border-radius:6px;font-weight:600;">
+          <div style="font-size:10.5px;color:#15803D;background:#F0FDF4;padding:3px 6px;border-radius:5px;font-weight:600;">
             🎯 Tujuan: ${milestone.healingTarget.clinicalGoal}
           </div>
         </div>
 
         <!-- Card 2: Target Makanan & Gizi -->
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#233917;margin-bottom:6px;">
-            <i data-lucide="utensils" style="width:14px;height:14px;color:#D97706;"></i>
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#233917;margin-bottom:4px;">
+            <i data-lucide="utensils" style="width:13px;height:13px;color:#D97706;"></i>
             <span>Target Makanan &amp; Nutrisi Klinis</span>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">
             <span style="color:#64748B;">Target Protein:</span>
             <strong style="color:#233917;">${milestone.nutritionTarget.protein}</strong>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">
             <span style="color:#64748B;">Kebutuhan Energi:</span>
             <span style="font-weight:600;color:#0F172A;">${milestone.nutritionTarget.calories}</span>
           </div>
-          <div style="font-size:11px;color:#475569;margin-bottom:6px;">
-            <strong>Mikronutrien &amp; Kofaktor:</strong> ${milestone.nutritionTarget.micronutrients}
+          <div style="font-size:10.5px;color:#475569;margin-bottom:4px;">
+            <strong>Mikronutrien:</strong> ${milestone.nutritionTarget.micronutrients}
           </div>
           <div>
-            <div style="font-size:10.5px;color:#64748B;margin-bottom:4px;">Pilihan Pangan Tervalidasi:</div>
-            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            <div style="font-size:10px;color:#64748B;margin-bottom:3px;">Pilihan Pangan Tervalidasi:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;">
               ${menuPills}
             </div>
           </div>
@@ -5642,6 +5647,11 @@ class NutriVisionApp {
 
     listEl.innerHTML = itemsHtml;
 
+    const counterEl = document.getElementById('cal-events-counter');
+    if (counterEl) {
+      counterEl.textContent = `${schedules.length} Jadwal Nutrisi Aktif`;
+    }
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons({ root: listEl });
     }
@@ -5649,138 +5659,217 @@ class NutriVisionApp {
 
   renderClinicalCalendar(viewMode) {
     const bodyEl = document.getElementById('integrated-cal-body');
-    const titleEl = document.getElementById('calendar-month-year-title');
     if (!bodyEl) return;
 
     const mode = viewMode || this.calendarViewMode || 'month';
     this.calendarViewMode = mode;
 
-    // Update view toggle button active states
-    document.querySelectorAll('.cal-view-switchers .cal-view-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.view === mode);
-    });
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
-    const schedules = this.getConditionSchedules(cond);
+    // Initialize default range (30-day clinical window matching spec) if not set
+    if (!this.selectedCalendarDate) {
+      this.selectedCalendarDate = todayStr;
+    }
+    if (!this.calendarStartDate) {
+      const endD = new Date(this.selectedCalendarDate);
+      const startD = new Date(endD);
+      startD.setDate(endD.getDate() - 29);
+      this.calendarStartDate = `${startD.getFullYear()}-${String(startD.getMonth() + 1).padStart(2, '0')}-${String(startD.getDate()).padStart(2, '0')}`;
+      this.calendarEndDate = this.selectedCalendarDate;
+    }
 
-    const monthNames = [
+    const activeStart = this.calendarTempStartDate || this.calendarStartDate;
+    const activeEnd = this.calendarTempEndDate || this.calendarEndDate || activeStart;
+    const effStart = (activeStart && activeEnd && activeStart > activeEnd) ? activeEnd : activeStart;
+    const effEnd = (activeStart && activeEnd && activeStart > activeEnd) ? activeStart : activeEnd;
+
+    // Month Names
+    const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
+    const monthNamesEn = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthNamesId = [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
-    const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const monthNames = isEn ? monthNamesEn : monthNamesId;
+    const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-    const targetDateObj = this.calendarMonthDate || new Date();
-    const year = targetDateObj.getFullYear();
-    const month = targetDateObj.getMonth();
-
-    if (titleEl) {
-      titleEl.textContent = `${monthNames[month]} ${year}`;
+    // Update Header Date Range Text
+    const rangeTextEl = document.getElementById('calendar-picker-range-text');
+    if (rangeTextEl && effStart) {
+      const formatDateLabel = (dStr) => {
+        if (!dStr) return '';
+        const parts = dStr.split('-');
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        return `${monthNames[m]} ${d}, ${y}`;
+      };
+      if (effEnd && effStart !== effEnd) {
+        rangeTextEl.textContent = `${formatDateLabel(effStart)} – ${formatDateLabel(effEnd)}`;
+      } else {
+        rangeTextEl.textContent = formatDateLabel(effStart);
+      }
     }
 
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const selectedDateStr = this.selectedCalendarDate || todayStr;
+    // Month 1 & Month 2 anchor dates
+    const m1Date = this.calendarMonthDate || new Date();
+    const year1 = m1Date.getFullYear();
+    const month1 = m1Date.getMonth();
 
-    if (mode === 'month') {
+    const m2Date = new Date(year1, month1 + 1, 1);
+    const year2 = m2Date.getFullYear();
+    const month2 = m2Date.getMonth();
+
+    // Helper to generate a single month grid
+    const renderMonthGrid = (year, month, isLeftCol) => {
       const totalDays = new Date(year, month + 1, 0).getDate();
-      const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Min
-
+      const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Sun
       let daysHtml = '';
-      // Empty slots before first day
+
+      // Empty slots before day 1
       for (let b = 0; b < firstDayOfWeek; b++) {
-        daysHtml += `<div class="cal-day-cell compact-box empty"></div>`;
+        daysHtml += `<div class="cal-day-slot cal-day-cell compact-box empty"></div>`;
       }
 
       for (let day = 1; day <= totalDays; day++) {
-        const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const isToday = currentDateStr === todayStr;
-        const isSelected = currentDateStr === selectedDateStr;
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isInRange = Boolean(effStart && effEnd && dateStr >= effStart && dateStr <= effEnd);
+        const isStart = dateStr === effStart;
+        const isEnd = dateStr === effEnd;
+        const isSingle = effStart === effEnd && isStart;
+        const isToday = dateStr === todayStr;
+
+        const dayOfWeek = (firstDayOfWeek + day - 1) % 7;
+        const isRowFirst = (dayOfWeek === 0) || (day === 1);
+        const isRowLast = (dayOfWeek === 6) || (day === totalDays);
+
+        // Styling indicators matching reference screenshot
+        const isEndpoint = isEnd || (isSingle && isStart);
+        const hasBorderCircle = (isToday && !isInRange) || (!isInRange && effEnd && (new Date(dateStr) - new Date(effEnd) === 86400000));
+        const isFaintCircle = !isInRange && !isToday && (day === 2 && !isLeftCol);
+
+        const slotClasses = [
+          'cal-day-slot',
+          'cal-day-cell',
+          'compact-box',
+          isInRange ? 'in-range' : '',
+          (isStart || (isRowFirst && isInRange)) ? 'range-start row-first' : '',
+          (isEnd || (isRowLast && isInRange)) ? 'range-end row-last' : '',
+          isSingle ? 'range-single' : '',
+          isEndpoint ? 'selected-endpoint selected' : '',
+          isToday ? 'today' : '',
+          hasBorderCircle ? 'has-circle' : '',
+          isFaintCircle ? 'faint-circle' : ''
+        ].filter(Boolean).join(' ');
 
         daysHtml += `
-          <div class="cal-day-cell compact-box ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
-               onclick="app.selectCalendarDate('${currentDateStr}')"
-               title="${day} ${monthNames[month]} ${year} - Klik untuk melihat rekomendasi & pantangan">
-            <span class="cal-day-num">${day}</span>
-            <span class="cal-dot-indicator"></span>
+          <div class="${slotClasses}"
+               data-date="${dateStr}"
+               onclick="app.selectCalendarDateRange('${dateStr}')"
+               onmouseenter="app.hoverCalendarDate('${dateStr}')"
+               title="${day} ${monthNames[month]} ${year} - Klik untuk memilih rentang">
+            <span class="cal-day-number cal-day-num">${day}</span>
+            <span class="cal-dot-indicator" style="display:none;"></span>
           </div>
         `;
       }
 
-      bodyEl.innerHTML = `
-        <div class="integrated-cal-grid" style="margin-bottom:6px;">
-          ${dayNames.map(d => `<div class="integrated-cal-th">${d}</div>`).join('')}
-        </div>
-        <div class="integrated-cal-grid">
-          ${daysHtml}
+      return `
+        <div class="cal-month-column">
+          <div class="cal-month-top-bar">
+            ${isLeftCol ? `
+              <button type="button" class="cal-nav-btn-icon" onclick="app.shiftCalendarMonth(-1)" title="Bulan Sebelumnya">
+                <i data-lucide="chevron-left" style="width:16px;height:16px;"></i>
+              </button>
+            ` : '<div class="cal-nav-btn-placeholder"></div>'}
+            <h3 class="cal-month-title" ${isLeftCol ? 'id="calendar-month-year-title"' : ''}>${monthNames[month]} ${year}</h3>
+            ${!isLeftCol ? `
+              <button type="button" class="cal-nav-btn-icon" onclick="app.shiftCalendarMonth(1)" title="Bulan Berikutnya">
+                <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
+              </button>
+            ` : '<div class="cal-nav-btn-placeholder"></div>'}
+          </div>
+          <div class="cal-weekdays-row">
+            ${dayHeaders.map(d => `<div class="cal-weekday-th">${d}</div>`).join('')}
+          </div>
+          <div class="cal-days-grid">
+            ${daysHtml}
+          </div>
         </div>
       `;
-    } else if (mode === 'week') {
-      // Week View: renders 7 days around selected date or today
-      const dateParts = selectedDateStr.split('-');
-      const anchorDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
-      const startOfWeek = new Date(anchorDate);
-      startOfWeek.setDate(anchorDate.getDate() - anchorDate.getDay());
+    };
 
-      let daysHtml = '';
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(startOfWeek);
-        d.setDate(startOfWeek.getDate() + i);
-        const dStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const isToday = dStr === todayStr;
-        const isSelected = dStr === selectedDateStr;
+    const month1Html = renderMonthGrid(year1, month1, true);
+    const month2Html = renderMonthGrid(year2, month2, false);
 
-        const pillsHtml = schedules.map(s => {
-          return `<div class="cell-event-pill ${s.category || 'nutrition'}" style="margin-bottom:3px;" title="${s.time}: ${s.title}">${s.time} · ${s.title}</div>`;
-        }).join('');
+    bodyEl.innerHTML = `
+      <div class="cal-dual-months-wrapper">
+        ${month1Html}
+        ${month2Html}
+      </div>
+    `;
 
-        daysHtml += `
-          <div class="cal-day-cell ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
-               style="min-height:160px;"
-               onclick="app.selectCalendarDate('${dStr}')">
-            <div class="cal-day-top">
-              <div>
-                <span class="integrated-cal-th" style="display:block;text-align:left;padding:0;">${dayNames[d.getDay()]}</span>
-                <span class="cal-day-num" style="font-size:13.5px;">${d.getDate()}</span>
-              </div>
-              ${isToday ? '<span style="font-size:9.5px;font-weight:700;color:#4F46E5;">Hari Ini</span>' : ''}
-            </div>
-            <div class="cell-event-pills-wrap" style="margin-top:6px;">
-              ${pillsHtml}
-            </div>
-          </div>
-        `;
-      }
-
-      bodyEl.innerHTML = `
-        <div class="integrated-cal-grid">
-          ${daysHtml}
-        </div>
-      `;
-    } else {
-      // Day View
-      const dateParts = selectedDateStr.split('-');
-      const anchorDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
-      const pillsHtml = schedules.map(s => `
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:4px solid ${s.dotColor || '#15803D'};border-radius:8px;padding:10px 14px;margin-bottom:8px;">
-          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748B;margin-bottom:3px;">
-            <strong>${s.time}</strong>
-            <span style="text-transform:uppercase;font-size:10px;font-weight:700;">${s.category}</span>
-          </div>
-          <h4 style="margin:0 0 3px;font-size:13.5px;color:#0F172A;">${s.title}</h4>
-          <p style="margin:0;font-size:12px;color:#475569;">${s.desc}</p>
-        </div>
-      `).join('');
-
-      bodyEl.innerHTML = `
-        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <h4 style="margin:0;font-size:14.5px;color:#0F172A;">Rincian Jadwal Harian (${dayNames[anchorDate.getDay()]}, ${anchorDate.getDate()} ${monthNames[anchorDate.getMonth()]})</h4>
-            <span class="badge teal">${schedules.length} Kegiatan</span>
-          </div>
-          ${pillsHtml}
-        </div>
-      `;
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: bodyEl });
     }
+  }
+
+  selectCalendarDateRange(dateStr) {
+    if (!this.calendarTempStartDate || (this.calendarTempStartDate && this.calendarTempEndDate)) {
+      this.calendarTempStartDate = dateStr;
+      this.calendarTempEndDate = null;
+      this.selectedCalendarDate = dateStr;
+    } else {
+      if (dateStr < this.calendarTempStartDate) {
+        this.calendarTempEndDate = this.calendarTempStartDate;
+        this.calendarTempStartDate = dateStr;
+      } else {
+        this.calendarTempEndDate = dateStr;
+      }
+      this.selectedCalendarDate = this.calendarTempEndDate;
+    }
+
+    this.renderClinicalCalendar(this.calendarViewMode);
+  }
+
+  hoverCalendarDate(dateStr) {
+    if (this.calendarTempStartDate && !this.calendarTempEndDate) {
+      this.calendarHoverDate = dateStr;
+      const start = this.calendarTempStartDate < dateStr ? this.calendarTempStartDate : dateStr;
+      const end = this.calendarTempStartDate < dateStr ? dateStr : this.calendarTempStartDate;
+      document.querySelectorAll('#integrated-cal-body .cal-day-slot').forEach(slot => {
+        const d = slot.getAttribute('data-date');
+        if (!d) return;
+        slot.classList.toggle('in-range', d >= start && d <= end);
+      });
+    }
+  }
+
+  applyCalendarRange() {
+    if (this.calendarTempStartDate) {
+      this.calendarStartDate = this.calendarTempStartDate;
+      this.calendarEndDate = this.calendarTempEndDate || this.calendarTempStartDate;
+      this.selectedCalendarDate = this.calendarEndDate;
+    }
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    this.renderUpcomingEvents(this.selectedCalendarDate);
+    this.renderPantanganMakanan(cond);
+    this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
+    this.renderClinicalCalendar(this.calendarViewMode);
+
+    const rangeText = document.getElementById('calendar-picker-range-text')?.textContent || this.selectedCalendarDate;
+    this.showToast(`Rentang tanggal diterapkan: ${rangeText}`, 'success');
+  }
+
+  cancelCalendarRange() {
+    this.calendarTempStartDate = this.calendarStartDate;
+    this.calendarTempEndDate = this.calendarEndDate;
+    this.renderClinicalCalendar(this.calendarViewMode);
+    this.showToast('Perubahan rentang kalender dibatalkan.', 'info');
   }
 
   switchCalendarView(viewMode) {
@@ -5796,11 +5885,57 @@ class NutriVisionApp {
 
   selectCalendarDate(dateKey) {
     this.selectedCalendarDate = dateKey;
+    this.calendarTempStartDate = dateKey;
+    this.calendarTempEndDate = dateKey;
+    this.calendarStartDate = dateKey;
+    this.calendarEndDate = dateKey;
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     this.renderUpcomingEvents(dateKey);
     this.renderPantanganMakanan(cond);
     this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
     this.renderClinicalCalendar(this.calendarViewMode);
+  }
+
+  renderDualCalendar(conditionId) {
+    const calContainer = document.getElementById('dual-calendar-container');
+    const calLabel = document.getElementById('dual-cal-window-label');
+    if (calLabel) {
+      calLabel.textContent = 'Bulan Pertama · Fase Awal';
+    }
+    if (calContainer) {
+      calContainer.innerHTML = `
+        <div class="mini-calendar-card">
+          <div class="mini-cal-header">
+            <span>Bulan Pertama</span>
+            <span class="mini-cal-header-badge">Fase Aktif</span>
+          </div>
+          <div class="mini-cal-grid">
+            <div class="mini-cal-day phase-1">1</div>
+          </div>
+        </div>
+        <div class="mini-calendar-card">
+          <div class="mini-cal-header">
+            <span>Bulan Kedua</span>
+            <span class="mini-cal-header-badge">Fase Pemulihan</span>
+          </div>
+          <div class="mini-cal-grid">
+            <div class="mini-cal-day phase-2">1</div>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  shiftDualCalendar(offsetDelta) {
+    this.calendarMonthOffset = (this.calendarMonthOffset || 0) + offsetDelta;
+    const calLabel = document.getElementById('dual-cal-window-label');
+    if (calLabel) {
+      calLabel.textContent = `Bulan ke-${this.calendarMonthOffset + 1} · Window Terpilih`;
+    }
+    const infoEl = document.getElementById('dual-cal-selected-info');
+    if (infoEl) {
+      infoEl.textContent = `Hari ke-38 · Fase Pemulihan Lanjut`;
+    }
   }
 
   switchCalendarDetailTab(tab) {
