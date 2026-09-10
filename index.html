@@ -108,6 +108,10 @@
             </div>
 
             <div class="lp-nav-actions" id="lp-nav-actions-container">
+              <button class="lp-btn-nav-ai" id="lp-nav-ai-btn" onclick="app.openAITesterModal()" title="Uji Coba Model AI Safetensors" style="all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:#064E3B;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);transition:all 0.18s ease;">
+                <i data-lucide="cpu" style="width:14px;height:14px;color:#059669;"></i>
+                <span>Uji AI Model</span>
+              </button>
               <button class="lp-btn-nav-db" id="lp-nav-db-btn" onclick="app.openDatabaseSyncModal()" title="Database Status &amp; Supabase Cloud" style="display:none;">
                 <i data-lucide="database" style="width:14px;height:14px;"></i>
                 <span class="db-status-dot" id="lp-db-dot"></span>
@@ -847,6 +851,14 @@
             <span class="topbar-db-lbl">DB</span>
           </button>
 
+          <!-- Safetensors AI Model Tester Trigger -->
+          <button class="btn-outline-glass" id="topbar-ai-tester-btn"
+            style="color:#064E3B;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.12);padding:7px 12px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
+            onclick="app.openAITesterModal()" title="Uji Coba Model AI Safetensors">
+            <i data-lucide="cpu" class="btn-icon-sm" style="color:#059669;"></i>
+            <span style="font-size:12px;">Uji AI Model</span>
+          </button>
+
           <!-- Smart Clinical Notification Center -->
           <div class="topbar-notif-wrapper">
             <button class="topbar-notif-btn" id="topbar-notif-btn" onclick="app.toggleSmartNotificationDropdown()"
@@ -1430,6 +1442,31 @@
          ========================================================================= -->
       <div class="view-section active-view" id="view-overview">
 
+        <!-- PROMINENT ONBOARDING BANNER FOR NEW ACCOUNTS (CALIBRATION OF FOOD & NUTRITION NEEDS) -->
+        <div class="card card-warning-accent" id="overview-unconfigured-banner" style="display:none;background:linear-gradient(135deg,#FFFDF5,#F4F8EE);border-left:4.5px solid #233917;padding:18px 24px;border-radius:18px;margin-bottom:18px;box-shadow:0 4px 16px rgba(35,57,23,0.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:16px;min-width:280px;flex:1;">
+              <div style="width:48px;height:48px;border-radius:14px;background:#EAF5E9;color:#1B5E20;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(27,94,32,0.12);">
+                <i data-lucide="clipboard-check" style="width:26px;height:26px;"></i>
+              </div>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                  <h3 style="margin:0;font-size:16px;font-weight:800;color:#1E293B;">Lengkapi Data Kebutuhan Gizi &amp; Pilihan Makanan Anda</h3>
+                  <span class="badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;font-size:11px;font-weight:700;">Wajib Diisi</span>
+                </div>
+                <p style="margin:0;font-size:13px;color:#475569;line-height:1.45;">
+                  Akun Anda telah aktif! Isi data diagnostik (kondisi pemulihan, pantangan/alergi, gejala pencernaan, &amp; biometrik) agar AI dapat menyesuaikan target nutrisi klinis dan merekomendasikan menu makanan harian yang tepat untuk Anda.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="btn-primary-teal" style="font-size:13px;padding:10px 20px;border-radius:12px;background:#233917;color:#FFFFFF;border:none;font-weight:700;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(35,57,23,0.25);cursor:pointer;white-space:nowrap;" onclick="app.openQuizModal(1)">
+              <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+              <span>Isi Data Kebutuhan Makanan Sekarang</span>
+              <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+            </button>
+          </div>
+        </div>
+
         <div class="dashboard-grid">
 
           <!-- HERO CARD: COMPUTER VISION FOOD SEGMENTATION (FR-01, FR-02, FR-03, FR-07) -->
@@ -1492,13 +1529,13 @@
           </section>
 
           <!-- CARD 2: 3 CORE CLINICAL RECOVERY ASSESSMENT FACTORS (PROTEIN, VITAMINS, MINERALS) (FR-05) -->
-          <section class="card">
+          <section class="card recovery-target-card-full">
             <div class="card-head">
               <div class="card-title-group">
                 <h2 data-i18n="ov_card2_title">Target Gizi Pemulihan Hari Ini</h2>
                 <div class="card-subtitle"><span data-i18n="ov_phase_prefix">Fase aktif:</span> <span class="user-condition-placeholder">Belum dikonfigurasi (Mulai Diagnostik Gizi)</span></div>
               </div>
-              <span class="badge gray" id="ov-card2-status-badge"><i data-lucide="help-circle" class="btn-icon-sm"></i> <span id="ov-card2-status-text">Belum Dikonfigurasi</span></span>
+              <span class="badge gray" id="ov-card2-status-badge" style="cursor:pointer;" onclick="app.openQuizModal(1)" title="Klik untuk mengonfigurasi atau mengubah target gizi"><i data-lucide="help-circle" class="btn-icon-sm"></i> <span id="ov-card2-status-text">Belum Dikonfigurasi</span></span>
             </div>
 
             <div class="macro-ring-container">
@@ -1577,38 +1614,117 @@
             <div class="recovery-tip-box" id="recovery-target-advice">
               <i data-lucide="lightbulb" class="btn-icon-md"
                 style="color:var(--teal-700);flex-shrink:0;margin-top:2px;"></i>
-              <div>
-                <strong data-i18n="ov_advice_hdr">Saran Gizi Pemulihan:</strong>
-                <span data-i18n="ov_advice_body">Isi data diagnostik atau scan makananmu untuk menerima rekomendasi asupan spesifik fase pemulihan jaringan.</span>
+              <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div>
+                  <strong data-i18n="ov_advice_hdr">Saran Gizi Pemulihan:</strong>
+                  <span data-i18n="ov_advice_body" id="ov-advice-body-text">Isi data diagnostik atau scan makananmu untuk menerima rekomendasi asupan spesifik fase pemulihan jaringan.</span>
+                </div>
+                <button type="button" class="btn-outline-glass" id="ov-card2-calibrate-btn" style="font-size:11.5px;padding:5px 12px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#233917;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;" onclick="app.openQuizModal(1)">
+                  <i data-lucide="edit-3" style="width:13px;height:13px;"></i>
+                  <span>Isi Data Diagnostik</span>
+                </button>
               </div>
             </div>
           </section>
 
-          <!-- CARD 3: PROGRESS & RECOVERY (FR-09) -->
-          <section class="card">
-            <div class="card-head">
+          <!-- CARD 3: SMART FOOD BUDGETING & MEAL PLANNER -->
+          <!-- CARD 3: SMART FOOD BUDGETING (SIMPLIFIED & CLEAN) -->
+          <section class="card budget-card-full">
+            <div class="card-head" style="margin-bottom:12px;">
               <div class="card-title-group">
-                <h2 data-i18n="ov_card3_title">Tren Kepatuhan Gizi 7 Hari</h2>
-                <div class="card-subtitle" data-i18n="ov_card3_subtitle">Konsistensi pencapaian protein &amp; mikronutrien pemulihan</div>
+                <h2 data-i18n="ov_card3_title" style="font-size:16px;font-weight:700;color:var(--ink);margin:0;">Perencana Anggaran Makanan</h2>
               </div>
-              <span class="badge gray" id="ov-card3-streak-badge"><i data-lucide="flame" class="btn-icon-sm"></i> <span id="ov-card3-streak-text">Streak: 0 Hari</span></span>
+              
+              <!-- Clean Minimalist Controls directly in header -->
+              <div class="budget-compact-ctrls">
+                <div class="budget-compact-input">
+                  <span class="budget-compact-label">Budget:</span>
+                  <span class="budget-compact-curr">Rp</span>
+                  <input type="text" id="budget-input-amount" value="" placeholder="200.000" />
+                </div>
+                <div class="budget-compact-durations">
+                  <button type="button" class="budget-duration-pill active" data-days="7" onclick="budgetPlanner.setDuration(7)">Seminggu (7h)</button>
+                  <button type="button" class="budget-duration-pill" data-days="30" onclick="budgetPlanner.setDuration(30)">Sebulan (30h)</button>
+                </div>
+                <button type="button" id="budget-btn-update" class="btn-budget-update" onclick="budgetPlanner.applyBudgetUpdate()" title="Perbarui Rencana Anggaran & Menu Makanan">
+                  <i data-lucide="refresh-cw" style="width:13px;height:13px;"></i>
+                  <span>Perbarui</span>
+                </button>
+              </div>
             </div>
 
-            <div class="progress-chart-container">
-              <div class="weekly-bar-chart" id="weekly-bar-chart-box">
-                <!-- Populated via JS -->
+            <!-- Empty State when budget plan is not yet generated -->
+            <div id="budget-empty-state" class="budget-empty-box" style="display:none;padding:28px 20px;text-align:center;background:#FCFDFB;border:1.5px dashed #D9E1B2;border-radius:16px;margin:8px 0 10px;">
+              <div style="width:48px;height:48px;border-radius:14px;background:#F1F5E8;color:#233917;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 2px 8px rgba(35,57,23,0.08);">
+                <i data-lucide="wallet" style="width:24px;height:24px;"></i>
+              </div>
+              <h3 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#1E293B;">Belum Ada Rencana Anggaran &amp; Menu Makanan</h3>
+              <p style="margin:0 auto 16px;font-size:12.5px;color:#64748B;max-width:500px;line-height:1.5;">
+                Tentukan nominal uang yang Anda miliki pada kolom <b>Budget</b> di atas, pilih durasi (Seminggu/Sebulan), lalu klik tombol <b>Perbarui</b> untuk merancang pilihan menu makanan sesuai kebutuhan gizi Anda.
+              </p>
+              <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:6px 14px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;" onclick="budgetPlanner.selectPresetQuick(200000, 7)">
+                  💡 Rekomendasi: Rp 200.000 (Seminggu)
+                </button>
+                <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:6px 14px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;" onclick="budgetPlanner.selectPresetQuick(1000000, 30)">
+                  💡 Rekomendasi: Rp 1.000.000 (Sebulan)
+                </button>
               </div>
             </div>
 
-            <div class="streak-card-footer">
-              <span id="ov-weekly-avg-text">Rata-rata mingguan: <b>Belum ada data</b></span>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <button class="btn-export-share" style="background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;" onclick="app.openPDFReportModal()">
-                  <i data-lucide="file-down" class="btn-icon-sm"></i> <span data-i18n="ov_btn_pdf">Ekspor Dokumen PDF</span>
-                </button>
-                <button class="btn-export-share" onclick="app.exportCaregiverReport()">
-                  <i data-lucide="clipboard-check" class="btn-icon-sm"></i> <span data-i18n="ov_btn_caregiver_text">Salin Teks Nakes</span>
-                </button>
+            <div id="budget-active-content" class="budget-planner-section">
+              <!-- 4 KPI Cards (Matching User Screenshot) -->
+              <div class="budget-kpi-grid">
+                <div class="budget-kpi-card">
+                  <span class="budget-kpi-lbl">ALOKASI HARIAN</span>
+                  <div class="budget-kpi-val" id="budget-kpi-daily-quota" style="color:#0284C7;">Rp 28.571 / day</div>
+                </div>
+                <div class="budget-kpi-card">
+                  <span class="budget-kpi-lbl">EST. TOTAL BIAYA</span>
+                  <div class="budget-kpi-val" id="budget-kpi-total-cost" style="color:#1E293B;">Rp 198.300</div>
+                </div>
+                <div class="budget-kpi-card">
+                  <span class="budget-kpi-lbl">EFISIENSI ANGGARAN</span>
+                  <div class="budget-kpi-val" id="budget-kpi-savings" style="color:#15803D;">Hemat Rp 1.700</div>
+                </div>
+                <div class="budget-kpi-card">
+                  <span class="budget-kpi-lbl">RATA-RATA PROTEIN</span>
+                  <div class="budget-kpi-val" id="budget-kpi-avg-protein" style="color:#1B3917;">~60g Protein / hari</div>
+                </div>
+              </div>
+
+              <!-- Week Tabs (If 30 days) -->
+              <div id="budget-week-tabs-box" class="budget-week-tabs" style="display:none;"></div>
+
+              <!-- Day Navigator Scroller (Matching User Screenshot) -->
+              <div id="budget-day-navigator-box" class="budget-day-navigator"></div>
+
+              <!-- Clean Selected Day's Meals (Single Unified Container) -->
+              <div class="budget-meals-clean-box">
+                <div id="meal-card-breakfast" class="budget-meal-row"></div>
+                <div id="meal-card-lunch" class="budget-meal-row"></div>
+                <div id="meal-card-dinner" class="budget-meal-row"></div>
+              </div>
+            </div>
+
+            <!-- Clean Minimalist Footer -->
+            <div id="budget-clean-footer" class="budget-clean-footer">
+              <button type="button" class="btn-clean-ghost primary" onclick="budgetPlanner.openGroceryModal()">
+                <i data-lucide="shopping-cart" class="btn-icon-sm"></i>
+                <span data-i18n="budget_btn_grocery">Daftar Belanja Pangan</span>
+              </button>
+              <button type="button" class="btn-clean-ghost" onclick="budgetPlanner.logActiveDayMeals()">
+                <i data-lucide="plus-circle" class="btn-icon-sm"></i>
+                <span data-i18n="budget_btn_log">Catat Hari Ini</span>
+              </button>
+
+              <!-- Preserved elements for compatibility -->
+              <div style="display:none;" aria-hidden="true">
+                <span id="ov-card3-streak-badge"><span id="ov-card3-streak-text">Streak: 0 Hari</span></span>
+                <div class="weekly-bar-chart" id="weekly-bar-chart-box"></div>
+                <span id="ov-weekly-avg-text">Rata-rata mingguan: <b>Belum ada data</b></span>
+                <h3 id="budget-active-day-title"></h3>
+                <div id="budget-active-day-sub"></div>
               </div>
             </div>
           </section>
@@ -2502,7 +2618,7 @@
           </div>
           <div class="form-group">
             <label for="onboard-restrictions" style="font-weight:600;font-size:12px;color:#1C200E;display:block;margin-bottom:4px;">Pantangan / Alergi Makanan</label>
-            <input type="text" id="onboard-restrictions" class="form-control" style="font-size:12.5px;" value="Alergi udang & seafood, hindari gorengan keras" placeholder="Misal: alergi telur, seafood, dll.">
+            <input type="text" id="onboard-restrictions" class="form-control" style="font-size:12.5px;" value="" placeholder="Misal: Alergi udang, telur, susu, atau ketik 'Tidak ada'">
           </div>
         </div>
 
@@ -2511,7 +2627,7 @@
           <label style="font-weight:600;font-size:12px;color:#1C200E;display:block;margin-bottom:5px;">Gejala Pencernaan yang Dirasakan (Bisa pilih lebih dari satu):</label>
           <div class="quiz-chips-selector">
             <button type="button" class="quiz-chip-btn" data-symptom="mual" onclick="this.classList.toggle('active')"><i data-lucide="waves" style="width:14px;height:14px;"></i> Mual / Enek</button>
-            <button type="button" class="quiz-chip-btn active" data-symptom="disfagia" onclick="this.classList.toggle('active')"><i data-lucide="droplet" style="width:14px;height:14px;"></i> Sulit Menelan (Disfagia)</button>
+            <button type="button" class="quiz-chip-btn" data-symptom="disfagia" onclick="this.classList.toggle('active')"><i data-lucide="droplet" style="width:14px;height:14px;"></i> Sulit Menelan (Disfagia)</button>
             <button type="button" class="quiz-chip-btn" data-symptom="konstipasi" onclick="this.classList.toggle('active')"><i data-lucide="shield-alert" style="width:14px;height:14px;"></i> Konstipasi / Sembelit</button>
             <button type="button" class="quiz-chip-btn" data-symptom="nafsu" onclick="this.classList.toggle('active')"><i data-lucide="trending-down" style="width:14px;height:14px;"></i> Nafsu Makan Rendah</button>
           </div>
@@ -2683,6 +2799,67 @@
           <i data-lucide="send" class="btn-icon-sm"></i> Terbitkan ke Komunitas
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+     MODAL: UJI COBA MODEL AI SAFETENSORS (DISTILBERT CLASSIFICATION)
+     ========================================================================= -->
+  <div class="modal-overlay" id="ai-tester-modal">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header" style="border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;color:#059669;">
+            <i data-lucide="cpu" style="width:20px;height:20px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--teal-900);">AI Model Interactive Tester</h3>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);">DistilBERT Multilingual (<code style="color:var(--teal-700);font-weight:600;">model.safetensors</code> · 516 MB)</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="app.closeModal('ai-tester-modal')"><i data-lucide="x"></i></button>
+      </div>
+
+      <!-- Health Status Bar -->
+      <div id="ai-modal-status-bar" style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--line);padding:8px 12px;border-radius:var(--radius-xs);margin-bottom:14px;font-size:12px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;"></span>
+          <span style="color:var(--ink-base);font-weight:600;">Layanan AI Python:</span>
+          <span id="ai-status-text" style="color:#059669;font-weight:600;">Online (Port 5050)</span>
+        </div>
+        <div style="color:var(--ink-mute);font-size:11px;">104 Tensors · 3 Kelas Klinis</div>
+      </div>
+
+      <!-- Presets for fast testing -->
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;">Pilih Contoh Uji Cepat:</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Sup kaldu bening labu siam dengan ikan gabus kukus halus dan telur rebus')">
+            🥣 Sup Ikan Gabus (Aman)
+          </button>
+          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Nasi merah hangat dengan tempe bacem panggang dan tumis bayam wortel')">
+            🥗 Nasi & Sayur (Netral)
+          </button>
+          <button type="button" class="btn-outline-glass" style="font-size:11px;padding:5px 10px;border-radius:20px;cursor:pointer;" onclick="app.fillAIPreset('Ayam goreng krispi pedas ekstra sambal korek minyak panas jelantah')">
+            🍗 Gorengan Pedas (Pantangan)
+          </button>
+        </div>
+      </div>
+
+      <!-- Text input -->
+      <div class="form-group" style="margin-bottom:14px;">
+        <label for="ai-tester-input" style="font-size:12px;font-weight:600;color:var(--ink-base);">Deskripsi Makanan / Resep Pasien:</label>
+        <textarea id="ai-tester-input" class="form-control" rows="3" placeholder="Ketik nama makanan atau bahan masakan di sini..."></textarea>
+      </div>
+
+      <button type="button" id="btn-run-ai-test" class="btn-primary-coral" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;padding:10px;" onclick="app.executeAITextClassification()">
+        <i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (model.safetensors)
+      </button>
+
+      <!-- AI Result Box -->
+      <div id="ai-tester-result-box" style="display:none;margin-top:14px;padding:14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:#FAFAF9;">
+        <!-- Filled dynamically -->
+      </div>
     </div>
   </div>
 
@@ -3415,6 +3592,45 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
     </div>
   </div>
 
+  <!-- Modal Daftar Belanja Bahan Makanan (Smart Food Budgeting) -->
+  <div class="modal-overlay" id="modal-budget-grocery" onclick="budgetPlanner.closeGroceryModal()" style="display:none;z-index:10006;">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width:540px;width:92%;padding:22px 24px;border-radius:18px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#EAF5E9;color:#1B5E20;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="shopping-bag" style="width:22px;height:22px;"></i>
+          </div>
+          <div>
+            <h3 id="budget-grocery-title" style="margin:0 0 2px;font-size:16px;font-weight:800;color:var(--ink);">Daftar Belanja Pangan (7 Hari)</h3>
+            <div id="budget-grocery-subtitle" style="font-size:12px;color:var(--ink-soft);">Estimasi belanja bahan pokok sesuai alokasi anggaran</div>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="budgetPlanner.closeGroceryModal()" style="background:transparent;border:none;cursor:pointer;color:var(--ink-soft);">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+
+      <div id="budget-grocery-list-container" style="max-height:360px;overflow-y:auto;border:1px solid #E2E8F0;border-radius:12px;background:#FAFAFA;margin-bottom:14px;padding:4px;">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span id="budget-grocery-total-text" style="font-size:12.5px;color:#166534;font-weight:600;">Total Est. Belanja: <b>Rp 198.000</b></span>
+        <span class="badge teal" style="font-size:11px;"><i data-lucide="check-circle" class="btn-icon-sm"></i> On-Budget 100%</span>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btn-outline-glass" onclick="budgetPlanner.closeGroceryModal()" style="font-size:12.5px;padding:8px 16px;">
+          Tutup
+        </button>
+        <button type="button" class="btn-primary-teal" onclick="budgetPlanner.copyGroceryList()" style="font-size:12.5px;padding:8px 18px;background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:600;display:inline-flex;align-items:center;gap:6px;box-shadow:0 3px 10px rgba(35,57,23,0.25);">
+          <i data-lucide="copy" class="btn-icon-sm"></i>
+          <span>Salin Daftar Belanja</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Core JavaScript Application Scripts -->
   <script src="js/supabase-config.js"></script>
   <script src="js/db.js"></script>
@@ -3424,6 +3640,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/cv-engine.js"></script>
   <script src="js/camera.js"></script>
   <script src="js/planner.js"></script>
+  <script src="js/budget_planner.js"></script>
   <script src="js/progress.js"></script>
   <script src="js/community.js"></script>
   <script src="js/caregiver.js"></script>

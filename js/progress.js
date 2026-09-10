@@ -382,9 +382,21 @@ class NutriVisionProgress {
       const remainingProt = targets.protein - this.todayIntake.protein;
       if (this.todayIntake.protein === 0) {
         tipBox.innerHTML = `
-          <i data-lucide="utensils" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;"></i>
-          <div>
-            <strong>${isId ? 'Target Pemulihan Hari Ini Aktif:' : 'Daily Recovery Target Active:'}</strong> ${isId ? `Kebutuhan harian Anda adalah <b>${targets.protein}g protein</b> dan <b>${targets.calories.toLocaleString()} kkal</b>. Silakan scan makanan atau catat asupan untuk mulai memantau pemulihan.` : `Your daily goal is <b>${targets.protein}g protein</b> and <b>${targets.calories.toLocaleString()} kcal</b>. Scan a meal or log food to begin tracking.`}
+          <i data-lucide="utensils" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;margin-top:2px;"></i>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+            <div style="min-width:260px;flex:1;">
+              <strong>${isId ? 'Target Pemulihan Hari Ini Aktif:' : 'Daily Recovery Target Active:'}</strong> ${isId ? `Kebutuhan harian Anda adalah <b>${targets.protein}g protein</b> dan <b>${targets.calories.toLocaleString()} kkal</b>. Rekomendasi menu harian dan bahan makanan sudah disiapkan di bawah.` : `Your daily goal is <b>${targets.protein}g protein</b> and <b>${targets.calories.toLocaleString()} kcal</b>. Daily meals have been prepared below.`}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:6px 12px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;" onclick="document.querySelector('.budget-card-full')?.scrollIntoView({behavior:'smooth'})">
+                <i data-lucide="clipboard-list" style="width:13px;height:13px;"></i>
+                <span>${isId ? 'Lihat Menu Makanan (Card 3)' : 'View Menu Below'}</span>
+              </button>
+              <button type="button" class="btn-primary-teal" style="font-size:11.5px;padding:6px 12px;border-radius:8px;background:#233917;color:#FFFFFF;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;" onclick="app.openScanModal()">
+                <i data-lucide="camera" style="width:13px;height:13px;"></i>
+                <span>${isId ? 'Scan Makanan AI' : 'Scan Meal'}</span>
+              </button>
+            </div>
           </div>
         `;
       } else if (remainingProt > 0) {

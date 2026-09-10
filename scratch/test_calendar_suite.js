@@ -270,16 +270,16 @@ if (valEl.innerHTML.includes('Konsensus Ilmiah') && app.calendarDetailTab === 'm
   throw new Error('Test 9 failed!');
 }
 
-console.log('=== TEST 10: Verify Removal of AI Tester UI ===');
+console.log('=== TEST 10: Verify AI Tester UI Restored ===');
 const htmlContent = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const hasTopbarAITester = htmlContent.includes('id="topbar-ai-tester-btn"');
 const hasAITesterModal = htmlContent.includes('id="ai-tester-modal"');
 console.log('index.html contains topbar-ai-tester-btn:', hasTopbarAITester);
 console.log('index.html contains ai-tester-modal:', hasAITesterModal);
-if (!hasTopbarAITester && !hasAITesterModal) {
-  console.log('>>> TEST 10 PASSED: AI model tester button and modal successfully removed!\n');
+if (hasTopbarAITester && hasAITesterModal) {
+  console.log('>>> TEST 10 PASSED: AI model tester button and modal successfully restored!\n');
 } else {
-  throw new Error('Test 10 failed: AI UI elements still present in index.html!');
+  throw new Error('Test 10 failed: AI UI elements missing from index.html!');
 }
 
 console.log('🎉 ALL 10 TEST SUITES PASSED SUCCESSFULLY! EVERYTHING IS VERIFIED! 🎉');

@@ -194,6 +194,9 @@ class NutriVisionApp {
     }
     mealPlanner.renderPlanner();
     mealPlanner.renderSymptomFilter();
+    if (window.budgetPlanner && typeof window.budgetPlanner.init === 'function') {
+      window.budgetPlanner.init();
+    }
     communityHandler.renderCommunityFeed();
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
@@ -419,7 +422,8 @@ class NutriVisionApp {
   }
 
   async simulateSmartNotification(type) {
-    if (!this.requireAuth(() => this.simulateSmartNotification(type), 'menguji notifikasi')) {
+    if (!this.isAuthenticated()) {
+      this.requireAuth(() => this.simulateSmartNotification(type), 'menguji notifikasi');
       return;
     }
     try {
@@ -509,6 +513,9 @@ class NutriVisionApp {
       window.mealPlanner.renderPlanner();
       window.mealPlanner.renderSymptomFilter();
     }
+    if (window.budgetPlanner && typeof window.budgetPlanner.render === 'function') {
+      window.budgetPlanner.render();
+    }
     if (window.communityHandler && typeof window.communityHandler.renderCommunityFeed === 'function') {
       window.communityHandler.renderCommunityFeed();
     }
@@ -523,9 +530,11 @@ class NutriVisionApp {
   // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State & Filled State)
   updateProfileUI() {
     const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
-    const hasData = Boolean(this.userProfile.hasCompletedQuiz && this.userProfile.name) || isAdmin;
-    const initials = isAdmin ? 'AD' : (hasData ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+');
-    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile.language || 'en');
+    const isAuth = this.isAuthenticated();
+    const hasQuiz = Boolean(this.userProfile && this.userProfile.hasCompletedQuiz);
+    const hasData = (isAuth && hasQuiz) || isAdmin;
+    const initials = isAdmin ? 'AD' : (isAuth && this.userProfile.name ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+');
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile?.language || 'en');
 
     // 1. Update Topbar Greeting
     const greetingEl = document.querySelector('.topbar-greeting h1');
@@ -534,17 +543,21 @@ class NutriVisionApp {
         greetingEl.innerHTML = lang === 'id'
           ? `Panel Administrator: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetri</span>`
           : `Admin Command Center: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetry</span>`;
+      } else if (isAuth && this.userProfile?.name) {
+        greetingEl.innerHTML = lang === 'id'
+          ? `Selamat datang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`
+          : `Welcome, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`;
       } else {
-        greetingEl.innerHTML = hasData
-          ? (lang === 'id' ? `Selamat siang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>` : `Good day, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`)
-          : (lang === 'id' ? `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>` : `Welcome to <span style="color:var(--teal-700);">NutriVision AI</span>`);
+        greetingEl.innerHTML = lang === 'id'
+          ? `Selamat datang di <span style="color:var(--teal-700);">NutriVision AI</span>`
+          : `Welcome to <span style="color:var(--teal-700);">NutriVision AI</span>`;
       }
     }
 
     // 2. Update Topbar Buttons Visibility (Humanized Logic)
     const topbarProfileChip = document.getElementById('topbar-profile-chip');
     if (topbarProfileChip) {
-      topbarProfileChip.style.display = hasData ? 'inline-flex' : 'none';
+      topbarProfileChip.style.display = isAuth ? 'inline-flex' : 'none';
     }
 
     // Toggle Patient vs Super Admin Sidebar Navigation Groups
@@ -561,10 +574,10 @@ class NutriVisionApp {
 
     // 3. Update Profile Data Placeholders
     const nameEls = document.querySelectorAll('.user-name-placeholder');
-    nameEls.forEach(el => el.textContent = hasData ? this.userProfile.name : (lang === 'id' ? 'Profil Pasien' : 'Patient Profile'));
+    nameEls.forEach(el => el.textContent = (isAuth && this.userProfile.name) ? this.userProfile.name : (lang === 'id' ? 'Profil Pasien' : 'Patient Profile'));
 
     const conditionEls = document.querySelectorAll('.user-condition-placeholder');
-    conditionEls.forEach(el => el.textContent = hasData ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : (lang === 'id' ? 'Belum dikonfigurasi (Mulai Diagnostik Gizi)' : 'Not configured (Start Nutrition Diagnostic)'));
+    conditionEls.forEach(el => el.textContent = hasQuiz ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : (lang === 'id' ? 'Belum dikonfigurasi (Mulai Diagnostik Gizi)' : 'Not configured (Start Nutrition Diagnostic)'));
 
     const avatarEls = document.querySelectorAll('.user-avatar-placeholder');
     avatarEls.forEach(el => el.textContent = initials);
@@ -587,14 +600,18 @@ class NutriVisionApp {
             </button>
           </div>
         `;
-      } else if (hasData) {
+      } else if (isAuth && this.userProfile?.name) {
+        const subTitle = hasQuiz
+          ? this.userProfile.conditionTitle
+          : (lang === 'id' ? '⚠️ Belum Kalibrasi Gizi' : '⚠️ Pending Calibration');
+        const clickAction = hasQuiz ? "app.navigate('profile')" : "app.openQuizModal(1)";
         sidebarProfileCard.innerHTML = `
           <div class="sidebar-profile-flex">
-            <div class="sidebar-profile-info" onclick="app.navigate('profile')" title="${lang === 'id' ? 'Buka Profil & Diagnostik' : 'Open Profile & Diagnostics'}">
+            <div class="sidebar-profile-info" onclick="${clickAction}" title="${lang === 'id' ? 'Buka Profil & Diagnostik' : 'Open Profile & Diagnostics'}">
               <div class="profile-avatar" style="background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;flex-shrink:0;">${initials}</div>
               <div style="min-width:0;flex:1;">
                 <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.name}</b>
-                <span style="font-size:10.5px;color:#EFE8CA;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile.conditionTitle}</span>
+                <span style="font-size:10.5px;color:#EFE8CA;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${subTitle}</span>
               </div>
             </div>
             <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="${lang === 'id' ? 'Logout & Kembali ke Landing Page' : 'Sign Out & Back to Landing Page'}" aria-label="Sign Out / Logout">
@@ -620,7 +637,36 @@ class NutriVisionApp {
       }
     }
 
-    // 5. Update Profile View Elements & Banner
+    // 5. Update Overview Unconfigured Onboarding Banner
+    const overviewBanner = document.getElementById('overview-unconfigured-banner');
+    if (overviewBanner) {
+      overviewBanner.style.display = (isAuth && !hasQuiz && !isAdmin) ? 'block' : 'none';
+    }
+
+    // 6. Update Card 2 Status & Action
+    const card2Badge = document.getElementById('ov-card2-status-badge');
+    const card2Text = document.getElementById('ov-card2-status-text');
+    const card2Btn = document.getElementById('ov-card2-calibrate-btn');
+    if (card2Badge && card2Text) {
+      if (hasQuiz) {
+        card2Badge.className = 'badge teal';
+        card2Badge.style.cursor = 'pointer';
+        card2Text.textContent = lang === 'id' ? 'Target Terkalibrasi' : 'Target Calibrated';
+      } else {
+        card2Badge.className = 'badge gray';
+        card2Badge.style.cursor = 'pointer';
+        card2Text.textContent = lang === 'id' ? 'Belum Dikonfigurasi' : 'Unconfigured';
+      }
+    }
+    if (card2Btn) {
+      if (hasQuiz) {
+        card2Btn.innerHTML = `<i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> <span>${lang === 'id' ? 'Ubah Target' : 'Change Target'}</span>`;
+      } else {
+        card2Btn.innerHTML = `<i data-lucide="sparkles" style="width:12px;height:12px;"></i> <span>${lang === 'id' ? 'Isi Data Diagnostik' : 'Start Diagnostic'}</span>`;
+      }
+    }
+
+    // 7. Update Profile View Elements & Banner
     const emptyBanner = document.getElementById('profile-empty-banner');
     if (emptyBanner) {
       emptyBanner.style.display = hasData ? 'none' : 'block';
@@ -648,7 +694,7 @@ class NutriVisionApp {
     }
 
     const elEmail = document.getElementById('profile-email-phone');
-    if (elEmail) elEmail.textContent = hasData ? `${this.userProfile.contact || (lang === 'id' ? 'Belum diisi' : 'Not specified')}` : (lang === 'id' ? 'Belum masuk akun' : 'Not signed in');
+    if (elEmail) elEmail.textContent = isAuth ? `${this.userProfile.contact || this.userProfile.email || (lang === 'id' ? 'Belum diisi' : 'Not specified')}` : (lang === 'id' ? 'Belum masuk akun' : 'Not signed in');
 
     const elStatWH = document.getElementById('profile-stat-weight-height');
     if (elStatWH) elStatWH.textContent = hasData ? `${this.userProfile.weightKg} kg · ${this.userProfile.heightCm || 170} cm` : '-- kg · -- cm';
@@ -1853,23 +1899,42 @@ class NutriVisionApp {
   // FOODVISOR-STYLE DIAGNOSTIC QUIZ METHODS (3 STEPS WITH BULLET PAGINATION)
   // =========================================================================
   openQuizModal(step = 1) {
-    if (!this.requireAuth(() => this.openQuizModal(step), 'diagnostik gizi')) {
+    if (!this.isAuthenticated()) {
+      this.requireAuth(() => this.openQuizModal(step), 'diagnostik gizi');
       return;
     }
     const onboardName = document.getElementById('onboard-name');
     const onboardContact = document.getElementById('onboard-contact');
     const consentCheck = document.getElementById('onboard-consent-check');
 
-    if (onboardName && this.userProfile.name && !onboardName.value) {
+    if (onboardName && this.userProfile?.name) {
       onboardName.value = this.userProfile.name;
     }
-    if (onboardContact && this.userProfile.contact && !onboardContact.value) {
-      onboardContact.value = this.userProfile.contact;
+    if (onboardContact && (this.userProfile?.contact || this.userProfile?.email)) {
+      onboardContact.value = this.userProfile.contact || this.userProfile.email;
     }
-    if (consentCheck && !this.userProfile?.hasCompletedQuiz) {
-      consentCheck.checked = false;
+    if (this.userProfile?.age && document.getElementById('onboard-age')) {
+      document.getElementById('onboard-age').value = this.userProfile.age;
     }
-    this.openModal('onboarding-modal');
+    if (this.userProfile?.weightKg && document.getElementById('onboard-weight')) {
+      document.getElementById('onboard-weight').value = this.userProfile.weightKg;
+    }
+    if (this.userProfile?.heightCm && document.getElementById('onboard-height')) {
+      document.getElementById('onboard-height').value = this.userProfile.heightCm;
+    }
+    if (this.userProfile?.restrictions && document.getElementById('onboard-restrictions')) {
+      document.getElementById('onboard-restrictions').value = this.userProfile.restrictions;
+    }
+    if (consentCheck) {
+      consentCheck.checked = Boolean(this.userProfile?.hasCompletedQuiz);
+    }
+    this.toggleConsentValidation();
+
+    const modal = document.getElementById('onboarding-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('open');
+    }
     this.goToQuizStep(step);
   }
 
@@ -2293,6 +2358,31 @@ class NutriVisionApp {
         targetFat: this.userProfile.targets.fat,
         hasCompletedQuiz: true
       }).catch(err => console.warn('DB update error:', err));
+    }
+
+    // Synchronize Card 2 macro targets display
+    const macroNumProt = document.getElementById('macro-num-protein');
+    const macroNumCals = document.getElementById('macro-num-cals');
+    const adviceText = document.getElementById('ov-advice-body-text');
+    if (macroNumProt) macroNumProt.textContent = `0 / ${diag.protein} g`;
+    if (macroNumCals) macroNumCals.textContent = `0 / ${Number(diag.tdee).toLocaleString('id-ID')} kkal`;
+    if (adviceText) {
+      adviceText.innerHTML = `Target protein harian Anda: <b>${diag.protein}g</b> (${diag.proteinRatio || '1.5'}g/kg BB). Menu harian diselaraskan dengan fase <b>${phaseInput}</b>.`;
+    }
+
+    // Synchronize Smart Budgeting & Meal Planner with user preferences and texture needs
+    if (window.budgetPlanner) {
+      const activeSymptoms = Array.from(document.querySelectorAll('.quiz-chips-selector .quiz-chip-btn.active'))
+        .map(b => b.dataset.symptom || '');
+      if (activeSymptoms.includes('disfagia') || activeSymptoms.includes('mual')) {
+        window.budgetPlanner.preference = 'tekstur_lunak';
+      } else if (diag.condition === 'gym') {
+        window.budgetPlanner.preference = 'tinggi_protein';
+      } else {
+        window.budgetPlanner.preference = 'seimbang';
+      }
+      window.budgetPlanner.generatePlan();
+      window.budgetPlanner.render();
     }
 
     this.updateProfileUI();
@@ -2908,7 +2998,8 @@ class NutriVisionApp {
 
   filterCatalogCategory(category, btnElement) {
     if (category === 'favorite') {
-      if (!this.requireAuth(() => this.filterCatalogCategory('favorite', btnElement), 'akses favorit')) {
+      if (!this.isAuthenticated()) {
+        this.requireAuth(() => this.filterCatalogCategory('favorite', btnElement), 'akses favorit');
         return;
       }
     }
@@ -3050,7 +3141,8 @@ class NutriVisionApp {
 
   toggleFavoriteFood(foodId, event) {
     if (event) event.stopPropagation();
-    if (!this.requireAuth(() => this.toggleFavoriteFood(foodId, null), 'simpan favorit')) {
+    if (!this.isAuthenticated()) {
+      this.requireAuth(() => this.toggleFavoriteFood(foodId, null), 'simpan favorit');
       return;
     }
     if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
@@ -3935,26 +4027,43 @@ class NutriVisionApp {
       };
 
       this.saveUserProfile();
-      this.updateProfileUI();
-      this.renderAuthUI();
       this.closeModal('auth-modal');
       this.goToDashboard('overview');
+      this.updateProfileUI();
+      this.renderAuthUI();
 
       cvEngine.currentScan = null;
       this.renderOverviewPlate();
       progressTracker.setEmptyState();
       progressTracker.renderMacroDonut(null);
       progressTracker.renderWeeklyBarChart();
-
-      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan lengkapi data diagnostik untuk mengaktifkan dasbor Anda.`);
-
-      if (typeof this.pendingAuthCallback === 'function') {
-        const cb = this.pendingAuthCallback;
-        this.pendingAuthCallback = null;
-        cb();
-      } else {
-        this.openQuizModal(1);
+      try {
+        localStorage.removeItem('nutrivision_budget_generated');
+      } catch (e) {}
+      if (window.budgetPlanner) {
+        window.budgetPlanner.isPlanGenerated = false;
+        const inputAmount = document.getElementById('budget-input-amount');
+        if (inputAmount) inputAmount.value = '';
+        window.budgetPlanner.render();
       }
+
+      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan lengkapi data diagnostik untuk mengaktifkan rekomendasi gizi Anda.`);
+
+      // Pre-fill quiz identity inputs immediately
+      const onboardName = document.getElementById('onboard-name');
+      const onboardContact = document.getElementById('onboard-contact');
+      if (onboardName) onboardName.value = name;
+      if (onboardContact) onboardContact.value = email;
+
+      setTimeout(() => {
+        if (typeof this.pendingAuthCallback === 'function') {
+          const cb = this.pendingAuthCallback;
+          this.pendingAuthCallback = null;
+          cb();
+        } else {
+          this.openQuizModal(1);
+        }
+      }, 250);
     } catch (err) {
       console.warn('Register issue:', err);
       this.showToast(`⚠️ ${err.message || 'Gagal mendaftar.'}`);
@@ -4041,6 +4150,13 @@ class NutriVisionApp {
       progressTracker.loadDemoData(this.userProfile);
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
+      if (window.budgetPlanner) {
+        window.budgetPlanner.isPlanGenerated = true;
+        try {
+          localStorage.setItem('nutrivision_budget_generated', 'true');
+        } catch (err) {}
+        window.budgetPlanner.setPresetBudget(200000, 7);
+      }
 
       this.showToast(`✅ Masuk sebagai akun demo: ${this.userProfile.name}`);
       this.goToDashboard('overview');
@@ -4056,6 +4172,13 @@ class NutriVisionApp {
       progressTracker.loadDemoData(this.userProfile);
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
+      if (window.budgetPlanner) {
+        window.budgetPlanner.isPlanGenerated = true;
+        try {
+          localStorage.setItem('nutrivision_budget_generated', 'true');
+        } catch (err) {}
+        window.budgetPlanner.setPresetBudget(200000, 7);
+      }
       this.showToast(`✅ Masuk sebagai profil demo ${conditionKey}`);
       this.goToDashboard('overview');
       if (typeof this.pendingAuthCallback === 'function') {
@@ -4114,6 +4237,15 @@ class NutriVisionApp {
     progressTracker.setEmptyState();
     progressTracker.renderMacroDonut(null);
     progressTracker.renderWeeklyBarChart();
+    try {
+      localStorage.removeItem('nutrivision_budget_generated');
+    } catch (e) {}
+    if (window.budgetPlanner) {
+      window.budgetPlanner.isPlanGenerated = false;
+      const inputAmount = document.getElementById('budget-input-amount');
+      if (inputAmount) inputAmount.value = '';
+      window.budgetPlanner.render();
+    }
 
     this.updateProfileUI();
     this.renderAuthUI();

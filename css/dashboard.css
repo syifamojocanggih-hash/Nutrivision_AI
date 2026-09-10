@@ -560,6 +560,47 @@
   min-width: 0;
 }
 
+/* Card 2 Full Width - Panjang ke Samping */
+.recovery-target-card-full {
+  grid-column: 1 / -1;
+  padding: 24px 28px;
+}
+
+.recovery-target-card-full .macro-ring-container {
+  gap: 36px;
+  padding: 6px 0;
+}
+
+.recovery-target-card-full .macro-donut-wrapper {
+  width: 130px;
+  height: 130px;
+}
+
+.recovery-target-card-full .macro-progress-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 32px;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .recovery-target-card-full .macro-ring-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .recovery-target-card-full .macro-progress-list {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+}
+
+/* Card 3 Full Width - Budgeting di Bawahnya */
+.budget-card-full {
+  grid-column: 1 / -1;
+  padding: 24px 28px;
+}
+
 .macro-item {
   display: flex;
   flex-direction: column;
