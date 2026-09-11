@@ -1911,24 +1911,30 @@
             </div>
           </div>
 
-          <div class="symptom-chip-grid">
-            <button class="symptom-chip" onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('mual');">
-              <i data-lucide="waves" class="btn-icon-sm"></i> <span data-i18n="symp_nausea">Mual</span>
+          <div class="symptom-chip-grid" id="planner-symptom-chips">
+            <button class="symptom-chip active" data-symptom="dysphagia"
+              onclick="mealPlanner.toggleSymptom('dysphagia', this);">
+              <iconify-icon icon="solar:shield-warning-bold" style="font-size:16px;"></iconify-icon> <span>Sulit Menelan / Disfagia</span>
             </button>
-            <button class="symptom-chip active"
-              onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('sulit-menelan');">
-              <i data-lucide="droplet" class="btn-icon-sm"></i> <span data-i18n="symp_dysphagia">Sulit Menelan /
-                Disfagia</span>
+            <button class="symptom-chip" data-symptom="nausea"
+              onclick="mealPlanner.toggleSymptom('nausea', this);">
+              <iconify-icon icon="solar:waterdrops-bold" style="font-size:16px;"></iconify-icon> <span>Mual</span>
             </button>
-            <button class="symptom-chip"
-              onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('konstipasi');">
-              <i data-lucide="shield-alert" class="btn-icon-sm"></i> <span data-i18n="symp_constipation">Konstipasi /
-                Sembelit</span>
+            <button class="symptom-chip" data-symptom="gerd"
+              onclick="mealPlanner.toggleSymptom('gerd', this);">
+              <iconify-icon icon="solar:fire-bold" style="font-size:16px;"></iconify-icon> <span>GERD / Asam Lambung</span>
             </button>
-            <button class="symptom-chip"
-              onclick="this.classList.toggle('active'); mealPlanner.toggleSymptom('nafsu-rendah');">
-              <i data-lucide="sparkles" class="btn-icon-sm"></i> <span data-i18n="symp_low_appetite">Nafsu Makan
-                Rendah</span>
+            <button class="symptom-chip" data-symptom="diarrhea"
+              onclick="mealPlanner.toggleSymptom('diarrhea', this);">
+              <iconify-icon icon="solar:shield-cross-bold" style="font-size:16px;"></iconify-icon> <span>Diare</span>
+            </button>
+            <button class="symptom-chip" data-symptom="constipation"
+              onclick="mealPlanner.toggleSymptom('constipation', this);">
+              <iconify-icon icon="solar:leaf-bold" style="font-size:16px;"></iconify-icon> <span>Konstipasi / Sembelit</span>
+            </button>
+            <button class="symptom-chip" data-symptom="low_appetite"
+              onclick="mealPlanner.toggleSymptom('low_appetite', this);">
+              <iconify-icon icon="solar:stars-bold" style="font-size:16px;"></iconify-icon> <span>Nafsu Makan Rendah</span>
             </button>
           </div>
 
@@ -4069,6 +4075,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/data.js"></script>
   <script src="js/cv-engine.js"></script>
   <script src="js/camera.js"></script>
+  <script src="js/symptom_filter_agent.js"></script>
   <script src="js/planner.js"></script>
   <script src="js/budget_planner.js"></script>
   <script src="js/progress.js"></script>

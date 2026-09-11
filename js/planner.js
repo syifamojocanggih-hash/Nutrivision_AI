@@ -4,7 +4,7 @@
 class NutriVisionPlanner {
   constructor() {
     this.currentMode = 'standar'; // 'standar' atau 'hemat'
-    this.activeSymptoms = new Set(['sulit-menelan']); // Default symptom demo
+    this.activeSymptoms = new Set(['dysphagia', 'sulit-menelan']); // Default symptom demo
   }
 
   setMode(mode) {
@@ -21,26 +21,58 @@ class NutriVisionPlanner {
     this.renderPlanner();
   }
 
-  toggleSymptom(symptomKey) {
+  toggleSymptom(symptomKey, btnElement) {
+    const keyMap = {
+      'dysphagia': ['dysphagia', 'sulit-menelan'],
+      'sulit-menelan': ['dysphagia', 'sulit-menelan'],
+      'nausea': ['nausea', 'mual'],
+      'mual': ['nausea', 'mual'],
+      'gerd': ['gerd', 'asam-lambung'],
+      'asam-lambung': ['gerd', 'asam-lambung'],
+      'diarrhea': ['diarrhea', 'diare'],
+      'diare': ['diarrhea', 'diare'],
+      'constipation': ['constipation', 'konstipasi'],
+      'konstipasi': ['constipation', 'konstipasi'],
+      'low_appetite': ['low_appetite', 'nafsu-rendah'],
+      'nafsu-rendah': ['low_appetite', 'nafsu-rendah']
+    };
+
+    const keys = keyMap[symptomKey] || [symptomKey];
+    const isCurrentlyActive = keys.some(k => this.activeSymptoms.has(k));
+
     if (window.app && typeof window.app.requireAuth === 'function') {
       const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
       if (!window.app.requireAuth(() => {
-        if (this.activeSymptoms.has(symptomKey)) {
-          this.activeSymptoms.delete(symptomKey);
-        } else {
-          this.activeSymptoms.add(symptomKey);
-        }
-        this.renderSymptomFilter();
+        this._doToggleSymptom(keys, isCurrentlyActive);
       }, isId ? 'filter gejala' : 'filter symptoms')) {
         return;
       }
     }
-    if (this.activeSymptoms.has(symptomKey)) {
-      this.activeSymptoms.delete(symptomKey);
-    } else {
-      this.activeSymptoms.add(symptomKey);
-    }
+    this._doToggleSymptom(keys, isCurrentlyActive);
+  }
+
+  _doToggleSymptom(keys, isCurrentlyActive) {
+    keys.forEach(k => {
+      if (isCurrentlyActive) {
+        this.activeSymptoms.delete(k);
+      } else {
+        this.activeSymptoms.add(k);
+      }
+    });
+    this.syncChipUI();
     this.renderSymptomFilter();
+  }
+
+  syncChipUI() {
+    const chips = document.querySelectorAll('#planner-symptom-chips .symptom-chip');
+    chips.forEach(chip => {
+      const sym = chip.getAttribute('data-symptom');
+      if (sym && this.activeSymptoms.has(sym)) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+    });
   }
 
   // Render Meal Planner UI (Concise preview on Dashboard vs Full Page with actions)
@@ -210,50 +242,153 @@ class NutriVisionPlanner {
     }, isId ? 'catat menu' : 'log meal');
   }
 
-  // Render Symptom-Aware Feedback
+  // Render Symptom-Aware Feedback using Clinical Nutrition & Food Filter AI Agent
   renderSymptomFilter(resultContainerId = 'symptom-result-box') {
     const container = document.getElementById(resultContainerId);
     if (!container) return;
 
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const activeList = Array.from(this.activeSymptoms);
 
-    if (this.activeSymptoms.size === 0) {
-      container.innerHTML = isId ? `
-        <strong>Kondisi Normal / Tanpa Gejala Spesifik:</strong>
-        Menu disajikan dengan variasi gizi lengkap seimbang sesuai target fase pemulihan kamu.
-      ` : `
-        <strong>Normal Condition / No Specific Symptoms:</strong>
-        Menus are served with complete balanced nutrition tailored to your recovery phase target.
+    if (activeList.length === 0) {
+      container.innerHTML = `
+        <div style="padding:4px 0;">
+          <strong style="color:#242C10;">${isId ? 'Kondisi Normal / Tanpa Gejala Spesifik:' : 'Normal Condition / No Specific Symptoms:'}</strong>
+          <span style="color:#4B5563;font-size:12.5px;">${isId ? 'Menu disajikan dengan variasi gizi lengkap seimbang sesuai target fase pemulihan Anda.' : 'Menus are served with complete balanced nutrition tailored to your recovery phase target.'}</span>
+        </div>
       `;
+      this.renderPlanner();
       return;
     }
 
-    let combinedText = [];
-    let combinedFoods = [];
+    const agent = (typeof clinicalNutritionFilterAgent !== 'undefined') ? clinicalNutritionFilterAgent : null;
+    const aiOutput = agent ? agent.process(activeList) : null;
 
-    this.activeSymptoms.forEach(key => {
-      const rule = NUTRIVISION_DATA.symptomRules[key];
-      if (rule) {
-        const title = isId ? rule.title : (rule.titleEn || rule.title);
-        const text = isId ? rule.text : (rule.textEn || rule.text);
-        const foods = isId ? rule.recommendedFoods : (rule.recommendedFoodsEn || rule.recommendedFoods);
-        combinedText.push(`• <strong>${title}:</strong> ${text}`);
-        combinedFoods.push(...foods);
-      }
-    });
+    if (!aiOutput) {
+      return;
+    }
 
-    const uniqueFoods = [...new Set(combinedFoods)].slice(0, 4);
-    const recLabel = isId ? 'Pilihan Makanan Dianjurkan:' : 'Recommended Food Choices:';
+    // Safety Level Badge Styling
+    let safetyBadgeBg = '#ECFDF5';
+    let safetyBadgeColor = '#065F46';
+    let safetyBadgeBorder = '#A7F3D0';
+    let safetyIcon = 'shield-check';
+    let safetyLabel = isId ? 'Standard: Pemulihan Umum' : 'Standard: General Recovery';
+
+    if (aiOutput.safety_level === 'High') {
+      safetyBadgeBg = '#FEF2F2';
+      safetyBadgeColor = '#991B1B';
+      safetyBadgeBorder = '#FCA5A5';
+      safetyIcon = 'alert-triangle';
+      safetyLabel = isId ? 'PRIORITAS 1: SAFETY FIRST (DYSPHAGIA IDDSI)' : 'PRIORITY 1: SAFETY FIRST (DYSPHAGIA IDDSI)';
+    } else if (aiOutput.safety_level === 'Medium') {
+      safetyBadgeBg = '#FFFBEB';
+      safetyBadgeColor = '#92400E';
+      safetyBadgeBorder = '#FCD34D';
+      safetyIcon = 'shield-alert';
+      safetyLabel = isId ? 'PRIORITAS 2: GI TRACT PROTECTION' : 'PRIORITY 2: GI TRACT PROTECTION';
+    }
+
+    // Restricted Tags HTML
+    const restrictedHtml = aiOutput.restricted_ingredients && aiOutput.restricted_ingredients.length > 0
+      ? `
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E5E7EB;">
+          <div style="font-size:11.5px;font-weight:700;color:#991B1B;margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+            <i data-lucide="ban" style="width:13px;height:13px;"></i>
+            <span>${isId ? 'Pantangan Wajib Dihindari:' : 'Mandatory Restricted Ingredients:'}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;">
+            ${aiOutput.restricted_ingredients.map(r => `
+              <span style="font-size:11px;font-weight:600;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;padding:2.5px 8px;border-radius:6px;">
+                ✕ ${r}
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `
+      : '';
+
+    // Recommended Menu HTML
+    const menuHtml = aiOutput.recommended_menu && aiOutput.recommended_menu.length > 0
+      ? `
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #E5E7EB;">
+          <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:8px;display:flex;align-items:center;gap:5px;">
+            <i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>
+            <span>${isId ? 'Rekomendasi Menu Terverifikasi AI Agent:' : 'AI Agent Verified Menu Recommendations:'}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${aiOutput.recommended_menu.map(m => `
+              <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:9px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                  <b style="color:#1E293B;font-size:13px;">${m.name}</b>
+                  <span style="font-size:10px;font-weight:700;background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;padding:2px 7px;border-radius:5px;flex-shrink:0;">
+                    ${m.texture_category}
+                  </span>
+                </div>
+                <div style="font-size:11.5px;color:#475569;line-height:1.45;">
+                  ${m.reason}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `
+      : '';
+
+    // Agent System Prompt Inspector
+    const inspectorHtml = `
+      <details style="margin-top:12px;padding-top:8px;border-top:1px dashed #CBD5E1;font-size:11px;">
+        <summary style="cursor:pointer;font-weight:700;color:#475569;display:inline-flex;align-items:center;gap:5px;user-select:none;">
+          <span>🤖 ${isId ? 'Lihat System Prompt & Payload AI Agent' : 'Inspect AI Agent System Prompt & Payload'}</span>
+        </summary>
+        <div style="margin-top:8px;background:#0F172A;color:#E2E8F0;padding:12px;border-radius:8px;font-family:Consolas, Monaco, monospace;font-size:11px;line-height:1.45;white-space:pre-wrap;max-height:220px;overflow-y:auto;border:1px solid #334155;">
+<strong style="color:#38BDF8;">// 1. SYSTEM PROMPT WITH DYNAMIC {{selected_symptoms}}:</strong>
+${aiOutput.raw_prompt}
+
+<strong style="color:#4ADE80;">// 2. AGENT JSON OUTPUT:</strong>
+${JSON.stringify({
+  active_filters: aiOutput.active_filters,
+  safety_level: aiOutput.safety_level,
+  texture_requirement: aiOutput.texture_requirement,
+  restricted_ingredients: aiOutput.restricted_ingredients,
+  recommended_menu: aiOutput.recommended_menu
+}, null, 2)}
+        </div>
+      </details>
+    `;
 
     container.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        ${combinedText.join('')}
-        <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(15,110,86,0.15)">
-          <strong style="color:var(--teal-800)">${recLabel}</strong>
-          <span>${uniqueFoods.join(', ')}.</span>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <!-- Safety Level Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;background:${safetyBadgeBg};color:${safetyBadgeColor};border:1px solid ${safetyBadgeBorder};padding:3px 9px;border-radius:6px;letter-spacing:0.2px;">
+            <i data-lucide="${safetyIcon}" style="width:13px;height:13px;"></i>
+            ${safetyLabel}
+          </span>
+          <span style="font-size:11px;color:#64748B;font-weight:600;">
+            ${isId ? `${aiOutput.active_filters.length} Gejala Aktif` : `${aiOutput.active_filters.length} Active Symptoms`}
+          </span>
         </div>
+
+        <!-- Texture Requirement -->
+        <div style="font-size:13px;color:#1E293B;font-weight:700;display:flex;align-items:flex-start;gap:6px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;">
+          <i data-lucide="soup" style="width:16px;height:16px;color:#0F766E;flex-shrink:0;margin-top:1px;"></i>
+          <div>
+            <span style="font-size:11px;color:#64748B;display:block;font-weight:600;text-transform:uppercase;">${isId ? 'Standar Tekstur Wajib:' : 'Required Texture Standard:'}</span>
+            <span>${aiOutput.texture_requirement}</span>
+          </div>
+        </div>
+
+        ${restrictedHtml}
+        ${menuHtml}
+        ${inspectorHtml}
       </div>
     `;
+
+    // Refresh lucide icons
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
 
     // Re-render planner agar badge tekstur terupdate
     this.renderPlanner();

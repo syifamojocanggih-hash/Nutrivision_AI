@@ -145,4 +145,27 @@ router.post('/classify', optionalAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/ai/symptom-filter
+ * Clinical Nutrition & Food Filter AI Agent (Symptom-Aware Texture & Food Filter)
+ * Strict Priority Rules: Priority 1 (Dysphagia) > Priority 2 (GI Tract) > Priority 3 (Appetite)
+ */
+router.post('/symptom-filter', optionalAuth, async (req, res) => {
+  try {
+    const { symptoms } = req.body;
+    const { clinicalNutritionFilterAgent } = require('../../js/symptom_filter_agent.js');
+
+    const selectedSymptoms = Array.isArray(symptoms) ? symptoms : (typeof symptoms === 'string' ? [symptoms] : []);
+    const filterResult = clinicalNutritionFilterAgent.process(selectedSymptoms);
+
+    return res.json({
+      success: true,
+      ...filterResult
+    });
+  } catch (err) {
+    console.error('Symptom filter error:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;

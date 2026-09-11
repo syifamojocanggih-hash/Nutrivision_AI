@@ -3458,19 +3458,19 @@ class NutriVisionApp {
         <label class="mp-confirm-form-label">${isId ? 'Pilih Waktu Makan:' : 'Select Meal Time:'}</label>
         <div class="mp-slot-selector">
           <button type="button" class="mp-slot-btn ${activeSlot === 'breakfast' ? 'active' : ''}" data-slot="breakfast" onclick="app.selectMealPlannerSlot('breakfast')">
-            <span class="mp-slot-icon"><iconify-icon icon="solar:sun-2-linear"></iconify-icon></span>
+            <span class="mp-slot-icon"><iconify-icon icon="solar:sun-2-bold"></iconify-icon></span>
             <span class="mp-slot-lbl">${isId ? 'Sarapan' : 'Breakfast'}</span>
           </button>
           <button type="button" class="mp-slot-btn ${activeSlot === 'lunch' ? 'active' : ''}" data-slot="lunch" onclick="app.selectMealPlannerSlot('lunch')">
-            <span class="mp-slot-icon"><iconify-icon icon="solar:sun-fog-linear"></iconify-icon></span>
+            <span class="mp-slot-icon"><iconify-icon icon="solar:sun-bold"></iconify-icon></span>
             <span class="mp-slot-lbl">${isId ? 'Siang' : 'Lunch'}</span>
           </button>
           <button type="button" class="mp-slot-btn ${activeSlot === 'dinner' ? 'active' : ''}" data-slot="dinner" onclick="app.selectMealPlannerSlot('dinner')">
-            <span class="mp-slot-icon"><iconify-icon icon="solar:moon-linear"></iconify-icon></span>
+            <span class="mp-slot-icon"><iconify-icon icon="solar:moon-bold"></iconify-icon></span>
             <span class="mp-slot-lbl">${isId ? 'Malam' : 'Dinner'}</span>
           </button>
           <button type="button" class="mp-slot-btn ${activeSlot === 'snack' ? 'active' : ''}" data-slot="snack" onclick="app.selectMealPlannerSlot('snack')">
-            <span class="mp-slot-icon"><iconify-icon icon="solar:cup-linear"></iconify-icon></span>
+            <span class="mp-slot-icon"><iconify-icon icon="solar:cup-bold"></iconify-icon></span>
             <span class="mp-slot-lbl">${isId ? 'Camilan' : 'Snack'}</span>
           </button>
         </div>
@@ -3874,16 +3874,16 @@ class NutriVisionApp {
 
             <div class="food-macro-pills-row">
               <span class="macro-pill-item prot">
-                <iconify-icon icon="solar:bone-linear" class="macro-pill-icon"></iconify-icon>
+                <iconify-icon icon="solar:bone-bold" class="macro-pill-icon"></iconify-icon>
                 <span>${proteinVal}g Prot</span>
               </span>
               <span class="macro-pill-item cal">
-                <iconify-icon icon="solar:fire-linear" class="macro-pill-icon"></iconify-icon>
+                <iconify-icon icon="solar:fire-bold" class="macro-pill-icon"></iconify-icon>
                 <span>${calVal} kkal</span>
               </span>
               ${food.carbs !== undefined ? `
               <span class="macro-pill-item carb">
-                <iconify-icon icon="solar:leaf-linear" class="macro-pill-icon"></iconify-icon>
+                <iconify-icon icon="solar:leaf-bold" class="macro-pill-icon"></iconify-icon>
                 <span>${food.carbs}g Karbo</span>
               </span>` : ''}
             </div>

@@ -1440,33 +1440,34 @@ input:checked+.toggle-slider:before {
 }
 
 .macro-pill-item {
-  font-size: 11px;
-  font-weight: 550;
-  padding: 3px 8.5px;
-  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3.5px 9px;
+  border-radius: 7px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  color: #475569;
+  gap: 6px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #1E293B;
   line-height: 1.2;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.15px;
   transition: all 0.15s ease;
 }
 
 .macro-pill-item:hover {
   background: #FFFFFF;
-  border-color: #CBD5E1;
-  color: #1E293B;
+  border-color: #94A3B8;
+  color: #0F172A;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .macro-pill-item iconify-icon,
 .macro-pill-icon {
-  font-size: 13.5px;
-  width: 13.5px;
-  height: 13.5px;
-  color: #64748B;
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  color: #334155;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1475,30 +1476,30 @@ input:checked+.toggle-slider:before {
 
 .macro-pill-item:hover iconify-icon,
 .macro-pill-item:hover .macro-pill-icon {
-  color: #334155;
+  color: #0F172A;
 }
 
-/* Neutral monochrome: Tanpa warna-warni pelangi */
+/* Neutral monochrome bold: Tanpa warna-warni pelangi */
 .macro-pill-item.prot,
 .macro-pill-item.cal,
 .macro-pill-item.carb {
-  background: #F8FAFC;
-  color: #475569;
-  border: 1px solid #E2E8F0;
+  background: #F1F5F9;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
 }
 
 [data-theme="dark"] .macro-pill-item,
 [data-theme="dark"] .macro-pill-item.prot,
 [data-theme="dark"] .macro-pill-item.cal,
 [data-theme="dark"] .macro-pill-item.carb {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: #CBD5E1;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #F8FAFC;
 }
 
 [data-theme="dark"] .macro-pill-item iconify-icon,
 [data-theme="dark"] .macro-pill-item .macro-pill-icon {
-  color: #94A3B8;
+  color: #E2E8F0;
 }
 
 /* Card Footer: Action Buttons & Price */
