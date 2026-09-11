@@ -987,21 +987,298 @@ input:checked+.toggle-slider:before {
   transform: scale(0.95);
 }
 
+.popular-arrow-btn:disabled,
+.popular-arrow-btn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.cat-top-page-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: #1C200E;
+  letter-spacing: 0.5px;
+  min-width: 52px;
+  user-select: none;
+}
+
 /* Popular Food Catalog Grid */
 .popular-catalog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 26px;
+  gap: 24px;
   padding: 16px 4px 10px;
 }
 
-/* Modern Card Layout (Matching Clean Plain Minimalist Card) */
+/* Personalization Status Pill in Catalog */
+.catalog-personalization-alert {
+  background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+  border: 1px solid #A7F3D0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.08);
+}
+
+.catalog-personalization-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.catalog-personalization-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #10B981;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.catalog-personalization-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #064E3B;
+  display: block;
+}
+
+.catalog-personalization-sub {
+  font-size: 11.5px;
+  color: #047857;
+  font-weight: 500;
+}
+
+/* Compact Chip Food Card — Matching User Screenshot & Pinterest Linear Style */
+.food-compact-chip-card {
+  background: #F0F4F9;
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(203, 213, 225, 0.75);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+  min-height: 48px;
+}
+
+.food-compact-chip-card:hover {
+  background: #E5EDF6;
+  border-color: #94A3B8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.food-compact-chip-card.is-recommended {
+  border-color: rgba(16, 185, 129, 0.38);
+  background: #F0F7F4;
+}
+
+.food-compact-chip-card.is-recommended:hover {
+  background: #E4F2EB;
+  border-color: rgba(16, 185, 129, 0.65);
+}
+
+.food-chip-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Pinterest Monoline Vector Line-Art Icon Container */
+.food-chip-linear-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.food-compact-chip-card:hover .food-chip-linear-icon {
+  transform: scale(1.08);
+  color: #0F766E;
+  border-color: #0F766E;
+  background: #F0FDFA;
+}
+
+.food-chip-linear-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  display: block;
+}
+
+.food-chip-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.food-chip-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.food-chip-title {
+  font-family: var(--font-heading, inherit);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.food-chip-rec-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1.5px 5.5px;
+  border-radius: 6px;
+  background: #D1FAE5;
+  color: #065F46;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.food-chip-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.food-chip-dots-btn {
+  all: unset;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.food-chip-dots-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #0F172A;
+}
+
+/* Floating 3-Dots Action Popup Menu */
+.food-action-popup-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 6px;
+  z-index: 120;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04);
+  min-width: 200px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: popupFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.food-action-popup-item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 550;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.food-action-popup-item:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.food-action-popup-item.primary {
+  color: #0F766E;
+  font-weight: 650;
+}
+
+.food-action-popup-item.primary:hover {
+  background: #E6F4F1;
+}
+
+.food-action-popup-item.favorite.is-active {
+  color: #E11D48;
+}
+
+/* ==========================================================================
+   POPULAR FOOD CARD (AESTHETIC RESTORED: WARM OLIVE & ROUND DISH SHOWCASE)
+   ========================================================================== */
 .popular-food-card {
   background: #FFFFFF;
   border-radius: 26px;
   padding: 20px 20px 18px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid #DDD4B0;
+  box-shadow: 0 10px 30px rgba(28, 32, 14, 0.05);
   transition: all 0.25s cubic-bezier(0.33, 1, 0.68, 1);
   position: relative;
   cursor: pointer;
@@ -1011,9 +1288,14 @@ input:checked+.toggle-slider:before {
 }
 
 .popular-food-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
-  border-color: #CBD5E1;
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+  border-color: #9EA76B;
+}
+
+.popular-food-card.is-recommended {
+  border: 1.5px solid #10B981;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F9FBF8 100%);
 }
 
 .food-card-top {
@@ -1029,11 +1311,11 @@ input:checked+.toggle-slider:before {
   height: 108px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 12px 26px rgba(28, 32, 14, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 4px solid #FFFFFF;
   margin-top: -14px;
   margin-left: -6px;
-  background: #F8FAFC;
+  background: #EFE8CA;
   flex-shrink: 0;
   transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -1049,54 +1331,73 @@ input:checked+.toggle-slider:before {
   display: block;
 }
 
+.food-card-top-right-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.food-fav-btn {
+  all: unset;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FDFAF2;
+  border: 1px solid #DDD4B0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #949D70;
+  transition: all 0.2s ease;
+}
+
+.food-fav-btn:hover {
+  background: #FFF1F2;
+  border-color: #FECDD3;
+  color: #EF4444;
+  transform: scale(1.1);
+}
+
+.food-fav-btn.active {
+  background: #FFF1F2;
+  border-color: #FECDD3;
+  color: #EF4444;
+}
+
+.food-fav-btn.active .fav-icon,
+.food-fav-btn.active svg {
+  fill: #EF4444;
+  color: #EF4444;
+}
+
+.food-fav-btn .fav-icon,
+.food-fav-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* Rating Star Pill */
 .food-rating-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #1C200E;
   background: #FDFAF2;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: var(--radius-pill);
   border: 1px solid #DDD4B0;
 }
 
-.food-rating-badge .star-icon {
+.food-rating-badge .star-icon,
+.food-rating-badge svg {
   width: 13px;
   height: 13px;
   fill: #F59E0B;
   color: #F59E0B;
-}
-
-/* Bestseller / Terlaris Sales Count Badge & Side Header */
-.food-card-header-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-start;
-  flex: 1;
-  min-width: 0;
-  padding-left: 8px;
-}
-
-.food-card-header-side .food-clinical-tag {
-  font-size: 11px;
-  font-weight: 500;
-  color: #475569;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  padding: 4px 10px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 /* Card Body & Typography */
@@ -1107,38 +1408,27 @@ input:checked+.toggle-slider:before {
   justify-content: space-between;
 }
 
-.food-tag-row {
-  margin-bottom: 6px;
-}
-
-.food-clinical-tag {
-  font-size: 10px;
-  font-weight: 500;
-  color: #64748B;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  padding: 2.5px 8px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.food-tag-row,
+.food-clinical-tag,
+.food-rec-pill {
+  display: none !important;
 }
 
 .food-card-title {
   font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 700;
-  color: #0F172A;
+  color: #1C200E;
   margin-bottom: 4px;
   line-height: 1.25;
 }
 
 .food-card-sub {
   font-size: 11.5px;
-  color: #64748B;
+  color: #687346;
   line-height: 1.4;
   margin-bottom: 10px;
-  min-height: 30px;
+  min-height: 28px;
 }
 
 .food-macro-pills-row {
@@ -1151,34 +1441,74 @@ input:checked+.toggle-slider:before {
 
 .macro-pill-item {
   font-size: 11px;
-  font-weight: 600;
-  padding: 3.5px 9px;
-  border-radius: 8px;
+  font-weight: 550;
+  padding: 3px 8.5px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: #F8FAFC;
-  color: #475569;
   border: 1px solid #E2E8F0;
+  color: #475569;
+  line-height: 1.2;
+  letter-spacing: 0.1px;
+  transition: all 0.15s ease;
 }
 
+.macro-pill-item:hover {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  color: #1E293B;
+}
+
+.macro-pill-item iconify-icon,
+.macro-pill-icon {
+  font-size: 13.5px;
+  width: 13.5px;
+  height: 13.5px;
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.macro-pill-item:hover iconify-icon,
+.macro-pill-item:hover .macro-pill-icon {
+  color: #334155;
+}
+
+/* Neutral monochrome: Tanpa warna-warni pelangi */
 .macro-pill-item.prot,
-.macro-pill-item.carb,
-.macro-pill-item.cal {
+.macro-pill-item.cal,
+.macro-pill-item.carb {
   background: #F8FAFC;
   color: #475569;
   border: 1px solid #E2E8F0;
 }
 
-/* Card Footer: Left Actions (Love + Resep Pembuatan Button) & Price in Single Row */
+[data-theme="dark"] .macro-pill-item,
+[data-theme="dark"] .macro-pill-item.prot,
+[data-theme="dark"] .macro-pill-item.cal,
+[data-theme="dark"] .macro-pill-item.carb {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #CBD5E1;
+}
+
+[data-theme="dark"] .macro-pill-item iconify-icon,
+[data-theme="dark"] .macro-pill-item .macro-pill-icon {
+  color: #94A3B8;
+}
+
+/* Card Footer: Action Buttons & Price */
 .food-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid #EFE8CA;
   gap: 8px;
-  flex-wrap: nowrap;
 }
 
 .food-footer-left-actions {
@@ -1188,92 +1518,71 @@ input:checked+.toggle-slider:before {
   flex-shrink: 0;
 }
 
-/* Favorite Love Action Button - The ONLY colored element on the card */
-.food-fav-action-btn {
+.food-cart-btn {
   all: unset;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #FEF2F2;
-  color: #EF4444;
-  border: 1.5px solid #FECDD3;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #1C200E;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.12);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(28, 32, 14, 0.15);
   flex-shrink: 0;
 }
 
-.food-fav-action-btn:hover {
+.food-cart-btn:hover {
+  background: #9EA76B;
   transform: scale(1.08);
-  background: #FEE2E2;
-  border-color: #FCA5A5;
-  color: #DC2626;
-  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 6px 18px rgba(158, 167, 107, 0.35);
 }
 
-.food-fav-action-btn.active {
-  background: #EF4444;
-  color: #FFFFFF;
-  border: 1.5px solid #EF4444;
-  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35);
+.food-cart-btn:active {
+  transform: scale(0.95);
 }
 
-.food-fav-action-btn.active:hover {
-  background: #DC2626;
-  border-color: #DC2626;
+.food-cart-btn .cart-icon,
+.food-cart-btn svg {
+  width: 17px;
+  height: 17px;
 }
 
-.food-fav-action-btn .fav-action-icon {
-  font-size: 19px;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.food-fav-action-btn:active .fav-action-icon {
-  transform: scale(0.85);
-}
-
-/* Resep Pembuatan Button (Only Icon '>' in Plain Neutral 36x36 Square) */
 .food-recipe-action-btn {
   all: unset;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #FFFFFF;
-  color: #64748B;
-  border: 1.5px solid #E2E8F0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #FDFAF2;
+  color: #687346;
+  border: 1.5px solid #DDD4B0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 6px rgba(28, 32, 14, 0.04);
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
 .food-recipe-action-btn:hover {
-  background: #F8FAFC;
-  color: #0F172A;
-  border-color: #CBD5E1;
+  background: #FFFFFF;
+  color: #1C200E;
+  border-color: #9EA76B;
   transform: scale(1.08);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(158, 167, 107, 0.2);
 }
 
 .food-recipe-action-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
-.food-recipe-action-btn .recipe-btn-arrow {
-  font-size: 15px;
-  color: #64748B;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.food-recipe-action-btn:hover .recipe-btn-arrow {
-  color: #0F172A;
-  transform: translateX(1.5px);
+.food-recipe-action-btn .recipe-btn-arrow,
+.food-recipe-action-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .fav-count-badge {
@@ -1298,14 +1607,14 @@ input:checked+.toggle-slider:before {
   font-family: var(--font-heading);
   font-size: 15.5px;
   font-weight: 800;
-  color: #0F172A;
+  color: #1C200E;
   letter-spacing: -0.3px;
   line-height: 1.1;
 }
 
 .food-bappenas-ref {
   font-size: 9.5px;
-  color: #94A3B8;
+  color: #687346;
   font-weight: 500;
   text-align: right;
   margin-top: 2px;
@@ -1355,11 +1664,6 @@ input:checked+.toggle-slider:before {
   letter-spacing: 0.3px;
 }
 
-.macro-pill-item.carb {
-  background: #EFF6FF;
-  color: #1D4ED8;
-  border: 1px solid #BFDBFE;
-}
 
 /* ==========================================================================
    FEATURE 9: SMART FOOD BUDGETING & MEAL PLANNER (CLEAN & MINIMALIST)

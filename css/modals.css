@@ -2102,4 +2102,314 @@
   font-weight: 700;
 }
 
+/* ==========================================================================
+   MEAL PLANNER CONFIRMATION MODAL (VALIDASI SEBELUM TAMBAH)
+   ========================================================================== */
+.meal-planner-confirm-box {
+  max-width: 520px !important;
+  width: 95% !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DDD4B0 !important;
+  box-shadow: 0 24px 60px rgba(28, 32, 14, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.mp-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+
+.mp-confirm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mp-confirm-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mp-confirm-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1C200E;
+  letter-spacing: -0.2px;
+}
+
+.mp-confirm-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #687346;
+  line-height: 1.4;
+}
+
+.mp-confirm-food-card {
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.mp-confirm-dish-wrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 6px 16px rgba(28, 32, 14, 0.15);
+  flex-shrink: 0;
+  background: #EFE8CA;
+}
+
+.mp-confirm-dish-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mp-confirm-food-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mp-confirm-food-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1C200E;
+  margin: 0 0 3px;
+  line-height: 1.25;
+}
+
+.mp-confirm-food-meta {
+  font-size: 11.5px;
+  color: #687346;
+  margin-bottom: 6px;
+}
+
+.mp-confirm-food-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mp-confirm-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.mp-confirm-macros-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mp-confirm-macro-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.mp-confirm-macro-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.mp-confirm-macro-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1C200E;
+}
+
+.mp-confirm-form-section {
+  margin-bottom: 14px;
+}
+
+.mp-confirm-form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1C200E;
+  margin-bottom: 7px;
+  display: block;
+}
+
+.mp-slot-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.mp-slot-btn {
+  all: unset;
+  cursor: pointer;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 12px;
+  padding: 8px 4px;
+  text-align: center;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.mp-slot-btn:hover {
+  background: #F7F9EC;
+  border-color: #9EA76B;
+}
+
+.mp-slot-btn.active {
+  background: #1C200E;
+  border-color: #1C200E;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(28, 32, 14, 0.2);
+}
+
+.mp-slot-btn.active .mp-slot-icon,
+.mp-slot-btn.active .mp-slot-lbl {
+  color: #FFFFFF;
+}
+
+.mp-slot-icon {
+  font-size: 16px;
+  color: #687346;
+}
+
+.mp-slot-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1C200E;
+}
+
+.mp-stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 12px;
+  padding: 6px 12px;
+}
+
+.mp-stepper-btn {
+  all: unset;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #DDD4B0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1C200E;
+  transition: all 0.15s ease;
+}
+
+.mp-stepper-btn:hover {
+  background: #1C200E;
+  color: #FFFFFF;
+}
+
+.mp-stepper-val {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1C200E;
+}
+
+.mp-confirm-clinical-note {
+  background: #F0FDF4;
+  border: 1px solid #A7F3D0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mp-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.mp-confirm-cancel-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #687346;
+  transition: all 0.2s ease;
+}
+
+.mp-confirm-cancel-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.mp-confirm-submit-btn {
+  all: unset;
+  cursor: pointer;
+  flex: 1;
+  padding: 11px 20px;
+  border-radius: 12px;
+  background: #1C200E;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(28, 32, 14, 0.2);
+}
+
+.mp-confirm-submit-btn:hover {
+  background: #9EA76B;
+  box-shadow: 0 6px 20px rgba(158, 167, 107, 0.4);
+  transform: translateY(-1px);
+}
+
 

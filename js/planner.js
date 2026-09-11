@@ -91,7 +91,54 @@ class NutriVisionPlanner {
 
     // Render for Dedicated Full Page
     if (container2) {
-      container2.innerHTML = plans.map(item => {
+      const customPlans = (window.app && typeof window.app.loadUserDailyMealPlans === 'function') 
+        ? window.app.loadUserDailyMealPlans() 
+        : [];
+
+      let customHtml = '';
+      if (customPlans.length > 0) {
+        const slotMap = {
+          breakfast: isId ? 'Sarapan' : 'Breakfast',
+          lunch: isId ? 'Makan Siang' : 'Lunch',
+          dinner: isId ? 'Makan Malam' : 'Dinner',
+          snack: isId ? 'Camilan' : 'Snack'
+        };
+
+        customHtml = `
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12.5px;font-weight:700;color:#0F766E;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+              <i data-lucide="bookmark-check" style="width:16px;height:16px;"></i>
+              <span>${isId ? 'Menu Terencana dari Katalog Pangan' : 'Planned Menus from Food Catalog'} (${customPlans.length})</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${customPlans.map(cp => `
+                <div class="meal-plan-item" style="padding:12px 14px;border:1.5px solid #A7F3D0;background:#F0FDF4;">
+                  <div class="meal-plan-info">
+                    <div class="name" style="font-size:14.5px;font-weight:700;color:#064E3B;">${cp.name}</div>
+                    <div class="macro" style="margin-top:2px;">${cp.portionGrams}g · ${cp.protein}g Protein · ${cp.calories} kkal</div>
+                    <div style="display:flex;gap:6px;align-items:center;margin-top:5px;flex-wrap:wrap;">
+                      <span class="meal-plan-tag" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;">
+                        ${slotMap[cp.slot] || cp.slot}
+                      </span>
+                      <span style="font-size:11.5px;color:#047857;font-weight:600;">${cp.price}</span>
+                    </div>
+                  </div>
+                  <div class="meal-plan-meta" style="display:flex;align-items:center;gap:6px;">
+                    <button type="button" class="btn-sm-teal" style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;" onclick="mealPlanner.logMeal('${cp.name.replace(/'/g, "\\'")}', '${cp.protein}g Protein · ${cp.calories} kkal')">
+                      <i data-lucide="plus-circle" class="btn-icon-sm"></i> ${isId ? 'Catat' : 'Log'}
+                    </button>
+                    <button type="button" style="all:unset;cursor:pointer;padding:5px;color:#EF4444;" title="${isId ? 'Hapus' : 'Delete'}" onclick="app.deleteUserMealPlan('${cp.id}')">
+                      <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      const defaultPlansHtml = plans.map(item => {
         const nameStr = (item.name + ' ' + (item.nameEn || '')).toLowerCase();
         const isSoftItem = nameStr.includes('bubur') || 
                            nameStr.includes('porridge') ||
@@ -129,6 +176,8 @@ class NutriVisionPlanner {
           </div>
         `;
       }).join('');
+
+      container2.innerHTML = customHtml + defaultPlansHtml;
     }
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {

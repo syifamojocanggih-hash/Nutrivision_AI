@@ -451,11 +451,19 @@
   }
 
   .popular-nav-arrows {
-    display: none;
+    display: flex;
+    justify-content: flex-end;
   }
 
   .popular-catalog-grid {
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 768px) {
+  .popular-catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
   }
 }

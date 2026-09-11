@@ -22,6 +22,10 @@ class NutriVisionApp {
     this.plateViewMode = 'ai';
     this.currentLandingPreset = 'preset-soft-bubur-gabus';
     this.favoriteFoods = this.loadFavoriteFoods();
+    this.catalogCurrentPage = 1;
+    this.catalogItemsPerPage = 12;
+    this.lastCatalogSearchTerm = '';
+    this.activeFoodActionMenuId = null;
     this.menuClicks = this.loadMenuClicks();
     this.journeyCondition = this.userProfile.conditionId || 'post-surgery';
     this.calendarMonthOffset = 0;
@@ -2941,12 +2945,13 @@ class NutriVisionApp {
   clearCatalogPlateFilter() {
     this.isPlateMatchedCatalogMode = false;
     this.activeCatalogCategory = 'all';
+    this.catalogCurrentPage = 1;
     document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.category === 'all');
     });
     const searchInput = document.getElementById('food-catalog-search');
     if (searchInput) searchInput.value = '';
-    this.renderFoodCatalog('');
+    this.renderFoodCatalog('', true);
   }
 
   getMatchedCatalogFoodsForPlate() {
@@ -3004,20 +3009,34 @@ class NutriVisionApp {
       }
     }
     this.activeCatalogCategory = category;
+    this.catalogCurrentPage = 1;
     this.isPlateMatchedCatalogMode = false;
     document.querySelectorAll('.popular-category-pills .cat-pill-btn').forEach(b => b.classList.remove('active'));
     if (btnElement) {
       btnElement.classList.add('active');
     }
     const searchVal = document.getElementById('food-catalog-search')?.value || '';
-    this.renderFoodCatalog(searchVal);
+    this.renderFoodCatalog(searchVal, true);
+  }
+
+  changeCatalogPage(delta) {
+    const newPage = (this.catalogCurrentPage || 1) + delta;
+    this.setCatalogPage(newPage);
+  }
+
+  setCatalogPage(page) {
+    this.catalogCurrentPage = page;
+    const searchVal = document.getElementById('food-catalog-search')?.value || '';
+    this.renderFoodCatalog(searchVal, false);
+
+    const catalogEl = document.querySelector('.popular-menu-card') || document.getElementById('view-catalog');
+    if (catalogEl && typeof catalogEl.scrollIntoView === 'function') {
+      catalogEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   scrollCatalogGrid(direction) {
-    const grid = document.getElementById('food-catalog-grid');
-    if (grid) {
-      grid.scrollBy({ left: direction * 320, behavior: 'smooth' });
-    }
+    this.changeCatalogPage(direction);
   }
 
   loadMenuClicks() {
@@ -3097,10 +3116,7 @@ class NutriVisionApp {
   }
 
   handleCardClick(foodId) {
-    this.requireAuth(() => {
-      this.trackMenuClick(foodId);
-      this.addCatalogItemToScan(foodId);
-    }, 'tambah ke piring');
+    this.openAddToMealPlannerModal(foodId);
   }
 
   handleRecipeClick(foodId) {
@@ -3163,13 +3179,457 @@ class NutriVisionApp {
     this.renderFoodCatalog(searchVal);
   }
 
-  renderFoodCatalog(searchTerm = '') {
+  // =========================================================================
+  // PINTEREST-STYLE LINEAR MONOLINE FOOD ILLUSTRATIONS (32 FOODS)
+  // =========================================================================
+  getLinearFoodIllustration(foodId) {
+    const icons = {
+      'alpukat': `<svg viewBox="0 0 24 24"><path d="M12 2.5C8 2.5 5 7.5 5 13.5a7 7 0 0 0 14 0c0-6-3-11-7-11z"/><circle cx="12" cy="14.5" r="3.2"/></svg>`,
+      'bakso': `<svg viewBox="0 0 24 24"><path d="M3.5 12h17a8.5 8.5 0 0 1-17 0z"/><circle cx="8" cy="10.5" r="2.2"/><circle cx="12" cy="8.5" r="2.2"/><circle cx="16" cy="10.5" r="2.2"/><path d="M9 5c0-1.5 1-2 1-3M15 5c0-1.5 1-2 1-3"/></svg>`,
+      'brokoli-kukus': `<svg viewBox="0 0 24 24"><path d="M10.5 16v4.5a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V16"/><path d="M8.5 16A4.5 4.5 0 0 1 6 8.5a4.5 4.5 0 0 1 7.5-3.2A4.5 4.5 0 0 1 18 8.5a4.5 4.5 0 0 1-2.5 7.5z"/><path d="M10.5 11.5a2 2 0 0 1 2-2M13 13.5a2 2 0 0 0 2-1"/></svg>`,
+      'buah-pisang': `<svg viewBox="0 0 24 24"><path d="M4 17.5c3 4 11 4 16-5.5-2 1-6 2-11-1-3-2-4-4-5-5.5 0 4 0 8 0 12z"/><path d="M4 5.5l-1-2M19 11.5l2 1.2"/><path d="M7 14.5c4 1 8 0 11-4"/></svg>`,
+      'capcay-kuah': `<svg viewBox="0 0 24 24"><path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0z"/><path d="M7 10.5c1-3 4-3 5-1M12 9.5c1-3 4-3 5-1"/><circle cx="9.5" cy="15" r="1.2"/><circle cx="14.5" cy="15" r="1.2"/></svg>`,
+      'dada-ayam-rebus': `<svg viewBox="0 0 24 24"><path d="M5 13c0-4.5 3.5-8.5 8-8.5s8 3 8 7-3.5 8.5-8 8.5a8.5 8.5 0 0 1-8-7z"/><path d="M9 10c2-1 5-1 7 1M8 13.5c2-1 4-1 6 1"/></svg>`,
+      'dada-ayam-panggang': `<svg viewBox="0 0 24 24"><path d="M5 13c0-4.5 3.5-8.5 8-8.5s8 3 8 7-3.5 8.5-8 8.5a8.5 8.5 0 0 1-8-7z"/><path d="M8 8.5l4.5 6M11.5 7.5l4.5 6M14.5 8.5l4 5.5"/></svg>`,
+      'edamame-rebus': `<svg viewBox="0 0 24 24"><path d="M3.5 19c6 1 14.5-2 17.5-13.5-5.5 1-13.5 5.5-17.5 13.5z"/><circle cx="8" cy="15" r="1.8"/><circle cx="12.5" cy="11.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg>`,
+      'gado-gado': `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="9" ry="5.5"/><path d="M7.5 11.5c1-2 3-2 4 0M12.5 10.5c1-2 3-2 4 0"/><rect x="10" y="7.5" width="4" height="4" rx="1"/></svg>`,
+      'ikan-bakar': `<svg viewBox="0 0 24 24"><path d="M3.5 12c4.5-5 12.5-5 15.5 0-3 5-11 5-15.5 0z"/><path d="M19 12l3-3v6l-3-3z"/><circle cx="7.5" cy="11.5" r="0.9"/><path d="M11.5 8.5l-1 6.5M14.5 8.5l-1 6.5"/></svg>`,
+      'ikan-tuna-kukus': `<svg viewBox="0 0 24 24"><path d="M4 12c3-4.5 10-5.5 15-2 2 4.5-1 9-6 10-5 1-8-3-9-8z"/><circle cx="12" cy="11.5" r="2.8"/><path d="M9 15.5c2 1 4 1 6 0"/></svg>`,
+      'jagung-manis-rebus': `<svg viewBox="0 0 24 24"><rect x="6" y="4.5" width="12" height="13.5" rx="6"/><path d="M6 9.5h12M6 13.5h12M10 4.5v13.5M14 4.5v13.5M12 18v3.5"/></svg>`,
+      'kacang-hijau-rebus': `<svg viewBox="0 0 24 24"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0z"/><circle cx="7.5" cy="9.5" r="1.4"/><circle cx="12" cy="8.5" r="1.4"/><circle cx="16.5" cy="9.5" r="1.4"/><path d="M14 3.5l4 6"/></svg>`,
+      'karedok': `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="9" ry="5.5"/><path d="M7 10c0-2 2.5-3 4-2M13 7.5c2 0 4 1 4 3M9.5 12.5c2-1 4.5-1 6.5 1"/></svg>`,
+      'kentang-kukus': `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8" ry="6" transform="rotate(-15 12 12)"/><circle cx="9" cy="11" r="0.8"/><circle cx="14" cy="10" r="0.8"/><circle cx="12" cy="14" r="0.8"/></svg>`,
+      'nasi-merah': `<svg viewBox="0 0 24 24"><path d="M4 11.5h16a8 8 0 0 1-16 0z"/><path d="M6.5 11.5a5.5 5.5 0 0 1 11 0"/><path d="M10 7.5l1.5-1.5M13.5 7.5l-1.5-1.5"/></svg>`,
+      'nasi-putih': `<svg viewBox="0 0 24 24"><path d="M4 11.5h16a8 8 0 0 1-16 0z"/><path d="M6 11.5a6 6 0 0 1 12 0"/><path d="M9 5c0-1.5 1-2 1-3M14 5c0-1.5 1-2 1-3"/></svg>`,
+      'oatmeal': `<svg viewBox="0 0 24 24"><path d="M3.5 11.5h17a8.5 8.5 0 0 1-17 0z"/><ellipse cx="12" cy="11.5" rx="8.5" ry="3.2"/><path d="M14.5 3.5l3.5 6"/><circle cx="10" cy="11.5" r="1.1"/><circle cx="13.5" cy="12" r="1.1"/></svg>`,
+      'pepaya-segar': `<svg viewBox="0 0 24 24"><path d="M4 16.5c4 3 11 3 16-3.5-3-1-8-2-12-1-2 1-3 2.5-4 4.5z"/><circle cx="9.5" cy="14" r="0.9"/><circle cx="12" cy="13.5" r="0.9"/><circle cx="14.5" cy="13.5" r="0.9"/></svg>`,
+      'roti-gandum': `<svg viewBox="0 0 24 24"><rect x="5" y="6.5" width="14" height="13" rx="3"/><path d="M4 9.5c0-3.5 3-5.5 8-5.5s8 2 8 5.5"/><circle cx="8.5" cy="11.5" r="0.8"/><circle cx="12.5" cy="14.5" r="0.8"/><circle cx="15" cy="10.5" r="0.8"/></svg>`,
+      'salad-sayur-segar': `<svg viewBox="0 0 24 24"><path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0z"/><path d="M6 12.5c1-3 3-4 6-2 3-2 5-1 6 2"/><circle cx="11" cy="9.5" r="1.6"/></svg>`,
+      'salmon-panggang': `<svg viewBox="0 0 24 24"><path d="M4 15.5c2-6 8-9.5 14-6.5 2 4.5 1 8.5-3 10.5-5 2-9 0-11-4z"/><path d="M8 12.5c2-1 4-1 6 0M10.5 9.5c2-1 4-1 5 1"/></svg>`,
+      'sayur-asem': `<svg viewBox="0 0 24 24"><path d="M3.5 12h17a8.5 8.5 0 0 1-17 0z"/><circle cx="9" cy="9.5" r="2.2"/><path d="M14 9c1-2 3-2 4 0"/><path d="M9 5c0-1.5 1-2 1-3"/></svg>`,
+      'sayur-bayam-bening': `<svg viewBox="0 0 24 24"><path d="M3.5 12.5h17a8.5 8.5 0 0 1-17 0z"/><path d="M7 11.5c1-3 4-4 5-1M12 10.5c1-3 4-3 5 0"/><path d="M10 11.5v2.5M15 10.5v2.5"/></svg>`,
+      'singkong-rebus': `<svg viewBox="0 0 24 24"><rect x="5.5" y="8" width="13" height="8.5" rx="4"/><line x1="9.5" y1="8" x2="9.5" y2="16.5"/><line x1="13.5" y1="8" x2="13.5" y2="16.5"/></svg>`,
+      'sup-daging-sapi': `<svg viewBox="0 0 24 24"><path d="M3.5 12h17a8.5 8.5 0 0 1-17 0z"/><rect x="7.5" y="8.5" width="4.5" height="4.5" rx="1"/><rect x="13.5" y="9.5" width="4" height="4" rx="1"/><path d="M11 5c0-1.5 1-2 1-3"/></svg>`,
+      'sup-tahu': `<svg viewBox="0 0 24 24"><path d="M3.5 12h17a8.5 8.5 0 0 1-17 0z"/><rect x="7" y="8" width="4.5" height="4.5" rx="1"/><rect x="13" y="8" width="4.5" height="4.5" rx="1"/><path d="M10 4.5c0-1 1-1.5 1-2.5M14 4.5c0-1 1-1.5 1-2.5"/></svg>`,
+      'sup-wortel-kentang': `<svg viewBox="0 0 24 24"><path d="M3.5 12h17a8.5 8.5 0 0 1-17 0z"/><circle cx="9" cy="9.5" r="2.2"/><path d="M9 8.5v2M8 9.5h2"/><rect x="13" y="8" width="4" height="4" rx="1"/></svg>`,
+      'telur-rebus': `<svg viewBox="0 0 24 24"><path d="M12 2.5C8 2.5 5 7.5 5 13.5a7 7 0 0 0 14 0c0-6-3-11-7-11z"/><circle cx="12" cy="14" r="3.2"/></svg>`,
+      'tempe-panggang': `<svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="10" rx="2"/><line x1="8.5" y1="7" x2="8.5" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="15.5" y1="7" x2="15.5" y2="17"/></svg>`,
+      'tumis-buncis': `<svg viewBox="0 0 24 24"><path d="M5 6c3 4 5 9 5 14M11 5c2 4 4 9 4 14M17 6c-1 4-2 9-2 14"/></svg>`,
+      'ubi-jalar-rebus': `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="5.5" transform="rotate(-20 12 12)"/><path d="M8 12c2 1 5 1 8-1"/></svg>`
+    };
+    return icons[foodId] || `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`;
+  }
+
+  // =========================================================================
+  // PERSONALIZED CLINICAL RECOMMENDATION ENGINE (TB, BB, CONDITION)
+  // =========================================================================
+  calculateFoodSuitabilityScore(food, condition, bmi, weight, height) {
+    let score = 50;
+    const cond = condition || 'gym';
+    const foodConds = food.clinicalSuitability || [];
+
+    if (cond === 'gym') {
+      if (foodConds.includes('gym')) score += 50;
+      score += (food.protein || 0) * 2.8;
+
+      if (['dada-ayam-panggang', 'dada-ayam-rebus', 'salmon-panggang', 'ikan-tuna-kukus'].includes(food.id)) {
+        score += 25;
+      }
+      if (['telur-rebus', 'tempe-panggang', 'edamame-rebus'].includes(food.id)) {
+        score += 20;
+      }
+      if (['oatmeal', 'nasi-merah', 'ubi-jalar-rebus', 'kentang-kukus', 'buah-pisang'].includes(food.id)) {
+        score += 15;
+      }
+      if (food.id === 'brokoli-kukus') {
+        score += 18;
+      }
+
+      if (bmi >= 25) {
+        if (food.calories > 200) score -= 15;
+        if (['brokoli-kukus', 'dada-ayam-rebus', 'telur-rebus'].includes(food.id)) score += 10;
+      } else if (bmi < 18.5) {
+        if (['alpukat', 'salmon-panggang', 'ubi-jalar-rebus', 'nasi-merah'].includes(food.id)) score += 15;
+      }
+    } else if (cond === 'rehab' || cond === 'post-surgery') {
+      if (foodConds.includes('rehab') || foodConds.includes('post-surgery')) score += 50;
+
+      if (['sup-daging-sapi', 'sup-daging-sapi-bening'].includes(food.id)) score += 35;
+      if (food.id === 'salmon-panggang') score += 35;
+      if (['ikan-tuna-kukus', 'telur-rebus'].includes(food.id)) score += 30;
+      if (['sup-tahu', 'sup-wortel-kentang', 'sayur-bayam-bening', 'capcay-kuah'].includes(food.id)) score += 28;
+      if (['pepaya-segar', 'alpukat', 'edamame-rebus'].includes(food.id)) score += 25;
+      if (['kentang-kukus', 'kacang-hijau-rebus'].includes(food.id)) score += 20;
+
+      if (food.texture === 'soft' || food.texture === 'liquid') score += 10;
+
+      if (bmi >= 25) {
+        if (['sayur-bayam-bening', 'sup-tahu', 'capcay-kuah', 'brokoli-kukus'].includes(food.id)) score += 10;
+      } else if (bmi < 18.5) {
+        if (['alpukat', 'salmon-panggang', 'sup-daging-sapi'].includes(food.id)) score += 12;
+      }
+    } else {
+      // General wellness
+      if (food.category === 'plant-veg' || food.category === 'fruit-bev') score += 25;
+      score += (food.protein || 0) * 1.5;
+    }
+
+    if (this.favoriteFoods && this.favoriteFoods.has(food.id)) {
+      score += 5;
+    }
+
+    return score;
+  }
+
+  sortFoodsByPersonalizedRecommendation(items) {
+    const condition = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const height = parseFloat(this.userProfile?.heightCm) || 170;
+    const weight = parseFloat(this.userProfile?.weightKg) || 65;
+    const heightM = height / 100;
+    const bmi = +(weight / (heightM * heightM)).toFixed(1);
+
+    return [...items].sort((a, b) => {
+      const scoreA = this.calculateFoodSuitabilityScore(a, condition, bmi, weight, height);
+      const scoreB = this.calculateFoodSuitabilityScore(b, condition, bmi, weight, height);
+      return scoreB - scoreA;
+    });
+  }
+
+  // =========================================================================
+  // MEAL PLANNER CONFIRMATION MODAL CONTROLLER (VALIDASI SEBELUM TAMBAH)
+  // =========================================================================
+  loadUserDailyMealPlans() {
+    try {
+      const saved = localStorage.getItem('nutrivision_user_meal_plans');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Error loading user meal plans:', e);
+    }
+    return [];
+  }
+
+  saveUserDailyMealPlans() {
+    try {
+      localStorage.setItem('nutrivision_user_meal_plans', JSON.stringify(this.userDailyMealPlans || []));
+    } catch (e) {
+      console.warn('Error saving user meal plans:', e);
+    }
+  }
+
+  openAddToMealPlannerModal(foodId) {
+    this.trackMenuClick(foodId);
+    const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === foodId);
+    if (!food) return;
+
+    this.mealPlannerConfirmState = {
+      foodId: foodId,
+      slot: 'lunch',
+      servings: 1,
+      syncWithPlate: true
+    };
+
+    this.renderMealPlannerConfirmContent();
+    this.openModal('modal-confirm-meal-planner');
+  }
+
+  selectMealPlannerSlot(slot) {
+    if (!this.mealPlannerConfirmState) return;
+    this.mealPlannerConfirmState.slot = slot;
+    document.querySelectorAll('.mp-slot-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.slot === slot);
+    });
+  }
+
+  changeMealPlannerServings(delta) {
+    if (!this.mealPlannerConfirmState) return;
+    const current = this.mealPlannerConfirmState.servings || 1;
+    const updated = Math.max(0.5, Math.min(5, Math.round((current + delta * 0.5) * 10) / 10));
+    if (updated === current) return;
+    this.mealPlannerConfirmState.servings = updated;
+    this.renderMealPlannerConfirmContent();
+  }
+
+  toggleMealPlannerSyncPlate(checked) {
+    if (!this.mealPlannerConfirmState) return;
+    this.mealPlannerConfirmState.syncWithPlate = !!checked;
+  }
+
+  renderMealPlannerConfirmContent() {
+    const container = document.getElementById('meal-planner-confirm-content');
+    if (!container || !this.mealPlannerConfirmState) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === this.mealPlannerConfirmState.foodId);
+    if (!food) return;
+
+    const servings = this.mealPlannerConfirmState.servings || 1;
+    const activeSlot = this.mealPlannerConfirmState.slot || 'lunch';
+    const syncWithPlate = this.mealPlannerConfirmState.syncWithPlate !== false;
+
+    const defaultGrams = food.defaultPortionGrams || 100;
+    const currentGrams = Math.round(defaultGrams * servings);
+    const currentProt = Math.round((food.protein || 20) * servings);
+    const currentCals = Math.round((food.calories || 250) * servings);
+    const currentCarbs = Math.round((food.carbs !== undefined ? food.carbs : 15) * servings);
+    const currentFat = Math.round((food.fat !== undefined ? food.fat : 8) * servings);
+
+    const displayName = isId ? food.name : (food.nameEn || food.name);
+    const clinicalTag = isId ? (food.clinicalIndication || 'Pemulihan Klinis') : (food.clinicalIndicationEn || food.clinicalIndication || 'Clinical Recovery');
+    const tkpiCode = food.tkpiCode || 'TKPI-Kemenkes';
+
+    const condition = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    let rationale = isId 
+      ? 'Kandungan nutrisi seimbang untuk mendukung fase regenerasi dan pemulihan harian tubuh Anda.'
+      : 'Optimal nutritional balance to support daily cellular regeneration and body recovery.';
+
+    if (condition === 'post-surgery') {
+      rationale = isId 
+        ? 'Tinggi albumin dan asam amino esensial untuk mempercepat remodeling jaringan luka pasca-bedah.'
+        : 'Rich in albumin and essential amino acids to accelerate post-surgical wound tissue remodeling.';
+    } else if (condition === 'gym') {
+      rationale = isId 
+        ? `Menyumbang ${currentProt}g protein berkualitas tinggi untuk sintesis protein otot (MPS) dan adaptasi latihan.`
+        : `Provides ${currentProt}g high-quality protein for muscle protein synthesis (MPS) and workout adaptation.`;
+    } else if (condition === 'rehab') {
+      rationale = isId 
+        ? 'Mendukung pemulihan sendi, tendon, dan mobilitas neuromuskular pasca-cedera.'
+        : 'Supports joint, tendon recovery, and neuromuscular mobility after physical injury.';
+    }
+
+    container.innerHTML = `
+      <div class="mp-confirm-header">
+        <div class="mp-confirm-header-left">
+          <div class="mp-confirm-icon-badge">
+            <i data-lucide="calendar-plus" style="width:22px;height:22px;"></i>
+          </div>
+          <div>
+            <h3 class="mp-confirm-title">${isId ? 'Tambahkan ke Meal Planner?' : 'Add to Meal Planner?'}</h3>
+            <p class="mp-confirm-sub">${isId ? 'Konfirmasi jadwal dan porsi menu sebelum dicatat ke rencana nutrisi Anda.' : 'Confirm meal time and portion before adding to your recovery plan.'}</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('modal-confirm-meal-planner')" title="${isId ? 'Tutup' : 'Close'}" aria-label="${isId ? 'Tutup' : 'Close'}">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Food Preview Card -->
+      <div class="mp-confirm-food-card">
+        <div class="mp-confirm-dish-wrap">
+          <img src="${food.image}" alt="${displayName}" class="mp-confirm-dish-img" onerror="this.src='icons/icon-192.png'" />
+        </div>
+        <div class="mp-confirm-food-info">
+          <h4 class="mp-confirm-food-name">${displayName}</h4>
+          <div class="mp-confirm-food-meta">${currentGrams}g · ${food.price} /porsi</div>
+          <div class="mp-confirm-food-badges">
+            <span class="mp-confirm-badge" style="background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;">
+              <i data-lucide="shield-check" style="width:10px;height:10px;"></i> ${clinicalTag}
+            </span>
+            <span class="mp-confirm-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;">
+              ${tkpiCode}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Macros Row -->
+      <div class="mp-confirm-macros-grid">
+        <div class="mp-confirm-macro-box">
+          <span class="mp-confirm-macro-lbl">${isId ? 'Kalori' : 'Calories'}</span>
+          <span class="mp-confirm-macro-val" style="color:#B45309;">${currentCals} kkal</span>
+        </div>
+        <div class="mp-confirm-macro-box">
+          <span class="mp-confirm-macro-lbl">Protein</span>
+          <span class="mp-confirm-macro-val" style="color:#15803D;">${currentProt}g</span>
+        </div>
+        <div class="mp-confirm-macro-box">
+          <span class="mp-confirm-macro-lbl">${isId ? 'Karbo' : 'Carbs'}</span>
+          <span class="mp-confirm-macro-val" style="color:#1D4ED8;">${currentCarbs}g</span>
+        </div>
+        <div class="mp-confirm-macro-box">
+          <span class="mp-confirm-macro-lbl">${isId ? 'Lemak' : 'Fat'}</span>
+          <span class="mp-confirm-macro-val" style="color:#475569;">${currentFat}g</span>
+        </div>
+      </div>
+
+      <!-- Meal Slot Selection -->
+      <div class="mp-confirm-form-section">
+        <label class="mp-confirm-form-label">${isId ? 'Pilih Waktu Makan:' : 'Select Meal Time:'}</label>
+        <div class="mp-slot-selector">
+          <button type="button" class="mp-slot-btn ${activeSlot === 'breakfast' ? 'active' : ''}" data-slot="breakfast" onclick="app.selectMealPlannerSlot('breakfast')">
+            <span class="mp-slot-icon"><iconify-icon icon="solar:sun-2-linear"></iconify-icon></span>
+            <span class="mp-slot-lbl">${isId ? 'Sarapan' : 'Breakfast'}</span>
+          </button>
+          <button type="button" class="mp-slot-btn ${activeSlot === 'lunch' ? 'active' : ''}" data-slot="lunch" onclick="app.selectMealPlannerSlot('lunch')">
+            <span class="mp-slot-icon"><iconify-icon icon="solar:sun-fog-linear"></iconify-icon></span>
+            <span class="mp-slot-lbl">${isId ? 'Siang' : 'Lunch'}</span>
+          </button>
+          <button type="button" class="mp-slot-btn ${activeSlot === 'dinner' ? 'active' : ''}" data-slot="dinner" onclick="app.selectMealPlannerSlot('dinner')">
+            <span class="mp-slot-icon"><iconify-icon icon="solar:moon-linear"></iconify-icon></span>
+            <span class="mp-slot-lbl">${isId ? 'Malam' : 'Dinner'}</span>
+          </button>
+          <button type="button" class="mp-slot-btn ${activeSlot === 'snack' ? 'active' : ''}" data-slot="snack" onclick="app.selectMealPlannerSlot('snack')">
+            <span class="mp-slot-icon"><iconify-icon icon="solar:cup-linear"></iconify-icon></span>
+            <span class="mp-slot-lbl">${isId ? 'Camilan' : 'Snack'}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Servings Stepper -->
+      <div class="mp-confirm-form-section">
+        <label class="mp-confirm-form-label">${isId ? 'Jumlah Porsi:' : 'Portion Servings:'}</label>
+        <div class="mp-stepper-row">
+          <button type="button" class="mp-stepper-btn" onclick="app.changeMealPlannerServings(-1)" title="Kurangi Porsi">-</button>
+          <span class="mp-stepper-val">${servings} Porsi (${currentGrams} gram)</span>
+          <button type="button" class="mp-stepper-btn" onclick="app.changeMealPlannerServings(1)" title="Tambah Porsi">+</button>
+        </div>
+      </div>
+
+      <!-- Clinical Tip Rationale -->
+      <div class="mp-confirm-clinical-note">
+        <i data-lucide="sparkles" style="width:16px;height:16px;color:#10B981;flex-shrink:0;margin-top:2px;"></i>
+        <div style="font-size:11.5px;color:#064E3B;line-height:1.5;">
+          <strong>${isId ? 'Saran Klinis:' : 'Clinical Advice:'}</strong> ${rationale}
+        </div>
+      </div>
+
+      <!-- Optional Checkbox: Sync with plate -->
+      <div style="margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:#3B461C;font-weight:600;">
+          <input type="checkbox" id="mp-sync-plate-check" ${syncWithPlate ? 'checked' : ''} onchange="app.toggleMealPlannerSyncPlate(this.checked)" style="accent-color:#10B981;width:16px;height:16px;">
+          <span>${isId ? 'Sinkronkan juga ke Piring Analisis AI (CV Plate Scanner)' : 'Sync to AI Plate Scanner as well'}</span>
+        </label>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mp-confirm-actions">
+        <button type="button" class="mp-confirm-cancel-btn" onclick="app.closeModal('modal-confirm-meal-planner')">
+          ${isId ? 'Batal' : 'Cancel'}
+        </button>
+        <button type="button" class="btn-outline-glass" style="font-size:12px;padding:9px 14px;border-radius:12px;border:1.5px solid #DDD4B0;color:#242C10;font-weight:700;display:inline-flex;align-items:center;gap:6px;" onclick="app.openFoodRecipeModal('${food.id}'); app.closeModal('modal-confirm-meal-planner');">
+          <i data-lucide="book-open" style="width:14px;height:14px;"></i> ${isId ? 'Lihat Resep' : 'View Recipe'}
+        </button>
+        <button type="button" class="mp-confirm-submit-btn" onclick="app.confirmAddToMealPlanner()">
+          <i data-lucide="check" style="width:16px;height:16px;"></i>
+          <span>${isId ? 'Ya, Tambahkan ke Meal Planner' : 'Yes, Add to Meal Planner'}</span>
+        </button>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: container });
+    }
+  }
+
+  confirmAddToMealPlanner() {
+    this.requireAuth(() => {
+      const state = this.mealPlannerConfirmState;
+      if (!state || !state.foodId) return;
+
+      const food = NUTRIVISION_DATA.indonesianFoodDatabase.find(f => f.id === state.foodId);
+      if (!food) return;
+
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      const servings = state.servings || 1;
+      const slot = state.slot || 'lunch';
+      const portionGrams = Math.round((food.defaultPortionGrams || 100) * servings);
+      const totalProtein = Math.round((food.protein || 20) * servings);
+      const totalCalories = Math.round((food.calories || 250) * servings);
+      const totalCarbs = Math.round((food.carbs !== undefined ? food.carbs : 15) * servings);
+      const totalFat = Math.round((food.fat !== undefined ? food.fat : 8) * servings);
+
+      const slotLabels = {
+        breakfast: isId ? 'Sarapan' : 'Breakfast',
+        lunch: isId ? 'Makan Siang' : 'Lunch',
+        dinner: isId ? 'Makan Malam' : 'Dinner',
+        snack: isId ? 'Camilan Sehat' : 'Healthy Snack'
+      };
+      const slotLabel = slotLabels[slot] || slot;
+
+      // 1. Save entry to userDailyMealPlans in localStorage
+      if (!this.userDailyMealPlans) {
+        this.userDailyMealPlans = this.loadUserDailyMealPlans();
+      }
+      const mealEntry = {
+        id: 'plan-' + Date.now(),
+        foodId: food.id,
+        name: isId ? food.name : (food.nameEn || food.name),
+        slot: slot,
+        servings: servings,
+        portionGrams: portionGrams,
+        protein: totalProtein,
+        calories: totalCalories,
+        carbs: totalCarbs,
+        fat: totalFat,
+        price: food.price,
+        image: food.image,
+        timestamp: Date.now()
+      };
+      this.userDailyMealPlans.push(mealEntry);
+      this.saveUserDailyMealPlans();
+
+      // 2. Log nutrients to progressTracker
+      const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+      if (window.progressTracker && typeof window.progressTracker.addLoggedMeal === 'function') {
+        window.progressTracker.addLoggedMeal({
+          protein: [totalProtein, totalProtein],
+          calories: [totalCalories, totalCalories],
+          carbs: [totalCarbs, totalCarbs],
+          fat: [totalFat, totalFat]
+        }, userKey);
+        if (this.userProfile && this.userProfile.targets) {
+          window.progressTracker.renderMacroDonut(this.userProfile.targets);
+        }
+        window.progressTracker.renderWeeklyBarChart();
+      }
+
+      // 3. Optional sync to plate scanner
+      if (state.syncWithPlate && window.cvEngine && typeof window.cvEngine.addSegment === 'function') {
+        window.cvEngine.addSegment(food, portionGrams);
+        this.renderScanModalUI();
+        this.renderOverviewPlate();
+      }
+
+      // 4. Close modal and show success toast
+      this.closeModal('modal-confirm-meal-planner');
+      const foodName = isId ? food.name : (food.nameEn || food.name);
+      this.showToast(isId 
+        ? `✓ ${foodName} (${portionGrams}g) berhasil ditambahkan ke Meal Planner (${slotLabel})!`
+        : `✓ ${foodName} (${portionGrams}g) successfully added to Meal Planner (${slotLabel})!`, 'success');
+
+      // Refresh planner view if user is in view-planner
+      if (window.mealPlanner && typeof window.mealPlanner.renderPlanner === 'function') {
+        window.mealPlanner.renderPlanner();
+      }
+    }, 'tambah ke meal planner');
+  }
+
+  deleteUserMealPlan(planId) {
+    if (!this.userDailyMealPlans) this.userDailyMealPlans = this.loadUserDailyMealPlans();
+    this.userDailyMealPlans = this.userDailyMealPlans.filter(p => p.id !== planId);
+    this.saveUserDailyMealPlans();
+    if (window.mealPlanner && typeof window.mealPlanner.renderPlanner === 'function') {
+      window.mealPlanner.renderPlanner();
+    }
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    this.showToast(isId ? 'Menu berhasil dihapus dari Meal Planner.' : 'Menu removed from Meal Planner.');
+  }
+
+  renderFoodCatalog(searchTerm = '', resetPage = false) {
     const grid = document.getElementById('food-catalog-grid');
     if (!grid) return;
 
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     if (!this.activeCatalogCategory) this.activeCatalogCategory = 'all';
     if (!this.favoriteFoods) this.favoriteFoods = this.loadFavoriteFoods();
+    this.catalogItemsPerPage = 12;
+
+    const cleanTerm = (searchTerm || '').toLowerCase().trim();
+    if (resetPage || (this.lastCatalogSearchTerm !== undefined && this.lastCatalogSearchTerm !== cleanTerm)) {
+      this.catalogCurrentPage = 1;
+    }
+    this.lastCatalogSearchTerm = cleanTerm;
 
     const bannerContainer = document.getElementById('catalog-matched-banner-container');
     let baseList = NUTRIVISION_DATA.indonesianFoodDatabase;
@@ -3205,14 +3665,45 @@ class NutriVisionApp {
         `;
       }
     } else {
+      // Personalization profile indicator
+      const condition = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+      const height = parseFloat(this.userProfile?.heightCm) || 170;
+      const weight = parseFloat(this.userProfile?.weightKg) || 65;
+      const heightM = height / 100;
+      const bmi = +(weight / (heightM * heightM)).toFixed(1);
+
+      let condName = isId ? 'Pasca-Operasi & Bedah' : 'Post-Surgery';
+      if (condition === 'gym') condName = isId ? 'Gym & Muscle Recovery' : 'Gym & Muscle Recovery';
+      else if (condition === 'rehab') condName = isId ? 'Fisioterapi & Rehabilitasi Sendi' : 'Rehab & Physical Therapy';
+      else if (condition === 'wellness') condName = isId ? 'Pemeliharaan Kebugaran' : 'General Wellness';
+
       if (bannerContainer) {
-        bannerContainer.style.display = 'none';
-        bannerContainer.innerHTML = '';
+        bannerContainer.style.display = 'block';
+        bannerContainer.innerHTML = `
+          <div class="catalog-personalization-alert">
+            <div class="catalog-personalization-left">
+              <div class="catalog-personalization-icon">
+                <iconify-icon icon="solar:magic-stick-3-bold" style="font-size:17px;"></iconify-icon>
+              </div>
+              <div>
+                <span class="catalog-personalization-title">
+                  ${isId ? `🎯 Rekomendasi Khusus: ${condName}` : `🎯 Personalized Recommendations: ${condName}`}
+                </span>
+                <span class="catalog-personalization-sub">
+                  ${isId ? `Tinggi Badan ${height} cm · Berat Badan ${weight} kg · BMI ${bmi} · <strong>Halaman 1 memprioritaskan 12 pangan paling sesuai</strong>` : `Height ${height} cm · Weight ${weight} kg · BMI ${bmi} · <strong>Page 1 prioritizes the top 12 matching foods</strong>`}
+                </span>
+              </div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:#059669;background:#D1FAE5;padding:3px 9px;border-radius:20px;flex-shrink:0;">
+              ${isId ? 'Prioritas Aktif' : 'Smart Matched'}
+            </span>
+          </div>
+        `;
       }
     }
 
-    const term = searchTerm.toLowerCase().trim();
-    const items = baseList.filter(food => {
+    const term = cleanTerm;
+    let items = baseList.filter(food => {
       let matchCat = (this.activeCatalogCategory === 'all');
       if (!matchCat) {
         if (this.activeCatalogCategory === 'favorite') {
@@ -3234,12 +3725,19 @@ class NutriVisionApp {
       return matchCat && matchSearch;
     });
 
+    // Apply personalized clinical recommendation sorting
+    items = this.sortFoodsByPersonalizedRecommendation(items);
+
+    const prevBtn = document.getElementById('cat-nav-prev-btn');
+    const nextBtn = document.getElementById('cat-nav-next-btn');
+    const topCounter = document.getElementById('catalog-page-counter');
+
     if (items.length === 0) {
       if (this.activeCatalogCategory === 'favorite') {
         const favEmptyTitle = isId ? 'Belum Ada Pangan Favorit' : 'No Favorite Foods Yet';
         const favEmptyDesc = isId 
-          ? 'Klik tombol hati di pojok kiri bawah kartu makanan untuk menyimpan menu lokal favorit Anda untuk perencanaan gizi cepat.'
-          : 'Click the heart button on the food card to save your favorite recovery foods for quick meal planning.';
+          ? 'Klik tombol hati (♥) pada kartu menu untuk menyimpan pangan lokal favorit Anda.'
+          : 'Click the heart button (♥) on a menu card to save your favorite recovery foods.';
         const favEmptyBtn = isId ? 'Jelajahi Semua Pangan Lokal' : 'Explore All Local Foods';
 
         grid.innerHTML = `
@@ -3268,6 +3766,19 @@ class NutriVisionApp {
           </div>
         `;
       }
+
+      if (topCounter) topCounter.style.display = 'none';
+      if (prevBtn) {
+        prevBtn.disabled = true;
+        prevBtn.style.opacity = '0.35';
+        prevBtn.style.pointerEvents = 'none';
+      }
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.35';
+        nextBtn.style.pointerEvents = 'none';
+      }
+
       this.updateFavoriteBadge();
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
@@ -3275,41 +3786,84 @@ class NutriVisionApp {
       return;
     }
 
-    grid.innerHTML = items.map(food => {
+    // Pagination Calculation: Exactly 12 menu items per page
+    const totalItems = items.length;
+    const itemsPerPage = 12;
+    this.catalogItemsPerPage = 12;
+    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+    if (!this.catalogCurrentPage || this.catalogCurrentPage < 1) {
+      this.catalogCurrentPage = 1;
+    }
+    if (this.catalogCurrentPage > totalPages) {
+      this.catalogCurrentPage = totalPages;
+    }
+
+    const startIndex = (this.catalogCurrentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+    const pagedItems = items.slice(startIndex, endIndex);
+
+    // Update Top Navigation Arrows & Indicator Counter
+    if (prevBtn) {
+      const isPrevDisabled = this.catalogCurrentPage <= 1;
+      prevBtn.disabled = isPrevDisabled;
+      prevBtn.style.opacity = isPrevDisabled ? '0.35' : '1';
+      prevBtn.style.pointerEvents = isPrevDisabled ? 'none' : 'auto';
+      prevBtn.title = isId ? 'Halaman Sebelumnya' : 'Previous Page';
+    }
+    if (nextBtn) {
+      const isNextDisabled = this.catalogCurrentPage >= totalPages;
+      nextBtn.disabled = isNextDisabled;
+      nextBtn.style.opacity = isNextDisabled ? '0.35' : '1';
+      nextBtn.style.pointerEvents = isNextDisabled ? 'none' : 'auto';
+      nextBtn.title = isId ? 'Halaman Selanjutnya' : 'Next Page';
+    }
+    if (topCounter) {
+      topCounter.textContent = `${this.catalogCurrentPage} / ${totalPages}`;
+      topCounter.style.display = totalPages > 1 ? 'inline-flex' : 'none';
+    }
+
+    const condition = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+
+    grid.innerHTML = pagedItems.map((food, idx) => {
       const isFav = this.favoriteFoods.has(food.id);
       const displayName = isId ? food.name : (food.nameEn || food.name);
+      const rating = (food.rating || 4.9).toFixed(1);
       const subtitle = isId 
         ? (food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kkal`)
         : (food.subtitleEn || food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kcal`);
-      const clinicalTag = isId 
-        ? (food.clinicalIndication || 'Pemulihan Klinis')
-        : (food.clinicalIndicationEn || food.clinicalIndication || 'Clinical Recovery');
-      const bappenasRef = isId 
-        ? (food.bappenasRef || 'Bapanas: Standar Nasional')
-        : (food.bappenasRefEn || food.bappenasRef || 'Natl Food Agency: Standard');
-      const cardTitle = isId ? 'Klik kartu untuk tambahkan ke piring scan' : 'Click card to add to plate scan';
-      const favTitle = isFav 
-        ? (isId ? 'Hapus dari Pangan Favorit' : 'Remove from Favorites') 
-        : (isId ? 'Simpan ke Pangan Favorit' : 'Save to Favorites');
-      const recipeTitle = isId ? 'Buka Resep & Panduan Memasak Klinis' : 'Open Clinical Recipe & Cooking Guide';
-      const portionUnit = isId ? 'porsi' : 'portion';
-      const carbUnit = isId ? 'Karbo' : 'Carbs';
-      const calUnit = isId ? 'kkal' : 'kcal';
+      const clinicalTag = isId ? (food.clinicalIndication || 'Pemulihan Klinis') : (food.clinicalIndicationEn || food.clinicalIndication || 'Clinical Recovery');
+      const bappenasRef = food.bappenasRef || (isId ? 'Acuan Bapanas RI' : 'Bapanas RI Reference');
+      const isTopRec = this.catalogCurrentPage === 1 && idx < 6;
+      let recBadgeText = isId ? 'Top Rekomendasi' : 'Top Pick';
+      if (condition === 'gym') recBadgeText = `${food.protein}g Prot · Gym`;
+      else if (condition === 'rehab') recBadgeText = isId ? 'Rehabilitasi' : 'Rehab';
+      else if (condition === 'post-surgery') recBadgeText = isId ? 'Pasca-Bedah' : 'Post-Surgery';
+
+      const proteinVal = food.proteinRange ? `${food.proteinRange[0]}-${food.proteinRange[1]}` : (food.protein || 20);
+      const calVal = food.calsRange ? `${food.calsRange[0]}-${food.calsRange[1]}` : (food.calories || 250);
 
       return `
-        <div class="popular-food-card" onclick="app.handleCardClick('${food.id}')" title="${cardTitle}">
-          <!-- Floating Round Dish Image & Side Header (Hanya Tag Indikasi Klinis) -->
+        <div class="popular-food-card ${isTopRec ? 'is-recommended' : ''}" 
+             id="food-card-${food.id}"
+             onclick="app.openAddToMealPlannerModal('${food.id}')" 
+             title="${isId ? 'Klik untuk konfirmasi tambah ke Meal Planner' : 'Click to add to Meal Planner'}">
+          <!-- Floating Round Dish Image & Rating -->
           <div class="food-card-top">
             <div class="food-dish-plate-wrap">
               <img src="${food.image}" alt="${displayName}" class="food-dish-img" loading="lazy" onerror="this.src='icons/icon-192.png'" />
             </div>
-
-            <!-- Sisi Kanan Atas: Hanya Tag Indikasi Terapi Klinis -->
-            <div class="food-card-header-side" onclick="event.stopPropagation();">
-              <span class="food-clinical-tag" title="${isId ? 'Indikasi Terapi Klinis:' : 'Clinical Therapy Indication:'} ${clinicalTag}">
-                <iconify-icon icon="solar:shield-check-bold" style="font-size:11.5px;color:#64748B;flex-shrink:0;"></iconify-icon>
-                <span>${clinicalTag}</span>
-              </span>
+            <div class="food-card-top-right-col">
+              <button type="button" class="food-fav-btn ${isFav ? 'active' : ''}" 
+                      onclick="app.toggleFavoriteFood('${food.id}', event)" 
+                      title="${isFav ? (isId ? 'Hapus dari favorit' : 'Remove favorite') : (isId ? 'Simpan ke favorit' : 'Add to favorites')}"
+                      aria-label="${isFav ? 'Hapus dari favorit' : 'Simpan ke favorit'}">
+                <i data-lucide="heart" class="fav-icon"></i>
+              </button>
+              <div class="food-rating-badge">
+                <span class="rating-num">${rating}</span>
+                <i data-lucide="star" class="star-icon"></i>
+              </div>
             </div>
           </div>
 
@@ -3319,30 +3873,39 @@ class NutriVisionApp {
             <p class="food-card-sub">${subtitle}</p>
 
             <div class="food-macro-pills-row">
-              <span class="macro-pill-item prot">${food.protein}g Prot</span>
-              <span class="macro-pill-item carb">${food.carbs}g ${carbUnit}</span>
-              <span class="macro-pill-item cal">${food.calories} ${calUnit}</span>
+              <span class="macro-pill-item prot">
+                <iconify-icon icon="solar:bone-linear" class="macro-pill-icon"></iconify-icon>
+                <span>${proteinVal}g Prot</span>
+              </span>
+              <span class="macro-pill-item cal">
+                <iconify-icon icon="solar:fire-linear" class="macro-pill-icon"></iconify-icon>
+                <span>${calVal} kkal</span>
+              </span>
+              ${food.carbs !== undefined ? `
+              <span class="macro-pill-item carb">
+                <iconify-icon icon="solar:leaf-linear" class="macro-pill-icon"></iconify-icon>
+                <span>${food.carbs}g Karbo</span>
+              </span>` : ''}
             </div>
 
-            <!-- Card Footer: Love Icon & Resep Pembuatan Samping-Sampingan -->
             <div class="food-card-footer">
               <div class="food-footer-left-actions">
-                <button type="button" class="food-fav-action-btn ${isFav ? 'active' : ''}" 
-                        onclick="event.stopPropagation(); app.toggleFavoriteFood('${food.id}', event);" 
-                        title="${favTitle}"
-                        aria-label="${isId ? 'Favorit' : 'Favorite'}">
-                  <iconify-icon icon="${isFav ? 'solar:heart-bold' : 'solar:heart-linear'}" class="fav-action-icon"></iconify-icon>
+                <button type="button" class="food-cart-btn" 
+                        onclick="event.stopPropagation(); app.openAddToMealPlannerModal('${food.id}');" 
+                        title="${isId ? 'Tambahkan ke Meal Planner' : 'Add to Meal Planner'}"
+                        aria-label="${isId ? 'Tambahkan ke Meal Planner' : 'Add to Meal Planner'}">
+                  <i data-lucide="calendar-plus" class="cart-icon"></i>
                 </button>
                 <button type="button" class="food-recipe-action-btn" 
-                        onclick="event.stopPropagation(); app.handleRecipeClick('${food.id}');" 
-                        title="${recipeTitle}"
-                        aria-label="${isId ? 'Lihat Resep Pembuatan' : 'View Cooking Guide'}">
-                  <iconify-icon icon="solar:alt-arrow-right-bold" class="recipe-btn-arrow"></iconify-icon>
+                        onclick="event.stopPropagation(); app.openFoodRecipeModal('${food.id}');" 
+                        title="${isId ? 'Lihat Resep & Panduan Masak' : 'View Recipe & Cooking Guide'}"
+                        aria-label="${isId ? 'Lihat Resep & Panduan Masak' : 'View Recipe & Cooking Guide'}">
+                  <i data-lucide="chevron-right" class="recipe-btn-arrow"></i>
                 </button>
               </div>
               <div class="food-card-price-group">
-                <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/${portionUnit}</small></span>
-                <span class="food-bappenas-ref" title="${isId ? 'Acuan Harga Pasar Eceran Bapanas RI' : 'National Food Agency Retail Benchmark'}">${bappenasRef}</span>
+                <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
+                <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran">${bappenasRef}</span>
               </div>
             </div>
           </div>
@@ -3619,7 +4182,7 @@ class NutriVisionApp {
     const ingTabLabel = isId ? 'Bahan-Bahan' : 'Ingredients';
     const dirTabLabel = isId ? 'Cara Memasak' : 'Instructions';
     const stepsLabel = isId ? 'Langkah' : 'Steps';
-    const addPlateLabel = isId ? `Tambahkan ke Piring Scan (${servings} Porsi)` : `Add to Plate Scan (${servings} Servings)`;
+    const addPlateLabel = isId ? `Tambahkan ke Meal Planner (${servings} Porsi)` : `Add to Meal Planner (${servings} Servings)`;
 
     modalContent.innerHTML = `
       <!-- 1. Hero Food Photo with Floating Circular Nav Buttons -->
@@ -3723,8 +4286,8 @@ class NutriVisionApp {
           <!-- Bottom Sticky Action Button -->
           <div class="recipe-sticky-action-bar">
             <button type="button" class="recipe-add-plate-btn" 
-                    onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
-              <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
+                    onclick="app.openAddToMealPlannerModal('${food.id}'); app.closeModal('food-recipe-modal');">
+              <iconify-icon icon="solar:calendar-add-bold" style="font-size:18px;"></iconify-icon>
               <span>${addPlateLabel}</span>
             </button>
           </div>
@@ -3794,8 +4357,8 @@ class NutriVisionApp {
           <!-- Bottom Sticky Action Button -->
           <div class="recipe-sticky-action-bar">
             <button type="button" class="recipe-add-plate-btn" 
-                    onclick="app.addCatalogItemToScan('${food.id}'); app.closeModal('food-recipe-modal');">
-              <iconify-icon icon="solar:add-circle-bold" style="font-size:18px;"></iconify-icon>
+                    onclick="app.openAddToMealPlannerModal('${food.id}'); app.closeModal('food-recipe-modal');">
+              <iconify-icon icon="solar:calendar-add-bold" style="font-size:18px;"></iconify-icon>
               <span>${addPlateLabel}</span>
             </button>
           </div>

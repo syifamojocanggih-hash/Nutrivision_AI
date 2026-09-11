@@ -244,7 +244,10 @@
       cat_pill_carbs: 'Carbohydrates',
       cat_pill_fruit: 'Fruits & Drinks',
       cat_pill_soft: 'Soft / Pureed Diet',
-      cat_search_placeholder: 'Search local foods (Snakehead Fish, Tempeh, Egg, Brown Rice, etc.)...',
+      cat_search_placeholder: 'Search local foods (Avocado, Meatballs, Broccoli, Chicken Breast, Salmon, etc.)...',
+      cat_pagination_info: 'Showing {start}–{end} of {total} food items',
+      cat_pagination_prev: 'Previous',
+      cat_pagination_next: 'Next',
 
       // Community Forum View
       comm_heading: 'NutriVision Recovery Community',
@@ -523,7 +526,10 @@
       cat_pill_carbs: 'Karbohidrat',
       cat_pill_fruit: 'Buah & Minuman',
       cat_pill_soft: 'Diet Lunak',
-      cat_search_placeholder: 'Cari pangan lokal (Ikan Gabus, Tempe, Telur, Beras, dll)...',
+      cat_search_placeholder: 'Cari menu pangan lokal (Alpukat, Bakso, Brokoli, Dada Ayam, Salmon, dll)...',
+      cat_pagination_info: 'Menampilkan {start}–{end} dari {total} menu makanan',
+      cat_pagination_prev: 'Sebelumnya',
+      cat_pagination_next: 'Selanjutnya',
 
       // Community Forum View
       comm_heading: 'Ruang Komunitas Pemulihan NutriVision',
