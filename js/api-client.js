@@ -61,7 +61,6 @@ class NutriVisionAPIClient {
    * Update visual indicator in UI if present
    */
   updateUIStatus(isOnline, data = null) {
-    const badge = document.getElementById('backend-status-badge');
     const dot = document.getElementById('backend-status-dot');
     const text = document.getElementById('backend-status-text');
 
@@ -70,8 +69,8 @@ class NutriVisionAPIClient {
     }
     if (text) {
       text.textContent = isOnline
-        ? `Backend API: Aktif (Port ${data?.port || 5000} · MySQL)`
-        : 'Backend: Offline (Mode IndexedDB Aktif)';
+        ? `Backend Terhubung · MySQL Port ${data?.port || 5000}`
+        : 'Mode Lokal · Data tersimpan di perangkat ini';
     }
   }
 
@@ -162,6 +161,14 @@ class NutriVisionAPIClient {
   // =========================================================================
   async getMeals(limit = 50) {
     return await this.request(`/api/meals?limit=${limit}`);
+  }
+
+  async getMealsToday() {
+    return await this.request('/api/meals/today');
+  }
+
+  async getMealsByDate(date) {
+    return await this.request(`/api/meals/date/${date}`);
   }
 
   async logMeal(mealData) {

@@ -38,6 +38,88 @@ router.get('/', optionalAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/meals/today
+ * Retrieve only today's logged meals for the current user
+ */
+router.get('/today', optionalAuth, async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id : (req.query.userId || 'usr_patient_siti');
+
+    const meals = await db.query(
+      `SELECT * FROM meals
+       WHERE user_id = ? AND DATE(timestamp) = CURDATE()
+       ORDER BY timestamp DESC`,
+      [userId]
+    );
+
+    const totalProtein = meals.reduce((sum, m) => sum + (parseFloat(m.total_protein) || 0), 0);
+    const totalCalories = meals.reduce((sum, m) => sum + (parseInt(m.total_calories) || 0), 0);
+    const totalCarbs = meals.reduce((sum, m) => sum + (parseFloat(m.total_carbs) || 0), 0);
+    const totalFat = meals.reduce((sum, m) => sum + (parseFloat(m.total_fat) || 0), 0);
+
+    return res.json({
+      success: true,
+      date: new Date().toISOString().split('T')[0],
+      count: meals.length,
+      summary: {
+        totalProtein: Math.round(totalProtein * 10) / 10,
+        totalCalories: Math.round(totalCalories),
+        totalCarbs: Math.round(totalCarbs * 10) / 10,
+        totalFat: Math.round(totalFat * 10) / 10
+      },
+      meals: meals.map(sanitizeMeal)
+    });
+  } catch (err) {
+    console.error('Get today meals error:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * GET /api/meals/date/:date
+ * Retrieve meals for a specific date (YYYY-MM-DD)
+ */
+router.get('/date/:date', optionalAuth, async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id : (req.query.userId || 'usr_patient_siti');
+    const { date } = req.params;
+
+    // Basic YYYY-MM-DD validation
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ success: false, message: 'Format tanggal tidak valid. Gunakan YYYY-MM-DD.' });
+    }
+
+    const meals = await db.query(
+      `SELECT * FROM meals
+       WHERE user_id = ? AND DATE(timestamp) = ?
+       ORDER BY timestamp DESC`,
+      [userId, date]
+    );
+
+    const totalProtein = meals.reduce((sum, m) => sum + (parseFloat(m.total_protein) || 0), 0);
+    const totalCalories = meals.reduce((sum, m) => sum + (parseInt(m.total_calories) || 0), 0);
+    const totalCarbs = meals.reduce((sum, m) => sum + (parseFloat(m.total_carbs) || 0), 0);
+    const totalFat = meals.reduce((sum, m) => sum + (parseFloat(m.total_fat) || 0), 0);
+
+    return res.json({
+      success: true,
+      date,
+      count: meals.length,
+      summary: {
+        totalProtein: Math.round(totalProtein * 10) / 10,
+        totalCalories: Math.round(totalCalories),
+        totalCarbs: Math.round(totalCarbs * 10) / 10,
+        totalFat: Math.round(totalFat * 10) / 10
+      },
+      meals: meals.map(sanitizeMeal)
+    });
+  } catch (err) {
+    console.error('Get meals by date error:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/**
  * POST /api/meals
  * Log a newly scanned or custom meal
  */

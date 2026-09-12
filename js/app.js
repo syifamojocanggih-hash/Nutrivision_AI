@@ -218,7 +218,7 @@ class NutriVisionApp {
 
     // Router URL Hash Handling (Landing vs Dashboard)
     const hash = window.location.hash.replace('#', '');
-    const validSections = ['overview', 'planner', 'catalog', 'community', 'caregiver', 'progress', 'profile'];
+    const validSections = ['overview', 'planner', 'history', 'catalog', 'community', 'caregiver', 'progress', 'profile'];
     if (validSections.includes(hash) || hash === 'dashboard' || hash === 'app') {
       this.goToDashboard(validSections.includes(hash) ? hash : 'overview');
     } else {
@@ -707,6 +707,12 @@ class NutriVisionApp {
     if (window.progressTracker) {
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
+      if (typeof progressTracker.renderTodayMealHistory === 'function') {
+        progressTracker.renderTodayMealHistory();
+      }
+      if (typeof progressTracker.renderHistoryPage === 'function') {
+        progressTracker.renderHistoryPage();
+      }
     }
     this.renderFoodCatalog();
     if (window.mealPlanner && typeof window.mealPlanner.renderPlanner === 'function') {
@@ -999,7 +1005,7 @@ class NutriVisionApp {
 
     // Role-based route guard & redirect
     if (isAdmin) {
-      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile') {
+      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile') {
         sectionId = 'admin';
       } else if (sectionId === 'planner' || sectionId === 'catalog') {
         sectionId = 'admin-clinical-menu';
@@ -1048,6 +1054,12 @@ class NutriVisionApp {
       this.renderFoodCatalog();
     }
 
+    if (sectionId === 'history') {
+      if (window.progressTracker && typeof window.progressTracker.renderHistoryPage === 'function') {
+        window.progressTracker.renderHistoryPage();
+      }
+    }
+
     if (sectionId === 'admin') {
       this.renderAdminPortal();
     }
@@ -1070,12 +1082,12 @@ class NutriVisionApp {
 
     // Update Desktop Nav Active State
     document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.sec === sectionId);
+      btn.classList.toggle('active', btn.dataset.sec === sectionId || (sectionId === 'history' && btn.dataset.sec === 'overview'));
     });
 
     // Update Mobile Bottom Nav Active State
     document.querySelectorAll('.bottom-nav-pwa .bottom-nav-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.sec === sectionId);
+      btn.classList.toggle('active', btn.dataset.sec === sectionId || (sectionId === 'history' && btn.dataset.sec === 'overview'));
     });
 
     // Update Topbar Profile Button Active State
@@ -2934,11 +2946,16 @@ class NutriVisionApp {
     this.requireAuth(() => {
       const agg = cvEngine.calculateAggregatedNutrients();
       const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
-      progressTracker.addLoggedMeal(agg, userKey);
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      const scanTitle = cvEngine.currentScan?.title 
+        || (cvEngine.currentScan?.segments && cvEngine.currentScan.segments.length > 0
+            ? cvEngine.currentScan.segments.map(s => isId ? s.name : (s.nameEn || s.name)).join(', ')
+            : (isId ? 'Hasil Scan Piring AI' : 'AI Plate Scan'));
+      progressTracker.addLoggedMeal(agg, userKey, { name: scanTitle, source: isId ? 'Pindai Kamera AI' : 'AI Camera Scan' });
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
       this.closeModal('scan-modal');
-      this.showToast('✅ Asupan makanan berhasil dicatat ke progres pemulihan harian!');
+      this.showToast(isId ? '✅ Asupan makanan berhasil dicatat ke progres pemulihan harian!' : '✅ Meal intake logged to daily recovery progress!');
     }, 'mencatat asupan');
   }
 
@@ -3752,7 +3769,7 @@ class NutriVisionApp {
           calories: [totalCalories, totalCalories],
           carbs: [totalCarbs, totalCarbs],
           fat: [totalFat, totalFat]
-        }, userKey);
+        }, userKey, { name: food.name || (isId ? 'Menu Pilihan Populer' : 'Popular Dish'), source: isId ? 'Katalog Pangan' : 'Food Catalog' });
         if (this.userProfile && this.userProfile.targets) {
           window.progressTracker.renderMacroDonut(this.userProfile.targets);
         }

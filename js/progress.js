@@ -41,6 +41,7 @@ class NutriVisionProgress {
       fat: 0,
       calories: 0
     };
+    this.todayMeals = [];
     this.weeklyLogs = [
       { day: 'Sen', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
       { day: 'Sel', date: '--', protein: 0, targetProt: 0, calories: 0, targetCal: 0, compliancePct: 0 },
@@ -63,6 +64,7 @@ class NutriVisionProgress {
       fat: 0,
       calories: 0
     };
+    this.todayMeals = [];
     this.weeklyLogs = this.create7DayLogs(targetProt, targetCal);
     if (userKey) {
       this.saveUserProgress(userKey);
@@ -75,6 +77,7 @@ class NutriVisionProgress {
     try {
       const payload = {
         todayIntake: this.todayIntake,
+        todayMeals: this.todayMeals || [],
         weeklyLogs: this.weeklyLogs,
         dateKey: new Date().toISOString().split('T')[0]
       };
@@ -102,12 +105,34 @@ class NutriVisionProgress {
           this.isConfigured = true;
           if (parsed.dateKey === todayKey) {
             this.todayIntake = parsed.todayIntake || { protein: 0, carbs: 0, fat: 0, calories: 0 };
+            this.todayMeals = parsed.todayMeals || [];
             this.weeklyLogs = parsed.weeklyLogs;
+
+            // Backwards compatibility cerdas: Jika sudah ada akumulasi protein tapi todayMeals belum ada
+            if (this.todayMeals.length === 0 && this.todayIntake.protein > 0) {
+              const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+              this.todayMeals = [
+                {
+                  id: 'meal_prev_' + Date.now(),
+                  name: isId ? 'Menu Pemulihan Terjadwal' : 'Logged Recovery Meal',
+                  time: 'Hari Ini',
+                  protein: this.todayIntake.protein,
+                  calories: this.todayIntake.calories,
+                  carbs: this.todayIntake.carbs || Math.round(this.todayIntake.calories * 0.5 / 4),
+                  fat: this.todayIntake.fat || Math.round(this.todayIntake.calories * 0.25 / 9),
+                  source: isId ? 'Catat Asupan' : 'Logged Intake'
+                }
+              ];
+              this.saveUserProgress(userKey);
+            }
           } else {
             this.todayIntake = { protein: 0, carbs: 0, fat: 0, calories: 0 };
+            this.todayMeals = [];
             this.weeklyLogs = this.create7DayLogs(targets.protein, targets.calories);
             this.saveUserProgress(userKey);
           }
+          // Sinkronisasi async dari backend (tidak blokir UI)
+          this.syncFromServer(userKey, targets);
           return;
         }
       }
@@ -117,6 +142,8 @@ class NutriVisionProgress {
 
     // Default: inisialisasi progres bersih 0 intake untuk akun nyata
     this.initUserProgress(targets, userKey);
+    // Sinkronisasi async dari backend (tidak blokir UI)
+    this.syncFromServer(userKey, targets);
   }
 
   // Muat data sampel klinis aktif saat pengguna masuk via Akun Demo
@@ -140,12 +167,46 @@ class NutriVisionProgress {
       fat: 42,
       calories: 1650
     };
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    this.todayMeals = [
+      {
+        id: 'meal_demo_1',
+        name: isId ? 'Fillet Ikan Gabus Kukus + Sayur Bening Bayam' : 'Steamed Snakehead Fish + Spinach Soup',
+        time: '12:30',
+        protein: 30,
+        calories: 780,
+        carbs: 90,
+        fat: 18,
+        source: isId ? 'Makan Siang' : 'Lunch'
+      },
+      {
+        id: 'meal_demo_2',
+        name: isId ? '2 Butir Telur Rebus Organik + Teh Hangat' : '2 Boiled Eggs + Warm Tea',
+        time: '07:45',
+        protein: 14,
+        calories: 390,
+        carbs: 45,
+        fat: 12,
+        source: isId ? 'Sarapan' : 'Breakfast'
+      },
+      {
+        id: 'meal_demo_3',
+        name: isId ? 'Susu Kedelai Probiotik + Tempe Kukus' : 'Probiotic Soy Milk + Steamed Tempeh',
+        time: '16:15',
+        protein: 18,
+        calories: 480,
+        carbs: 60,
+        fat: 12,
+        source: isId ? 'Camilan Sore' : 'Snack'
+      }
+    ];
   }
 
   // Perbarui target setelah pengisian kuesioner profil diagnostik
-  setTargets(targets) {
-    if (targets && targets.protein) {
-      this.isConfigured = true;
+  updateTargets(targets, userKey) {
+    if (!targets) return;
+    if (this.todayIntake.protein > 0) {
       const todayLog = this.weeklyLogs.find(l => l.isToday);
       if (todayLog) {
         todayLog.targetProt = targets.protein;
@@ -155,17 +216,43 @@ class NutriVisionProgress {
     }
   }
 
-  // Tambahkan hasil scan baru ke asupan hari ini
-  addLoggedMeal(aggregatedNutrients, userKey) {
-    const avgProt = (aggregatedNutrients.protein[0] + aggregatedNutrients.protein[1]) / 2;
-    const avgCarbs = (aggregatedNutrients.carbs[0] + aggregatedNutrients.carbs[1]) / 2;
-    const avgFat = (aggregatedNutrients.fat[0] + aggregatedNutrients.fat[1]) / 2;
-    const avgCals = (aggregatedNutrients.cals[0] + aggregatedNutrients.cals[1]) / 2;
+  // Tambahkan hasil scan / menu baru ke asupan hari ini
+  addLoggedMeal(aggregatedNutrients, userKey, mealMeta = {}) {
+    const pArr = Array.isArray(aggregatedNutrients.protein) ? aggregatedNutrients.protein : [aggregatedNutrients.protein || 0, aggregatedNutrients.protein || 0];
+    const cArr = Array.isArray(aggregatedNutrients.carbs) ? aggregatedNutrients.carbs : [aggregatedNutrients.carbs || 0, aggregatedNutrients.carbs || 0];
+    const fArr = Array.isArray(aggregatedNutrients.fat) ? aggregatedNutrients.fat : [aggregatedNutrients.fat || 0, aggregatedNutrients.fat || 0];
+    const calRaw = aggregatedNutrients.calories !== undefined ? aggregatedNutrients.calories : (aggregatedNutrients.cals !== undefined ? aggregatedNutrients.cals : 0);
+    const calArr = Array.isArray(calRaw) ? calRaw : [calRaw, calRaw];
+
+    const avgProt = Math.round((pArr[0] + pArr[1]) / 2);
+    const avgCarbs = Math.round((cArr[0] + cArr[1]) / 2);
+    const avgFat = Math.round((fArr[0] + fArr[1]) / 2);
+    const avgCals = Math.round((calArr[0] + calArr[1]) / 2);
 
     this.todayIntake.protein = Math.round(this.todayIntake.protein + avgProt);
     this.todayIntake.carbs = Math.round(this.todayIntake.carbs + avgCarbs);
     this.todayIntake.fat = Math.round(this.todayIntake.fat + avgFat);
     this.todayIntake.calories = Math.round(this.todayIntake.calories + avgCals);
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const mealTitle = typeof mealMeta === 'string' ? mealMeta : (mealMeta.name || (isId ? 'Menu Asupan Pemulihan' : 'Recovery Meal'));
+    const mealSource = (typeof mealMeta === 'object' && mealMeta.source) ? mealMeta.source : (isId ? 'Catat Asupan' : 'Logged Meal');
+
+    const mealEntry = {
+      id: 'meal_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+      name: mealTitle,
+      time: (typeof mealMeta === 'object' && mealMeta.time) ? mealMeta.time : timeStr,
+      protein: avgProt,
+      calories: avgCals,
+      carbs: avgCarbs,
+      fat: avgFat,
+      source: mealSource
+    };
+
+    if (!this.todayMeals) this.todayMeals = [];
+    this.todayMeals.unshift(mealEntry);
 
     // Update log hari ini
     const todayLog = this.weeklyLogs.find(l => l.isToday);
@@ -177,6 +264,37 @@ class NutriVisionProgress {
     }
 
     this.saveUserProgress(userKey);
+    this.renderTodayMealHistory();
+    this.renderHistoryPage();
+
+    // Sinkronisasi ke backend MySQL secara async (fire-and-forget)
+    if (typeof window !== 'undefined' && window.nutriAPI) {
+      const userProfile = (typeof app !== 'undefined' ? app.userProfile : null) || {};
+      const mealPayload = {
+        title: mealEntry.name,
+        mealType: (mealMeta?.mealType) || (mealEntry.source?.toLowerCase().includes('malam') ? 'dinner' :
+                   mealEntry.source?.toLowerCase().includes('siang') ? 'lunch' :
+                   mealEntry.source?.toLowerCase().includes('sarapan') || mealEntry.source?.toLowerCase().includes('pagi') ? 'breakfast' : 'snack'),
+        totalCalories: mealEntry.calories || 0,
+        totalProtein: mealEntry.protein || 0,
+        totalCarbs: mealEntry.carbs || 0,
+        totalFat: mealEntry.fat || 0,
+        imageUrl: mealMeta?.imageUrl || '',
+        confidence: mealMeta?.confidence || 92,
+        clinicalAdvice: mealMeta?.clinicalAdvice || '',
+        segments: mealMeta?.segments || [],
+        userId: userProfile?.contact || userProfile?.email || 'usr_patient_siti'
+      };
+      // Simpan server_id ke mealEntry agar bisa dihapus dari server nanti
+      window.nutriAPI.logMeal(mealPayload).then(res => {
+        if (res?.meal?.id) {
+          mealEntry._serverId = res.meal.id;
+          this.saveUserProgress(userKey);
+        }
+      }).catch(err => {
+        console.warn('[NutriVision] Sync meal to backend gagal (mode offline):', err.message);
+      });
+    }
   }
 
   // Render Grafik Batang Tren Mingguan (FR-09)
@@ -385,16 +503,12 @@ class NutriVisionProgress {
           <i data-lucide="utensils" style="color:var(--teal-700);width:20px;height:20px;flex-shrink:0;margin-top:2px;"></i>
           <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
             <div style="min-width:260px;flex:1;">
-              <strong>${isId ? 'Target Pemulihan Hari Ini Aktif:' : 'Daily Recovery Target Active:'}</strong> ${isId ? `Kebutuhan harian Anda adalah <b>${targets.protein}g protein</b> dan <b>${targets.calories.toLocaleString()} kkal</b>. Rekomendasi menu harian dan bahan makanan sudah disiapkan di bawah.` : `Your daily goal is <b>${targets.protein}g protein</b> and <b>${targets.calories.toLocaleString()} kcal</b>. Daily meals have been prepared below.`}
+              <strong>${isId ? 'Target Pemulihan Hari Ini Aktif:' : 'Daily Recovery Target Active:'}</strong> ${isId ? `Kebutuhan harian Anda adalah <b>${targets.protein}g protein</b> dan <b>${targets.calories.toLocaleString()} kkal</b>. Silakan unggah foto makanan untuk mulai memantau pemulihan.` : `Your daily goal is <b>${targets.protein}g protein</b> and <b>${targets.calories.toLocaleString()} kcal</b>. Upload a food photo to begin tracking your recovery.`}
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:6px 12px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;" onclick="document.querySelector('.budget-card-full')?.scrollIntoView({behavior:'smooth'})">
-                <i data-lucide="clipboard-list" style="width:13px;height:13px;"></i>
-                <span>${isId ? 'Lihat Menu Makanan (Card 3)' : 'View Menu Below'}</span>
-              </button>
-              <button type="button" class="btn-primary-teal" style="font-size:11.5px;padding:6px 12px;border-radius:8px;background:#233917;color:#FFFFFF;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;" onclick="app.openScanModal()">
-                <i data-lucide="camera" style="width:13px;height:13px;"></i>
-                <span>${isId ? 'Scan Makanan AI' : 'Scan Meal'}</span>
+              <button type="button" class="btn-primary-teal" style="font-size:11.5px;padding:6px 14px;border-radius:8px;background:#233917;color:#FFFFFF;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;" onclick="app.openScanModal()">
+                <i data-lucide="upload" style="width:13px;height:13px;"></i>
+                <span>${isId ? 'Unggah Foto Makanan' : 'Upload Food Photo'}</span>
               </button>
             </div>
           </div>
@@ -417,6 +531,510 @@ class NutriVisionProgress {
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
+    }
+
+    // Render Riwayat Asupan Makanan Hari Ini
+    this.renderTodayMealHistory();
+  }
+
+  // Navigasi langsung ke halaman riwayat asupan makanan
+  toggleTodayMealHistory() {
+    if (typeof app !== 'undefined' && typeof app.navigate === 'function') {
+      app.navigate('history');
+    }
+  }
+
+  // Hapus hidangan dari riwayat asupan hari ini
+  removeLoggedMeal(mealId) {
+    if (!this.todayMeals) return;
+    const meal = this.todayMeals.find(m => m.id === mealId);
+    if (!meal) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const confirmMsg = isId
+      ? `Hapus "${meal.name}" dari riwayat hari ini?\n\nAsupan nutrisi (${meal.protein}g protein, ${meal.calories} kkal) akan otomatis dikurangkan dari capaian harian.`
+      : `Remove "${meal.name}" from today's history?\n\nNutrient intake (${meal.protein}g protein, ${meal.calories} kcal) will be deducted from daily progress.`;
+
+    if (!confirm(confirmMsg)) return;
+
+    this.todayIntake.protein = Math.max(0, this.todayIntake.protein - (meal.protein || 0));
+    this.todayIntake.calories = Math.max(0, this.todayIntake.calories - (meal.calories || 0));
+    this.todayIntake.carbs = Math.max(0, this.todayIntake.carbs - (meal.carbs || 0));
+    this.todayIntake.fat = Math.max(0, this.todayIntake.fat - (meal.fat || 0));
+
+    this.todayMeals = this.todayMeals.filter(m => m.id !== mealId);
+
+    const todayLog = this.weeklyLogs.find(l => l.isToday);
+    if (todayLog) {
+      todayLog.protein = this.todayIntake.protein;
+      todayLog.calories = this.todayIntake.calories;
+      const targetProt = todayLog.targetProt || (typeof app !== 'undefined' && app.userProfile?.targets?.protein) || 75;
+      todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / targetProt) * 100));
+    }
+
+    const userKey = (typeof app !== 'undefined' && (app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name)) || 'guest';
+    this.saveUserProgress(userKey);
+
+    if (typeof app !== 'undefined' && app.userProfile && app.userProfile.targets) {
+      this.renderMacroDonut(app.userProfile.targets);
+    }
+    this.renderWeeklyBarChart();
+    this.renderTodayMealHistory();
+    this.renderHistoryPage();
+
+    if (typeof app !== 'undefined' && typeof app.showToast === 'function') {
+      app.showToast(isId ? `"${meal.name}" berhasil dihapus dari riwayat.` : `"${meal.name}" removed from history.`);
+    }
+
+    // Hapus dari backend secara async — coba dengan _serverId (MySQL ID) atau local id
+    if (typeof window !== 'undefined' && window.nutriAPI) {
+      const serverMealId = meal._serverId || meal.id;
+      window.nutriAPI.deleteMeal(serverMealId).catch(err => {
+        console.warn('[NutriVision] Hapus dari backend gagal (mode offline):', err.message);
+      });
+    }
+  }
+
+  // Update indikator / badge jumlah riwayat hidangan hari ini di header Card 2
+  renderTodayMealHistory() {
+    const headerCountBadge = document.getElementById('history-header-count-badge');
+    const meals = this.todayMeals || [];
+
+    if (headerCountBadge) {
+      headerCountBadge.textContent = meals.length;
+      headerCountBadge.style.display = meals.length > 0 ? 'inline-block' : 'none';
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Set filter sumber hidangan untuk halaman Riwayat
+  setHistoryFilter(filterSource, btn) {
+    this.historyFilterSource = filterSource;
+    const chipContainer = document.getElementById('history-filter-chips');
+    if (chipContainer) {
+      const buttons = chipContainer.querySelectorAll('button');
+      buttons.forEach(b => {
+        const isSelected = (b === btn) || (b.getAttribute('data-filter') === filterSource);
+        if (isSelected) {
+          b.style.background = '#233917';
+          b.style.color = '#FFFFFF';
+          b.style.borderColor = '#233917';
+          b.style.fontWeight = '700';
+        } else {
+          b.style.background = '#FFFFFF';
+          b.style.color = '#1C200E';
+          b.style.borderColor = '#CBD5E1';
+          b.style.fontWeight = '600';
+        }
+      });
+    }
+    this.renderHistoryPage();
+  }
+
+  // Tangani pencarian hidangan pada halaman Riwayat
+  handleHistorySearch(query) {
+    this.historySearchQuery = (query || '').trim();
+    this.renderHistoryPage();
+  }
+
+  // Reset / Bersihkan seluruh catatan makanan hari ini
+  clearTodayMeals() {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const meals = this.todayMeals || [];
+    if (meals.length === 0) {
+      if (typeof app !== 'undefined' && typeof app.showToast === 'function') {
+        app.showToast(isId ? 'Belum ada catatan hidangan hari ini.' : 'No meal records logged today.');
+      }
+      return;
+    }
+
+    const confirmMsg = isId
+      ? 'Apakah Anda yakin ingin mereset seluruh catatan makanan hari ini?\n\nSemua hidangan yang dicatat hari ini akan dihapus dan capaian nutrisi harian akan dikembalikan ke 0.'
+      : 'Are you sure you want to reset all logged meals for today?\n\nAll dishes logged today will be cleared and daily nutrient progress will be reset to 0.';
+
+    if (!confirm(confirmMsg)) return;
+
+    this.todayMeals = [];
+    this.todayIntake = {
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      calories: 0
+    };
+
+    const todayLog = this.weeklyLogs.find(l => l.isToday);
+    if (todayLog) {
+      todayLog.protein = 0;
+      todayLog.calories = 0;
+      todayLog.compliancePct = 0;
+    }
+
+    const userKey = (typeof app !== 'undefined' && (app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name)) || 'guest';
+    this.saveUserProgress(userKey);
+
+    if (typeof app !== 'undefined' && app.userProfile && app.userProfile.targets) {
+      this.renderMacroDonut(app.userProfile.targets);
+    }
+    this.renderWeeklyBarChart();
+    this.renderTodayMealHistory();
+    this.renderHistoryPage();
+
+    if (typeof app !== 'undefined' && typeof app.showToast === 'function') {
+      app.showToast(isId ? 'Catatan hidangan hari ini berhasil direset.' : "Today's meal journal has been reset.");
+    }
+  }
+
+  // Render Halaman Dedikasi Riwayat Asupan & Jurnal Makanan (#view-history)
+  renderHistoryPage() {
+    const pageView = document.getElementById('view-history');
+    if (!pageView) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const profile = (typeof app !== 'undefined' ? app.userProfile : null) || {};
+    const targetProt = profile?.targets?.protein || 75;
+    const targetCal = profile?.targets?.calories || 1850;
+
+    const meals = Array.isArray(this.todayMeals) ? this.todayMeals : [];
+    const totalProt = meals.reduce((sum, m) => sum + (Number(m.protein) || 0), 0);
+    const totalCals = meals.reduce((sum, m) => sum + (Number(m.calories) || 0), 0);
+    const protPct = targetProt > 0 ? Math.round((totalProt / targetProt) * 100) : 0;
+
+    // 1. Update KPI Summary Cards
+    const countEl = document.getElementById('hist-stat-count');
+    if (countEl) {
+      countEl.textContent = isId ? `${meals.length} Hidangan` : `${meals.length} Meals`;
+    }
+
+    const protEl = document.getElementById('hist-stat-protein');
+    if (protEl) {
+      protEl.innerHTML = `<span style="color:#1B5E20;font-weight:700;">+${totalProt}g</span> <span style="font-size:12px;color:#687346;font-weight:600;">/ ${targetProt}g (${protPct}%)</span>`;
+    }
+
+    const calsEl = document.getElementById('hist-stat-calories');
+    if (calsEl) {
+      calsEl.textContent = `${totalCals.toLocaleString()} ${isId ? 'kkal' : 'kcal'}`;
+    }
+
+    const statusBadge = document.getElementById('hist-stat-status-badge');
+    if (statusBadge) {
+      let badgeClass = 'badge gray';
+      let badgeText = isId ? 'Belum Ada Asupan' : 'No Intake Yet';
+      if (meals.length > 0) {
+        if (protPct >= 100) {
+          badgeClass = 'badge green';
+          badgeText = isId ? `Optimal (${protPct}%)` : `Optimal (${protPct}%)`;
+        } else if (protPct >= 70) {
+          badgeClass = 'badge teal';
+          badgeText = isId ? `Baik (${protPct}%)` : `Good (${protPct}%)`;
+        } else if (protPct >= 40) {
+          badgeClass = 'badge orange';
+          badgeText = isId ? `Perlu Tambahan (${protPct}%)` : `Needs More (${protPct}%)`;
+        } else {
+          badgeClass = 'badge red';
+          badgeText = isId ? `Rendah (${protPct}%)` : `Low (${protPct}%)`;
+        }
+      }
+      statusBadge.className = badgeClass;
+      statusBadge.textContent = badgeText;
+    }
+
+    // 2. Filter & Search Today's Meals
+    const filter = this.historyFilterSource || 'all';
+    const query = (this.historySearchQuery || '').toLowerCase();
+    let filtered = meals;
+    if (filter !== 'all') {
+      filtered = filtered.filter(m => (m.source || '').toLowerCase().includes(filter.toLowerCase()));
+    }
+    if (query) {
+      filtered = filtered.filter(m =>
+        (m.name || '').toLowerCase().includes(query) ||
+        (m.source || '').toLowerCase().includes(query)
+      );
+    }
+
+    // 3. Render Today's Journal List
+    const listContainer = document.getElementById('history-page-meal-list');
+    if (listContainer) {
+      if (meals.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align:center;padding:44px 20px;background:#FAFBF7;border:1px dashed #D9E2CF;border-radius:12px;">
+            <div style="width:52px;height:52px;border-radius:50%;background:rgba(35,57,23,0.06);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#233917;">
+              <i data-lucide="utensils-crossed" style="width:24px;height:24px;"></i>
+            </div>
+            <h4 style="font-size:15px;font-weight:700;color:#1C200E;margin-bottom:6px;" data-i18n="hist_empty_title">
+              ${isId ? 'Belum Ada Hidangan yang Dicatat Hari Ini' : 'No Meals Logged Today Yet'}
+            </h4>
+            <p style="font-size:12.5px;color:#687346;max-width:440px;margin:0 auto 18px;line-height:1.5;" data-i18n="hist_empty_desc">
+              ${isId ? 'Menu yang Anda catat dari Rencana Menu, Pindai Kamera AI, atau Katalog Pangan akan tersusun rapi di jurnal ini.' : 'Meals you log from the Meal Planner, AI Camera Scan, or Catalog will appear here in your food journal.'}
+            </p>
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
+              <button type="button" class="btn-outline-glass" onclick="app.navigate('overview')"
+                style="font-size:12px;padding:7px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+                <span>${isId ? 'Kembali ke Ringkasan' : 'Back to Overview'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align:center;padding:36px 20px;background:#FAFBF7;border:1px dashed #D9E2CF;border-radius:12px;color:#687346;font-size:13px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(35,57,23,0.06);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;color:#687346;">
+              <i data-lucide="search-x" style="width:20px;height:20px;"></i>
+            </div>
+            <b>${isId ? 'Tidak ada hidangan yang cocok dengan filter atau kata kunci.' : 'No dishes match your filter or search query.'}</b>
+            <div style="margin-top:10px;">
+              <button type="button" onclick="progressTracker.setHistoryFilter('all', document.querySelector('#history-filter-chips [data-filter=\\'all\\']'));document.getElementById('history-search-input').value='';progressTracker.handleHistorySearch('');"
+                class="btn-outline-glass" style="font-size:11.5px;padding:5px 14px;border-radius:6px;background:#FFFFFF;border:1px solid #CBD5E1;color:#233917;font-weight:600;cursor:pointer;">
+                ${isId ? 'Reset Filter' : 'Reset Filter'}
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        const itemsHtml = filtered.map(meal => {
+          const src = (meal.source || '').toLowerCase();
+          let sourceBadgeClass = 'badge gray';
+          if (src.includes('pindai') || src.includes('scan') || src.includes('kamera') || src.includes('camera') || src.includes('ai')) {
+            sourceBadgeClass = 'badge teal';
+          } else if (src.includes('rencana') || src.includes('planner') || src.includes('menu')) {
+            sourceBadgeClass = 'badge green';
+          } else if (src.includes('katalog') || src.includes('catalog')) {
+            sourceBadgeClass = 'badge orange';
+          }
+
+          return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:8px;background:#FAFBF7;border:1px solid #E2E8CE;border-radius:10px;gap:12px;flex-wrap:wrap;transition:all 0.15s ease;"
+              onmouseover="this.style.borderColor='#A6B280';this.style.background='#FFFFFF';"
+              onmouseout="this.style.borderColor='#E2E8CE';this.style.background='#FAFBF7';">
+              <div style="display:flex;align-items:center;gap:12px;min-width:200px;flex:1;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FFFFFF;border:1px solid #E2E8CE;border-radius:8px;padding:6px 10px;min-width:62px;">
+                  <span style="font-size:10px;font-weight:700;color:#8A9664;text-transform:uppercase;">${isId ? 'JAM' : 'TIME'}</span>
+                  <b style="font-size:13px;color:#233917;">${meal.time || '--:--'}</b>
+                </div>
+                <div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <b style="font-size:14px;color:#1C200E;">${meal.name}</b>
+                    <span class="${sourceBadgeClass}" style="font-size:10.5px;padding:2px 8px;font-weight:600;">
+                      ${meal.source || (isId ? 'Manual' : 'Manual')}
+                    </span>
+                  </div>
+                  <div style="font-size:11.5px;color:#687346;margin-top:3px;">
+                    ${isId ? 'Komposisi Nutrisi:' : 'Nutrient breakdown:'} Karbohidrat <b>${meal.carbs || 0}g</b> · Lemak <b>${meal.fat || 0}g</b>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="background:#E8F5E9;border:1px solid #C8E6C9;border-radius:8px;padding:5px 10px;text-align:right;">
+                    <span style="font-size:10px;color:#2E7D32;font-weight:700;display:block;text-transform:uppercase;">PROTEIN</span>
+                    <b style="font-size:13px;color:#1B5E20;">+${meal.protein}g</b>
+                  </div>
+                  <div style="background:#FFF9E6;border:1px solid #FFE082;border-radius:8px;padding:5px 10px;text-align:right;">
+                    <span style="font-size:10px;color:#8C6D1F;font-weight:700;display:block;text-transform:uppercase;">${isId ? 'KALORI' : 'ENERGY'}</span>
+                    <b style="font-size:13px;color:#785F18;">${meal.calories} ${isId ? 'kkal' : 'kcal'}</b>
+                  </div>
+                </div>
+                <button type="button" onclick="progressTracker.removeLoggedMeal('${meal.id}')"
+                  title="${isId ? 'Hapus catatan ini' : 'Delete this entry'}"
+                  style="background:none;border:1px solid #E2E8CE;color:#9CA3AF;padding:6px 8px;cursor:pointer;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s ease;"
+                  onmouseover="this.style.color='#DC2626';this.style.borderColor='#FED7D7';this.style.background='#FFF5F5'"
+                  onmouseout="this.style.color='#9CA3AF';this.style.borderColor='#E2E8CE';this.style.background='none'">
+                  <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        listContainer.innerHTML = `
+          ${itemsHtml}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;margin-top:10px;background:rgba(35,57,23,0.05);border:1px solid #E2E8CE;border-radius:9px;font-size:12.5px;color:#233917;flex-wrap:wrap;gap:8px;">
+            <span style="font-weight:700;">${isId ? 'Akumulasi Asupan Hari Ini:' : "Today's Total Accumulated Intake:"}</span>
+            <span>
+              <b>${meals.length}</b> ${isId ? 'hidangan' : 'items'} · 
+              <b style="color:#1B5E20;font-size:13px;">+${totalProt}g</b> Protein (${protPct}%) · 
+              <b style="color:#785F18;font-size:13px;">${totalCals.toLocaleString()}</b> ${isId ? 'kkal' : 'kcal'}
+            </span>
+          </div>
+        `;
+      }
+    }
+
+    // 4. Render 7-Day History Archive Table
+    const tableBody = document.getElementById('history-7day-table-body');
+    if (tableBody) {
+      this._render7DayTable(tableBody, this.weeklyLogs, targetProt, isId);
+
+      // Coba ambil data akurat dari backend (async, update tabel setelah dapat data)
+      if (typeof window !== 'undefined' && window.nutriAPI && window.nutriAPI.isServerOnline) {
+        window.nutriAPI.getWeeklyStats().then(data => {
+          if (data?.success && Array.isArray(data.days) && data.days.length > 0) {
+            // Konversi format API ke format weeklyLogs internal
+            const apiLogs = data.days.map(d => ({
+              day: d.dayId,
+              date: d.date,
+              dateKey: d.date,
+              protein: Math.round(d.actualProtein || 0),
+              targetProt: d.targetProtein || targetProt,
+              calories: Math.round(d.actualCalories || 0),
+              targetCal: d.targetCalories || profile?.targets?.calories || 1850,
+              compliancePct: d.compliancePct || 0,
+              isToday: d.date === new Date().toISOString().split('T')[0]
+            }));
+            // Update weeklyLogs internal dengan data server
+            this.weeklyLogs = apiLogs;
+            const userKey2 = (typeof app !== 'undefined' && (app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name)) || 'guest';
+            this.saveUserProgress(userKey2);
+            this.renderWeeklyBarChart();
+            // Re-render tabel dengan data server
+            if (tableBody) this._render7DayTable(tableBody, apiLogs, data.targetProtein || targetProt, isId);
+          }
+        }).catch(() => { /* Diam jika offline */ });
+      }
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Helper internal: render baris tabel 7-hari
+  _render7DayTable(tableBody, logs, targetProt, isId) {
+    const safeLog = Array.isArray(logs) && logs.length > 0 ? logs : [];
+    if (safeLog.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="padding:20px;text-align:center;color:#687346;">${isId ? 'Belum ada data riwayat mingguan.' : 'No weekly history data available.'}</td></tr>`;
+      return;
+    }
+    tableBody.innerHTML = safeLog.map(log => {
+      const tProt = log.targetProt || targetProt || 75;
+      const aProt = log.protein || 0;
+      const pct = tProt > 0 ? Math.min(100, Math.round((aProt / tProt) * 100)) : 0;
+      const cals = (log.calories || 0).toLocaleString();
+
+      let statusBadge = `<span class="badge gray" style="font-size:10.5px;padding:3px 8px;">${isId ? 'Nir-Asupan' : 'No Data'}</span>`;
+      let progressColor = '#9CA3AF';
+      if (aProt > 0) {
+        if (pct >= 100) {
+          statusBadge = `<span class="badge green" style="font-size:10.5px;padding:3px 8px;font-weight:700;">${isId ? 'Optimal' : 'Optimal'}</span>`;
+          progressColor = '#1B5E20';
+        } else if (pct >= 70) {
+          statusBadge = `<span class="badge teal" style="font-size:10.5px;padding:3px 8px;font-weight:700;">${isId ? 'Baik' : 'Good'}</span>`;
+          progressColor = '#0284C7';
+        } else if (pct >= 40) {
+          statusBadge = `<span class="badge orange" style="font-size:10.5px;padding:3px 8px;font-weight:700;">${isId ? 'Cukup' : 'Fair'}</span>`;
+          progressColor = '#D97706';
+        } else {
+          statusBadge = `<span class="badge red" style="font-size:10.5px;padding:3px 8px;font-weight:700;">${isId ? 'Rendah' : 'Low'}</span>`;
+          progressColor = '#DC2626';
+        }
+      }
+
+      const isToday = !!log.isToday;
+      const rowBg = isToday ? 'background:rgba(35,57,23,0.06);font-weight:600;' : 'background:#FFFFFF;';
+
+      return `
+        <tr style="${rowBg}border-bottom:1px solid #E2E8CE;font-size:12px;color:#1C200E;text-align:center;">
+          <td style="padding:10px 12px;text-align:left;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${isToday ? `<span class="badge teal" style="font-size:9.5px;padding:2px 6px;">${isId ? 'HARI INI' : 'TODAY'}</span>` : ''}
+              <b>${log.day}</b> <span style="color:#687346;font-size:11px;">(${log.date || '--'})</span>
+            </div>
+          </td>
+          <td style="padding:10px 12px;color:#687346;">${tProt}g</td>
+          <td style="padding:10px 12px;font-weight:700;color:${aProt > 0 ? '#1B5E20' : '#9CA3AF'};">${aProt}g</td>
+          <td style="padding:10px 12px;">
+            <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+              <div style="flex:1;max-width:80px;height:7px;background:#E2E8CE;border-radius:4px;overflow:hidden;">
+                <div style="width:${pct}%;height:100%;background:${progressColor};border-radius:4px;"></div>
+              </div>
+              <span style="font-size:11px;font-weight:700;min-width:32px;text-align:right;">${pct}%</span>
+            </div>
+          </td>
+          <td style="padding:10px 12px;color:#785F18;font-weight:600;">${cals} ${isId ? 'kkal' : 'kcal'}</td>
+          <td style="padding:10px 12px;">${statusBadge}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /**
+   * Sinkronisasi data dari backend MySQL ke state lokal (async, non-blocking).
+   * Dipanggil saat loadUserProgress() selesai membaca localStorage.
+   * Jika backend online, data server dijadikan sumber kebenaran (source of truth).
+   */
+  async syncFromServer(userKey, targets) {
+    if (typeof window === 'undefined' || !window.nutriAPI) return;
+
+    try {
+      // 1. Tunggu health check (bisa sudah selesai karena dipanggil di constructor api-client)
+      const isOnline = window.nutriAPI.isServerOnline || await window.nutriAPI.checkHealth();
+      if (!isOnline) return;
+
+      // 2. Ambil data hari ini dari server
+      const todayData = await window.nutriAPI.getMealsToday().catch(() => null);
+      if (todayData?.success && Array.isArray(todayData.meals)) {
+        // Konversi format server ke format internal todayMeals
+        const serverMeals = todayData.meals.map(m => ({
+          id: m.id,
+          _serverId: m.id,
+          name: m.title || 'Menu Tercatat',
+          time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+          protein: parseFloat(m.total_protein) || 0,
+          calories: parseInt(m.total_calories) || 0,
+          carbs: parseFloat(m.total_carbs) || 0,
+          fat: parseFloat(m.total_fat) || 0,
+          source: m.meal_type === 'breakfast' ? 'Sarapan' :
+                  m.meal_type === 'lunch' ? 'Makan Siang' :
+                  m.meal_type === 'dinner' ? 'Makan Malam' : 'Camilan',
+          imageUrl: m.image_url || ''
+        }));
+
+        // Gunakan data server jika lebih banyak / lebih baru dari localStorage
+        if (serverMeals.length >= this.todayMeals.length) {
+          this.todayMeals = serverMeals;
+          // Hitung ulang todayIntake dari data server
+          if (todayData.summary) {
+            this.todayIntake.protein = todayData.summary.totalProtein || 0;
+            this.todayIntake.calories = todayData.summary.totalCalories || 0;
+            this.todayIntake.carbs = todayData.summary.totalCarbs || 0;
+            this.todayIntake.fat = todayData.summary.totalFat || 0;
+          }
+
+          // Update today's weeklyLog entry
+          const todayLog = this.weeklyLogs.find(l => l.isToday);
+          if (todayLog) {
+            todayLog.protein = this.todayIntake.protein;
+            todayLog.calories = this.todayIntake.calories;
+            const tProt = todayLog.targetProt || targets?.protein || 75;
+            todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / tProt) * 100));
+          }
+
+          this.saveUserProgress(userKey);
+          this.renderTodayMealHistory();
+
+          // Update macro donut kalau profile sudah ada
+          const prof = (typeof app !== 'undefined' ? app.userProfile : null);
+          if (prof?.targets) {
+            this.renderMacroDonut(prof.targets);
+          }
+          this.renderWeeklyBarChart();
+
+          // Update history page jika sedang terbuka
+          const histView = document.getElementById('view-history');
+          if (histView && histView.classList.contains('active-view')) {
+            this.renderHistoryPage();
+          }
+
+          console.log(`[NutriVision] ✅ Sync dari server: ${serverMeals.length} hidangan hari ini dimuat.`);
+        }
+      }
+    } catch (err) {
+      // Silent fail — mode offline tetap berjalan dari localStorage
+      console.warn('[NutriVision] syncFromServer gagal (offline):', err.message);
     }
   }
 

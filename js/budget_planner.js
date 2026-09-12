@@ -894,7 +894,7 @@ class NutriVisionBudgetPlanner {
         calories: [dayPlan.totalDayCalories, dayPlan.totalDayCalories],
         carbs: [180, 180],
         fat: [35, 35]
-      }, userKey);
+      }, userKey, { name: isId ? `Rencana Menu Hari ke-${this.activeDay}` : `Day ${this.activeDay} Meal Plan`, source: 'Budget Planner' });
     }
 
     if (window.app && typeof window.app.showToast === 'function') {

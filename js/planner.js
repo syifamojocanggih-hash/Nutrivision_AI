@@ -234,7 +234,7 @@ class NutriVisionPlanner {
         carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
         fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
         cals: [cals, cals]
-      }, userKey);
+      }, userKey, { name: mealName, source: isId ? 'Rencana Menu' : 'Meal Planner' });
 
       progressTracker.renderMacroDonut(app.userProfile.targets);
       progressTracker.renderWeeklyBarChart();

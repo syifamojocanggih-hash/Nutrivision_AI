@@ -1659,9 +1659,21 @@
                 <div class="card-subtitle"><span data-i18n="ov_phase_prefix">Fase aktif:</span> <span
                     class="user-condition-placeholder">Belum dikonfigurasi (Mulai Diagnostik Gizi)</span></div>
               </div>
-              <span class="badge gray" id="ov-card2-status-badge" style="cursor:pointer;" onclick="app.openQuizModal(1)"
-                title="Klik untuk mengonfigurasi atau mengubah target gizi"><i data-lucide="help-circle"
-                  class="btn-icon-sm"></i> <span id="ov-card2-status-text">Belum Dikonfigurasi</span></span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button type="button" class="btn-outline-glass" id="btn-toggle-meal-history"
+                  style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;border:1px solid #CBD5E1;background:#FFFFFF;color:#233917;font-weight:700;transition:all 0.15s ease;"
+                  onclick="app.navigate('history')" title="Buka Halaman Riwayat Asupan Makanan"
+                  onmouseover="this.style.borderColor='#233917';this.style.background='#F4F7EE';"
+                  onmouseout="this.style.borderColor='#CBD5E1';this.style.background='#FFFFFF';">
+                  <iconify-icon icon="solar:history-2-bold-duotone" style="font-size:16px;color:#233917;flex-shrink:0;"></iconify-icon>
+                  <span data-i18n="ov_history_toggle">Riwayat Hari Ini</span>
+                  <span class="badge teal" id="history-header-count-badge" style="font-size:10.5px;padding:2px 7px;font-weight:800;display:none;">0</span>
+                </button>
+                <span class="badge gray" id="ov-card2-status-badge" style="display:none;" onclick="app.openQuizModal(1)">
+                  <i data-lucide="help-circle" class="btn-icon-sm"></i>
+                  <span id="ov-card2-status-text">Belum Dikonfigurasi</span>
+                </span>
+              </div>
             </div>
 
             <div class="macro-ring-container">
@@ -1958,6 +1970,180 @@
             <!-- Synchronized with meal planner -->
           </div>
         </div>
+      </div>
+
+      <!-- =========================================================================
+         VIEW: DEDICATED MEAL INTAKE & FOOD JOURNAL (HISTORY) PAGE
+         ========================================================================= -->
+      <div class="view-section" id="view-history">
+
+        <!-- History Page Hero & Actions Card -->
+        <div class="card" style="margin-bottom:18px;">
+          <div class="card-head" style="align-items:flex-start;flex-wrap:wrap;gap:12px;">
+            <div class="card-title-group">
+              <h2 data-i18n="hist_page_title" style="display:flex;align-items:center;gap:8px;">
+                <i data-lucide="clock-rewind" style="color:var(--teal-700);"></i>
+                <span>Riwayat Asupan &amp; Jurnal Makanan</span>
+              </h2>
+              <div class="card-subtitle" data-i18n="hist_page_sub">
+                Catatan hidangan makanan harian, linimasa waktu makan, dan pemantauan akumulasi protein untuk regenerasi jaringan.
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <button type="button" class="btn-outline-glass" onclick="app.navigate('overview')"
+                style="font-size:12px;padding:7px 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;">
+                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+                <span data-i18n="hist_btn_back">Kembali ke Ringkasan</span>
+              </button>
+              <button type="button" class="btn-outline-glass" onclick="progressTracker.clearTodayMeals()"
+                style="font-size:12px;padding:7px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:5px;background:#FFF5F5;border:1px solid #FED7D7;color:#C53030;font-weight:700;cursor:pointer;"
+                title="Reset seluruh catatan makanan hari ini">
+                <i data-lucide="rotate-ccw" style="width:13px;height:13px;"></i>
+                <span data-i18n="hist_btn_clear">Reset Hari Ini</span>
+              </button>
+            </div>
+          </div>
+          <!-- Backend Connection Status Indicator -->
+          <div id="backend-status-badge" style="display:flex;align-items:center;gap:7px;padding:6px 12px;background:#F9FAF2;border:1px solid #E2E8CE;border-radius:8px;margin-top:10px;width:fit-content;">
+            <span id="backend-status-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F59E0B;flex-shrink:0;transition:background 0.3s ease;"></span>
+            <span id="backend-status-text" style="font-size:11.5px;color:#687346;font-weight:600;">Memeriksa koneksi backend...</span>
+          </div>
+
+          <!-- KPI Summary Cards Row -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-top:16px;">
+            <!-- KPI 1: Menu Terhitung -->
+            <div style="background:#FAFBF7;border:1px solid #E2E8CE;border-radius:10px;padding:12px 16px;">
+              <span style="font-size:11px;color:#687346;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;" data-i18n="hist_stat_meals">Hidangan Hari Ini</span>
+              <div style="display:flex;align-items:baseline;gap:6px;">
+                <b id="hist-stat-count" style="font-size:22px;color:#1C200E;">0 Menu</b>
+              </div>
+              <span style="font-size:11px;color:#8A9664;display:block;margin-top:2px;">Tercatat dalam jurnal harian</span>
+            </div>
+
+            <!-- KPI 2: Protein Tercatat -->
+            <div style="background:#FAFBF7;border:1px solid #E2E8CE;border-radius:10px;padding:12px 16px;">
+              <span style="font-size:11px;color:#687346;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;" data-i18n="hist_stat_protein">Akumulasi Protein</span>
+              <div style="display:flex;align-items:baseline;gap:6px;">
+                <b id="hist-stat-protein" style="font-size:22px;color:#1B5E20;">0 g</b>
+                <span id="hist-stat-protein-target" style="font-size:12px;color:#687346;font-weight:600;">/ 75 g (0%)</span>
+              </div>
+              <div style="width:100%;height:5px;background:#E5EAD9;border-radius:3px;overflow:hidden;margin-top:6px;">
+                <div id="hist-bar-protein" style="width:0%;height:100%;background:#1B5E20;border-radius:3px;transition:width 0.3s ease;"></div>
+              </div>
+            </div>
+
+            <!-- KPI 3: Energi Basal (Kalori) -->
+            <div style="background:#FAFBF7;border:1px solid #E2E8CE;border-radius:10px;padding:12px 16px;">
+              <span style="font-size:11px;color:#687346;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;" data-i18n="hist_stat_calories">Energi Basal</span>
+              <div style="display:flex;align-items:baseline;gap:6px;">
+                <b id="hist-stat-calories" style="font-size:22px;color:#8C6D1F;">0 kkal</b>
+              </div>
+              <span style="font-size:11px;color:#8A9664;display:block;margin-top:2px;">Kebutuhan energi pemulihan</span>
+            </div>
+
+            <!-- KPI 4: Status Pemulihan -->
+            <div style="background:#FAFBF7;border:1px solid #E2E8CE;border-radius:10px;padding:12px 16px;">
+              <span style="font-size:11px;color:#687346;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;" data-i18n="hist_stat_status">Status Pemulihan</span>
+              <div>
+                <span class="badge gray" id="hist-stat-status-badge" style="font-size:11.5px;padding:4px 10px;font-weight:700;">Belum Ada Asupan</span>
+              </div>
+              <span style="font-size:11px;color:#8A9664;display:block;margin-top:4px;">Evaluasi asam amino seluler</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card" style="margin-bottom:18px;padding:14px 18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <!-- Filter Source Chips -->
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;" id="history-filter-chips">
+              <button type="button" class="btn-outline-glass active-filter" data-filter="all"
+                style="font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-weight:700;background:#233917;color:#FFFFFF;border-color:#233917;"
+                onclick="progressTracker.setHistoryFilter('all', this)">
+                <span data-i18n="hist_filter_all">Semua Sumber</span>
+              </button>
+              <button type="button" class="btn-outline-glass" data-filter="Rencana Menu"
+                style="font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-weight:600;background:#FFFFFF;border-color:#CBD5E1;color:#1C200E;"
+                onclick="progressTracker.setHistoryFilter('Rencana Menu', this)">
+                <span>Rencana Menu</span>
+              </button>
+              <button type="button" class="btn-outline-glass" data-filter="Pindai"
+                style="font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-weight:600;background:#FFFFFF;border-color:#CBD5E1;color:#1C200E;"
+                onclick="progressTracker.setHistoryFilter('Pindai', this)">
+                <span>Pindai Kamera AI</span>
+              </button>
+              <button type="button" class="btn-outline-glass" data-filter="Katalog"
+                style="font-size:11.5px;padding:5px 12px;border-radius:20px;cursor:pointer;font-weight:600;background:#FFFFFF;border-color:#CBD5E1;color:#1C200E;"
+                onclick="progressTracker.setHistoryFilter('Katalog', this)">
+                <span>Katalog Pangan</span>
+              </button>
+            </div>
+
+            <!-- Search Filter Input -->
+            <div style="min-width:240px;position:relative;flex:1;max-width:320px;">
+              <i data-lucide="search" style="width:14px;height:14px;color:#9CA3AF;position:absolute;left:10px;top:50%;transform:translateY(-50%);"></i>
+              <input type="text" id="history-search-input"
+                placeholder="Cari hidangan yang dicatat..."
+                data-i18n-placeholder="hist_filter_search"
+                style="width:100%;padding:6px 12px 6px 30px;font-size:12px;border-radius:8px;border:1px solid #CBD5E1;outline:none;background:#FFFFFF;"
+                oninput="progressTracker.handleHistorySearch(this.value)">
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Journal List Card -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-head" style="margin-bottom:12px;">
+            <div class="card-title-group">
+              <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin:0;display:flex;align-items:center;gap:7px;">
+                <i data-lucide="utensils-crossed" style="width:16px;height:16px;color:#233917;"></i>
+                <span>Jurnal Makanan Hari Ini</span>
+              </h3>
+              <div class="card-subtitle">Daftar asupan yang dikonsumsi dan diverifikasi nutrisinya</div>
+            </div>
+          </div>
+
+          <div id="history-page-meal-list">
+            <!-- Dynamically populated via progressTracker.renderHistoryPage() -->
+          </div>
+        </div>
+
+        <!-- 7-Day History Archive Table Card -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-head" style="margin-bottom:14px;">
+            <div class="card-title-group">
+              <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin:0;display:flex;align-items:center;gap:7px;">
+                <i data-lucide="calendar-check" style="width:16px;height:16px;color:#233917;"></i>
+                <span data-i18n="hist_archive_title">Rekapitulasi Riwayat &amp; Kepatuhan 7 Hari Terakhir</span>
+              </h3>
+              <div class="card-subtitle">Riwayat konsistensi pemenuhan target nutrisi regenerasi sel mingguan</div>
+            </div>
+            <button type="button" class="btn-outline-glass" onclick="app.openPDFReportModal()"
+              style="font-size:11.5px;padding:6px 12px;border-radius:8px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+              <i data-lucide="file-down" style="width:13px;height:13px;"></i>
+              <span>Ekspor PDF Medis</span>
+            </button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;border:1px solid #E2E8CE;border-radius:10px;overflow:hidden;">
+              <thead>
+                <tr style="background:#233917;color:#FFFFFF;font-size:11.5px;text-align:center;">
+                  <th style="padding:10px 12px;text-align:left;">Hari &amp; Tanggal</th>
+                  <th style="padding:10px 12px;">Target Protein</th>
+                  <th style="padding:10px 12px;">Asupan Aktual</th>
+                  <th style="padding:10px 12px;width:150px;">% Kepatuhan</th>
+                  <th style="padding:10px 12px;">Total Kalori</th>
+                  <th style="padding:10px 12px;">Status Klinis</th>
+                </tr>
+              </thead>
+              <tbody id="history-7day-table-body">
+                <!-- Dynamically populated via progressTracker.renderHistoryPage() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
       <!-- =========================================================================
@@ -2561,7 +2747,7 @@
     </button>
     <button class="bottom-nav-btn" data-sec="planner" onclick="app.navigate('planner')">
       <span class="nav-icon"><i data-lucide="utensils"></i></span>
-      <span>Menu</span>
+      <span data-i18n="nav_planner">Menu</span>
     </button>
     <button class="bottom-nav-btn" data-sec="catalog" onclick="app.navigate('catalog')">
       <span class="nav-icon"><i data-lucide="book-open"></i></span>
