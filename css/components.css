@@ -1026,46 +1026,175 @@ input:checked+.toggle-slider:before {
 .catalog-personalization-alert {
   background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
   border: 1px solid #A7F3D0;
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 14px;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.08);
+  gap: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+  transition: all 0.2s ease;
 }
 
 .catalog-personalization-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
+  flex: 1;
 }
 
 .catalog-personalization-icon {
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #10B981;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+.catalog-personalization-icon iconify-icon {
+  font-size: 19px;
+}
+
+.catalog-personalization-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.catalog-personalization-title-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .catalog-personalization-title {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #064E3B;
-  display: block;
+  letter-spacing: -0.01em;
+}
+
+.catalog-personalization-condition {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #047857;
 }
 
 .catalog-personalization-sub {
-  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
   color: #047857;
-  font-weight: 500;
+  line-height: 1.4;
+}
+
+.catalog-perso-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #047857;
+}
+
+.catalog-perso-stats strong {
+  color: #064E3B;
+  font-weight: 700;
+}
+
+.catalog-perso-dot,
+.catalog-perso-divider {
+  color: #10B981;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.catalog-perso-note {
+  color: #064E3B;
+  font-weight: 600;
+}
+
+.catalog-personalization-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #065F46;
+  background: #D1FAE5;
+  border: 1px solid #A7F3D0;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.08);
+  letter-spacing: 0.1px;
+}
+
+.catalog-perso-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  display: inline-block;
+  animation: persoBadgePulse 2s infinite ease-in-out;
+}
+
+@keyframes persoBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.75;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .catalog-personalization-alert {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.4) 0%, rgba(4, 120, 87, 0.25) 100%);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .catalog-personalization-title {
+  color: #ECFDF5;
+}
+
+[data-theme="dark"] .catalog-personalization-condition {
+  color: #A7F3D0;
+}
+
+[data-theme="dark"] .catalog-personalization-sub {
+  color: #D1FAE5;
+}
+
+[data-theme="dark"] .catalog-perso-stats {
+  color: #A7F3D0;
+}
+
+[data-theme="dark"] .catalog-perso-stats strong {
+  color: #ECFDF5;
+}
+
+[data-theme="dark"] .catalog-perso-note {
+  color: #D1FAE5;
+}
+
+[data-theme="dark"] .catalog-personalization-badge {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #A7F3D0;
 }
 
 /* Compact Chip Food Card — Matching User Screenshot & Pinterest Linear Style */

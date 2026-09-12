@@ -954,80 +954,64 @@
               <span class="notif-badge-dot" id="notif-unread-count">3</span>
             </button>
 
-            <!-- Dropdown Panel Smart Notification -->
-            <div class="smart-notif-dropdown" id="smart-notif-dropdown" style="display:none;">
+            <!-- Dropdown Panel Smart Notification (Sesuai Referensi UI Pemberitahuan) -->
+            <div class="smart-notif-dropdown" id="smart-notif-dropdown" style="display:none;" role="dialog" aria-labelledby="notif-header-title">
+              <!-- Header Bar: Dark Theme Web Canvas, Judul "Pemberitahuan", Tombol Tutup "X" -->
               <div class="smart-notif-header">
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <i data-lucide="sparkles" style="width:16px;height:16px;color:var(--teal-600);"></i>
-                  <h4>Notifikasi Klinis Pintar</h4>
-                </div>
-                <span class="badge teal" style="font-size:10px;">AI Active</span>
+                <h4 id="notif-header-title" class="notif-header-title">Pemberitahuan</h4>
+                <button type="button" class="smart-notif-close-btn" onclick="app.toggleSmartNotificationDropdown(false)" aria-label="Tutup pemberitahuan" title="Tutup">
+                  <i data-lucide="x" style="width:16px;height:16px;"></i>
+                </button>
               </div>
+
+              <!-- Filter Kategori Dropdown -->
+              <div class="notif-filter-container">
+                <button type="button" class="notif-filter-trigger" id="notif-filter-trigger" onclick="app.toggleNotifFilterDropdown(event)" aria-expanded="false" aria-haspopup="listbox">
+                  <span id="notif-filter-current-label">Semua</span>
+                  <i data-lucide="chevron-down" id="notif-filter-chevron" style="width:16px;height:16px;"></i>
+                </button>
+
+                <!-- Floating List Pilihan Kategori -->
+                <div class="notif-filter-menu" id="notif-filter-menu" style="display:none;" role="listbox">
+                  <button type="button" class="notif-filter-item active" data-category="all" onclick="app.setNotifFilter('all', 'Semua')">Semua</button>
+                  <button type="button" class="notif-filter-item" data-category="nutrition" onclick="app.setNotifFilter('nutrition', 'Target Nutrisi')">Target Nutrisi</button>
+                  <button type="button" class="notif-filter-item" data-category="hydration" onclick="app.setNotifFilter('hydration', 'Pengingat Hidrasi')">Pengingat Hidrasi</button>
+                  <button type="button" class="notif-filter-item" data-category="clinic" onclick="app.setNotifFilter('clinic', 'Info Medis &amp; Klinis')">Info Medis &amp; Klinis</button>
+                  <button type="button" class="notif-filter-item" data-category="price_change" onclick="app.setNotifFilter('price_change', 'Harga Pangan')">Harga Pangan</button>
+                  <button type="button" class="notif-filter-item" data-category="evening_reminder" onclick="app.setNotifFilter('evening_reminder', 'Evaluasi Malam')">Evaluasi Malam</button>
+                </div>
+              </div>
+
+              <!-- List Kartu Pemberitahuan -->
               <div class="smart-notif-list" id="smart-notif-list">
-                <div class="smart-notif-item unread">
-                  <div class="notif-icon-box protein">
-                    <i data-lucide="zap" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="notif-item-body">
-                    <b>Target Albumin Siang Ini</b>
-                    <p>Tersisa 18g protein lagi untuk mencapai fase pemulihan harian optimal. Rekomendasi: Ikan Gabus
-                      Kukus.</p>
-                    <span class="notif-time">10 menit yang lalu</span>
-                  </div>
-                </div>
-                <div class="smart-notif-item unread">
-                  <div class="notif-icon-box hydration">
-                    <i data-lucide="droplet" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="notif-item-body">
-                    <b>Pengingat Hidrasi Pasca-Operasi</b>
-                    <p>Waktunya minum 250ml air hangat untuk melancarkan sirkulasi nutrisi penyembuhan jaringan.</p>
-                    <span class="notif-time">45 menit yang lalu</span>
-                  </div>
-                </div>
-                <div class="smart-notif-item">
-                  <div class="notif-icon-box clinic">
-                    <i data-lucide="shield-check" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="notif-item-body">
-                    <b>Validasi Protokol Tim Medis</b>
-                    <p>dr. Sarah Sp.GK telah memverifikasi rekomendasi target makronutrisi harian Anda.</p>
-                    <span class="notif-time">2 jam yang lalu</span>
-                  </div>
-                </div>
+                <!-- Diisi secara dinamis oleh JavaScript -->
               </div>
+
+              <!-- Footer Aksi -->
               <div class="smart-notif-footer">
-                <button type="button" class="btn-clear-notif" onclick="app.markAllNotifsRead()">Tandai Sudah
-                  Dibaca</button>
-                <button type="button" class="btn-view-profile"
-                  onclick="app.navigate('profile'); app.toggleSmartNotificationDropdown(false);">Profil Lengkap
-                  →</button>
+                <button type="button" class="btn-clear-notif" onclick="app.markAllNotifsRead()" title="Tandai semua notifikasi sudah dibaca">
+                  <i data-lucide="check-check" style="width:14px;height:14px;"></i>
+                  <span>Tandai Semua Dibaca</span>
+                </button>
+                <button type="button" class="btn-toggle-sim-panel" onclick="app.toggleNotifSimPanel()" title="Buka panel simulasi AI">
+                  <span>Simulasi AI</span>
+                  <i data-lucide="chevron-down" id="notif-sim-chevron" style="width:12px;height:12px;"></i>
+                </button>
               </div>
-              <div class="smart-notif-sim-panel">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                  <span
-                    style="font-size:10.5px;font-weight:700;color:var(--ink-mute);display:flex;align-items:center;gap:4px;">
-                    <i data-lucide="sparkles" style="width:12px;height:12px;color:var(--teal-600);"></i>
-                    Simulasi Notifikasi Pintar:
-                  </span>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
-                  <button type="button" class="btn-notif-sim"
-                    onclick="app.simulateSmartNotification('morning_reminder')"
-                    title="Uji Notifikasi Jam 6 Pagi (Target)">
-                    🌅 06:00 Pagi Target
+
+              <!-- Panel Pengujian Simulasi AI (Collapsible) -->
+              <div class="smart-notif-sim-panel" id="smart-notif-sim-panel" style="display:none;">
+                <div class="notif-sim-grid">
+                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('morning_reminder')" title="Uji Notifikasi Jam 6 Pagi (Target)">
+                    🌅 06:00 Target Pagi
                   </button>
-                  <button type="button" class="btn-notif-sim urgent"
-                    onclick="app.simulateSmartNotification('evening_reminder')"
-                    title="Uji Notifikasi Jam 6 Malam (Defisit)">
+                  <button type="button" class="btn-notif-sim urgent" onclick="app.simulateSmartNotification('evening_reminder')" title="Uji Notifikasi Jam 6 Malam (Defisit)">
                     🌙 18:00 Defisit Gizi
                   </button>
-                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('price_change')"
-                    title="Uji Info Perubahan Harga Sehat">
+                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('price_change')" title="Uji Info Perubahan Harga Sehat">
                     🏷️ Harga Pangan Turun
                   </button>
-                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('info')"
-                    title="Uji Info Klinis Terbaru">
+                  <button type="button" class="btn-notif-sim" onclick="app.simulateSmartNotification('info')" title="Uji Info Klinis Terbaru">
                     📢 Info Protokol ERAS
                   </button>
                 </div>
@@ -2628,8 +2612,8 @@
       </div>
     </div>
   </div>
-     MODAL POP-UP: KATALOG PANGAN & HARGA SESUAI BREAKDOWN PIRING
-     ========================================================================= -->
+
+  <!-- MODAL POP-UP: KATALOG PANGAN & HARGA SESUAI BREAKDOWN PIRING -->
   <div class="modal-overlay" id="plate-catalog-modal">
     <div class="modal-box plate-catalog-modal-box">
       <div class="modal-header" style="padding-bottom:14px;border-bottom:1px solid var(--line);">

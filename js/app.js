@@ -40,6 +40,8 @@ class NutriVisionApp {
     this.calendarMonthDate = new Date();
     this.completedScheduleItems = this.loadCompletedSchedules();
     this.customDailySchedules = this.loadCustomDailySchedules();
+    this.activeNotifCategory = 'all';
+    this.cachedNotifications = [];
   }
 
   // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin atau pasien login)
@@ -223,13 +225,32 @@ class NutriVisionApp {
       this.goToLanding();
     }
 
-    // Tutup dropdown notifikasi pintar saat klik di luar
+    // Tutup dropdown notifikasi pintar & filter kategori saat klik di luar atau tekan Escape
     document.addEventListener('click', (e) => {
       const dropdown = document.getElementById('smart-notif-dropdown');
       const notifWrapper = document.querySelector('.topbar-notif-wrapper');
       if (dropdown && dropdown.style.display === 'block') {
         if (notifWrapper && !notifWrapper.contains(e.target)) {
           dropdown.style.display = 'none';
+          this.toggleNotifFilterDropdown(false);
+        }
+      }
+
+      const filterMenu = document.getElementById('notif-filter-menu');
+      const filterContainer = document.querySelector('.notif-filter-container');
+      if (filterMenu && filterMenu.style.display === 'block') {
+        if (filterContainer && !filterContainer.contains(e.target)) {
+          this.toggleNotifFilterDropdown(false);
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const dropdown = document.getElementById('smart-notif-dropdown');
+        if (dropdown && dropdown.style.display === 'block') {
+          dropdown.style.display = 'none';
+          this.toggleNotifFilterDropdown(false);
         }
       }
     });
@@ -306,109 +327,234 @@ class NutriVisionApp {
     dropdown.style.display = nextState ? 'block' : 'none';
 
     if (nextState) {
+      this.toggleNotifFilterDropdown(false);
       this.loadSmartNotifications();
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
+    } else {
+      this.toggleNotifFilterDropdown(false);
+    }
+  }
+
+  toggleNotifFilterDropdown(forceState = null) {
+    const menu = document.getElementById('notif-filter-menu');
+    const trigger = document.getElementById('notif-filter-trigger');
+    if (!menu) return;
+
+    const isCurrentlyOpen = menu.style.display === 'block';
+    const nextState = typeof forceState === 'boolean' ? forceState : !isCurrentlyOpen;
+
+    menu.style.display = nextState ? 'block' : 'none';
+    if (trigger) {
+      trigger.classList.toggle('open', nextState);
+      trigger.setAttribute('aria-expanded', nextState ? 'true' : 'false');
+    }
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  setNotifFilter(category, label) {
+    this.activeNotifCategory = category;
+    const labelEl = document.getElementById('notif-filter-current-label');
+    if (labelEl) labelEl.textContent = label;
+
+    document.querySelectorAll('.notif-filter-item').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.category === category);
+    });
+
+    this.toggleNotifFilterDropdown(false);
+    this.renderSmartNotifications();
+  }
+
+  toggleNotifSimPanel() {
+    const panel = document.getElementById('smart-notif-sim-panel');
+    const chevron = document.getElementById('notif-sim-chevron');
+    if (!panel) return;
+    const isHidden = panel.style.display === 'none' || !panel.style.display;
+    panel.style.display = isHidden ? 'block' : 'none';
+    if (chevron) {
+      chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  getDefaultNotifications() {
+    return [
+      {
+        id: 'notif_default_1',
+        type: 'morning_reminder',
+        category: 'nutrition',
+        title: 'PENGINGAT TARGET GIZI',
+        message: 'Tersisa 18g protein lagi untuk mencapai fase pemulihan harian optimal. Rekomendasi: Ikan Gabus Kukus.',
+        created_at: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+        is_read: false
+      },
+      {
+        id: 'notif_default_2',
+        type: 'hydration',
+        category: 'hydration',
+        title: 'PENGINGAT HIDRASI PASCA-OPERASI',
+        message: 'Waktunya minum 250ml air hangat untuk melancarkan sirkulasi nutrisi dan pemulihan jaringan luka.',
+        created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+        is_read: false
+      },
+      {
+        id: 'notif_default_3',
+        type: 'price_change',
+        category: 'price_change',
+        title: 'HEMAT NUTRISI: HARGA IKAN GABUS TURUN',
+        message: 'Harga Ikan Gabus segar di pasar lokal hari ini turun menjadi Rp 24.000/ekor (sebelumnya Rp 30.000). Kesempatan terbaik stok albumin!',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+        is_read: false
+      },
+      {
+        id: 'notif_default_4',
+        type: 'info',
+        category: 'clinic',
+        title: 'VALIDASI PROTOKOL TIM MEDIS',
+        message: 'dr. Sarah Sp.GK telah memverifikasi rekomendasi target makronutrisi dan albumin harian Anda.',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+        is_read: true
+      },
+      {
+        id: 'notif_default_5',
+        type: 'evening_reminder',
+        category: 'evening_reminder',
+        title: 'EVALUASI DEFISIT GIZI HARIAN',
+        message: 'Target kalori malam tersisa 240 kkal. Dianjurkan konsumsi camilan protein lembut seperti putih telur rebus.',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+        is_read: true
+      }
+    ];
+  }
+
+  updateNotifBadge() {
+    const badgeEl = document.getElementById('notif-unread-count');
+    if (!badgeEl) return;
+    const unreadCount = (this.cachedNotifications || []).filter(n => !n.is_read).length;
+    if (unreadCount > 0) {
+      badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badgeEl.style.display = 'inline-flex';
+    } else {
+      badgeEl.style.display = 'none';
     }
   }
 
   async loadSmartNotifications() {
     const listEl = document.getElementById('smart-notif-list');
-    const badgeEl = document.getElementById('notif-unread-count');
     if (!listEl) return;
 
     try {
       let notifications = [];
-      let unreadCount = 0;
 
       if (window.nutriAPI) {
         const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
         const res = await window.nutriAPI.getNotifications(userId);
-        if (res && res.success) {
-          notifications = res.notifications || [];
-          unreadCount = res.unreadCount !== undefined ? res.unreadCount : notifications.filter(n => !n.is_read).length;
+        if (res && res.success && Array.isArray(res.notifications) && res.notifications.length > 0) {
+          notifications = res.notifications;
         }
       }
 
-      // Update badge
-      if (badgeEl) {
-        if (unreadCount > 0) {
-          badgeEl.textContent = unreadCount > 9 ? '9+' : unreadCount;
-          badgeEl.style.display = 'inline-flex';
-        } else {
-          badgeEl.style.display = 'none';
+      if (!notifications || notifications.length === 0) {
+        if (!this.cachedNotifications || this.cachedNotifications.length === 0) {
+          this.cachedNotifications = this.getDefaultNotifications();
         }
+      } else {
+        this.cachedNotifications = notifications;
       }
 
-      if (notifications.length === 0) {
-        listEl.innerHTML = `
-          <div style="padding: 24px 16px; text-align: center; color: var(--ink-mute); font-size: 12px;">
-            <i data-lucide="check-circle-2" style="width:28px;height:28px;color:#10B981;margin-bottom:6px;"></i>
-            <p style="margin:0;font-weight:600;">Semua notifikasi klinis sudah terpantau!</p>
-          </div>
-        `;
-        if (window.lucide) window.lucide.createIcons();
-        return;
+      this.updateNotifBadge();
+      this.renderSmartNotifications();
+    } catch (e) {
+      console.warn('Failed to load smart notifications:', e);
+      if (!this.cachedNotifications || this.cachedNotifications.length === 0) {
+        this.cachedNotifications = this.getDefaultNotifications();
       }
+      this.updateNotifBadge();
+      this.renderSmartNotifications();
+    }
+  }
 
-      listEl.innerHTML = notifications.map(item => {
-        let boxClass = 'protein';
-        let iconName = 'zap';
+  renderSmartNotifications() {
+    const listEl = document.getElementById('smart-notif-list');
+    if (!listEl) return;
 
-        if (item.type === 'morning_reminder') {
-          boxClass = 'morning';
-          iconName = 'sun';
-        } else if (item.type === 'evening_reminder') {
-          boxClass = 'evening';
-          iconName = 'moon';
-        } else if (item.type === 'price_change') {
-          boxClass = 'price';
-          iconName = 'trending-down';
-        } else if (item.type === 'info') {
-          boxClass = 'info';
-          iconName = 'sparkles';
-        }
+    const filter = this.activeNotifCategory || 'all';
+    const items = (this.cachedNotifications || []).filter(item => {
+      if (filter === 'all') return true;
+      if (filter === 'nutrition') return item.type === 'morning_reminder' || item.category === 'nutrition';
+      if (filter === 'hydration') return item.type === 'hydration' || item.category === 'hydration';
+      if (filter === 'clinic') return item.type === 'info' || item.category === 'clinic' || item.type === 'clinic';
+      if (filter === 'price_change') return item.type === 'price_change' || item.category === 'price_change';
+      if (filter === 'evening_reminder') return item.type === 'evening_reminder' || item.category === 'evening_reminder';
+      return true;
+    });
 
-        const timeStr = item.created_at ? this.formatTimeAgo(new Date(item.created_at)) : 'Baru saja';
-        const unreadClass = !item.is_read ? 'unread' : '';
-
-        return `
-          <div class="smart-notif-item ${unreadClass}" onclick="app.markSingleNotifRead('${item.id}')">
-            <div class="notif-icon-box ${boxClass}">
-              <i data-lucide="${iconName}" style="width:14px;height:14px;"></i>
-            </div>
-            <div class="notif-item-body">
-              <b>${item.title}</b>
-              <p>${item.message}</p>
-              <span class="notif-time">${timeStr}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
+    if (items.length === 0) {
+      listEl.innerHTML = `
+        <div style="padding: 34px 16px; text-align: center; color: var(--ink-mute);">
+          <i data-lucide="bell-off" style="width:28px;height:28px;color:#9EA76B;margin-bottom:8px;"></i>
+          <p style="margin:0;font-weight:700;font-size:13px;color:var(--ink);">Tidak ada pemberitahuan</p>
+          <p style="margin:4px 0 0;font-size:11.5px;color:var(--ink-mute);">Belum ada pesan pada kategori yang dipilih.</p>
+        </div>
+      `;
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
-    } catch (e) {
-      console.warn('Failed to load smart notifications:', e);
+      return;
+    }
+
+    listEl.innerHTML = items.map(item => {
+      let typeClass = 'notif-type-nutrition';
+      if (item.type === 'hydration' || item.category === 'hydration') {
+        typeClass = 'notif-type-hydration';
+      } else if (item.type === 'evening_reminder' || item.category === 'evening_reminder') {
+        typeClass = 'notif-type-urgent';
+      } else if (item.type === 'price_change' || item.category === 'price_change') {
+        typeClass = 'notif-type-price';
+      } else if (item.type === 'info' || item.category === 'clinic' || item.type === 'clinic') {
+        typeClass = 'notif-type-clinic';
+      }
+
+      const timeStr = item.created_at ? this.formatTimeAgo(new Date(item.created_at)) : 'Baru saja';
+      const unreadClass = !item.is_read ? 'unread' : '';
+      const displayTitle = (item.title || 'PEMBERITAHUAN').toUpperCase();
+
+      return `
+        <div class="smart-notif-item ${unreadClass} ${typeClass}" onclick="app.markSingleNotifRead('${item.id}')" role="button" tabindex="0" title="Klik untuk tandai sudah dibaca">
+          <div class="notif-card-header">
+            <span class="notif-card-title">${displayTitle}</span>
+            ${!item.is_read ? '<span class="notif-unread-indicator-dot" title="Belum dibaca"></span>' : ''}
+          </div>
+          <p class="notif-card-msg">${item.message || ''}</p>
+          <div class="notif-card-footer">
+            <span class="notif-card-time">${timeStr}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
     }
   }
 
   async markAllNotifsRead() {
     try {
+      (this.cachedNotifications || []).forEach(n => { n.is_read = true; });
+      this.updateNotifBadge();
+      this.renderSmartNotifications();
+
       if (window.nutriAPI) {
         const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
         await window.nutriAPI.markAllNotificationsRead(userId);
       }
-      const badgeEl = document.getElementById('notif-unread-count');
-      if (badgeEl) badgeEl.style.display = 'none';
 
-      document.querySelectorAll('.smart-notif-item.unread').forEach(el => {
-        el.classList.remove('unread');
-      });
-
-      this.showToast('Semua notifikasi klinis ditandai sudah dibaca.', 'success');
+      this.showToast('Semua pemberitahuan ditandai sudah dibaca.', 'success');
     } catch (e) {
       console.error('Error markAllNotifsRead:', e);
     }
@@ -416,10 +562,16 @@ class NutriVisionApp {
 
   async markSingleNotifRead(id) {
     try {
+      const item = (this.cachedNotifications || []).find(n => n.id === id);
+      if (item) {
+        item.is_read = true;
+      }
+      this.updateNotifBadge();
+      this.renderSmartNotifications();
+
       if (window.nutriAPI) {
         await window.nutriAPI.markNotificationRead(id);
       }
-      this.loadSmartNotifications();
     } catch (e) {
       console.error('Error markSingleNotifRead:', e);
     }
@@ -431,18 +583,62 @@ class NutriVisionApp {
       return;
     }
     try {
-      if (!window.nutriAPI) {
-        this.showToast('Server backend belum terhubung untuk simulasi.', 'warning');
-        return;
+      let createdNotif = null;
+
+      if (window.nutriAPI) {
+        const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
+        const res = await window.nutriAPI.simulateSmartNotification(type, userId);
+        if (res && res.success && res.notification) {
+          createdNotif = res.notification;
+        }
       }
 
-      const userId = (this.userProfile && this.userProfile.id) || 'usr_patient_siti';
-      const res = await window.nutriAPI.simulateSmartNotification(type, userId);
+      // Jika offline atau backend belum aktif, buat simulasi lokal
+      if (!createdNotif) {
+        const simData = {
+          morning_reminder: {
+            title: 'PENGINGAT TARGET PAGI (06:00 WIB)',
+            message: 'Selamat pagi! Target hari ini: 93g Protein & 1.820 kkal. Awali sarapan dengan Bubur Ikan Gabus atau Telur Rebus.',
+            category: 'nutrition'
+          },
+          evening_reminder: {
+            title: 'PENGINGAT DEFISIT GIZI MALAM (18:00 WIB)',
+            message: 'Perhatian: Asupan protein Anda masih kurang 28g hari ini. Segera konsumsi santapan malam kaya albumin.',
+            category: 'evening_reminder'
+          },
+          price_change: {
+            title: 'HEMAT NUTRISI: HARGA IKAN GABUS TURUN',
+            message: 'Harga Ikan Gabus lokal turun menjadi Rp 24.000/ekor (Hemat Rp 6.000). Kesempatan belanja bahan albumin tinggi!',
+            category: 'price_change'
+          },
+          info: {
+            title: 'UPDATE PROTOKOL KLINIS ERAS 2026',
+            message: 'Rekomendasi terbaru ESPEN: Peningkatan asupan albumin dari ikan gabus mempercepat pemulihan luka hingga 40%.',
+            category: 'clinic'
+          }
+        }[type] || {
+          title: 'PEMBERITAHUAN SISTEM',
+          message: 'Pemberitahuan klinis baru telah ditambahkan.',
+          category: 'nutrition'
+        };
 
-      if (res && res.success && res.notification) {
-        const notif = res.notification;
-        this.showToast(notif.message, notif.type === 'evening_reminder' ? 'evening_reminder' : 'info', notif.title);
-        await this.loadSmartNotifications();
+        createdNotif = {
+          id: 'notif_sim_' + Date.now(),
+          type: type,
+          category: simData.category,
+          title: simData.title,
+          message: simData.message,
+          created_at: new Date().toISOString(),
+          is_read: false
+        };
+      }
+
+      if (createdNotif) {
+        if (!this.cachedNotifications) this.cachedNotifications = [];
+        this.cachedNotifications.unshift(createdNotif);
+        this.updateNotifBadge();
+        this.renderSmartNotifications();
+        this.showToast(createdNotif.message, createdNotif.type === 'evening_reminder' ? 'evening_reminder' : 'info', createdNotif.title);
       }
     } catch (e) {
       console.error('Simulation error:', e);
@@ -896,28 +1092,7 @@ class NutriVisionApp {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // =========================================================================
-  // SMART CLINICAL NOTIFICATION CONTROLLERS
-  // =========================================================================
-  toggleSmartNotificationDropdown(forceState = null) {
-    const dropdown = document.getElementById('smart-notif-dropdown');
-    if (!dropdown) return;
-    const isShown = dropdown.style.display === 'block';
-    const nextState = forceState !== null ? forceState : !isShown;
-    dropdown.style.display = nextState ? 'block' : 'none';
-    if (nextState && window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
-    }
-  }
 
-  markAllNotifsRead() {
-    document.querySelectorAll('.smart-notif-item.unread').forEach(item => {
-      item.classList.remove('unread');
-    });
-    const badge = document.getElementById('notif-unread-count');
-    if (badge) badge.style.display = 'none';
-    this.showToast('✅ Seluruh notifikasi klinis telah ditandai sudah dibaca.');
-  }
 
   // =========================================================================
   // LANDING PAGE ROUTING & INTERACTIVE CONTROLLERS
@@ -3683,20 +3858,30 @@ class NutriVisionApp {
           <div class="catalog-personalization-alert">
             <div class="catalog-personalization-left">
               <div class="catalog-personalization-icon">
-                <iconify-icon icon="solar:magic-stick-3-bold" style="font-size:17px;"></iconify-icon>
+                <iconify-icon icon="solar:magic-stick-3-bold"></iconify-icon>
               </div>
-              <div>
-                <span class="catalog-personalization-title">
-                  ${isId ? `🎯 Rekomendasi Khusus: ${condName}` : `🎯 Personalized Recommendations: ${condName}`}
-                </span>
-                <span class="catalog-personalization-sub">
-                  ${isId ? `Tinggi Badan ${height} cm · Berat Badan ${weight} kg · BMI ${bmi} · <strong>Halaman 1 memprioritaskan 12 pangan paling sesuai</strong>` : `Height ${height} cm · Weight ${weight} kg · BMI ${bmi} · <strong>Page 1 prioritizes the top 12 matching foods</strong>`}
-                </span>
+              <div class="catalog-personalization-content">
+                <div class="catalog-personalization-title-wrapper">
+                  <span class="catalog-personalization-title">${isId ? 'Rekomendasi Khusus:' : 'Personalized Recommendations:'}</span>
+                  <span class="catalog-personalization-condition">${condName}</span>
+                </div>
+                <div class="catalog-personalization-sub">
+                  <span class="catalog-perso-stats">
+                    <span>${isId ? 'Tinggi Badan' : 'Height'} <strong>${height} cm</strong></span>
+                    <span class="catalog-perso-dot">·</span>
+                    <span>${isId ? 'Berat Badan' : 'Weight'} <strong>${weight} kg</strong></span>
+                    <span class="catalog-perso-dot">·</span>
+                    <span>BMI <strong>${bmi}</strong></span>
+                  </span>
+                  <span class="catalog-perso-divider">·</span>
+                  <span class="catalog-perso-note">${isId ? 'Halaman 1 memprioritaskan 12 pangan paling sesuai' : 'Page 1 prioritizes the top 12 matching foods'}</span>
+                </div>
               </div>
             </div>
-            <span style="font-size:11px;font-weight:700;color:#059669;background:#D1FAE5;padding:3px 9px;border-radius:20px;flex-shrink:0;">
-              ${isId ? 'Prioritas Aktif' : 'Smart Matched'}
-            </span>
+            <div class="catalog-personalization-badge">
+              <span class="catalog-perso-badge-dot"></span>
+              <span>${isId ? 'Prioritas Aktif' : 'Smart Matched'}</span>
+            </div>
           </div>
         `;
       }
