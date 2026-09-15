@@ -482,6 +482,123 @@
   color: #C6CE9C;
 }
 
+/* Interactive Scan Status & Confirmation Wrap on Hero Plate */
+.overview-scan-status-wrap {
+  margin-top: 8px;
+}
+
+.overview-unlogged-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #FEF3C7;
+  flex-wrap: wrap;
+}
+
+.overview-unlogged-notice .notice-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overview-unlogged-notice .notice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F59E0B;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
+  flex-shrink: 0;
+}
+
+.overview-unlogged-notice .notice-btn {
+  all: unset;
+  cursor: pointer;
+  background: #EFE8CA;
+  color: #353C1B;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.overview-unlogged-notice .notice-btn:hover {
+  background: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.overview-logged-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #ECFDF5;
+  flex-wrap: wrap;
+}
+
+.overview-logged-banner .logged-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overview-logged-banner .logged-icon {
+  color: #34D399;
+  font-size: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.overview-logged-banner .logged-tag {
+  font-size: 10px;
+  font-weight: 800;
+  background: #059669;
+  color: #FFFFFF;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.overview-logged-banner .logged-btn {
+  all: unset;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.overview-logged-banner .logged-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .btn-sm-teal {
   all: unset;
   cursor: pointer;

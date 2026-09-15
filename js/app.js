@@ -42,6 +42,7 @@ class NutriVisionApp {
     this.customDailySchedules = this.loadCustomDailySchedules();
     this.activeNotifCategory = 'all';
     this.cachedNotifications = [];
+    this.dailyIntakeConfirmState = null;
   }
 
   // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin atau pasien login)
@@ -2713,9 +2714,17 @@ class NutriVisionApp {
     const totalBadge = document.getElementById('overview-total-badge');
     const legendBox = document.getElementById('overview-segment-legend');
     const confNote = document.getElementById('overview-conf-note');
+    const statusWrap = document.getElementById('overview-scan-status-wrap');
+    const btnAddDaily = document.getElementById('overview-btn-add-daily');
 
     // JIKA BELUM ADA SCAN MAKANAN / BELUM LOGIN: TAMPILKAN STATUS KOSONG BERSIH ("Piring Belum Terisi" Bentuk Piring)
     if (!cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) {
+      if (statusWrap) statusWrap.innerHTML = '';
+      if (btnAddDaily) {
+        btnAddDaily.style.opacity = '0.5';
+        btnAddDaily.title = isId ? 'Pindai makanan terlebih dahulu untuk mencatat gizi' : 'Scan a meal first to log nutrition';
+      }
+
       if (emptyDisc) {
         emptyDisc.style.display = 'flex';
         const titleEl = document.getElementById('overview-plate-empty-title');
@@ -2837,6 +2846,69 @@ class NutriVisionApp {
           </div>
         `;
       }).join('');
+    }
+
+    // 3. Render Status Pencatatan ke Gizi Harian (di Samping Koreksi Manual)
+    if (cvEngine.currentScan && cvEngine.currentScan._isLoggedToday) {
+      const mealName = cvEngine.currentScan._loggedMealName || (isId ? 'Makan Siang' : 'Lunch');
+      const timeStr = cvEngine.currentScan._loggedTime || '';
+      const loggedNutrients = cvEngine.currentScan._loggedNutrients || cvEngine.calculateAggregatedNutrients();
+      const protVal = Math.round(((loggedNutrients.protein[0] + loggedNutrients.protein[1]) / 2) * 10) / 10;
+      const calsVal = Math.round((loggedNutrients.cals[0] + loggedNutrients.cals[1]) / 2);
+
+      if (statusWrap) {
+        statusWrap.innerHTML = `
+          <div class="overview-logged-banner">
+            <div class="logged-left">
+              <span class="logged-icon"><iconify-icon icon="solar:check-circle-bold"></iconify-icon></span>
+              <div>
+                <div style="font-weight:800;font-size:12px;color:#FFFFFF;display:flex;align-items:center;gap:6px;">
+                  <span>${isId ? 'Tercatat di Gizi Harian' : 'Logged to Daily Nutrition'}</span>
+                  <span class="logged-tag">${mealName}</span>
+                  ${timeStr ? `<span style="font-size:11px;font-weight:600;color:#A7F3D0;">(${timeStr})</span>` : ''}
+                </div>
+                <div style="font-size:11px;color:#D1FAE5;margin-top:2px;">
+                  ${isId 
+                    ? `+${protVal}g Protein & +${calsVal} kkal telah dimasukkan ke target pemulihan hari ini.` 
+                    : `+${protVal}g Protein & +${calsVal} kcal added to today’s recovery progress.`}
+                </div>
+              </div>
+            </div>
+            <button type="button" class="logged-btn" onclick="app.openScanDailyIntakeConfirmModal()">
+              <iconify-icon icon="solar:add-circle-bold" style="font-size:13px;"></iconify-icon>
+              <span>${isId ? 'Catat Porsi Lain' : 'Log Another'}</span>
+            </button>
+          </div>
+        `;
+      }
+
+      if (btnAddDaily) {
+        btnAddDaily.style.opacity = '1';
+        btnAddDaily.style.background = '#2E4A1E';
+        btnAddDaily.style.borderColor = '#4D7332';
+        btnAddDaily.style.color = '#FFFFFF';
+        btnAddDaily.innerHTML = `
+          <iconify-icon icon="solar:check-circle-bold" style="font-size:15px;color:#86EFAC;"></iconify-icon>
+          <span>${isId ? 'Tercatat di Gizi Harian' : 'Logged to Daily'}</span>
+        `;
+        btnAddDaily.title = isId ? 'Piring ini sudah tercatat hari ini. Klik untuk mencatat porsi baru.' : 'Already logged today. Click to log new portion.';
+      }
+    } else {
+      if (statusWrap) {
+        statusWrap.innerHTML = '';
+      }
+
+      if (btnAddDaily) {
+        btnAddDaily.style.opacity = '1';
+        btnAddDaily.style.background = '#EFE8CA';
+        btnAddDaily.style.borderColor = '#EFE8CA';
+        btnAddDaily.style.color = '#353C1B';
+        btnAddDaily.innerHTML = `
+          <iconify-icon icon="solar:clipboard-add-bold-duotone" style="font-size:15px;"></iconify-icon>
+          <span data-i18n="ov_btn_add_to_daily">${isId ? 'Tambahkan ke Gizi Harian' : 'Add to Daily Nutrition'}</span>
+        `;
+        btnAddDaily.title = isId ? 'Tambahkan hasil scan citra piring ke target gizi pemulihan hari ini' : 'Add AI scanned plate to daily recovery targets';
+      }
     }
 
     // Update Confidence Note
@@ -3038,22 +3110,330 @@ class NutriVisionApp {
     }
   }
 
-  // Simpan Hasil Scan ke Log Asupan Harian (Gated by Auth)
-  saveScanToDailyIntake() {
+  // =========================================================================
+  // WORKFLOW: KONFIRMASI TAMBAH KE GIZI HARIAN (FR-01, FR-02, FR-08, FR-09)
+  // =========================================================================
+  openScanDailyIntakeConfirmModal(options = {}) {
     this.requireAuth(() => {
-      const agg = cvEngine.calculateAggregatedNutrients();
-      const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+      if (!cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) {
+        const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+        this.showToast(isId 
+          ? '⚠️ Belum ada foto makanan yang dipindai. Silakan foto atau unggah makanan terlebih dahulu.' 
+          : '⚠️ No food scanned yet. Please take a photo or upload food first.', 'warning');
+        this.openScanModal();
+        return;
+      }
+
+      const now = new Date();
+      const hours = now.getHours();
+      let defaultSlot = 'lunch';
+      if (hours >= 5 && hours < 11) defaultSlot = 'breakfast';
+      else if (hours >= 11 && hours < 16) defaultSlot = 'lunch';
+      else if (hours >= 16 && hours < 18) defaultSlot = 'snack';
+      else defaultSlot = 'dinner';
+
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      this.dailyIntakeConfirmState = {
+        slot: options.slot || defaultSlot,
+        servings: options.servings || 1.0,
+        time: options.time || timeStr,
+        notes: options.notes || ''
+      };
+
+      this.renderDailyConfirmContent();
+      this.openModal('modal-confirm-daily-intake');
+    }, 'mencatat ke gizi harian');
+  }
+
+  selectDailyMealSlot(slot) {
+    if (!this.dailyIntakeConfirmState) return;
+    this.dailyIntakeConfirmState.slot = slot;
+    const modalEl = document.getElementById('modal-confirm-daily-intake');
+    if (modalEl) {
+      modalEl.querySelectorAll('.daily-slot-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.slot === slot);
+      });
+    }
+  }
+
+  changeDailyMealServings(delta) {
+    if (!this.dailyIntakeConfirmState) return;
+    const cur = this.dailyIntakeConfirmState.servings || 1.0;
+    const updated = Math.max(0.5, Math.min(3.0, Math.round((cur + delta * 0.5) * 10) / 10));
+    if (updated === cur) return;
+    this.dailyIntakeConfirmState.servings = updated;
+    this.renderDailyConfirmContent();
+  }
+
+  updateDailyMealTime(timeVal) {
+    if (!this.dailyIntakeConfirmState) return;
+    this.dailyIntakeConfirmState.time = timeVal;
+  }
+
+  renderDailyConfirmContent() {
+    const container = document.getElementById('daily-confirm-content');
+    if (!container || !this.dailyIntakeConfirmState || !cvEngine.currentScan) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const scan = cvEngine.currentScan;
+    const segments = scan.segments || [];
+    const rawAgg = cvEngine.calculateAggregatedNutrients();
+    const servings = this.dailyIntakeConfirmState.servings || 1.0;
+    const activeSlot = this.dailyIntakeConfirmState.slot || 'lunch';
+    const currentTime = this.dailyIntakeConfirmState.time || '12:00';
+
+    const currentGrams = Math.round(rawAgg.totalGrams * servings);
+    const protMin = Math.round(rawAgg.protein[0] * servings * 10) / 10;
+    const protMax = Math.round(rawAgg.protein[1] * servings * 10) / 10;
+    const avgProt = Math.round(((protMin + protMax) / 2) * 10) / 10;
+    const calsMin = Math.round(rawAgg.cals[0] * servings);
+    const calsMax = Math.round(rawAgg.cals[1] * servings);
+    const avgCals = Math.round((calsMin + calsMax) / 2);
+    const carbsMin = Math.round(rawAgg.carbs[0] * servings * 10) / 10;
+    const carbsMax = Math.round(rawAgg.carbs[1] * servings * 10) / 10;
+    const avgCarbs = Math.round(((carbsMin + carbsMax) / 2) * 10) / 10;
+    const fatMin = Math.round(rawAgg.fat[0] * servings * 10) / 10;
+    const fatMax = Math.round(rawAgg.fat[1] * servings * 10) / 10;
+    const avgFat = Math.round(((fatMin + fatMax) / 2) * 10) / 10;
+
+    const overallConf = scan.confidenceOverall || 84;
+    const titleStr = isId 
+      ? (scan.title || 'Piring Hasil Pindai AI') 
+      : (scan.titleEn || scan.title || 'AI Scanned Meal Plate');
+
+    // Clinical advice based on user condition
+    const condition = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    let rationale = isId 
+      ? 'Kandungan nutrisi terestimasi seimbang untuk mendukung fase regenerasi harian tubuh Anda.'
+      : 'Estimated nutritional balance tailored to support your daily metabolic recovery phase.';
+
+    if (condition === 'post-surgery') {
+      rationale = isId 
+        ? `Menyumbang estimasi ~${avgProt}g protein untuk mendukung sintesis albumin, remodeling jaringan epitel, dan pemulihan luka pasca-bedah.`
+        : `Provides ~${avgProt}g protein to support albumin synthesis, epithelial tissue remodeling, and surgical wound healing.`;
+    } else if (condition === 'gym') {
+      rationale = isId 
+        ? `Menyumbang ~${avgProt}g protein untuk merangsang sintesis protein otot (MPS) dan pemulihan energi glikogen.`
+        : `Contributes ~${avgProt}g protein to stimulate muscle protein synthesis (MPS) and glycogen recovery.`;
+    } else if (condition === 'rehab') {
+      rationale = isId 
+        ? `Mendukung pemulihan kolagen tendon, mobilitas sendi, dan imunitas anti-inflamasi harian.`
+        : `Supports tendon collagen remodeling, joint mobility, and anti-inflammatory immunity.`;
+    }
+
+    container.innerHTML = `
+      <div class="daily-confirm-header">
+        <div class="daily-confirm-header-left">
+          <div class="daily-confirm-icon-badge">
+            <iconify-icon icon="solar:clipboard-add-bold-duotone" style="font-size:24px;"></iconify-icon>
+          </div>
+          <div>
+            <h3 class="daily-confirm-title">${isId ? 'Tambahkan ke Gizi Harian' : 'Log to Daily Nutrition'}</h3>
+            <p class="daily-confirm-sub">${isId ? 'Konfirmasi jadwal dan porsi makan sebelum dicatat ke target gizi pemulihan hari ini.' : 'Confirm meal time and portion before adding to today’s recovery nutrition.'}</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('modal-confirm-daily-intake')" title="${isId ? 'Tutup' : 'Close'}" aria-label="${isId ? 'Tutup' : 'Close'}">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Scanned Food Summary Card -->
+      <div class="daily-confirm-food-card">
+        <div class="daily-confirm-plate-top">
+          <div class="daily-confirm-plate-img">
+            ${scan.imageUrl || scan.imageSrc 
+              ? `<img src="${scan.imageUrl || scan.imageSrc}" alt="Scanned Food" onerror="this.parentElement.innerHTML='<iconify-icon icon=\\'solar:dish-bold-duotone\\' style=\\'font-size:26px;color:#9EA76B;\\'></iconify-icon>'"/>` 
+              : `<iconify-icon icon="solar:dish-bold-duotone" style="font-size:26px;color:#9EA76B;"></iconify-icon>`}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div class="daily-confirm-plate-title">${titleStr}</div>
+            <div class="daily-confirm-plate-sub">
+              <span><b>${currentGrams}g</b> Total Porsi</span>
+              <span>·</span>
+              <span style="color:#059669;font-weight:700;"><iconify-icon icon="solar:shield-check-bold" style="font-size:13px;vertical-align:-1px;"></iconify-icon> ${overallConf}% AI Match</span>
+              <span>·</span>
+              <span>${segments.length} ${isId ? 'Komponen Bahan' : 'Ingredients'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Segment Ingredient Badges -->
+        <div class="daily-confirm-segments-wrap">
+          ${segments.map(s => {
+            const sName = isId ? s.name : (s.nameEn || s.name);
+            const scaledGrams = Math.round((s.portionGrams || 100) * servings);
+            return `
+              <span class="daily-confirm-segment-tag">
+                <span class="tag-dot" style="background:${s.color || '#9EA76B'};"></span>
+                <span>${sName} (${scaledGrams}g)</span>
+              </span>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Dynamic Real-Time Macros Grid -->
+      <div class="daily-confirm-macros-grid">
+        <div class="daily-confirm-macro-box">
+          <span class="daily-confirm-macro-lbl">${isId ? 'Kalori' : 'Calories'}</span>
+          <span class="daily-confirm-macro-val" style="color:#B45309;">${avgCals} ${isId ? 'kkal' : 'kcal'}</span>
+        </div>
+        <div class="daily-confirm-macro-box">
+          <span class="daily-confirm-macro-lbl">Protein</span>
+          <span class="daily-confirm-macro-val" style="color:#15803D;">${avgProt}g</span>
+        </div>
+        <div class="daily-confirm-macro-box">
+          <span class="daily-confirm-macro-lbl">${isId ? 'Karbohidrat' : 'Carbs'}</span>
+          <span class="daily-confirm-macro-val" style="color:#1D4ED8;">${avgCarbs}g</span>
+        </div>
+        <div class="daily-confirm-macro-box">
+          <span class="daily-confirm-macro-lbl">${isId ? 'Lemak' : 'Fat'}</span>
+          <span class="daily-confirm-macro-val" style="color:#475569;">${avgFat}g</span>
+        </div>
+      </div>
+
+      <!-- Meal Slot Selection (FR-08) -->
+      <div class="daily-confirm-form-section">
+        <label class="daily-confirm-form-label">
+          <span>${isId ? 'Pilih Waktu Makan:' : 'Select Meal Time:'}</span>
+          <span style="font-size:11px;color:#64748B;font-weight:500;">${isId ? 'Dipilih otomatis sesuai jam' : 'Auto-detected'}</span>
+        </label>
+        <div class="daily-slot-selector">
+          <button type="button" class="daily-slot-btn ${activeSlot === 'breakfast' ? 'active' : ''}" data-slot="breakfast" onclick="app.selectDailyMealSlot('breakfast')">
+            <span class="daily-slot-icon"><iconify-icon icon="solar:sun-2-bold"></iconify-icon></span>
+            <span class="daily-slot-lbl">${isId ? 'Sarapan' : 'Breakfast'}</span>
+          </button>
+          <button type="button" class="daily-slot-btn ${activeSlot === 'lunch' ? 'active' : ''}" data-slot="lunch" onclick="app.selectDailyMealSlot('lunch')">
+            <span class="daily-slot-icon"><iconify-icon icon="solar:sun-bold"></iconify-icon></span>
+            <span class="daily-slot-lbl">${isId ? 'Siang' : 'Lunch'}</span>
+          </button>
+          <button type="button" class="daily-slot-btn ${activeSlot === 'dinner' ? 'active' : ''}" data-slot="dinner" onclick="app.selectDailyMealSlot('dinner')">
+            <span class="daily-slot-icon"><iconify-icon icon="solar:moon-bold"></iconify-icon></span>
+            <span class="daily-slot-lbl">${isId ? 'Malam' : 'Dinner'}</span>
+          </button>
+          <button type="button" class="daily-slot-btn ${activeSlot === 'snack' ? 'active' : ''}" data-slot="snack" onclick="app.selectDailyMealSlot('snack')">
+            <span class="daily-slot-icon"><iconify-icon icon="solar:cup-bold"></iconify-icon></span>
+            <span class="daily-slot-lbl">${isId ? 'Camilan' : 'Snack'}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Two-column: Servings Stepper & Time Input -->
+      <div class="daily-confirm-row-2col">
+        <div>
+          <label class="daily-confirm-form-label">${isId ? 'Pengganda Porsi:' : 'Portion Multiplier:'}</label>
+          <div class="daily-stepper-row">
+            <button type="button" class="daily-stepper-btn" onclick="app.changeDailyMealServings(-1)" title="Kurangi Porsi">-</button>
+            <span class="daily-stepper-val">${servings}x (${currentGrams}g)</span>
+            <button type="button" class="daily-stepper-btn" onclick="app.changeDailyMealServings(1)" title="Tambah Porsi">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="daily-confirm-form-label">${isId ? 'Jam Makan:' : 'Meal Clock Time:'}</label>
+          <input type="time" class="daily-time-input" value="${currentTime}" onchange="app.updateDailyMealTime(this.value)">
+        </div>
+      </div>
+
+      <!-- Clinical Tip Rationale -->
+      <div class="daily-confirm-clinical-note">
+        <iconify-icon icon="solar:shield-check-bold" style="font-size:18px;color:#10B981;flex-shrink:0;margin-top:1px;"></iconify-icon>
+        <div style="font-size:11.5px;color:#064E3B;line-height:1.45;">
+          <strong>${isId ? 'Dampak Klinis:' : 'Clinical Impact:'}</strong> ${rationale}
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="daily-confirm-actions">
+        <button type="button" class="daily-confirm-cancel-btn" onclick="app.closeModal('modal-confirm-daily-intake')">
+          ${isId ? 'Batal' : 'Cancel'}
+        </button>
+        <button type="button" class="daily-confirm-correct-btn" onclick="app.closeModal('modal-confirm-daily-intake'); app.openScanModal();" title="Koreksi gramatur atau bahan piring">
+          <i data-lucide="edit-3" style="width:14px;height:14px;"></i>
+          <span>${isId ? 'Koreksi Bahan' : 'Edit Ingredients'}</span>
+        </button>
+        <button type="button" class="daily-confirm-submit-btn" onclick="app.confirmAddScanToDailyIntake()">
+          <iconify-icon icon="solar:check-circle-bold" style="font-size:17px;"></iconify-icon>
+          <span>${isId ? 'Konfirmasi & Catat ke Gizi Harian' : 'Confirm & Log to Daily Nutrition'}</span>
+        </button>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: container });
+    }
+  }
+
+  confirmAddScanToDailyIntake() {
+    this.requireAuth(() => {
+      const state = this.dailyIntakeConfirmState;
+      if (!state || !cvEngine.currentScan) return;
+
       const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-      const scanTitle = cvEngine.currentScan?.title 
-        || (cvEngine.currentScan?.segments && cvEngine.currentScan.segments.length > 0
+      const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+      const agg = cvEngine.calculateAggregatedNutrients();
+      const servings = state.servings || 1.0;
+
+      const scaledNutrients = {
+        protein: [Math.round(agg.protein[0] * servings * 10) / 10, Math.round(agg.protein[1] * servings * 10) / 10],
+        cals: [Math.round(agg.cals[0] * servings), Math.round(agg.cals[1] * servings)],
+        carbs: [Math.round(agg.carbs[0] * servings * 10) / 10, Math.round(agg.carbs[1] * servings * 10) / 10],
+        fat: [Math.round(agg.fat[0] * servings * 10) / 10, Math.round(agg.fat[1] * servings * 10) / 10],
+        totalGrams: Math.round(agg.totalGrams * servings)
+      };
+
+      const slotLabels = {
+        breakfast: isId ? 'Sarapan' : 'Breakfast',
+        lunch: isId ? 'Makan Siang' : 'Lunch',
+        dinner: isId ? 'Makan Malam' : 'Dinner',
+        snack: isId ? 'Camilan' : 'Snack'
+      };
+      const slotName = slotLabels[state.slot] || slotLabels.lunch;
+
+      const scanTitle = cvEngine.currentScan.title 
+        || (cvEngine.currentScan.segments && cvEngine.currentScan.segments.length > 0
             ? cvEngine.currentScan.segments.map(s => isId ? s.name : (s.nameEn || s.name)).join(', ')
             : (isId ? 'Hasil Scan Piring AI' : 'AI Plate Scan'));
-      progressTracker.addLoggedMeal(agg, userKey, { name: scanTitle, source: isId ? 'Pindai Kamera AI' : 'AI Camera Scan' });
-      progressTracker.renderMacroDonut(this.userProfile.targets);
-      progressTracker.renderWeeklyBarChart();
+
+      const mealMeta = {
+        name: `${scanTitle} (${slotName})`,
+        mealType: state.slot,
+        time: state.time,
+        source: isId ? `Pindai Kamera AI (${slotName})` : `AI Camera Scan (${slotName})`,
+        confidence: cvEngine.currentScan.confidenceOverall || 88,
+        imageUrl: cvEngine.currentScan.imageUrl || cvEngine.currentScan.imageSrc || '',
+        segments: cvEngine.currentScan.segments || []
+      };
+
+      progressTracker.addLoggedMeal(scaledNutrients, userKey, mealMeta);
+
+      // Tandai scan aktif sebagai sudah dicatat hari ini
+      cvEngine.currentScan._isLoggedToday = true;
+      cvEngine.currentScan._loggedMealType = state.slot;
+      cvEngine.currentScan._loggedMealName = slotName;
+      cvEngine.currentScan._loggedTime = state.time;
+      cvEngine.currentScan._loggedNutrients = scaledNutrients;
+
+      this.closeModal('modal-confirm-daily-intake');
       this.closeModal('scan-modal');
-      this.showToast(isId ? '✅ Asupan makanan berhasil dicatat ke progres pemulihan harian!' : '✅ Meal intake logged to daily recovery progress!');
-    }, 'mencatat asupan');
+
+      // Re-render UI
+      this.renderOverviewPlate();
+      progressTracker.renderMacroDonut(this.userProfile?.targets);
+      progressTracker.renderWeeklyBarChart();
+      progressTracker.renderTodayMealHistory();
+
+      const avgProt = Math.round(((scaledNutrients.protein[0] + scaledNutrients.protein[1]) / 2) * 10) / 10;
+      const avgCal = Math.round((scaledNutrients.cals[0] + scaledNutrients.cals[1]) / 2);
+      this.showToast(isId 
+        ? `✅ Berhasil ditambahkan ke Gizi Harian (${slotName})! +${avgProt}g Protein · +${avgCal} kkal.` 
+        : `✅ Added to Daily Nutrition (${slotName})! +${avgProt}g Protein · +${avgCal} kcal.`);
+    }, 'mencatat ke gizi harian');
+  }
+
+  // Simpan Hasil Scan ke Log Asupan Harian (Membuka Alur Konfirmasi)
+  saveScanToDailyIntake() {
+    this.openScanDailyIntakeConfirmModal();
   }
 
   // =========================================================================

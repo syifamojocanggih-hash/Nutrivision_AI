@@ -1637,15 +1637,27 @@
                 <div id="overview-segment-legend">
                   <!-- Populated dynamically via JS with percentage progress bars -->
                 </div>
+                <!-- Interactive Confirmation & Status Notice Banner -->
+                <div id="overview-scan-status-wrap">
+                  <!-- Populated dynamically via JS: status sudah tercatat ke gizi harian -->
+                </div>
                 <div class="model-confidence-bar">
                   <span id="overview-conf-note">Menunggu pemindaian makanan pertama · Estimasi gizi akan muncul otomatis
                     di sini.</span>
-                  <button class="btn-sm-teal"
-                    style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;"
-                    onclick="app.openScanModal()">
-                    <i data-lucide="edit-3" class="btn-icon-sm"></i> <span data-i18n="ov_btn_manual_correct">Koreksi
-                      Manual</span>
-                  </button>
+                  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                    <button class="btn-primary-coral" id="overview-btn-add-daily"
+                      style="font-size:11.5px;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;"
+                      onclick="app.openScanDailyIntakeConfirmModal()" title="Tambahkan hasil scan ke target gizi harian">
+                      <iconify-icon icon="solar:clipboard-add-bold-duotone" style="font-size:16px;"></iconify-icon>
+                      <span data-i18n="ov_btn_add_to_daily">Tambahkan ke Gizi Harian</span>
+                    </button>
+                    <button class="btn-sm-teal"
+                      style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;"
+                      onclick="app.openScanModal()">
+                      <i data-lucide="edit-3" class="btn-icon-sm"></i> <span data-i18n="ov_btn_manual_correct">Koreksi
+                        Manual</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2842,6 +2854,18 @@
     </div>
   </div>
 
+  <!-- =========================================================================
+     MODAL VALIDASI: KONFIRMASI TAMBAHKAN KE GIZI HARIAN (SCAN MAKANAN)
+     ========================================================================= -->
+  <div class="modal-overlay" id="modal-confirm-daily-intake"
+    onclick="if(event.target===this) app.closeModal('modal-confirm-daily-intake')">
+    <div class="modal-box daily-confirm-box" id="daily-confirm-box">
+      <div id="daily-confirm-content">
+        <!-- Dynamically rendered via JS -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL POP-UP: KATALOG PANGAN & HARGA SESUAI BREAKDOWN PIRING -->
   <div class="modal-overlay" id="plate-catalog-modal">
     <div class="modal-box plate-catalog-modal-box">
@@ -2952,14 +2976,23 @@
         <!-- Dynamically populated -->
       </div>
 
+      <!-- Modal Guidance Note -->
+      <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:10px 12px;margin-top:14px;display:flex;align-items:flex-start;gap:8px;">
+        <iconify-icon icon="solar:info-circle-bold" style="font-size:16px;color:#15803D;flex-shrink:0;margin-top:1px;"></iconify-icon>
+        <span style="font-size:11.5px;color:#166534;line-height:1.45;">
+          <strong>Konfirmasi Pencatatan:</strong> Foto makanan ini belum otomatis tercatat ke target gizi harian Anda. Klik tombol <b>Tambahkan ke Gizi Harian</b> untuk mengonfirmasi jadwal &amp; porsi makan.
+        </span>
+      </div>
+
       <!-- Modal Footer Actions -->
-      <div style="display:flex;gap:10px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px;">
-        <button class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);flex:1;text-align:center;"
+      <div style="display:flex;gap:10px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px;flex-wrap:wrap;">
+        <button class="btn-outline-glass" style="color:var(--ink);border-color:var(--line);flex:1;text-align:center;min-width:100px;"
           onclick="app.closeModal('scan-modal')">Batal</button>
-        <button class="btn-primary-coral"
-          style="flex:2;justify-content:center;display:inline-flex;align-items:center;gap:6px;"
-          onclick="app.saveScanToDailyIntake()">
-          <i data-lucide="check" class="btn-icon-sm"></i> Simpan ke Asupan Harian
+        <button class="btn-primary-coral" id="scan-modal-btn-add-daily"
+          style="flex:2;justify-content:center;display:inline-flex;align-items:center;gap:8px;min-width:200px;"
+          onclick="app.openScanDailyIntakeConfirmModal()">
+          <iconify-icon icon="solar:clipboard-add-bold-duotone" style="font-size:18px;"></iconify-icon>
+          <span data-i18n="ov_btn_add_to_daily">Tambahkan ke Gizi Harian</span>
         </button>
       </div>
     </div>

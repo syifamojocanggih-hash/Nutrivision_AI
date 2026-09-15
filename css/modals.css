@@ -2412,4 +2412,382 @@
   transform: translateY(-1px);
 }
 
+/* ==========================================================================
+   MODAL: KONFIRMASI TAMBAH KE GIZI HARIAN (CV SCAN)
+   ========================================================================== */
+.daily-confirm-box {
+  max-width: 530px !important;
+  width: 95% !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DDD4B0 !important;
+  box-shadow: 0 24px 60px rgba(28, 32, 14, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.daily-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.daily-confirm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.daily-confirm-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.daily-confirm-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1C200E;
+  letter-spacing: -0.2px;
+}
+
+.daily-confirm-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #687346;
+  line-height: 1.4;
+}
+
+.daily-confirm-food-card {
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.daily-confirm-plate-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.daily-confirm-plate-img {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: #EFE8CA;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 4px 10px rgba(28, 32, 14, 0.1);
+  flex-shrink: 0;
+}
+
+.daily-confirm-plate-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.daily-confirm-plate-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #1C200E;
+  margin-bottom: 2px;
+}
+
+.daily-confirm-plate-sub {
+  font-size: 11.5px;
+  color: #687346;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.daily-confirm-segments-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #E2DAC2;
+}
+
+.daily-confirm-segment-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2DAC2;
+  border-radius: 6px;
+  color: #2D3613;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.daily-confirm-segment-tag .tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.daily-confirm-macros-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.daily-confirm-macro-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.daily-confirm-macro-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.daily-confirm-macro-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1C200E;
+}
+
+.daily-confirm-form-section {
+  margin-bottom: 14px;
+}
+
+.daily-confirm-form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1C200E;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.daily-slot-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.daily-slot-btn {
+  all: unset;
+  cursor: pointer;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 12px;
+  padding: 8px 4px;
+  text-align: center;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.daily-slot-btn:hover {
+  background: #F7F9EC;
+  border-color: #9EA76B;
+}
+
+.daily-slot-btn.active {
+  background: #1C200E;
+  border-color: #1C200E;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(28, 32, 14, 0.2);
+}
+
+.daily-slot-btn.active .daily-slot-icon,
+.daily-slot-btn.active .daily-slot-lbl {
+  color: #FFFFFF;
+}
+
+.daily-slot-icon {
+  font-size: 16px;
+  color: #687346;
+}
+
+.daily-slot-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1C200E;
+}
+
+.daily-confirm-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.daily-stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 12px;
+  padding: 5px 10px;
+}
+
+.daily-stepper-btn {
+  all: unset;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #DDD4B0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #1C200E;
+  transition: all 0.15s ease;
+}
+
+.daily-stepper-btn:hover {
+  background: #1C200E;
+  color: #FFFFFF;
+}
+
+.daily-stepper-val {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1C200E;
+}
+
+.daily-time-input {
+  width: 100%;
+  padding: 7px 12px;
+  border: 1.5px solid #DDD4B0;
+  border-radius: 12px;
+  background: #FDFAF2;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1C200E;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.daily-time-input:focus {
+  border-color: #9EA76B;
+  background: #FFFFFF;
+}
+
+.daily-confirm-clinical-note {
+  background: #F0FDF4;
+  border: 1px solid #A7F3D0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.daily-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.daily-confirm-cancel-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #FDFAF2;
+  border: 1.5px solid #DDD4B0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #687346;
+  transition: all 0.2s ease;
+}
+
+.daily-confirm-cancel-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.daily-confirm-correct-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #DDD4B0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #242C10;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.daily-confirm-correct-btn:hover {
+  background: #F7F9EC;
+  border-color: #9EA76B;
+}
+
+.daily-confirm-submit-btn {
+  all: unset;
+  cursor: pointer;
+  flex: 1;
+  min-width: 190px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: #1C200E;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(28, 32, 14, 0.2);
+}
+
+.daily-confirm-submit-btn:hover {
+  background: #9EA76B;
+  box-shadow: 0 6px 20px rgba(158, 167, 107, 0.4);
+  transform: translateY(-1px);
+}
+
+
 
