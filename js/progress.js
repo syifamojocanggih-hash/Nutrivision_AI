@@ -974,8 +974,9 @@ class NutriVisionProgress {
       const isOnline = window.nutriAPI.isServerOnline || await window.nutriAPI.checkHealth();
       if (!isOnline) return;
 
-      // 2. Ambil data hari ini dari server
-      const todayData = await window.nutriAPI.getMealsToday().catch(() => null);
+      // 2. Ambil data hari ini dari server untuk pengguna aktif
+      const activeUserId = (typeof app !== 'undefined' && app.userProfile?.id) || userKey || null;
+      const todayData = await window.nutriAPI.getMealsToday(activeUserId).catch(() => null);
       if (todayData?.success && Array.isArray(todayData.meals)) {
         // Konversi format server ke format internal todayMeals
         const serverMeals = todayData.meals.map(m => ({
@@ -993,16 +994,16 @@ class NutriVisionProgress {
           imageUrl: m.image_url || ''
         }));
 
-        // Gunakan data server jika lebih banyak / lebih baru dari localStorage
-        if (serverMeals.length >= this.todayMeals.length) {
-          this.todayMeals = serverMeals;
-          // Hitung ulang todayIntake dari data server
-          if (todayData.summary) {
-            this.todayIntake.protein = todayData.summary.totalProtein || 0;
-            this.todayIntake.calories = todayData.summary.totalCalories || 0;
-            this.todayIntake.carbs = todayData.summary.totalCarbs || 0;
-            this.todayIntake.fat = todayData.summary.totalFat || 0;
-          }
+        // Server adalah sumber kebenaran utama saat online (Source of Truth)
+        this.todayMeals = serverMeals;
+        if (todayData.summary) {
+          this.todayIntake.protein = todayData.summary.totalProtein || 0;
+          this.todayIntake.calories = todayData.summary.totalCalories || 0;
+          this.todayIntake.carbs = todayData.summary.totalCarbs || 0;
+          this.todayIntake.fat = todayData.summary.totalFat || 0;
+        } else {
+          this.todayIntake = { protein: 0, calories: 0, carbs: 0, fat: 0 };
+        }
 
           // Update today's weeklyLog entry
           const todayLog = this.weeklyLogs.find(l => l.isToday);
@@ -1031,7 +1032,6 @@ class NutriVisionProgress {
 
           console.log(`[NutriVision] ✅ Sync dari server: ${serverMeals.length} hidangan hari ini dimuat.`);
         }
-      }
     } catch (err) {
       // Silent fail — mode offline tetap berjalan dari localStorage
       console.warn('[NutriVision] syncFromServer gagal (offline):', err.message);

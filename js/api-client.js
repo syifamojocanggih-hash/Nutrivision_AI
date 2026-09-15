@@ -159,16 +159,20 @@ class NutriVisionAPIClient {
   // =========================================================================
   // 2. MEALS & NUTRITION TRACKING
   // =========================================================================
-  async getMeals(limit = 50) {
-    return await this.request(`/api/meals?limit=${limit}`);
+  async getMeals(limit = 50, userId = null) {
+    const params = new URLSearchParams({ limit });
+    if (userId) params.append('userId', userId);
+    return await this.request(`/api/meals?${params.toString()}`);
   }
 
-  async getMealsToday() {
-    return await this.request('/api/meals/today');
+  async getMealsToday(userId = null) {
+    const q = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    return await this.request(`/api/meals/today${q}`);
   }
 
-  async getMealsByDate(date) {
-    return await this.request(`/api/meals/date/${date}`);
+  async getMealsByDate(date, userId = null) {
+    const q = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    return await this.request(`/api/meals/date/${date}${q}`);
   }
 
   async logMeal(mealData) {
@@ -178,8 +182,9 @@ class NutriVisionAPIClient {
     });
   }
 
-  async getWeeklyStats() {
-    return await this.request('/api/meals/weekly-stats');
+  async getWeeklyStats(userId = null) {
+    const q = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    return await this.request(`/api/meals/weekly-stats${q}`);
   }
 
   async deleteMeal(id) {
@@ -329,6 +334,13 @@ class NutriVisionAPIClient {
     return await this.request('/api/ai/classify', {
       method: 'POST',
       body: { text, patientId }
+    });
+  }
+
+  async filterSymptomsByAI(symptoms = []) {
+    return await this.request('/api/ai/symptom-filter', {
+      method: 'POST',
+      body: { symptoms }
     });
   }
 }

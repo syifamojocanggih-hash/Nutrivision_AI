@@ -18,7 +18,10 @@ function sanitizeMeal(meal) {
  */
 router.get('/', optionalAuth, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.query.userId || 'usr_patient_siti');
+    const userId = req.user ? req.user.id : req.query.userId;
+    if (!userId) {
+      return res.json({ success: true, count: 0, meals: [] });
+    }
     const limit = parseInt(req.query.limit) || 50;
 
     const meals = await db.query(
@@ -43,7 +46,16 @@ router.get('/', optionalAuth, async (req, res) => {
  */
 router.get('/today', optionalAuth, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.query.userId || 'usr_patient_siti');
+    const userId = req.user ? req.user.id : req.query.userId;
+    if (!userId) {
+      return res.json({
+        success: true,
+        date: new Date().toISOString().split('T')[0],
+        count: 0,
+        summary: { totalProtein: 0, totalCalories: 0, totalCarbs: 0, totalFat: 0 },
+        meals: []
+      });
+    }
 
     const meals = await db.query(
       `SELECT * FROM meals
@@ -183,7 +195,17 @@ router.post('/', optionalAuth, async (req, res) => {
  */
 router.get('/weekly-stats', optionalAuth, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.query.userId || 'usr_patient_siti');
+    const userId = req.user ? req.user.id : req.query.userId;
+    if (!userId) {
+      return res.json({
+        success: true,
+        userId: 'guest',
+        targetProtein: 75,
+        targetCalories: 1850,
+        averageCompliancePct: 0,
+        days: []
+      });
+    }
     const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]) || { target_protein: 98, daily_calories: 1850 };
 
     const targetProtein = user.target_protein || 98;

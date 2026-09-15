@@ -8,8 +8,8 @@
 // ============================================================================
 // PENGATURAN KREDENSIAL SUPABASE (Bisa diisi di sini layaknya file .env)
 // ============================================================================
-const SUPABASE_DEFAULT_URL = ''; // Contoh: 'https://xyzabcdef.supabase.co'
-const SUPABASE_DEFAULT_KEY = ''; // Contoh: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+const SUPABASE_DEFAULT_URL = 'https://cdjdtphzycnejfywdlaw.supabase.co';
+const SUPABASE_DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkamR0cGh6eWNuZWpmeXdkbGF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNTcyNzQsImV4cCI6MjEwMzkzMzI3NH0.yjEvZ_L7skSWl7-d4HHq159jzzybCjo_exQb9KI6XLQ';
 
 window.SUPABASE_CONFIG = {
   // Ambil dari localStorage atau gunakan default di atas
@@ -32,7 +32,7 @@ window.SUPABASE_CONFIG = {
         const u = new URL(cleanUrl);
         cleanUrl = u.origin; // Mengambil base URL murni (menghapus /rest/v1 jika tidak sengaja ter-copy)
       }
-    } catch (e) {}
+    } catch (e) { }
 
     this.url = cleanUrl;
     this.anonKey = (anonKey || '').trim();

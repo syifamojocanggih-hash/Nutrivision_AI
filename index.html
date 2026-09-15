@@ -1803,6 +1803,28 @@
               </div>
             </div>
 
+            <!-- Regional Price Calibration Bar (Bapanas RI & BPS Disparity Index) -->
+            <div id="budget-region-bar" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#F8FAF2;border:1px solid #DDE2B9;border-radius:12px;padding:9px 14px;margin-bottom:14px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:9px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#233917;color:#fff;font-size:14px;box-shadow:0 2px 6px rgba(35,57,23,0.15);">📍</span>
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;">
+                    <span data-i18n="budget_region_title">Kalibrasi Harga Pangan Daerah</span>
+                    <span id="budget-region-badge" class="badge teal" style="font-size:10px;padding:2px 7px;border-radius:12px;background:#EAF3DC;color:#233917;border:1px solid #DDE2B9;font-weight:700;">Bapanas RI · 1.00x</span>
+                  </div>
+                  <div style="font-size:11px;color:var(--ink-soft);" id="budget-region-desc">Disesuaikan dengan disparitas logistik & pasokan pasar regional</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <select id="budget-select-province" class="form-control-sm" style="padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #CBD5E1;background:#fff;font-weight:600;color:#1C200E;cursor:pointer;" onchange="budgetPlanner.onProvinceSelectChange(this.value)">
+                  <!-- Populated dynamically via JS -->
+                </select>
+                <select id="budget-select-city" class="form-control-sm" style="padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #CBD5E1;background:#fff;font-weight:500;color:#1C200E;cursor:pointer;" onchange="budgetPlanner.onCitySelectChange(this.value)">
+                  <!-- Populated dynamically via JS -->
+                </select>
+              </div>
+            </div>
+
             <!-- Empty State when budget plan is not yet generated -->
             <div id="budget-empty-state" class="budget-empty-box"
               style="display:none;padding:28px 20px;text-align:center;background:#FCFDFB;border:1.5px dashed #DDD4B0;border-radius:16px;margin:8px 0 10px;">
@@ -2581,6 +2603,27 @@
             </div>
           </div>
 
+          <!-- Wilayah Acuan Pasar Pangan (Bapanas RI & BPS) -->
+          <div class="card" style="grid-column: 1 / -1;background:#F8FAF2;border:1px solid #DDE2B9;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:#233917;color:#fff;font-size:18px;box-shadow:0 2px 6px rgba(35,57,23,0.15);">📍</span>
+                <div>
+                  <div style="font-size:13.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;">
+                    <span>Wilayah Acuan Harga Pangan Pasar</span>
+                    <span id="profile-region-badge" class="badge teal" style="font-size:11px;padding:2px 8px;border-radius:12px;background:#EAF3DC;color:#233917;border:1px solid #DDE2B9;font-weight:700;">Bapanas RI · 1.00x</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;" id="profile-region-display-text">
+                    DKI Jakarta · Kota Jakarta Selatan (Zona 1 - Jawa &amp; Bali)
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn-outline-glass" style="font-size:12px;padding:6px 14px;background:#fff;border-color:#CBD5E1;color:#233917;font-weight:600;display:inline-flex;align-items:center;gap:6px;" onclick="app.openQuizModal(1)">
+                <i data-lucide="edit-3" style="width:13px;height:13px;"></i> Ubah Wilayah Domisili
+              </button>
+            </div>
+          </div>
+
           <!-- Portal Pendamping (Caregiver Access) — Integrasi Terpusat di Fitur Profil Pasien -->
           <div class="card" id="profile-caregiver-card" style="grid-column: 1 / -1;">
             <div class="card-head">
@@ -2982,6 +3025,25 @@
             (Untuk Laporan Medis) <span style="color:#DC2626;">*</span></label>
           <input type="text" id="onboard-contact" class="form-control" value=""
             placeholder="email@domain.com atau 0812xxxx" required>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="form-group">
+            <label for="onboard-province" style="font-weight:600;font-size:12.5px;color:#1C200E;display:block;margin-bottom:5px;">
+              Provinsi Domisili <span style="color:#DC2626;">*</span>
+            </label>
+            <select id="onboard-province" class="form-control" onchange="app.handleOnboardProvinceChange(this.value)" required>
+              <option value="">Pilih Provinsi...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="onboard-city" style="font-weight:600;font-size:12.5px;color:#1C200E;display:block;margin-bottom:5px;">
+              Kota / Kabupaten <span style="color:#DC2626;">*</span>
+            </label>
+            <select id="onboard-city" class="form-control" onchange="app.handleOnboardCityChange(this.value)" required>
+              <option value="">Pilih Kota / Kab...</option>
+            </select>
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">

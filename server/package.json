@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node test/api.test.js"
+    "ai": "python ai_service.py",
+    "test": "node test/api.test.js",
+    "verify": "node test/api.test.js"
   },
   "keywords": [
     "nutrivision",

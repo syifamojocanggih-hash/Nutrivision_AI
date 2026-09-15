@@ -236,7 +236,7 @@ class AIRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-def run_server(port=8000):
+def run_server(port=5050):
     load_ai_model()
     server_address = ('127.0.0.1', port)
     socketserver.TCPServer.allow_reuse_address = True
@@ -245,5 +245,5 @@ def run_server(port=8000):
         httpd.serve_forever()
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    port = int(os.environ.get('PORT', sys.argv[1] if len(sys.argv) > 1 else 5050))
     run_server(port)

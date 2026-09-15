@@ -407,6 +407,7 @@ class NutriVisionBudgetPlanner {
     }
     this.generatePlan();
     this.render();
+    this.initRegionSelector();
   }
 
   bindInputs() {
@@ -431,6 +432,100 @@ class NutriVisionBudgetPlanner {
         }
       });
     }
+  }
+
+  async initRegionSelector() {
+    const provSelect = document.getElementById('budget-select-province');
+    const citySelect = document.getElementById('budget-select-city');
+    const badgeEl = document.getElementById('budget-region-badge');
+    const descEl = document.getElementById('budget-region-desc');
+    if (!provSelect || !window.BappenasFoodAPI) return;
+
+    try {
+      const activeRegion = window.BappenasFoodAPI.getActiveRegion();
+      const provinces = await window.BappenasFoodAPI.getProvinces();
+
+      // Isi dropdown Provinsi
+      provSelect.innerHTML = provinces.map(p => 
+        `<option value="${p.id}" ${(p.name.toLowerCase() === activeRegion.provinceName.toLowerCase() || p.id === activeRegion.provinceId) ? 'selected' : ''}>${p.name} (${p.multiplier}x)</option>`
+      ).join('');
+
+      // Update Badge & Keterangan
+      if (badgeEl) {
+        badgeEl.textContent = `Bapanas RI · ${activeRegion.multiplier.toFixed(2)}x`;
+      }
+      if (descEl) {
+        descEl.textContent = `Wilayah: ${activeRegion.label || activeRegion.provinceName} (${activeRegion.zone || 'Regional'})`;
+      }
+
+      // Isi dropdown Kota untuk provinsi awal
+      const selProvId = provSelect.value || activeRegion.provinceId || 11;
+      await this.populateCities(selProvId, activeRegion.cityName);
+
+      // Dengarkan perubahan wilayah dari komponen lain
+      window.BappenasFoodAPI.onRegionChange((reg) => {
+        if (badgeEl) badgeEl.textContent = `Bapanas RI · ${reg.multiplier.toFixed(2)}x`;
+        if (descEl) descEl.textContent = `Wilayah: ${reg.label} (${reg.zone})`;
+        if (provSelect && provSelect.value != reg.provinceId) {
+          provSelect.value = reg.provinceId;
+          this.populateCities(reg.provinceId, reg.cityName);
+        }
+        this.generatePlan();
+        this.render();
+      });
+    } catch (e) {
+      console.warn('Init region selector notice:', e);
+    }
+  }
+
+  async populateCities(provinceId, selectedCityName = '') {
+    const citySelect = document.getElementById('budget-select-city');
+    if (!citySelect || !window.BappenasFoodAPI) return;
+
+    try {
+      const cities = await window.BappenasFoodAPI.getCities(provinceId);
+      citySelect.innerHTML = cities.map(c => 
+        `<option value="${c.name}" ${selectedCityName && c.name.toLowerCase() === selectedCityName.toLowerCase() ? 'selected' : ''}>${c.name}</option>`
+      ).join('');
+    } catch (e) {
+      citySelect.innerHTML = `<option value="Semua Wilayah">Semua Wilayah</option>`;
+    }
+  }
+
+  async onProvinceSelectChange(provinceId) {
+    if (!window.BappenasFoodAPI) return;
+    const provinces = await window.BappenasFoodAPI.getProvinces();
+    const matched = provinces.find(p => p.id === parseInt(provinceId, 10));
+    if (!matched) return;
+
+    await this.populateCities(provinceId);
+    const citySelect = document.getElementById('budget-select-city');
+    const cityName = citySelect ? citySelect.value : 'Semua Wilayah';
+
+    window.BappenasFoodAPI.setActiveRegion({
+      provinceId: matched.id,
+      provinceName: matched.name,
+      cityName: cityName,
+      multiplier: matched.multiplier,
+      zone: matched.zone,
+      label: `${matched.name} · ${cityName}`
+    });
+
+    this.generatePlan();
+    this.render();
+  }
+
+  onCitySelectChange(cityName) {
+    if (!window.BappenasFoodAPI) return;
+    const active = window.BappenasFoodAPI.getActiveRegion();
+    window.BappenasFoodAPI.setActiveRegion({
+      ...active,
+      cityName: cityName,
+      label: `${active.provinceName} · ${cityName}`
+    });
+
+    this.generatePlan();
+    this.render();
   }
 
   applyBudgetUpdate() {
@@ -551,10 +646,13 @@ class NutriVisionBudgetPlanner {
     const dailyTargetBudget = Math.max(15000, Math.floor(this.budgetAmount / this.durationDays));
     this.plan = [];
 
-    // Filter makanan jika ada preferensi tekstur lunak
-    let bfPool = [...this.mealPool.breakfast];
-    let luPool = [...this.mealPool.lunch];
-    let diPool = [...this.mealPool.dinner];
+    const region = (window.BappenasFoodAPI ? window.BappenasFoodAPI.getActiveRegion() : null) || { multiplier: 1.00 };
+    const mult = region.multiplier || 1.00;
+
+    // Filter makanan jika ada preferensi tekstur lunak & kalibrasikan ke harga pangan daerah
+    let bfPool = this.mealPool.breakfast.map(m => ({ ...m, price: Math.round(m.price * mult / 500) * 500 }));
+    let luPool = this.mealPool.lunch.map(m => ({ ...m, price: Math.round(m.price * mult / 500) * 500 }));
+    let diPool = this.mealPool.dinner.map(m => ({ ...m, price: Math.round(m.price * mult / 500) * 500 }));
 
     if (this.preference === 'tekstur_lunak') {
       const softBf = bfPool.filter(m => m.texture === 'soft');
@@ -708,63 +806,71 @@ class NutriVisionBudgetPlanner {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const totalDays = this.durationDays;
     const ratio = totalDays / 7;
+    const region = (window.BappenasFoodAPI ? window.BappenasFoodAPI.getActiveRegion() : null) || {
+      provinceName: 'DKI Jakarta',
+      cityName: 'Kota Jakarta Selatan',
+      multiplier: 1.00,
+      zone: 'Zona 1 (Jawa & Bali)',
+      label: 'DKI Jakarta · Jakarta Selatan'
+    };
+    const mult = region.multiplier || 1.00;
 
-    // Perhitungan porsi realistis berbasis gizi & referensi pasar Bapanas
+    // Perhitungan porsi realistis berbasis gizi & referensi pasar Bapanas regional
     const items = [
       {
         category: isId ? 'Bahan Pokok & Karbohidrat' : 'Staples & Carbs',
         name: isId ? 'Beras Pulen Premium / Merah' : 'Premium White / Brown Rice',
         qty: `${(2.2 * ratio).toFixed(1)} kg`,
-        estPrice: Math.round(32000 * ratio / 1000) * 1000,
-        note: isId ? 'Acuan Bapanas: Rp 14.500/kg' : 'Natl benchmark: Rp 14,500/kg'
+        estPrice: Math.round(32000 * ratio * mult / 1000) * 1000,
+        note: isId ? `Acuan Bapanas: Rp ${(Math.round(14900 * mult / 500) * 500).toLocaleString('id-ID')}/kg` : `Bapanas: Rp ${(Math.round(14900 * mult / 500) * 500).toLocaleString('id-ID')}/kg`
       },
       {
         category: isId ? 'Bahan Pokok & Karbohidrat' : 'Staples & Carbs',
         name: isId ? 'Oatmeal / Roti Gandum / Jagung Manis' : 'Oatmeal / Whole Wheat / Sweet Corn',
         qty: `${Math.ceil(1 * ratio)} pack/kg`,
-        estPrice: Math.round(18000 * ratio / 1000) * 1000,
+        estPrice: Math.round(18000 * ratio * mult / 1000) * 1000,
         note: isId ? 'Sumber serat basal' : 'Dietary fiber source'
       },
       {
         category: isId ? 'Lauk Hewani & Protein Tinggi' : 'Animal Protein & High Protein',
         name: isId ? 'Telur Ayam Ras / Omega-3' : 'Farm / Omega-3 Eggs',
         qty: `${Math.round(16 * ratio)} butir (~${(1 * ratio).toFixed(1)} kg)`,
-        estPrice: Math.round(29000 * ratio / 1000) * 1000,
-        note: isId ? 'Protein nilai biologis tinggi (TKPI)' : 'High biological value'
+        estPrice: Math.round(29000 * ratio * mult / 1000) * 1000,
+        note: isId ? `Acuan Bapanas: Rp ${(Math.round(28500 * mult / 500) * 500).toLocaleString('id-ID')}/kg` : `Bapanas: Rp ${(Math.round(28500 * mult / 500) * 500).toLocaleString('id-ID')}/kg`
       },
       {
         category: isId ? 'Lauk Hewani & Protein Tinggi' : 'Animal Protein & High Protein',
         name: isId ? 'Dada Ayam Fillet Bersih' : 'Clean Chicken Breast Fillet',
         qty: `${(0.8 * ratio).toFixed(1)} kg`,
-        estPrice: Math.round(35000 * ratio / 1000) * 1000,
-        note: isId ? 'Tinggi asam amino leusin' : 'Rich in leucine amino acid'
+        estPrice: Math.round(35000 * ratio * mult / 1000) * 1000,
+        note: isId ? `Acuan Bapanas: Rp ${(Math.round(35000 * mult / 500) * 500).toLocaleString('id-ID')}/kg` : `Bapanas: Rp ${(Math.round(35000 * mult / 500) * 500).toLocaleString('id-ID')}/kg`
       },
       {
         category: isId ? 'Lauk Hewani & Protein Tinggi' : 'Animal Protein & High Protein',
         name: isId ? 'Ikan Segar (Kembung / Bandeng / Gabus)' : 'Fresh Fish (Mackerel / Milkfish / Gabus)',
         qty: `${(0.9 * ratio).toFixed(1)} kg`,
-        estPrice: Math.round(36000 * ratio / 1000) * 1000,
-        note: isId ? 'Omega-3 EPA/DHA & Albumin' : 'Natural Omega-3 & Albumin'
+        estPrice: Math.round(36000 * ratio * mult / 1000) * 1000,
+        note: isId ? `Acuan Bapanas: Rp ${(Math.round(34000 * mult / 500) * 500).toLocaleString('id-ID')}/kg` : `Bapanas: Rp ${(Math.round(34000 * mult / 500) * 500).toLocaleString('id-ID')}/kg`
       },
       {
         category: isId ? 'Lauk Nabati (Tempe & Tahu)' : 'Plant Protein (Tempeh & Tofu)',
         name: isId ? 'Tempe Kedelai Murni & Tahu Putih Sutra' : 'Pure Soybean Tempeh & Silken Tofu',
         qty: `${Math.round(6 * ratio)} papan / pack`,
-        estPrice: Math.round(16000 * ratio / 1000) * 1000,
+        estPrice: Math.round(16000 * ratio * mult / 1000) * 1000,
         note: isId ? 'Isoflavon & protein ramah kantong' : 'Isoflavones & cost-effective'
       },
       {
         category: isId ? 'Sayuran Segar & Serat' : 'Fresh Vegetables & Fiber',
         name: isId ? 'Bayam Hijau, Labu Siam, Wortel, Buncis' : 'Spinach, Chayote, Carrots, Green Beans',
         qty: `${(1.8 * ratio).toFixed(1)} kg (aneka)`,
-        estPrice: Math.round(22000 * ratio / 1000) * 1000,
+        estPrice: Math.round(22000 * ratio * mult / 1000) * 1000,
         note: isId ? 'Vitamin A, C, kalium & serat larut' : 'Vit A, C, potassium & fiber'
       },
       {
         category: isId ? 'Bumbu Alami & Minyak' : 'Spices, Seasoning & Healthy Oils',
         name: isId ? 'Bawang Merah/Putih, Kunyit, Jahe, Minyak' : 'Shallots, Garlic, Turmeric, Ginger, Oil',
         qty: isId ? '1 paket dapur' : '1 pantry kit',
-        estPrice: Math.round(15000 * ratio / 1000) * 1000,
+        estPrice: Math.round(15000 * ratio * mult / 1000) * 1000,
         note: isId ? 'Rempah antioksidan alami' : 'Natural antioxidant herbs'
       }
     ];
@@ -774,6 +880,7 @@ class NutriVisionBudgetPlanner {
     return {
       durationDays: totalDays,
       ratio,
+      region,
       items,
       grandTotal
     };
@@ -797,9 +904,11 @@ class NutriVisionBudgetPlanner {
         : `Grocery Shopping List (${summary.durationDays} Days)`;
     }
     if (subEl) {
-      subEl.textContent = isId
-        ? `Estimasi bahan pokok terstruktur untuk alokasi Rp ${this.budgetAmount.toLocaleString('id-ID')} (${summary.durationDays} Hari)`
-        : `Structured grocery items tailored for Rp ${this.budgetAmount.toLocaleString('id-ID')} budget (${summary.durationDays} Days)`;
+      const regLabel = summary.region?.label || summary.region?.provinceName || 'Nasional';
+      const multText = summary.region?.multiplier ? `${summary.region.multiplier.toFixed(2)}x` : '1.00x';
+      subEl.innerHTML = isId
+        ? `Estimasi belanja bahan pokok acuan pasar: <b style="color:var(--ink);">${regLabel}</b> (${multText}) · Anggaran Rp ${this.budgetAmount.toLocaleString('id-ID')}`
+        : `Grocery shopping estimates calibrated for: <b style="color:var(--ink);">${regLabel}</b> (${multText}) · Budget Rp ${this.budgetAmount.toLocaleString('id-ID')}`;
     }
 
     if (listContainer) {

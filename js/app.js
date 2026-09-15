@@ -99,7 +99,10 @@ class NutriVisionApp {
           targets: parsed.targets || null,
           fontSize: parsed.fontSize || 'normal',
           highContrast: parsed.highContrast || false,
-          language: parsed.language || storedLang
+          language: parsed.language || storedLang,
+          region: parsed.region || null,
+          province: parsed.province || '',
+          city: parsed.city || ''
         };
       } catch (e) {
         console.error('Error parsing user profile:', e);
@@ -126,7 +129,10 @@ class NutriVisionApp {
       targets: null,
       fontSize: 'normal',
       highContrast: false,
-      language: storedLang
+      language: storedLang,
+      region: null,
+      province: '',
+      city: ''
     };
   }
 
@@ -207,6 +213,14 @@ class NutriVisionApp {
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
     this.updateFavoriteBadge();
+
+    // Dengarkan perubahan wilayah pasar pangan untuk pembaruan katalog & profil secara real-time
+    if (window.BappenasFoodAPI && typeof window.BappenasFoodAPI.onRegionChange === 'function') {
+      window.BappenasFoodAPI.onRegionChange((reg) => {
+        this.renderFoodCatalog();
+        this.updateProfileUI();
+      });
+    }
 
     // Inisialisasi Peta Perjalanan Pemulihan Klinis & Jadwal/Kalender Suite (FR-09)
     const activeCond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
@@ -978,7 +992,21 @@ class NutriVisionApp {
       }
     }
 
-    // 7. Synchronize Language Switchers
+    // 7. Update Regional Food Market Indicator in Profile
+    const elRegBadge = document.getElementById('profile-region-badge');
+    const elRegText = document.getElementById('profile-region-display-text');
+    if (elRegBadge && elRegText) {
+      const activeReg = (window.BappenasFoodAPI ? window.BappenasFoodAPI.getActiveRegion() : null) || this.userProfile.region || {
+        provinceName: 'DKI Jakarta',
+        cityName: 'Kota Jakarta Selatan',
+        multiplier: 1.00,
+        zone: 'Zona 1 (Jawa & Bali)'
+      };
+      elRegBadge.textContent = `Bapanas RI · ${activeReg.multiplier ? activeReg.multiplier.toFixed(2) : '1.00'}x`;
+      elRegText.textContent = `${activeReg.provinceName || 'DKI Jakarta'}${activeReg.cityName && activeReg.cityName !== 'Semua Wilayah' ? ' · ' + activeReg.cityName : ''} (${activeReg.zone || 'Regional'})`;
+    }
+
+    // 8. Synchronize Language Switchers
     document.querySelectorAll('.lp-lang-btn').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
     });
@@ -2120,6 +2148,7 @@ class NutriVisionApp {
       consentCheck.checked = Boolean(this.userProfile?.hasCompletedQuiz);
     }
     this.toggleConsentValidation();
+    this.initOnboardRegions();
 
     const modal = document.getElementById('onboarding-modal');
     if (modal) {
@@ -2129,10 +2158,56 @@ class NutriVisionApp {
     this.goToQuizStep(step);
   }
 
+  async initOnboardRegions() {
+    const provSelect = document.getElementById('onboard-province');
+    const citySelect = document.getElementById('onboard-city');
+    if (!provSelect || !window.BappenasFoodAPI) return;
+
+    try {
+      const activeReg = window.BappenasFoodAPI.getActiveRegion() || {};
+      const provinces = await window.BappenasFoodAPI.getProvinces();
+
+      provSelect.innerHTML = `<option value="">-- Pilih Provinsi Domisili --</option>` + provinces.map(p => 
+        `<option value="${p.id}" ${(p.id === activeReg.provinceId || p.name.toLowerCase() === (activeReg.provinceName || '').toLowerCase()) ? 'selected' : ''}>${p.name} (${p.multiplier}x)</option>`
+      ).join('');
+
+      const curProvId = provSelect.value || activeReg.provinceId || 11;
+      if (curProvId) {
+        await this.populateOnboardCities(curProvId, activeReg.cityName);
+      }
+    } catch (e) {
+      console.warn('initOnboardRegions error:', e);
+    }
+  }
+
+  async populateOnboardCities(provinceId, selectedCityName = '') {
+    const citySelect = document.getElementById('onboard-city');
+    if (!citySelect || !window.BappenasFoodAPI) return;
+
+    try {
+      const cities = await window.BappenasFoodAPI.getCities(provinceId);
+      citySelect.innerHTML = `<option value="">-- Pilih Kota / Kabupaten --</option>` + cities.map(c => 
+        `<option value="${c.name}" ${selectedCityName && c.name.toLowerCase() === selectedCityName.toLowerCase() ? 'selected' : ''}>${c.name}</option>`
+      ).join('');
+    } catch (e) {
+      citySelect.innerHTML = `<option value="Semua Wilayah">Semua Wilayah</option>`;
+    }
+  }
+
+  async handleOnboardProvinceChange(provinceId) {
+    if (!provinceId) return;
+    await this.populateOnboardCities(provinceId);
+  }
+
+  handleOnboardCityChange(cityName) {
+    // City selected in modal
+  }
+
   validateQuizStep(step) {
     if (step === 1) {
       const nameVal = document.getElementById('onboard-name')?.value?.trim();
       const contactVal = document.getElementById('onboard-contact')?.value?.trim();
+      const provVal = document.getElementById('onboard-province')?.value;
       const ageVal = parseInt(document.getElementById('onboard-age')?.value, 10);
 
       if (!nameVal) {
@@ -2143,6 +2218,11 @@ class NutriVisionApp {
       if (!contactVal) {
         this.showToast('Email atau No. WhatsApp wajib diisi di Langkah 1.', 'warning');
         document.getElementById('onboard-contact')?.focus();
+        return false;
+      }
+      if (!provVal) {
+        this.showToast('Silakan pilih Provinsi Domisili untuk kalibrasi harga pangan regional.', 'warning');
+        document.getElementById('onboard-province')?.focus();
         return false;
       }
       if (!ageVal || isNaN(ageVal) || ageVal < 5 || ageVal > 120) {
@@ -2528,6 +2608,23 @@ class NutriVisionApp {
       fat: diag.fat,
       calories: diag.tdee
     };
+
+    // Simpan Wilayah Acuan Pasar Pangan (Bapanas RI)
+    const provSelect = document.getElementById('onboard-province');
+    const citySelect = document.getElementById('onboard-city');
+    if (provSelect && provSelect.value && window.BappenasFoodAPI) {
+      const selectedProvId = parseInt(provSelect.value, 10);
+      const provName = (provSelect.options[provSelect.selectedIndex]?.text || '').replace(/\s*\([\d.]+x\)$/, '').trim();
+      const cityName = (citySelect && citySelect.value) ? citySelect.value : 'Semua Wilayah';
+      window.BappenasFoodAPI.setActiveRegion({
+        provinceId: selectedProvId,
+        provinceName: provName,
+        cityName: cityName
+      });
+      this.userProfile.region = window.BappenasFoodAPI.getActiveRegion();
+      this.userProfile.province = provName;
+      this.userProfile.city = cityName;
+    }
 
     this.saveUserProfile();
     if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
@@ -4034,8 +4131,18 @@ class NutriVisionApp {
       const subtitle = isId 
         ? (food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kkal`)
         : (food.subtitleEn || food.subtitle || `${food.defaultPortionGrams}g · ${food.protein}g Prot · ${food.calories} kcal`);
+      const activeReg = (window.BappenasFoodAPI ? window.BappenasFoodAPI.getActiveRegion() : null) || { multiplier: 1.00 };
+      const mult = activeReg.multiplier || 1.00;
+      let displayPrice = food.price;
+      if (typeof food.price === 'string' && food.price.includes('Rp')) {
+        const rawNum = parseInt(food.price.replace(/[^0-9]/g, ''), 10);
+        if (rawNum) {
+          const adj = Math.round((rawNum * mult) / 500) * 500;
+          displayPrice = `Rp ${adj.toLocaleString('id-ID')}`;
+        }
+      }
       const clinicalTag = isId ? (food.clinicalIndication || 'Pemulihan Klinis') : (food.clinicalIndicationEn || food.clinicalIndication || 'Clinical Recovery');
-      const bappenasRef = food.bappenasRef || (isId ? 'Acuan Bapanas RI' : 'Bapanas RI Reference');
+      const bappenasRef = activeReg.provinceName ? `Bapanas: ${activeReg.provinceName}` : (food.bappenasRef || (isId ? 'Acuan Bapanas RI' : 'Bapanas RI Reference'));
       const isTopRec = this.catalogCurrentPage === 1 && idx < 6;
       let recBadgeText = isId ? 'Top Rekomendasi' : 'Top Pick';
       if (condition === 'gym') recBadgeText = `${food.protein}g Prot · Gym`;
@@ -4106,7 +4213,7 @@ class NutriVisionApp {
                 </button>
               </div>
               <div class="food-card-price-group">
-                <span class="food-card-price">${food.price} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
+                <span class="food-card-price">${displayPrice} <small style="font-size:10px;color:#64748B;font-weight:500;">/porsi</small></span>
                 <span class="food-bappenas-ref" title="Acuan Harga Pasar Eceran">${bappenasRef}</span>
               </div>
             </div>
@@ -4653,9 +4760,22 @@ class NutriVisionApp {
 
     try {
       let user;
-      if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
+      // Sinkronisasi login ke Backend MySQL jika server online
+      if (window.nutriAPI) {
+        try {
+          const apiRes = await window.nutriAPI.login(email, password);
+          if (apiRes?.user && apiRes.token) {
+            window.nutriAPI.setToken(apiRes.token);
+            user = apiRes.user;
+          }
+        } catch (apiErr) {
+          console.warn('[NutriVision] Backend login notice (menggunakan mode lokal):', apiErr.message);
+        }
+      }
+
+      if (!user && window.nutriVisionDB && window.nutriVisionDB.isReady) {
         user = await window.nutriVisionDB.login(email, password);
-      } else {
+      } else if (!user) {
         // Fallback jika DB sedang proses ready
         user = {
           id: 'usr_' + Date.now(),
@@ -4763,7 +4883,25 @@ class NutriVisionApp {
 
     try {
       let newUser;
-      if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
+      // Sinkronisasi pendaftaran ke Backend MySQL jika server online
+      if (window.nutriAPI) {
+        try {
+          const apiRes = await window.nutriAPI.register({
+            name,
+            email,
+            password,
+            clinicalCondition: 'post-surgery'
+          });
+          if (apiRes?.user && apiRes.token) {
+            window.nutriAPI.setToken(apiRes.token);
+            newUser = apiRes.user;
+          }
+        } catch (apiErr) {
+          console.warn('[NutriVision] Backend register notice (menggunakan mode lokal):', apiErr.message);
+        }
+      }
+
+      if (!newUser && window.nutriVisionDB && window.nutriVisionDB.isReady) {
         newUser = await window.nutriVisionDB.register({
           name,
           email,
@@ -4772,7 +4910,7 @@ class NutriVisionApp {
           condition: 'post-surgery',
           hasCompletedQuiz: false
         });
-      } else {
+      } else if (!newUser) {
         newUser = {
           id: 'usr_' + Date.now(),
           name,
@@ -5029,10 +5167,9 @@ class NutriVisionApp {
     if (lpActions) {
       if (isLoggedIn) {
         const initials = isAdmin ? 'AD' : (this.userProfile.name || 'P').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-        const firstName = isAdmin ? 'Super Admin' : this.userProfile.name.split(' ')[0];
         const targetAction = isAdmin ? 'app.goToAdminPortal()' : "app.goToDashboard('overview')";
         const targetTitle = isAdmin ? (isId ? 'Buka Super Admin Command Center' : 'Open Super Admin Command Center') : (isId ? 'Buka Dasbor Pasien' : 'Open Patient Dashboard');
-        const targetLabel = isAdmin ? 'Admin Portal' : (isId ? `Dasbor (${firstName})` : `Dashboard (${firstName})`);
+        const targetLabel = isAdmin ? 'Admin Portal' : (isId ? 'Buka Dasbor' : 'Dashboard');
         const logoutTitle = isId ? 'Keluar / Logout' : 'Sign Out / Logout';
 
         lpActions.innerHTML = `

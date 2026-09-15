@@ -128,6 +128,12 @@ async function runTests() {
     assert(statsRes.status === 200, 'GET /api/meals/weekly-stats returned HTTP 200');
     assert(statsRes.data?.days?.length === 7, 'Weekly stats contains exactly 7 days');
 
+    // Clean up test meal to keep user journal clean
+    if (newMeal.data?.meal?.id) {
+      const delRes = await request('DELETE', `/api/meals/${newMeal.data.meal.id}`, null, userToken);
+      assert(delRes.status === 200, 'DELETE /api/meals/:id cleaned up test meal');
+    }
+
     // 6. Computer Vision Simulation & Analysis
     console.log('\n6. Computer Vision Analysis:');
     const cvRes = await request('POST', '/api/cv/analyze', {
@@ -232,6 +238,16 @@ async function runTests() {
     });
     assert(aiWarningTest.status === 200, 'POST /api/ai/classify (Warning meal) returned HTTP 200');
     assert(aiWarningTest.data?.result?.predictedClass === 2, 'Classified as PERINGATAN_PANTANGAN (Class 2)');
+
+    // 12. Symptom-Aware Texture & Food Filter Agent
+    console.log('\n12. Clinical Symptom-Aware Texture & Food Filter AI Agent:');
+    const symptomTest = await request('POST', '/api/ai/symptom-filter', {
+      symptoms: ['dysphagia', 'nausea', 'constipation']
+    });
+    assert(symptomTest.status === 200, 'POST /api/ai/symptom-filter returned HTTP 200');
+    assert(symptomTest.data?.safety_level === 'High', 'Safety level escalated to High for Dysphagia');
+    assert(symptomTest.data?.texture_requirement?.includes('Puree'), 'Texture requirement strictly enforces Puree');
+    assert(symptomTest.data?.recommended_menu?.length > 0, 'Menu recommendations synthesized successfully');
 
     console.log('\n==================================================');
     console.log(`🎉 TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
