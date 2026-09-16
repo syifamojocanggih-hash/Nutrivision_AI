@@ -1,0 +1,181 @@
+P[0] (NoStyle): GAYATAMA 5 — INTERNATIONAL WEB TECHNOLOGY COMPETITION
+P[1] (NoStyle): Subtema: Public Service
+P[2] (NoStyle): NutriVision AI
+P[3] (NoStyle): Product Requirements Document (PRD)
+P[4] (NoStyle): Platform Segmentasi & Panduan Gizi Makanan Berbasis Computer Vision untuk Pemulihan Pasca-Operasi, Rehabilitasi Medis, dan Gym Recovery
+P[5] (NoStyle): 
+P[6] (NoStyle): 
+P[7] (Heading 1): 1. Latar Belakang & Ringkasan Eksekutif
+P[8] (NoStyle): Setiap tahun, jutaan orang menjalani operasi, rehabilitasi medis (fisioterapi, pemulihan cedera), maupun program pemulihan kebugaran pasca-latihan intensif (gym recovery). Pada seluruh kondisi ini, asupan gizi memegang peran krusial: protein yang cukup mempercepat penyembuhan luka dan regenerasi jaringan, sementara kombinasi karbohidrat, vitamin, dan mineral yang tepat menjaga energi selama terapi serta mencegah kehilangan massa otot.
+P[9] (NoStyle): Masalahnya, kebanyakan pasien dan individu awam tidak memiliki latar belakang gizi klinis. Mereka kesulitan menerjemahkan anjuran umum dokter/ahli gizi ("perbanyak protein", "kurangi lemak jenuh") menjadi pilihan menu makanan nyata sehari-hari, dan sering bingung menentukan "aku harus makan apa hari ini" dari bahan yang tersedia. Di sisi lain, konsultasi rutin dengan ahli gizi tidak selalu terjangkau atau tersedia bagi seluruh lapisan masyarakat — inilah celah pelayanan publik yang ingin dijawab oleh NutriVision AI.
+P[10] (NoStyle): NutriVision AI adalah platform web yang memanfaatkan teknologi computer vision untuk melakukan segmentasi detail terhadap foto makanan pengguna (per-jenis bahan, bukan sekadar per-piring), menampilkan gambaran visual komposisi gizinya, dan memberi panduan kesesuaian terhadap kebutuhan pemulihan spesifik pengguna (pasca-operasi, rehabilitasi, atau gym recovery). Produk ini diposisikan sebagai alat bantu keputusan (decision-support tool) berbasis layanan publik digital — bukan pengganti diagnosis atau resep medis.
+P[11] (Heading 1): 2. Rumusan Masalah
+P[12] (Heading 2): 2.1 Masalah yang Diangkat
+P[13] (List Paragraph): Pasien pasca-operasi dan rehabilitasi sulit menerapkan anjuran gizi umum ke pilihan makanan konkret sehari-hari, terutama karena keterbatasan pemahaman gizi dan minimnya pendampingan personal berkelanjutan.
+P[14] (List Paragraph): Pemulihan gizi yang tidak tepat (kurang protein, kurang kalori, atau makanan pemicu peradangan/konstipasi) dapat memperlambat penyembuhan luka dan meningkatkan risiko komplikasi.
+P[15] (List Paragraph): Alat bantu gizi berbasis foto yang ada saat ini umumnya hanya mengenali "nama hidangan" secara utuh (mis. "nasi goreng") tanpa merinci komposisi bahan di dalamnya, sehingga gambaran gizinya kasar dan kurang actionable.
+P[16] (List Paragraph): Akses ke ahli gizi/dietisien secara rutin masih terbatas dan berbiaya tinggi, terutama bagi pasien rawat jalan atau masyarakat umum di luar rumah sakit besar.
+P[17] (Heading 2): 2.2 Bukti dari Riset & Referensi Jurnal
+P[18] (NoStyle): Pentingnya gizi pada masa pemulihan didukung oleh sejumlah sumber klinis dan tinjauan sistematis:
+P[19] (NoStyle): • Nutrisi yang seimbang (protein, karbohidrat, vitamin, mineral) sebelum dan sesudah operasi terbukti membantu menurunkan risiko infeksi, mendukung penyembuhan luka, dan memulihkan kekuatan tubuh; kebutuhan protein pasien dengan luka kronis bahkan dapat meningkat signifikan di atas kebutuhan normal (Encompass Health; Fondren Nutrition & Recovery Blog).
+P[20] (NoStyle): • Tinjauan sistematis pada pasien pasca-bedah kolorektal (Enhanced Recovery After Surgery) menemukan bahwa asupan oral pasca-operasi sering terhambat oleh mual, nafsu makan menurun, dan ketidakpuasan terhadap pilihan makanan yang tersedia — menegaskan perlunya alat bantu pemilihan menu yang lebih personal dan mudah dipahami (Ang et al., Nutrients, MDPI, 2026).
+P[21] (NoStyle): • Human Performance Resource Center (HPRC) menekankan bahwa nutrisi rehabilitasi berbeda dari nutrisi performa biasa: tujuannya meminimalkan kehilangan otot dan mencegah kenaikan berat badan berlebih saat aktivitas menurun, sehingga pemilihan jenis dan porsi makanan perlu disesuaikan secara individual.
+P[22] (NoStyle): • Tinjauan sistematis di SN Computer Science (2023) dan ScienceDirect (2024) menunjukkan bahwa deep learning untuk pengenalan citra makanan telah berkembang dari klasifikasi hidangan menuju segmentasi tingkat bahan dan estimasi volume/berat, menghasilkan gambaran gizi yang jauh lebih rinci dibanding pendekatan klasifikasi hidangan utuh.
+P[23] (NoStyle): • Penelitian FoodSAM (segmentasi berbasis Segment Anything Model) dikombinasikan dengan estimasi kedalaman (U-Net + ResNet18) mampu mengestimasi volume dan massa makanan dari citra 2D tunggal, dikonversi ke kandungan gizi menggunakan basis data USDA (Asian Journal of Research in Computer Science, 2025).
+P[24] (NoStyle): • Model ringan seperti Lightweight DeepLabv3+ menunjukkan segmentasi makanan tingkat piksel kini dapat dijalankan pada perangkat dengan daya komputasi rendah — membuka peluang implementasi berbasis web yang ringan (PMC12026278, 2024).
+P[25] (NoStyle): Kesimpulan riset: kebutuhan gizi presisi pada masa pemulihan adalah nyata dan berdampak klinis, sementara teknologi segmentasi citra makanan berbasis deep learning sudah cukup matang untuk menghasilkan gambaran komposisi bahan yang detail. Namun, model-model tersebut umumnya dilatih pada dataset makanan global/barat (mis. Food-101, UECFOOD, FoodSeg103) dan belum optimal untuk ragam makanan lokal Indonesia — sebuah gap yang secara jujur diakui dan ditangani lewat pendekatan bertahap pada bagian 6 dan 9 dokumen ini.
+P[26] (Heading 1): 3. Tujuan Produk
+P[27] (List Paragraph): Menyediakan alat bantu berbasis web yang memetakan foto makanan pengguna menjadi gambaran segmentasi gizi yang detail (per bahan, bukan per piring).
+P[28] (List Paragraph): Memberikan panduan kesesuaian makanan terhadap kondisi pemulihan spesifik pengguna (pasca-operasi, rehabilitasi fisik, atau gym recovery).
+P[29] (List Paragraph): Menjadi pelayanan publik digital yang menjembatani keterbatasan akses konsultasi gizi langsung, tanpa menggantikan peran tenaga medis/ahli gizi profesional.
+P[30] (List Paragraph): Mendorong kepatuhan (adherence) pasien terhadap anjuran gizi melalui pengalaman yang sederhana, visual, dan personal.
+P[31] (List Paragraph): Mendukung SDG 3 (Kehidupan Sehat & Sejahtera) melalui inovasi teknologi web yang dapat diakses luas oleh komunitas, dengan pendekatan pengembangan yang jujur dan bertahap.
+P[32] (Heading 1): 4. Target Pengguna & Persona
+P[33] (Heading 1): 5. Ruang Lingkup Produk
+P[34] (Heading 2): 5.1 Termasuk dalam Cakupan (In-Scope — MVP)
+P[35] (List Paragraph): Unggah/ambil foto makanan melalui web (desktop & mobile browser).
+P[36] (List Paragraph): Segmentasi citra makanan berbasis computer vision (model pretrained yang di-adaptasi) hingga tingkat bahan/kelompok bahan yang dapat dikenali.
+P[37] (List Paragraph): Gambaran estimasi porsi dan kandungan gizi (kalori, protein, karbohidrat, lemak) per bahan hasil segmentasi, ditampilkan sebagai rentang estimasi, bukan angka pasti.
+P[38] (List Paragraph): Profil pemulihan pengguna (jenis kondisi, fase pemulihan, target gizi harian, dan input pantangan makan) sebagai dasar personalisasi panduan.
+P[39] (List Paragraph): Instruksi & panduan gizi kontekstual di dalam web (rule-based) yang melengkapi hasil CV — terutama untuk kasus/bahan yang belum bisa dikenali model secara akurat.
+P[40] (List Paragraph): Fitur koreksi manual oleh pengguna atas hasil segmentasi yang kurang tepat.
+P[41] (List Paragraph): Riwayat asupan gizi harian/mingguan.
+P[42] (Heading 2): 5.2 Di Luar Cakupan untuk MVP (Roadmap Lanjutan)
+P[43] (List Paragraph): Model CV custom yang dilatih penuh dengan dataset makanan lokal Indonesia berskala besar — dijadwalkan sebagai pengembangan pasca-kompetisi seiring pengumpulan dataset (lihat Bagian 9).
+P[44] (List Paragraph): Verifikasi/approval pantangan makan oleh tenaga medis berlisensi di dalam sistem — untuk MVP, input pantangan sepenuhnya berdasarkan deklarasi pengguna (lihat Bagian 8).
+P[45] (List Paragraph): Diagnosis medis, resep obat, atau pemesanan/pengantaran makanan langsung dari platform.
+P[46] (Heading 1): 6. Fitur Utama — Computer Vision Food Segmentation & Recovery Guidance
+P[47] (Heading 2): 6.1 Alur Fungsional
+P[48] (List Paragraph): Pengguna mengunggah atau memotret makanan melalui antarmuka web.
+P[49] (List Paragraph): Model computer vision (berbasis model segmentasi pretrained, mis. Segment Anything Model/DeepLabv3+ yang diadaptasi untuk domain makanan) mendeteksi dan menyekat setiap bahan yang dapat dikenali pada gambar.
+P[50] (List Paragraph): Sistem mengestimasi porsi tiap segmen menggunakan referensi ukuran piring standar, lalu memetakannya ke basis data komposisi pangan untuk menghasilkan estimasi gizi per bahan.
+P[51] (List Paragraph): Sistem menampilkan "peta visual gizi piring" (overlay warna per-bahan), rincian gizi, serta membandingkannya dengan target gizi harian pengguna berdasarkan profil pemulihannya.
+P[52] (List Paragraph): Jika model tidak yakin/tidak mengenali suatu bahan (mis. makanan lokal yang jarang muncul di dataset training), sistem menampilkan status "belum teridentifikasi" dan mengarahkan pengguna ke panduan instruksi manual (Bagian 6.3) untuk melengkapi data secara mandiri.
+P[53] (Heading 2): 6.2 Output ke Pengguna
+P[54] (List Paragraph): Peta visual segmentasi (overlay warna per-bahan di atas foto asli).
+P[55] (List Paragraph): Rincian gizi per-bahan dan agregat per-piring, ditampilkan sebagai rentang estimasi (bukan angka mutlak).
+P[56] (List Paragraph): Indikator kesesuaian terhadap fase pemulihan (mis. "Protein: kemungkinan kurang dari target hari ini").
+P[57] (List Paragraph): Rekomendasi bahan pelengkap yang realistis dan mudah didapat (mis. "tambahkan telur rebus/tahu untuk penuhi protein").
+P[58] (Heading 2): 6.3 Instruksi & Panduan Manual sebagai Pelengkap (Human-in-the-loop)
+P[59] (NoStyle): Catatan transparansi produk: mengingat keterbatasan waktu dan ketersediaan dataset makanan lokal berskala besar, model CV pada versi kompetisi ini menggunakan pendekatan pretrained/transfer-learning dan belum mencakup seluruh variasi kuliner Indonesia. Untuk kasus tersebut, web menyediakan panduan instruksional (form isian bahan manual, katalog bahan umum yang bisa dipilih, serta tips gizi tertulis dari sumber tepercaya) sebagai pelengkap, bukan pengganti fungsi CV. Pendekatan ini dijelaskan secara terbuka pada dokumentasi teknis GitHub agar juri/pengguna memahami batas kemampuan sistem saat ini.
+P[60] (List Paragraph): Form tambah/koreksi bahan secara manual ketika CV tidak mengenali suatu item.
+P[61] (List Paragraph): Katalog referensi bahan makanan umum Indonesia beserta info gizinya, dapat dipilih manual sebagai pelengkap segmentasi otomatis.
+P[62] (List Paragraph): Tips & artikel gizi singkat kontekstual (rule-based, dikurasi dari sumber tepercaya) sesuai fase pemulihan pengguna.
+P[63] (Heading 1): 7. Fitur Inovasi Pendukung
+P[64] (NoStyle): Fitur-fitur berikut memperkuat fitur utama, meningkatkan engagement, dan memperluas dampak sebagai layanan publik.
+P[65] (NoStyle): 7.1 Recovery Meal Planner (Perencana Menu Adaptif)
+P[66] (NoStyle): Menghasilkan rencana menu harian/mingguan berbasis profil pemulihan pengguna, riwayat segmentasi sebelumnya, dan katalog bahan yang tersedia secara lokal. Untuk mengakomodasi keberagaman kondisi ekonomi pengguna, fitur ini menyediakan dua opsi rekomendasi yang dapat dipilih:
+P[67] (List Paragraph): Opsi Standar (Default) — rekomendasi menu berdasarkan kombinasi bahan yang paling optimal secara gizi untuk fase pemulihan pengguna, tanpa mempertimbangkan batasan biaya.
+P[68] (List Paragraph): Opsi Hemat (Low-Budget) — rekomendasi menu alternatif dengan bahan yang lebih terjangkau namun tetap memenuhi kebutuhan gizi inti (terutama protein) untuk fase pemulihan yang sama, sehingga tetap inklusif bagi pengguna dengan keterbatasan ekonomi.
+P[69] (NoStyle): 7.2 Symptom-Aware Food Filter (Filter Berbasis Gejala)
+P[70] (NoStyle): Pengguna dapat menandai gejala yang sedang dialami (mual, sulit menelan, konstipasi, nafsu makan rendah), dan sistem menyaring rekomendasi menu yang sesuai serta mudah dicerna, mengacu pada temuan riset ERAS.
+P[71] (NoStyle): 7.3 Progress & Recovery Dashboard
+P[72] (NoStyle): Dashboard visual tren kepatuhan gizi (protein/kalori tercapai vs target) dari waktu ke waktu, dapat diekspor/dibagikan ke fisioterapis/ahli gizi pendamping sebagai bahan pemantauan (telehealth-friendly).
+P[73] (NoStyle): 7.4 Portal Pendamping (Caregiver View) — Lihat Saja
+P[74] (NoStyle): Mode akses terbatas (view-only, dengan izin eksplisit pengguna) bagi keluarga/perawat untuk memantau riwayat asupan pasien, mendukung pendampingan pemulihan di rumah. Fungsi persetujuan/approval oleh tenaga medis berlisensi direncanakan sebagai pengembangan lanjutan pasca-MVP.
+P[75] (NoStyle): 7.5 Ruang Komunitas Pemulihan
+P[76] (NoStyle): Ruang komunitas tempat pengguna saling berbagi pengalaman dan ide makanan yang sesuai dengan kondisi pemulihan masing-masing — mencakup pasca-operasi, rehabilitasi fisik, maupun gym recovery. Konten yang dibagikan tidak dibatasi hanya pada resep, karena kebutuhan pemulihan setiap pengguna dapat berbeda tergantung kondisi fisik dan bukan semata jenis penyakitnya, sehingga ruang ini lebih terbuka untuk berbagi tips, pengalaman, dan rekomendasi bahan makanan yang telah melalui pengecekan gizi dasar oleh sistem.
+P[77] (Heading 1): 8. Penanganan Pantangan Makan & Model Tanggung Jawab
+P[78] (NoStyle): Pantangan makan (dietary restriction) bersifat sangat spesifik per kondisi medis individu dan idealnya ditentukan oleh dokter/ahli gizi yang menangani pasien secara langsung. Untuk versi MVP, NutriVision AI menerapkan model tanggung jawab bersama (shared responsibility) sebagai berikut:
+P[79] (Heading 2): 8.1 Alur Onboarding dengan Persetujuan Eksplisit
+P[80] (List Paragraph): Pengguna mengisi profil pemulihan, termasuk daftar pantangan makan (dapat memilih dari katalog umum atau menambah manual).
+P[81] (List Paragraph): Sebelum melanjutkan ke fitur personalisasi, pengguna wajib mencentang pernyataan konfirmasi, misalnya: "Saya menyatakan bahwa data pantangan ini saya isi berdasarkan kondisi/anjuran medis yang saya ketahui, dan memahami bahwa NutriVision AI tidak melakukan verifikasi medis atas data ini."
+P[82] (List Paragraph): Setiap layar rekomendasi menampilkan label status yang jelas: "Estimasi berdasarkan data yang Anda masukkan — bukan pengganti anjuran tenaga medis."
+P[83] (List Paragraph): Untuk kondisi yang kompleks/berisiko tinggi, sistem menampilkan anjuran eksplisit untuk berkonsultasi ke tenaga medis sebelum mengubah pola makan secara signifikan.
+P[84] (NoStyle): Pendekatan ini konsisten dengan temuan riset bahwa toleransi dan kebutuhan gizi pasca-operasi sangat bervariasi antar individu (Ang et al., 2026), sehingga sistem otomatis tanpa pengawasan sepenuhnya berisiko memberi rekomendasi yang tidak sesuai konteks klinis masing-masing pasien — karenanya tanggung jawab akhir penerapan tetap berada pada pengguna dan/atau tenaga medis yang mendampinginya.
+P[85] (Heading 1): 9. Kebutuhan Fungsional (Functional Requirements)
+P[86] (Heading 1): 10. Kebutuhan Non-Fungsional
+P[87] (List Paragraph): Arsitektur PWA (Progressive Web App): dibangun sebagai satu web app yang responsif dan dapat diinstal (installable), berjalan konsisten baik di desktop maupun perangkat mobile tanpa perlu aplikasi native terpisah — termasuk dukungan akses kamera browser untuk pengambilan foto langsung dari perangkat apa pun.
+P[88] (List Paragraph): Transparansi model: setiap hasil CV yang ditampilkan disertai indikator tingkat keyakinan (confidence) dan opsi koreksi manual.
+P[89] (List Paragraph): Privasi & Keamanan: data kesehatan (kondisi pemulihan, pantangan, riwayat asupan) dienkripsi saat disimpan dan dikirim.
+P[90] (List Paragraph): Aksesibilitas: antarmuka responsif, ramah pengguna lanjut usia (kontras warna, ukuran teks dapat diperbesar).
+P[91] (List Paragraph): Performa: waktu proses segmentasi dan estimasi gizi per foto idealnya di bawah 5–8 detik pada koneksi standar.
+P[92] (List Paragraph): Skalabilitas: arsitektur mendukung penambahan katalog bahan lokal & basis data gizi tambahan tanpa perombakan model inti.
+P[93] (List Paragraph): Disclaimer medis: ditampilkan konsisten di seluruh halaman rekomendasi bahwa hasil bersifat estimasi pendukung keputusan, bukan pengganti nasihat medis profesional.
+P[94] (Heading 1): 11. Arsitektur & Tumpukan Teknologi (Usulan)
+P[95] (Heading 2): 11.1 Roadmap Pengembangan Dataset & Model
+P[96] (List Paragraph): Fase MVP (kompetisi): gunakan model pretrained + katalog bahan manual sebagai pelengkap; kumpulkan data koreksi pengguna sebagai cikal-bakal dataset.
+P[97] (List Paragraph): Fase Pasca-Kompetisi: kumpulkan dataset makanan lokal Indonesia secara bertahap (crowdsourcing foto + label dari pengguna dan kolaborasi institusi/ahli gizi).
+P[98] (List Paragraph): Fase Lanjutan: fine-tuning model CV dengan dataset lokal yang terkumpul untuk meningkatkan akurasi pengenalan makanan khas Indonesia.
+P[99] (Heading 1): 12. Metrik Keberhasilan (Success Metrics)
+P[100] (List Paragraph): Tingkat pengenalan bahan (recognition rate) oleh model CV pretrained pada foto uji, dan tingkat penggunaan fitur koreksi manual sebagai indikator gap yang perlu ditutup.
+P[101] (List Paragraph): Tingkat retensi pengguna mingguan (weekly active users) dan konsistensi pencatatan makanan (streak).
+P[102] (List Paragraph): Persentase pengguna yang mencapai target gizi harian setelah 2 minggu penggunaan.
+P[103] (List Paragraph): Skor kepuasan pengguna (CSAT) terhadap kemudahan memahami panduan gizi dan kejelasan disclaimer.
+P[104] (Heading 1): 13. Keterkaitan dengan SDGs & Dampak Sosial
+P[105] (List Paragraph): SDG 3 — Good Health and Well-Being: mendukung pemulihan kesehatan pasien melalui panduan gizi yang tepat sasaran dan mudah dipahami.
+P[106] (List Paragraph): SDG 9 — Industry, Innovation and Infrastructure: menerapkan computer vision sebagai infrastruktur digital layanan kesehatan yang inovatif, dikembangkan secara bertahap dan bertanggung jawab.
+P[107] (List Paragraph): SDG 11 — Sustainable Cities and Communities: memperluas akses layanan pendukung kesehatan berbasis komunitas tanpa bergantung pada ketersediaan tenaga ahli gizi fisik di setiap wilayah.
+P[108] (Heading 1): 14. Batasan & Risiko
+P[109] (List Paragraph): Akurasi segmentasi dapat menurun pada hidangan campuran/tertutup saus, dan pada makanan lokal yang tidak tercakup dataset pretrained — dimitigasi dengan fitur koreksi manual dan katalog bahan lokal.
+P[110] (List Paragraph): Estimasi porsi dari foto 2D tunggal memiliki margin kesalahan bawaan — dikomunikasikan sebagai rentang estimasi, bukan angka pasti.
+P[111] (List Paragraph): Input pantangan makan sepenuhnya bergantung pada keakuratan deklarasi pengguna — risiko ini dimitigasi lewat disclaimer eksplisit, persetujuan onboarding, dan anjuran konsultasi medis untuk kasus kompleks (lihat Bagian 8).
+P[112] (List Paragraph): Produk berpotensi disalahartikan sebagai nasihat medis definitif — dimitigasi melalui disclaimer eksplisit di setiap halaman rekomendasi.
+P[113] (Heading 1): 15. Referensi
+P[114] (NoStyle): Encompass Health. "Healing Foods: What to Eat Pre- and Post-Surgery."
+P[115] (NoStyle): Abbott Nutrition. "Nutrition for Surgery Recovery."
+P[116] (NoStyle): Temple Health. "Six Post-Surgery Nutrition Tips."
+P[117] (NoStyle): Human Performance Resource Center (HPRC). "Nutrition for Surgery and Injury Recovery."
+P[118] (NoStyle): Ang, K. Y. H., Stringer, G., Collins, J., Barker, L. A. "Patient Experiences of Nutrition in Enhanced Recovery After Colorectal Surgery: A Systematic Review." Nutrients, MDPI, 2026.
+P[119] (NoStyle): Fondren. "Importance of Nutrition in Surgical and Injury Recovery."
+P[120] (NoStyle): PMC7534941. "Nutritional Considerations and Strategies to Facilitate Injury Recovery and Rehabilitation."
+P[121] (NoStyle): Frontiers in Nutrition. "Visual Nutrition Analysis: Leveraging Segmentation and Regression for Food Nutrient Estimation." 2024.
+P[122] (NoStyle): PMC12026278. "Lightweight DeepLabv3+ for Semantic Food Segmentation." 2024.
+P[123] (NoStyle): SN Computer Science, Springer. "Deep Learning for Food Image Recognition and Nutrition Analysis Towards Chronic Diseases Monitoring: A Systematic Review." 2023.
+P[124] (NoStyle): Asian Journal of Research in Computer Science. "Estimating Nutritional Composition from Food Volume via Deep Learning-Based Depth and Segmentation Models." 2025.
+P[125] (NoStyle): arXiv:2108.02947. "A Review on Vision-Based Analysis for Automatic Dietary Assessment."
+P[126] (NoStyle): ScienceDirect. "Computer Vision and Deep Learning-Based Approaches for Detection of Food Nutrients/Nutrition: New Insights and Advances." 2024.
+P[127] (NoStyle): PMC10781344. "mid-DeepLabv3+: A Novel Approach for Image Semantic Segmentation Applied to African Food Dietary Assessments."
+P[128] (NoStyle): arXiv:2405.16478. "Vision-Based Approach for Food Weight Estimation from 2D Images."
+
+--- TABLES ---
+
+Table 0:
+  Row 0: ['Item', 'Keterangan']
+  Row 1: ['Nama Produk', 'NutriVision AI']
+  Row 2: ['Versi Dokumen', '1.0']
+  Row 3: ['Tanggal', '29 Agustus 2026']
+  Row 4: ['Kompetisi', 'Gayatama 5 — International Web Technology Competition']
+  Row 5: ['Subtema', 'Public Service']
+  Row 6: ['Tema Besar', 'Innovating for a Sustainable Future: Empowering Communities through Web Technology']
+  Row 7: ['SDGs Terkait', 'SDG 3 (Good Health & Well-Being), SDG 9 (Industry, Innovation & Infrastructure), SDG 11 (Sustainable Cities & Communities)']
+
+Table 1:
+  Row 0: ['Persona', 'Kebutuhan Utama', 'Contoh Skenario']
+  Row 1: ['Pasien Pasca-Operasi', 'Panduan makanan tinggi protein & rendah risiko komplikasi (mis. sembelit, infeksi)', 'Baru menjalani operasi usus buntu, ingin tahu apakah menu rumah/rumah sakitnya cukup protein']
+  Row 2: ['Pasien Rehabilitasi/Fisioterapi', 'Energi cukup untuk sesi terapi, pemulihan jaringan & otot', 'Pemulihan cedera ACL, ingin tahu makanan pendukung regenerasi ligamen']
+  Row 3: ['Individu Gym Recovery', 'Keseimbangan protein-karbohidrat pasca-latihan berat', 'Selesai sesi angkat beban berat, ingin cek apakah menu makan siangnya cukup mendukung recovery otot']
+  Row 4: ['Pendamping (keluarga/nakes)', 'Referensi cepat untuk membantu menentukan menu pasien', 'Keluarga menyiapkan makanan untuk pasien rawat jalan, butuh panduan sederhana']
+
+Table 2:
+  Row 0: ['Pihak', 'Tanggung Jawab']
+  Row 1: ['Sistem (NutriVision AI)', 'Menyediakan alat bantu estimasi gizi & pencocokan rekomendasi berdasarkan data pantangan yang diinput pengguna; menampilkan disclaimer bahwa sistem tidak melakukan diagnosis atau verifikasi medis atas input tersebut.']
+  Row 2: ['Pengguna', 'Bertanggung jawab menginput data pantangan/kondisi medis secara akurat, idealnya berdasarkan anjuran tenaga medis yang sudah diterimanya sebelumnya (bukan asumsi sendiri).']
+  Row 3: ['Pendamping/Nakes (opsional)', 'Dapat meninjau riwayat asupan pasien melalui Portal Pendamping (lihat 7.4) sebagai lapisan pengecekan tambahan yang bersifat sukarela.']
+
+Table 3:
+  Row 0: ['ID', 'Kebutuhan', 'Prioritas']
+  Row 1: ['FR-01', 'Sistem menerima unggahan foto makanan (JPEG/PNG) dari web/mobile browser', 'Must Have']
+  Row 2: ['FR-02', 'Sistem melakukan segmentasi citra makanan menggunakan model CV pretrained/adaptasi', 'Must Have']
+  Row 3: ['FR-03', 'Sistem menampilkan estimasi porsi & kandungan gizi per segmen bahan (dalam bentuk rentang)', 'Must Have']
+  Row 4: ['FR-04', 'Pengguna dapat membuat profil pemulihan (jenis kondisi, target gizi, fase pemulihan, pantangan)', 'Must Have']
+  Row 5: ['FR-05', 'Sistem menampilkan indikator kesesuaian gizi terhadap target dan saran perbaikan', 'Must Have']
+  Row 6: ['FR-06', 'Pengguna wajib menyetujui pernyataan disclaimer/tanggung jawab input saat onboarding', 'Must Have']
+  Row 7: ['FR-07', 'Pengguna dapat menambah/koreksi bahan secara manual saat CV tidak mengenali item', 'Must Have']
+  Row 8: ['FR-08', 'Sistem menyediakan katalog bahan umum & panduan gizi instruksional sebagai pelengkap CV', 'Must Have']
+  Row 9: ['FR-09', 'Sistem menyimpan riwayat asupan dan menampilkan tren mingguan', 'Should Have']
+  Row 10: ['FR-10', 'Recovery Meal Planner menghasilkan rekomendasi menu otomatis dengan 2 opsi (Standar & Hemat/Low-Budget)', 'Should Have']
+  Row 11: ['FR-11', 'Symptom-aware filter menyesuaikan rekomendasi berdasarkan gejala', 'Should Have']
+  Row 12: ['FR-12', 'Portal Pendamping (view-only) untuk keluarga/nakes dengan izin pengguna', 'Could Have']
+  Row 13: ['FR-13', 'Ruang Komunitas Pemulihan untuk berbagi tips & pengalaman sesuai kondisi fisik', 'Could Have']
+  Row 14: ['FR-14', 'Fungsi approval/verifikasi pantangan oleh nakes berlisensi (roadmap lanjutan)', "Future/Won't Have (MVP)"]
+
+Table 4:
+  Row 0: ['Lapisan', 'Teknologi yang Diusulkan']
+  Row 1: ['Frontend Web', 'PWA (Progressive Web App) menggunakan React/Next.js + Tailwind CSS, dengan service worker & manifest agar dapat diinstal dan diakses konsisten di desktop maupun mobile browser; akses kamera browser (WebRTC) untuk ambil foto langsung']
+  Row 2: ['Backend/API', 'Node.js atau Python (FastAPI) untuk orkestrasi request segmentasi & rekomendasi']
+  Row 3: ['Model Computer Vision (MVP)', 'Model segmentasi pretrained (mis. Segment Anything Model / DeepLabv3+ yang telah dilatih di dataset makanan publik seperti Food-101/FoodSeg103), digunakan langsung tanpa retraining dari nol']
+  Row 4: ['Estimasi Porsi', 'Referensi ukuran piring standar sebagai skala; estimasi kedalaman monokuler sebagai peningkatan lanjutan pasca-MVP']
+  Row 5: ['Basis Data Gizi', 'Basis data komposisi pangan (mis. setara USDA FoodData Central) dilengkapi katalog manual bahan lokal Indonesia yang dikurasi tim']
+  Row 6: ['Database Aplikasi', 'PostgreSQL untuk profil pengguna, riwayat asupan, dan relasi pendamping']
+  Row 7: ['Hosting/Infra', 'Layanan cloud dengan dukungan inference model CV dan penyimpanan objek untuk gambar']

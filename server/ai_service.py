@@ -22,12 +22,52 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
-# Model Directory
+# Model Directory & JSON Resources
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "ai_model")
-MODEL_FILE = os.path.join(MODEL_DIR, "model.safetensors")
-if not os.path.exists(MODEL_FILE):
-    MODEL_FILE = os.path.join(BASE_DIR, "..", "model.safetensors")
+ROOT_DIR = os.path.join(BASE_DIR, "..")
+
+def find_file(filename):
+    paths = [
+        os.path.join(MODEL_DIR, filename),
+        os.path.join(ROOT_DIR, filename),
+        os.path.join(BASE_DIR, filename),
+        filename
+    ]
+    for p in paths:
+        if os.path.exists(p):
+            return p
+    return None
+
+MODEL_FILE = find_file("model.safetensors") or os.path.join(MODEL_DIR, "model.safetensors")
+TOKENIZER_FILE = find_file("tokenizer.json")
+CONFIG_FILE = find_file("config.json")
+INTENT_MAP_FILE = find_file("intent_map.json")
+
+# Intent Mapping & Config Defaults
+intent_map = {"0": "meal_plan", "1": "nutrisi", "2": "workout"}
+model_config = {}
+
+INTENT_METADATA = {
+    "meal_plan": {
+        "title": "Perencana Menu Pemulihan",
+        "titleEn": "Recovery Meal Planning",
+        "icon": "calendar-check",
+        "badge": "primary"
+    },
+    "nutrisi": {
+        "title": "Analisis Komposisi Gizi",
+        "titleEn": "Nutritional Analysis",
+        "icon": "leaf",
+        "badge": "success"
+    },
+    "workout": {
+        "title": "Rehabilitasi Fisik & Gerak",
+        "titleEn": "Physical Rehabilitation",
+        "icon": "activity",
+        "badge": "warning"
+    }
+}
 
 # Clinical Labels
 LABELS = {
@@ -66,18 +106,43 @@ def softmax(x):
     return e_x / e_x.sum(axis=-1, keepdims=True)
 
 def load_ai_model():
-    global weights, tokenizer, model_loaded
+    global weights, tokenizer, model_loaded, intent_map, model_config
     try:
         import safetensors.numpy
         from tokenizers import Tokenizer
 
+        # 1. Load intent_map.json
+        if INTENT_MAP_FILE and os.path.exists(INTENT_MAP_FILE):
+            try:
+                with open(INTENT_MAP_FILE, "r", encoding="utf-8") as f:
+                    intent_map = json.load(f)
+                print(f"✅ Berhasil memuat intent_map dari {INTENT_MAP_FILE}: {intent_map}", flush=True)
+            except Exception as e:
+                print(f"⚠️ Peringatan memuat intent_map: {e}", flush=True)
+
+        # 2. Load config.json
+        if CONFIG_FILE and os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                    model_config = json.load(f)
+                print(f"✅ Berhasil memuat config dari {CONFIG_FILE} (vocab_size: {model_config.get('vocab_size', 119547)})", flush=True)
+            except Exception as e:
+                print(f"⚠️ Peringatan memuat config: {e}", flush=True)
+
+        # 3. Load weights
         print(f"🔄 Memuat bobot model dari {MODEL_FILE}...", flush=True)
         weights = safetensors.numpy.load_file(MODEL_FILE)
         print(f"✅ Berhasil memuat {len(weights)} tensor dari model.safetensors!", flush=True)
 
-        print("🔄 Menginisialisasi tokenizer DistilBERT Multilingual...", flush=True)
-        tokenizer = Tokenizer.from_pretrained("distilbert-base-multilingual-cased")
-        print("✅ Tokenizer siap digunakan!", flush=True)
+        # 4. Load tokenizer (prefer local tokenizer.json)
+        if TOKENIZER_FILE and os.path.exists(TOKENIZER_FILE):
+            print(f"🔄 Menginisialisasi tokenizer dari berkas lokal {TOKENIZER_FILE}...", flush=True)
+            tokenizer = Tokenizer.from_file(TOKENIZER_FILE)
+            print(f"✅ Tokenizer lokal siap digunakan (Vocab: {tokenizer.get_vocab_size()})!", flush=True)
+        else:
+            print("🔄 Menginisialisasi tokenizer DistilBERT Multilingual dari HuggingFace...", flush=True)
+            tokenizer = Tokenizer.from_pretrained("distilbert-base-multilingual-cased")
+            print("✅ Tokenizer siap digunakan!", flush=True)
 
         model_loaded = True
         return True
@@ -137,6 +202,13 @@ def predict_text(text, patient_allergies=None, patient_restrictions=None):
         engine_name = "Rule Heuristics"
 
     label_info = LABELS.get(pred_class, LABELS[1])
+    predicted_intent = intent_map.get(str(pred_class), "nutrisi")
+    intent_meta = INTENT_METADATA.get(predicted_intent, {
+        "title": predicted_intent,
+        "titleEn": predicted_intent,
+        "badge": "info",
+        "icon": "sparkles"
+    })
 
     # Allergy checking
     conflict_notes = []
@@ -147,6 +219,11 @@ def predict_text(text, patient_allergies=None, patient_restrictions=None):
 
     return {
         "predictedClass": pred_class,
+        "intent": predicted_intent,
+        "intentName": intent_meta["title"],
+        "intentBadge": intent_meta["badge"],
+        "intentIcon": intent_meta.get("icon", "activity"),
+        "intentMap": intent_map,
         "label": label_info["label"],
         "name": label_info["name"],
         "badge": label_info["badge"],
@@ -156,9 +233,19 @@ def predict_text(text, patient_allergies=None, patient_restrictions=None):
             "NETRAL_MODERASI": round(float(probs[1]) * 100, 1),
             "PERINGATAN_PANTANGAN": round(float(probs[2]) * 100, 1)
         },
+        "intentProbabilities": {
+            intent_map.get("0", "meal_plan"): round(float(probs[0]) * 100, 1),
+            intent_map.get("1", "nutrisi"): round(float(probs[1]) * 100, 1),
+            intent_map.get("2", "workout"): round(float(probs[2]) * 100, 1)
+        },
         "clinicalAdvice": label_info["advice"],
         "conflictNotes": conflict_notes,
-        "engine": engine_name
+        "engine": engine_name,
+        "config": {
+            "modelType": model_config.get("model_type", "distilbert"),
+            "architectures": model_config.get("architectures", ["DistilBertForSequenceClassification"]),
+            "vocabSize": model_config.get("vocab_size", 119547)
+        }
     }
 
 class AIRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -186,6 +273,9 @@ class AIRequestHandler(http.server.BaseHTTPRequestHandler):
                 "weightsFormat": ".safetensors",
                 "totalTensors": len(weights) if weights else 0,
                 "modelLoaded": model_loaded,
+                "intentMap": intent_map,
+                "configLoaded": bool(model_config),
+                "tokenizerType": "local (tokenizer.json)" if TOKENIZER_FILE else "pretrained",
                 "engine": "HuggingFace Tokenizers + NumPy Safetensors"
             }
             self.wfile.write(json.dumps(resp).encode('utf-8'))

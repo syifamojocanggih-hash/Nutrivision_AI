@@ -5673,13 +5673,15 @@ class NutriVisionApp {
         resultBox.style.display = 'block';
         resultBox.style.borderColor = borderCol;
         resultBox.style.background = bgCol;
+        const intentDisplay = item.intentName ? `<span style="background:rgba(31,111,235,0.1);border:1px solid #1F6FEB;color:#1F6FEB;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;margin-left:6px;"><i data-lucide="target" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:2px;"></i> Intent: ${item.intentName}</span>` : '';
         resultBox.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="color:${textCol};display:flex;align-items:center;">
                 <i data-lucide="${iconName}" style="width:20px;height:20px;"></i>
               </div>
               <strong style="color:${textCol};font-size:14px;">${item.name}</strong>
+              ${intentDisplay}
             </div>
             <span style="background:#fff;border:1px solid ${borderCol};color:${textCol};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">
               Confidence: ${item.confidence}%
@@ -5689,7 +5691,7 @@ class NutriVisionApp {
             <strong>Analisis Klinis:</strong> ${item.clinicalAdvice}
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px dashed ${borderCol};padding-top:8px;font-size:11px;color:var(--ink-mute);">
-            <span>Arsitektur: <code>DistilBert (${item.label})</code></span>
+            <span>Arsitektur: <code>DistilBert (${item.intent || item.label})</code></span>
             <span>Latency: <strong>${elapsed} ms</strong></span>
           </div>
           ${item.patientConflict ? `

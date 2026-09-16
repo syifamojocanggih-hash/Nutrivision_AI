@@ -100,15 +100,30 @@ router.post('/classify', optionalAuth, async (req, res) => {
       const hasSafe = ['gabus', 'albumin', 'telur', 'kukus', 'rebus', 'tim', 'bening', 'sayur', 'tempe', 'tahu'].some(k => lower.includes(k));
 
       const predictedClass = hasWarning ? 2 : (hasSafe ? 0 : 1);
+      const intentMap = { "0": "meal_plan", "1": "nutrisi", "2": "workout" };
+      const predictedIntent = intentMap[String(predictedClass)];
+      const intentNames = {
+        meal_plan: 'Perencana Menu Pemulihan',
+        nutrisi: 'Analisis Komposisi Gizi',
+        workout: 'Rehabilitasi Fisik & Gerak'
+      };
+
       aiResult = {
         predictedClass,
+        intent: predictedIntent,
+        intentName: intentNames[predictedIntent] || predictedIntent,
+        intentMap,
         label: predictedClass === 0 ? 'AMAN_TINGGI_GIZI' : (predictedClass === 1 ? 'NETRAL_MODERASI' : 'PERINGATAN_PANTANGAN'),
         name: predictedClass === 0 ? 'Aman & Direkomendasikan (Tinggi Gizi)' : (predictedClass === 1 ? 'Netral (Konsumsi Wajar)' : 'Peringatan Pantangan / Hati-hati'),
         confidence: predictedClass === 0 ? 94.0 : (predictedClass === 2 ? 88.0 : 72.0),
         clinicalAdvice: predictedClass === 0
           ? 'Bahan pangan kaya nutrisi albumin & protein ramah penyembuhan jaringan pasca-bedah.'
           : (predictedClass === 1 ? 'Kandungan gizi seimbang, perhatikan porsi.' : 'Sebaiknya dihindari selama masa pemulihan luka bedah akut.'),
-        engine: 'Clinical Rule Fallback'
+        engine: 'Clinical Rule Fallback',
+        config: {
+          modelType: 'distilbert',
+          vocabSize: 119547
+        }
       };
     }
 
