@@ -43,6 +43,7 @@ class NutriVisionApp {
     this.activeNotifCategory = 'all';
     this.cachedNotifications = [];
     this.dailyIntakeConfirmState = null;
+    this.clinicalSimulatedProfile = null;
     this.initRealtimeAdminSync();
   }
 
@@ -156,7 +157,11 @@ class NutriVisionApp {
           language: parsed.language || storedLang,
           region: parsed.region || null,
           province: parsed.province || '',
-          city: parsed.city || ''
+          city: parsed.city || '',
+          diseases: Array.isArray(parsed.diseases) && parsed.diseases.length > 0
+            ? parsed.diseases
+            : (parsed.conditionId ? [parsed.conditionId] : ['post-surgery']),
+          symptoms: Array.isArray(parsed.symptoms) ? parsed.symptoms : []
         };
       } catch (e) {
         console.error('Error parsing user profile:', e);
@@ -198,7 +203,9 @@ class NutriVisionApp {
       language: storedLang,
       region: null,
       province: '',
-      city: ''
+      city: '',
+      diseases: ['post-surgery'],
+      symptoms: []
     };
   }
 
@@ -1082,6 +1089,21 @@ class NutriVisionApp {
         elStatAct.textContent = lang === 'id' ? 'Belum mengisi tingkat aktivitas' : 'No activity level declared';
       }
     }
+
+    // 5B. Update Disease & Symptom Chips state in Profile
+    const activeDiseases = Array.isArray(this.userProfile?.diseases) && this.userProfile.diseases.length > 0
+      ? this.userProfile.diseases
+      : (this.userProfile?.conditionId ? [this.userProfile.conditionId] : ['post-surgery']);
+    document.querySelectorAll('#profile-disease-chips .disease-chip-btn').forEach(btn => {
+      const dKey = btn.getAttribute('data-disease');
+      btn.classList.toggle('active', activeDiseases.includes(dKey));
+    });
+
+    const activeSymptoms = Array.isArray(this.userProfile?.symptoms) ? this.userProfile.symptoms : [];
+    document.querySelectorAll('#profile-symptom-chips .disease-chip-btn').forEach(btn => {
+      const sKey = btn.getAttribute('data-symptom');
+      btn.classList.toggle('active', activeSymptoms.includes(sKey));
+    });
 
     // 6. Update Session Status in Profile
     const sessTitle = document.getElementById('profile-session-status-title');
@@ -3563,6 +3585,16 @@ class NutriVisionApp {
     this.userProfile.restrictions = restrictionsInput;
     this.userProfile.bmi = diag.bmi;
     this.userProfile.bmiCategory = diag.bmiCat;
+
+    const quizDiseases = Array.from(document.querySelectorAll('#quiz-disease-chips .quiz-chip-btn.active')).map(b => b.dataset.disease).filter(Boolean);
+    if (diag.condition && !quizDiseases.includes(diag.condition)) {
+      quizDiseases.unshift(diag.condition);
+    }
+    this.userProfile.diseases = quizDiseases.length > 0 ? quizDiseases : [diag.condition || 'post-surgery'];
+
+    const quizSymptoms = Array.from(document.querySelectorAll('.quiz-chips-selector .quiz-chip-btn.active')).map(b => b.dataset.symptom || '').filter(Boolean);
+    this.userProfile.symptoms = quizSymptoms;
+
     this.userProfile.hasAcceptedConsent = true;
     this.userProfile.hasCompletedQuiz = true;
     this.userProfile.isDemo = false;
@@ -3907,6 +3939,9 @@ class NutriVisionApp {
         : `Model confidence: ${overallConf}% · Estimated values presented in decision-support nutritional ranges.`;
     }
 
+    // Render Deep Clinical Food Validation Scorecard (CDSS Multi-Faktor)
+    this.renderClinicalValidationScorecard('overview-clinical-validation-box');
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -3922,6 +3957,285 @@ class NutriVisionApp {
         r.classList.remove('hovered');
       }
     });
+  }
+
+  // =========================================================================
+  // DEEP CLINICAL FOOD VALIDATION ENGINE CONTROLLER (CDSS MULTI-FAKTOR)
+  // Evaluasi silang: BB, TB, BMI, Penyakit Klinis, Gejala Fisiologis, & Alergen
+  // =========================================================================
+  renderClinicalValidationScorecard(targetContainerId = 'overview-clinical-validation-box') {
+    const container = document.getElementById(targetContainerId);
+    if (!container) return;
+
+    if (!cvEngine || !cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    if (!window.FoodClinicalValidator) {
+      console.warn('FoodClinicalValidator module not found');
+      return;
+    }
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const effectiveProfile = this.clinicalSimulatedProfile || this.userProfile;
+    const validation = window.FoodClinicalValidator.validateFood(cvEngine.currentScan, effectiveProfile);
+
+    const activeSimKey = this.clinicalSimulatedProfile ? (this.clinicalSimulatedProfile._simKey || 'sim') : 'user';
+
+    const simChips = [
+      { key: 'user', icon: '👤', label: isId ? 'Profil Pasien Saya' : 'My Patient Profile' },
+      { key: 'post-surgery', icon: '🩹', label: 'Pasca-Bedah (60kg)' },
+      { key: 'ckd', icon: '🫘', label: 'Ginjal / CKD (60kg)' },
+      { key: 'hipertensi', icon: '🩺', label: 'Hipertensi (70kg)' },
+      { key: 'diabetes', icon: '🩸', label: 'Diabetes (68kg)' },
+      { key: 'dysphagia', icon: '💧', label: 'Disfagia (62kg)' },
+      { key: 'obese', icon: '⚖️', label: 'Obesitas (95kg)' }
+    ];
+
+    const safetyBadgeClass = validation.safetyLevel.toLowerCase();
+
+    container.innerHTML = `
+      <div class="clinical-scorecard-card">
+        <div class="clinical-scorecard-hdr">
+          <div class="clinical-hdr-left">
+            <div class="clinical-hdr-icon">
+              <iconify-icon icon="solar:shield-check-bold-duotone"></iconify-icon>
+            </div>
+            <div>
+              <h3 class="clinical-hdr-title">
+                <span>${isId ? 'Validasi Klinis Mendalam (CDSS Multi-Faktor)' : 'Deep Clinical Validation (CDSS Multi-Factor)'}</span>
+              </h3>
+              <p class="clinical-hdr-sub">
+                ${isId 
+                  ? 'Evaluasi silang multi-faktor: Biometrik (BB, TB, BMI), Kondisi Medis Penyakit, Gejala, &amp; Pantangan' 
+                  : 'Multi-factor cross-evaluation: Biometrics (Weight, Height, BMI), Medical Conditions, Symptoms, &amp; Allergies'}
+              </p>
+            </div>
+          </div>
+          <div class="clinical-hdr-right">
+            <span class="clinical-safety-pill ${safetyBadgeClass}">
+              <iconify-icon icon="${validation.safetyLevel === 'SAFE' ? 'solar:check-circle-bold' : (validation.safetyLevel === 'CAUTION' ? 'solar:danger-triangle-bold' : 'solar:shield-warning-bold')}"></iconify-icon>
+              <span>${validation.safetyBadgeText}</span>
+            </span>
+            <span class="clinical-score-badge" title="${isId ? 'Skor Kesesuaian Klinis (0-100)' : 'Clinical Suitability Score (0-100)'}">
+              <iconify-icon icon="solar:chart-square-bold-duotone" style="color:#A7F3D0;font-size:16px;"></iconify-icon>
+              <span>${validation.score} / 100</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Quick Profile Simulation Ribbon -->
+        <div class="clinical-simulation-bar">
+          <span class="clinical-sim-label">
+            <iconify-icon icon="solar:tuning-bold-duotone"></iconify-icon>
+            <span>${isId ? 'Uji Cepat Profil Pasien:' : 'Quick Profile Test:'}</span>
+          </span>
+          <div class="clinical-sim-chips-list">
+            ${simChips.map(s => `
+              <button type="button" class="clinical-sim-chip ${activeSimKey === s.key ? 'active' : ''}" 
+                      onclick="app.simulateValidationCondition('${s.key}')">
+                <span>${s.icon} ${s.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Clinical Verdict -->
+        <div class="clinical-verdict-banner ${safetyBadgeClass}">
+          <strong>${isId ? 'Kesimpulan Klinis:' : 'Clinical Assessment:'}</strong> ${validation.clinicalVerdict}
+        </div>
+
+        <!-- 3-Pillars Clinical Evaluation Grid -->
+        <div class="clinical-pillars-grid">
+          ${validation.pillars.map(pillar => `
+            <div class="clinical-pillar-card status-${pillar.status}">
+              <div class="clinical-pillar-head">
+                <span class="clinical-pillar-title">
+                  <iconify-icon icon="${pillar.icon}" style="font-size:16px;"></iconify-icon>
+                  <span>${pillar.title}</span>
+                </span>
+                <span class="clinical-status-dot ${pillar.status}"></span>
+              </div>
+              ${pillar.metrics ? `
+                <div class="clinical-pillar-badges-row">
+                  <span class="clinical-metric-chip">BB: ${pillar.metrics.weight}</span>
+                  <span class="clinical-metric-chip">TB: ${pillar.metrics.height}</span>
+                  <span class="clinical-metric-chip">BMI: ${pillar.metrics.bmi}</span>
+                  <span class="clinical-metric-chip">Target: ${pillar.metrics.targetRange}</span>
+                </div>
+              ` : ''}
+              <div class="clinical-findings-list">
+                ${pillar.items.map(item => `
+                  <div class="clinical-finding-item ${item.type}">
+                    <span class="clinical-finding-title">
+                      ${item.type === 'danger' ? '⛔' : (item.type === 'warning' || item.type === 'caution' ? '⚠️' : '✅')} 
+                      ${item.title}
+                    </span>
+                    <span class="clinical-finding-detail">${item.detail}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Practical Clinical Recommendations / Portion Modification -->
+        <div class="clinical-recommendation-box">
+          <div class="clinical-rec-title">
+            <iconify-icon icon="solar:lightbulb-bolt-bold" style="font-size:16px;color:#34D399;"></iconify-icon>
+            <span>${isId ? 'Saran & Rekomendasi Modifikasi Porsi / Cara Pengolahan:' : 'Clinical Recommendations & Portion Modifications:'}</span>
+          </div>
+          <ul class="clinical-rec-list">
+            ${validation.practicalModifications.map(mod => `<li>${mod}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Quick 1-Click Patient Profile Simulation
+  simulateValidationCondition(simKey) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    if (simKey === 'user') {
+      this.clinicalSimulatedProfile = null;
+      this.showToast(isId ? 'Menggunakan profil dan data biometrik Anda sendiri' : 'Reverted to your personal patient profile');
+    } else {
+      const simProfiles = {
+        'post-surgery': {
+          _simKey: 'post-surgery',
+          name: 'Simulasi Pasca-Bedah',
+          weightKg: 60,
+          heightCm: 165,
+          age: 32,
+          gender: 'male',
+          conditionId: 'post-surgery',
+          conditionTitle: 'Pasca-Bedah Jaringan',
+          diseases: ['post-surgery'],
+          symptoms: [],
+          restrictions: ''
+        },
+        'ckd': {
+          _simKey: 'ckd',
+          name: 'Simulasi Pasien Ginjal (CKD)',
+          weightKg: 60,
+          heightCm: 165,
+          age: 55,
+          gender: 'male',
+          conditionId: 'wellness',
+          conditionTitle: 'Penyakit Ginjal Kronis',
+          diseases: ['ckd'],
+          symptoms: [],
+          restrictions: ''
+        },
+        'hipertensi': {
+          _simKey: 'hipertensi',
+          name: 'Simulasi Pasien Hipertensi',
+          weightKg: 70,
+          heightCm: 170,
+          age: 50,
+          gender: 'female',
+          conditionId: 'wellness',
+          conditionTitle: 'Hipertensi',
+          diseases: ['hipertensi'],
+          symptoms: [],
+          restrictions: ''
+        },
+        'diabetes': {
+          _simKey: 'diabetes',
+          name: 'Simulasi Pasien Diabetes',
+          weightKg: 68,
+          heightCm: 168,
+          age: 48,
+          gender: 'male',
+          conditionId: 'wellness',
+          conditionTitle: 'Diabetes Mellitus',
+          diseases: ['diabetes'],
+          symptoms: [],
+          restrictions: ''
+        },
+        'dysphagia': {
+          _simKey: 'dysphagia',
+          name: 'Simulasi Pasien Disfagia',
+          weightKg: 62,
+          heightCm: 165,
+          age: 68,
+          gender: 'female',
+          conditionId: 'post-surgery',
+          conditionTitle: 'Pasca-Bedah Disfagia',
+          diseases: ['post-surgery'],
+          symptoms: ['dysphagia'],
+          restrictions: ''
+        },
+        'obese': {
+          _simKey: 'obese',
+          name: 'Simulasi Pasien Obesitas',
+          weightKg: 95,
+          heightCm: 165,
+          age: 42,
+          gender: 'male',
+          conditionId: 'wellness',
+          conditionTitle: 'Obesitas',
+          diseases: [],
+          symptoms: [],
+          restrictions: ''
+        }
+      };
+      this.clinicalSimulatedProfile = simProfiles[simKey] || null;
+      if (this.clinicalSimulatedProfile) {
+        this.showToast(isId 
+          ? `⚡ Menguji simulasi: ${this.clinicalSimulatedProfile.name} (BB ${this.clinicalSimulatedProfile.weightKg}kg)` 
+          : `⚡ Testing simulation: ${this.clinicalSimulatedProfile.name} (Weight ${this.clinicalSimulatedProfile.weightKg}kg)`);
+      }
+    }
+    this.renderOverviewPlate();
+    this.renderClinicalValidationScorecard('modal-clinical-validation-box');
+  }
+
+  // Toggle Penyakit Penyerta (Comorbidities) Pasien dari Profil
+  toggleUserDisease(diseaseKey) {
+    if (!this.userProfile) return;
+    if (!Array.isArray(this.userProfile.diseases)) {
+      this.userProfile.diseases = this.userProfile.conditionId ? [this.userProfile.conditionId] : ['post-surgery'];
+    }
+    const idx = this.userProfile.diseases.indexOf(diseaseKey);
+    if (idx >= 0) {
+      this.userProfile.diseases.splice(idx, 1);
+    } else {
+      this.userProfile.diseases.push(diseaseKey);
+    }
+    this.saveUserProfile();
+    this.updateProfileUI();
+    this.renderOverviewPlate();
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    this.showToast(isId 
+      ? `Penyakit penyerta diperbarui (${this.userProfile.diseases.length} kondisi aktif)` 
+      : `Clinical conditions updated (${this.userProfile.diseases.length} active)`);
+  }
+
+  // Toggle Gejala Fisiologis Pasien dari Profil
+  toggleUserSymptom(symptomKey) {
+    if (!this.userProfile) return;
+    if (!Array.isArray(this.userProfile.symptoms)) {
+      this.userProfile.symptoms = [];
+    }
+    const idx = this.userProfile.symptoms.indexOf(symptomKey);
+    if (idx >= 0) {
+      this.userProfile.symptoms.splice(idx, 1);
+    } else {
+      this.userProfile.symptoms.push(symptomKey);
+    }
+    this.saveUserProfile();
+    this.updateProfileUI();
+    this.renderOverviewPlate();
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    this.showToast(isId 
+      ? `Gejala fisiologis diperbarui: ${this.userProfile.symptoms.join(', ') || 'Normal'}` 
+      : `Symptoms updated: ${this.userProfile.symptoms.join(', ') || 'Normal'}`);
   }
 
   // =========================================================================
@@ -4007,6 +4321,9 @@ class NutriVisionApp {
         </div>
       `;
     }
+
+    // Render Deep Clinical Food Validation Scorecard di dalam Scan Modal
+    this.renderClinicalValidationScorecard('modal-clinical-validation-box');
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
@@ -5521,6 +5838,22 @@ class NutriVisionApp {
       const proteinVal = food.proteinRange ? `${food.proteinRange[0]}-${food.proteinRange[1]}` : (food.protein || 20);
       const calVal = food.calsRange ? `${food.calsRange[0]}-${food.calsRange[1]}` : (food.calories || 250);
 
+      let clinicalTagBadge = '';
+      if (typeof window !== 'undefined' && window.FoodClinicalValidator && this.userProfile) {
+        const v = window.FoodClinicalValidator.validateFood({
+          name: displayName,
+          protein: food.protein || 20,
+          calories: food.calories || 250,
+          portionGrams: food.defaultPortionGrams || 150
+        }, this.userProfile);
+        if (v && v.safetyBadgeText) {
+          const cls = v.safetyLevel === 'SAFE' ? 'teal' : (v.safetyLevel === 'CAUTION' ? 'amber' : 'coral');
+          clinicalTagBadge = `<span class="badge ${cls}" style="font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+            ${v.safetyLevel === 'SAFE' ? '✓' : (v.safetyLevel === 'CAUTION' ? '⚠' : '⛔')} ${v.safetyBadgeText}
+          </span>`;
+        }
+      }
+
       return `
         <div class="popular-food-card ${isTopRec ? 'is-recommended' : ''}" 
              id="food-card-${food.id}"
@@ -5549,6 +5882,7 @@ class NutriVisionApp {
           <div class="food-card-body">
             <h4 class="food-card-title">${displayName}</h4>
             <p class="food-card-sub">${subtitle}</p>
+            ${clinicalTagBadge ? `<div style="margin:4px 0 6px;">${clinicalTagBadge}</div>` : ''}
 
             <div class="food-macro-pills-row">
               <span class="macro-pill-item prot">

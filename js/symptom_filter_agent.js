@@ -95,6 +95,102 @@ class ClinicalNutritionFilterAgent {
   }
 
   /**
+   * Mengecek apakah bahan tertentu masuk dalam daftar pantangan aktif
+   * @param {string} ingredient 
+   * @param {Array<string>} customList 
+   * @returns {boolean}
+   */
+  isIngredientRestricted(ingredient, customList = []) {
+    if (!customList || customList.length === 0) return false;
+    const ing = (ingredient || '').toLowerCase().trim();
+    if (!ing) return false;
+    return customList.some(r => {
+      const clean = (r || '').toLowerCase().trim();
+      if (!clean) return false;
+      return clean.includes(ing) || ing.includes(clean);
+    });
+  }
+
+  /**
+   * Mengecek apakah makanan melanggar salah satu pantangan aktif
+   * @param {Object} meal 
+   * @param {Array<string>} customList 
+   * @returns {boolean}
+   */
+  isMealRestricted(meal, customList = []) {
+    if (!customList || customList.length === 0) return false;
+
+    // Bersihkan frasa negatif seperti "tanpa pepaya" atau "bebas telur" agar tidak memicu false-positive
+    const cleanedReason = (meal.reason || '')
+      .replace(/\b(tanpa|bebas)\s+[\w\s]+/gi, '');
+    const cleanedReasonEn = (meal.reasonEn || '')
+      .replace(/\b(without|free\s+from|no)\s+[\w\s]+/gi, '');
+
+    const text = [
+      meal.name || '',
+      meal.nameEn || '',
+      cleanedReason,
+      cleanedReasonEn,
+      meal.nutrients || '',
+      meal.nutrientsEn || ''
+    ].join(' ').toLowerCase();
+
+    for (const rawRestr of customList) {
+      const restr = (rawRestr || '').toLowerCase().trim();
+      if (!restr || restr.length < 2) continue;
+
+      if (text.includes(restr)) return true;
+
+      // Synonym & translation mappings
+      if (restr.includes('pepaya') || restr.includes('papaya')) {
+        if (text.includes('pepaya') || text.includes('papaya')) return true;
+      }
+      if (restr.includes('udang') || restr.includes('seafood')) {
+        if (text.includes('udang') || text.includes('shrimp') || text.includes('prawn') || text.includes('seafood') || text.includes('kepiting') || text.includes('cumi')) return true;
+      }
+      if (restr.includes('telur')) {
+        if (text.includes('telur') || text.includes('egg')) return true;
+      }
+      if (restr.includes('susu') || restr.includes('laktosa')) {
+        if (text.includes('susu') || text.includes('milk') || text.includes('keju') || text.includes('cheese') || text.includes('yogurt') || text.includes('laktosa')) return true;
+      }
+      if (restr.includes('pedas') || restr.includes('cabai')) {
+        if (text.includes('pedas') || text.includes('spicy') || text.includes('cabai') || text.includes('chili') || text.includes('sambal')) return true;
+      }
+      if (restr.includes('gorengan') || restr.includes('minyak')) {
+        if (text.includes('goreng') || text.includes('fried') || text.includes('crispy')) return true;
+      }
+      if (restr.includes('santan')) {
+        if (text.includes('santan') || text.includes('coconut milk')) return true;
+      }
+      if (restr.includes('gluten') || restr.includes('terigu')) {
+        if (text.includes('terigu') || text.includes('wheat') || text.includes('gluten') || text.includes('roti') || text.includes('mie')) return true;
+      }
+      if (restr.includes('kacang')) {
+        if (text.includes('kacang') || text.includes('peanut')) return true;
+      }
+      if (restr.includes('kafein') || restr.includes('kopi')) {
+        if (text.includes('kopi') || text.includes('coffee') || text.includes('kafein') || text.includes('teh')) return true;
+      }
+      if (restr.includes('ikan')) {
+        if (text.includes('ikan') || text.includes('fish') || text.includes('gabus') || text.includes('salmon') || text.includes('tuna')) return true;
+      }
+      if (restr.includes('ayam')) {
+        if (text.includes('ayam') || text.includes('chicken')) return true;
+      }
+      if (restr.includes('daging') || restr.includes('sapi')) {
+        if (text.includes('daging') || text.includes('beef') || text.includes('sapi')) return true;
+      }
+
+      const tokens = restr.split(/\s+/).filter(t => t.length >= 3);
+      if (tokens.length > 0 && tokens.some(t => text.includes(t))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Menghasilkan prompt lengkap dengan menyuntikkan {{selected_symptoms}}
    * @param {Array<string>} selectedSymptoms 
    * @returns {string}
@@ -217,16 +313,29 @@ class ClinicalNutritionFilterAgent {
     if (hasDysphagia) {
       // Disfagia AKTIF (IDDSI Puree/Soft Mash)
       if (hasConstipation) {
-        recommendedMenu.push({
-          name: "Puree Pepaya Matang Halus",
-          nameEn: "Smooth Ripe Papaya Puree",
-          texture_category: "Puree",
-          texture_category_en: "Puree",
-          nutrients: "• 140 kkal • 2.1g Serat Larut",
-          nutrientsEn: "• 140 kcal • 2.1g Soluble Fiber",
-          reason: "Membantu peristaltik usus dengan pektin alami tanpa menimbulkan residu faring.",
-          reasonEn: "Supports bowel peristalsis with natural pectin without leaving pharyngeal residue."
-        });
+        if (this.isIngredientRestricted('pepaya', customList) || this.isIngredientRestricted('papaya', customList)) {
+          recommendedMenu.push({
+            name: "Puree Buah Naga Merah & Pir Kukus Halus",
+            nameEn: "Smooth Steamed Pear & Red Dragonfruit Puree",
+            texture_category: "Puree",
+            texture_category_en: "Puree",
+            nutrients: "• 140 kkal • 2.4g Serat Larut",
+            nutrientsEn: "• 140 kcal • 2.4g Soluble Fiber",
+            reason: "Kaya serat pektin larut air dari buah naga dan pir kukus untuk melunakkan feses dan melancarkan motilitas usus.",
+            reasonEn: "Rich in soluble pectin fiber from steamed pear and dragonfruit to soften stools and support bowel motility."
+          });
+        } else {
+          recommendedMenu.push({
+            name: "Puree Pepaya Matang Halus",
+            nameEn: "Smooth Ripe Papaya Puree",
+            texture_category: "Puree",
+            texture_category_en: "Puree",
+            nutrients: "• 140 kkal • 2.1g Serat Larut",
+            nutrientsEn: "• 140 kcal • 2.1g Soluble Fiber",
+            reason: "Membantu peristaltik usus dengan pektin alami tanpa menimbulkan residu faring.",
+            reasonEn: "Supports bowel peristalsis with natural pectin without leaving pharyngeal residue."
+          });
+        }
         recommendedMenu.push({
           name: "Bubur Saring Oatmeal Kaldu Labu",
           nameEn: "Strained Oatmeal Pumpkin Broth",
@@ -240,39 +349,78 @@ class ClinicalNutritionFilterAgent {
       }
 
       if (hasNausea) {
-        recommendedMenu.push({
-          name: "Bubur Saring Ikan Gabus",
-          nameEn: "Strained Snakehead Fish Porridge",
-          texture_category: "Puree",
-          texture_category_en: "Puree",
-          nutrients: "• 210 kkal • 14.2g Albumin",
-          nutrientsEn: "• 210 kcal • 14.2g Albumin",
-          reason: "Kaya albumin untuk regenerasi jaringan pasca bedah, disajikan netral aroma peredam mual.",
-          reasonEn: "Rich in albumin for post-surgical tissue repair, served with neutral aroma to alleviate nausea."
-        });
+        if (this.isIngredientRestricted('ikan', customList) || this.isIngredientRestricted('seafood', customList) || this.isIngredientRestricted('gabus', customList)) {
+          recommendedMenu.push({
+            name: "Bubur Saring Tahu Sutra & Kaldu Sayur",
+            nameEn: "Strained Silken Tofu & Vegetable Broth Porridge",
+            texture_category: "Puree",
+            texture_category_en: "Puree",
+            nutrients: "• 195 kkal • 10.5g Protein",
+            nutrientsEn: "• 195 kcal • 10.5g Protein",
+            reason: "Protein nabati murni ramah lambung tanpa memicu mual, aman bagi alergi ikan/seafood.",
+            reasonEn: "Pure plant protein gentle on the stomach without nausea triggers, safe for fish/seafood allergies."
+          });
+        } else {
+          recommendedMenu.push({
+            name: "Bubur Saring Ikan Gabus",
+            nameEn: "Strained Snakehead Fish Porridge",
+            texture_category: "Puree",
+            texture_category_en: "Puree",
+            nutrients: "• 210 kkal • 14.2g Albumin",
+            nutrientsEn: "• 210 kcal • 14.2g Albumin",
+            reason: "Kaya albumin untuk regenerasi jaringan pasca bedah, disajikan netral aroma peredam mual.",
+            reasonEn: "Rich in albumin for post-surgical tissue repair, served with neutral aroma to alleviate nausea."
+          });
+        }
       } else if (!hasConstipation) {
-        recommendedMenu.push({
-          name: "Bubur Saring Ikan Gabus",
-          nameEn: "Strained Snakehead Fish Porridge",
-          texture_category: "Puree",
-          texture_category_en: "Puree",
-          nutrients: "• 210 kkal • 14.2g Albumin",
-          nutrientsEn: "• 210 kcal • 14.2g Albumin",
-          reason: "Tekstur puree halus sesuai standar IDDSI, kaya albumin dan asam amino esensial penyembuh luka bedah.",
-          reasonEn: "Smooth puree texture meeting IDDSI standards, rich in albumin and essential amino acids for surgical wound healing."
-        });
+        if (this.isIngredientRestricted('ikan', customList) || this.isIngredientRestricted('seafood', customList) || this.isIngredientRestricted('gabus', customList)) {
+          recommendedMenu.push({
+            name: "Bubur Saring Tahu Sutra & Kaldu Sayur",
+            nameEn: "Strained Silken Tofu & Vegetable Broth Porridge",
+            texture_category: "Puree",
+            texture_category_en: "Puree",
+            nutrients: "• 195 kkal • 10.5g Protein",
+            nutrientsEn: "• 195 kcal • 10.5g Protein",
+            reason: "Tekstur puree halus bebas alergen ikan, kaya asam amino nabati untuk penyembuhan luka.",
+            reasonEn: "Smooth puree texture free from fish allergens, rich in plant amino acids for wound healing."
+          });
+        } else {
+          recommendedMenu.push({
+            name: "Bubur Saring Ikan Gabus",
+            nameEn: "Strained Snakehead Fish Porridge",
+            texture_category: "Puree",
+            texture_category_en: "Puree",
+            nutrients: "• 210 kkal • 14.2g Albumin",
+            nutrientsEn: "• 210 kcal • 14.2g Albumin",
+            reason: "Tekstur puree halus sesuai standar IDDSI, kaya albumin dan asam amino esensial penyembuh luka bedah.",
+            reasonEn: "Smooth puree texture meeting IDDSI standards, rich in albumin and essential amino acids for surgical wound healing."
+          });
+        }
       }
 
-      recommendedMenu.push({
-        name: "Puree Alpukat Telur Kukus",
-        nameEn: "Steamed Egg & Avocado Puree",
-        texture_category: "Puree",
-        texture_category_en: "Puree",
-        nutrients: "• 260 kkal • 9.5g Protein",
-        nutrientsEn: "• 260 kcal • 9.5g Protein",
-        reason: "Densitas kalori padat volume ringkas, mudah ditelan mulus tanpa resistensi orofaring.",
-        reasonEn: "Compact caloric density in small volume, easily swallowed without oropharyngeal resistance."
-      });
+      if (this.isIngredientRestricted('telur', customList) || this.isIngredientRestricted('egg', customList)) {
+        recommendedMenu.push({
+          name: "Puree Alpukat & Labu Siam Halus",
+          nameEn: "Steamed Avocado & Chayote Puree",
+          texture_category: "Puree",
+          texture_category_en: "Puree",
+          nutrients: "• 220 kkal • 5.2g Protein",
+          nutrientsEn: "• 220 kcal • 5.2g Protein",
+          reason: "Densitas kalori sehat dari lemak nabati tak jenuh, bebas telur dan aman dari risiko aspirasi.",
+          reasonEn: "Healthy caloric density from unsaturated plant fats, egg-free and safe from aspiration."
+        });
+      } else {
+        recommendedMenu.push({
+          name: "Puree Alpukat Telur Kukus",
+          nameEn: "Steamed Egg & Avocado Puree",
+          texture_category: "Puree",
+          texture_category_en: "Puree",
+          nutrients: "• 260 kkal • 9.5g Protein",
+          nutrientsEn: "• 260 kcal • 9.5g Protein",
+          reason: "Densitas kalori padat volume ringkas, mudah ditelan mulus tanpa resistensi orofaring.",
+          reasonEn: "Compact caloric density in small volume, easily swallowed without oropharyngeal resistance."
+        });
+      }
     } else {
       // Tanpa Disfagia: Prioritas 2 (GI Tract) & 3 (Appetite)
       if (hasNausea && hasGerd) {
@@ -352,14 +500,25 @@ class ClinicalNutritionFilterAgent {
           reason: "Serat selulosa alami dan probiotik tempe memperlancar peristaltik usus besar.",
           reasonEn: "Natural cellulose fiber and tempeh probiotics support healthy large intestine peristalsis."
         });
-        recommendedMenu.push({
-          name: "Potongan Buah Pepaya Segar & Jeruk Manis",
-          nameEn: "Fresh Papaya Slices & Sweet Orange",
-          texture_category: "Normal",
-          texture_category_en: "Normal",
-          reason: "Enzim papain dan serat air tinggi melunakkan masa feses.",
-          reasonEn: "Papain enzymes and high water fiber soften stool consistency."
-        });
+        if (this.isIngredientRestricted('pepaya', customList) || this.isIngredientRestricted('papaya', customList)) {
+          recommendedMenu.push({
+            name: "Potongan Buah Naga Merah & Pir Segar",
+            nameEn: "Fresh Red Dragonfruit & Pear Slices",
+            texture_category: "Normal",
+            texture_category_en: "Normal",
+            reason: "Kandungan air dan serat pektin tinggi melunakkan masa feses dan mendukung motilitas usus alami.",
+            reasonEn: "High water and pectin fiber naturally soften stool consistency and support bowel motility."
+          });
+        } else {
+          recommendedMenu.push({
+            name: "Potongan Buah Pepaya Segar & Jeruk Manis",
+            nameEn: "Fresh Papaya Slices & Sweet Orange",
+            texture_category: "Normal",
+            texture_category_en: "Normal",
+            reason: "Enzim papain dan serat air tinggi melunakkan masa feses.",
+            reasonEn: "Papain enzymes and high water fiber soften stool consistency."
+          });
+        }
       }
 
       if (hasLowAppetite && recommendedMenu.length < 3) {
@@ -374,15 +533,20 @@ class ClinicalNutritionFilterAgent {
       }
     }
 
-    // Default fallback jika kombinasi khusus
-    if (recommendedMenu.length === 0) {
-      recommendedMenu.push({
-        name: "Sup Wortel Kentang Kaldu Bening Ayam",
-        nameEn: "Clear Chicken Broth Soup with Carrots & Potatoes",
+    // Filter ketat: keluarkan menu apa pun yang melanggar pantangan aktif pasien
+    const finalRecommendedMenu = recommendedMenu.filter(meal => !this.isMealRestricted(meal, customList));
+
+    // Default fallback jika seluruh kombinasi menu terfilter pantangan
+    if (finalRecommendedMenu.length === 0) {
+      finalRecommendedMenu.push({
+        name: "Bubur Saring Kaldu Sayur Bening Hipoalergenik",
+        nameEn: "Hypoallergenic Clear Vegetable Broth Puree",
         texture_category: hasDysphagia ? "Puree" : "Soft",
         texture_category_en: hasDysphagia ? "Puree" : "Soft",
-        reason: "Menu pemulihan netral yang aman untuk semua spektrum keluhan gastrointestinal.",
-        reasonEn: "Neutral recovery dish safe for all gastrointestinal complaints."
+        nutrients: "• 150 kkal • Bebas Pantangan",
+        nutrientsEn: "• 150 kcal • Allergen Free",
+        reason: "Menu pemulihan netral bebas alergen yang disesuaikan secara ketat dengan pantangan Anda.",
+        reasonEn: "Neutral allergen-free recovery dish strictly tailored to your dietary restrictions."
       });
     }
 
@@ -422,7 +586,7 @@ class ClinicalNutritionFilterAgent {
       restricted_summary: restrictedSummary,
       restricted_summary_en: restrictedSummaryEn,
       restricted_ingredients: Array.from(restrictedIngredients),
-      recommended_menu: recommendedMenu,
+      recommended_menu: finalRecommendedMenu,
       raw_prompt: this.getSystemPrompt(activeFilters)
     };
   }

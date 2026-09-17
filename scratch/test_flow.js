@@ -107,14 +107,18 @@ const dataCode = fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8');
 const i18nCode = fs.readFileSync(path.join(__dirname, '../js/i18n.js'), 'utf8');
 const cvCode = fs.readFileSync(path.join(__dirname, '../js/cv-engine.js'), 'utf8');
 const progCode = fs.readFileSync(path.join(__dirname, '../js/progress.js'), 'utf8');
+const validatorCode = fs.readFileSync(path.join(__dirname, '../js/food_clinical_validator.js'), 'utf8');
 const appCode = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8');
 
 vm.runInThisContext(dataCode);
 vm.runInThisContext(i18nCode);
 vm.runInThisContext(cvCode);
 vm.runInThisContext(progCode);
+vm.runInThisContext(validatorCode);
 
 // Mock instance globals
+global.FoodClinicalValidator = require('../js/food_clinical_validator.js');
+global.window.FoodClinicalValidator = global.FoodClinicalValidator;
 global.cvEngine = new NutriVisionCVEngine();
 global.progressTracker = new NutriVisionProgress();
 global.mealPlanner = { renderPlanner: () => {}, renderSymptomFilter: () => {} };

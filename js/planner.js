@@ -560,6 +560,9 @@ class NutriVisionPlanner {
 
       if (text.includes(restr)) return rawRestr;
 
+      if (restr.includes('pepaya') || restr.includes('papaya')) {
+        if (text.includes('pepaya') || text.includes('papaya')) return rawRestr;
+      }
       if (restr.includes('udang') || restr.includes('seafood')) {
         if (text.includes('udang') || text.includes('shrimp') || text.includes('prawn') || text.includes('seafood') || text.includes('kepiting') || text.includes('cumi')) return rawRestr;
       }
@@ -586,6 +589,15 @@ class NutriVisionPlanner {
       }
       if (restr.includes('kafein')) {
         if (text.includes('kopi') || text.includes('coffee') || text.includes('kafein') || text.includes('teh hitam')) return rawRestr;
+      }
+      if (restr.includes('ikan')) {
+        if (text.includes('ikan') || text.includes('fish') || text.includes('gabus') || text.includes('salmon') || text.includes('tuna')) return rawRestr;
+      }
+      if (restr.includes('ayam')) {
+        if (text.includes('ayam') || text.includes('chicken')) return rawRestr;
+      }
+      if (restr.includes('daging') || restr.includes('sapi')) {
+        if (text.includes('daging') || text.includes('beef') || text.includes('sapi')) return rawRestr;
       }
     }
     return null;
@@ -624,13 +636,30 @@ class NutriVisionPlanner {
         const warningTag = matchedRestr ? `<span class="restr-warning-badge" style="margin-top:4px;font-size:10px;">⚠️ ${isId ? 'Pantangan: ' : 'Restriction: '}${matchedRestr}</span>` : '';
         const warningCls = matchedRestr ? ' meal-plan-item-warning' : '';
 
+        let clinicalBadge = '';
+        if (typeof window !== 'undefined' && window.FoodClinicalValidator && window.app && window.app.userProfile) {
+          const v = window.FoodClinicalValidator.validateFood({
+            name: displayName,
+            protein: item.protein || 22,
+            calories: item.calories || 360,
+            portionGrams: 150
+          }, window.app.userProfile);
+          if (v && v.safetyBadgeText) {
+            const cls = v.safetyLevel === 'SAFE' ? 'teal' : (v.safetyLevel === 'CAUTION' ? 'amber' : 'coral');
+            clinicalBadge = `<span class="badge ${cls}" style="margin-top:4px;font-size:10px;font-weight:700;">${v.safetyBadgeText}</span>`;
+          }
+        }
+
         return `
           <div class="meal-plan-item${warningCls}">
             <div class="meal-plan-info">
               <div class="name">${displayName}</div>
               <div class="macro">${displayMacro} · <span style="color:var(--teal-700)">${displaySuitable}</span></div>
-              ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">${swallowTag}</span>` : ''}
-              ${warningTag}
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">${swallowTag}</span>` : ''}
+                ${clinicalBadge}
+                ${warningTag}
+              </div>
             </div>
             <div class="meal-plan-meta">
               <div class="meal-plan-price">${item.price}</div>
@@ -862,50 +891,71 @@ class NutriVisionPlanner {
       </div>
     `;
 
-    this.currentRecommendations = aiOutput.recommended_menu || [];
+    // Filter recommendations strictly against patient's custom restrictions
+    const rawRecommendations = aiOutput.recommended_menu || [];
+    const safeRecommendations = rawRecommendations.filter(m => {
+      const match = this._checkMealRestriction(m.name, (m.nameEn || '') + ' ' + (m.reason || ''));
+      return !match;
+    });
+
+    this.currentRecommendations = safeRecommendations;
 
     // Recommended Menu Cards HTML
-    const menuCount = (aiOutput.recommended_menu || []).length;
+    const menuCount = safeRecommendations.length;
     const recomHeadSub = isId 
       ? `${menuCount} pilihan menu sesuai toleransi` 
       : `${menuCount} meal options based on tolerance`;
 
-    const menuCardsHtml = (aiOutput.recommended_menu || []).map(m => {
-      const isSelected = this.selectedMealNames.has(m.name);
-      const btnText = isSelected ? (isId ? '✓ Terpilih' : '✓ Selected') : (isId ? 'Pilih' : 'Select');
-      const selectedClass = isSelected ? ' selected' : '';
-      const mealName = isId ? m.name : (m.nameEn || m.name);
-      const mealReason = isId ? m.reason : (m.reasonEn || m.reason);
-      const rawNutrients = isId ? m.nutrients : (m.nutrientsEn || (m.nutrients ? m.nutrients.replace('kkal', 'kcal') : ''));
-      const nutrientsStr = rawNutrients ? `<span class="symptom-recom-nutrients">${rawNutrients}</span>` : '';
-      const textureCat = isId ? m.texture_category : (m.texture_category_en || m.texture_category);
-      const tagClass = (m.texture_category && m.texture_category.toLowerCase().includes('soft')) ? ' soft-mash' : '';
-
-      return `
-        <div class="symptom-recom-card">
-          <div class="symptom-recom-left">
-            <div class="symptom-recom-meta-row">
-              <span class="symptom-recom-name">${mealName}</span>
-              <span class="symptom-recom-tag${tagClass}">${textureCat}</span>
-              ${nutrientsStr}
-            </div>
-            <p class="symptom-recom-desc">${mealReason}</p>
+    let menuCardsHtml = '';
+    if (menuCount === 0) {
+      menuCardsHtml = `
+        <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:20px;text-align:center;color:#991B1B;">
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">
+            ${isId ? 'Menu Terfilter Oleh Pantangan Personal' : 'Meals Filtered by Personal Dietary Restrictions'}
           </div>
-          <div class="symptom-recom-actions">
-            <button type="button" class="btn-symptom-select${selectedClass}" 
-              onclick="mealPlanner.selectSymptomMeal('${m.name.replace(/'/g, "\\'")}', this);">
-              ${btnText}
-            </button>
-            <button type="button" class="btn-symptom-schedule-direct" 
-              onclick="mealPlanner.applySingleMealToCalendar('${m.name.replace(/'/g, "\\'")}')"
-              title="${isId ? 'Terapkan langsung ke jadwal kalender' : 'Apply directly to calendar schedule'}">
-              <i data-lucide="calendar-plus" style="width:13px;height:13px;"></i>
-              <span>${isId ? 'Jadwalkan' : 'Schedule'}</span>
-            </button>
-          </div>
+          <p style="font-size:12px;margin:0;color:#B91C1C;">
+            ${isId ? 'Semua menu standar untuk gejala ini mengandung bahan pantangan aktif Anda. Silakan kurangi pantangan atau hubungi instalasi gizi.' : 'All standard meals for these symptoms contain your active dietary restrictions.'}
+          </p>
         </div>
       `;
-    }).join('');
+    } else {
+      menuCardsHtml = safeRecommendations.map(m => {
+        const isSelected = this.selectedMealNames.has(m.name);
+        const btnText = isSelected ? (isId ? '✓ Terpilih' : '✓ Selected') : (isId ? 'Pilih' : 'Select');
+        const selectedClass = isSelected ? ' selected' : '';
+        const mealName = isId ? m.name : (m.nameEn || m.name);
+        const mealReason = isId ? m.reason : (m.reasonEn || m.reason);
+        const rawNutrients = isId ? m.nutrients : (m.nutrientsEn || (m.nutrients ? m.nutrients.replace('kkal', 'kcal') : ''));
+        const nutrientsStr = rawNutrients ? `<span class="symptom-recom-nutrients">${rawNutrients}</span>` : '';
+        const textureCat = isId ? m.texture_category : (m.texture_category_en || m.texture_category);
+        const tagClass = (m.texture_category && m.texture_category.toLowerCase().includes('soft')) ? ' soft-mash' : '';
+
+        return `
+          <div class="symptom-recom-card">
+            <div class="symptom-recom-left">
+              <div class="symptom-recom-meta-row">
+                <span class="symptom-recom-name">${mealName}</span>
+                <span class="symptom-recom-tag${tagClass}">${textureCat}</span>
+                ${nutrientsStr}
+              </div>
+              <p class="symptom-recom-desc">${mealReason}</p>
+            </div>
+            <div class="symptom-recom-actions">
+              <button type="button" class="btn-symptom-select${selectedClass}" 
+                onclick="mealPlanner.selectSymptomMeal('${m.name.replace(/'/g, "\\'")}', this);">
+                ${btnText}
+              </button>
+              <button type="button" class="btn-symptom-schedule-direct" 
+                onclick="mealPlanner.applySingleMealToCalendar('${m.name.replace(/'/g, "\\'")}')"
+                title="${isId ? 'Terapkan langsung ke jadwal kalender' : 'Apply directly to calendar schedule'}">
+                <i data-lucide="calendar-plus" style="width:13px;height:13px;"></i>
+                <span>${isId ? 'Jadwalkan' : 'Schedule'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
     // Bottom Action Footer HTML
     const actionFooterHtml = `

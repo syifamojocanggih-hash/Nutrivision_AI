@@ -1755,6 +1755,11 @@
                 </div>
               </div>
             </div>
+
+            <!-- Deep Clinical Food Validation Scorecard (CDSS Multi-Faktor) -->
+            <div id="overview-clinical-validation-box" class="overview-clinical-validation-box">
+              <!-- Rendered dynamically by app.renderClinicalValidationScorecard() -->
+            </div>
           </section>
 
           <!-- CARD 2: 3 CORE CLINICAL RECOVERY ASSESSMENT FACTORS (PROTEIN, VITAMINS, MINERALS) (FR-05) -->
@@ -2844,6 +2849,115 @@
             </div>
           </div>
 
+          <!-- Profil Penyakit Klinis, Komorbiditas, & Gejala Pasien (CDSS Calibration) -->
+          <div class="card" style="grid-column: 1 / -1;" id="profile-diseases-card">
+            <div class="card-head">
+              <div class="card-title-group">
+                <h2 style="display:flex;align-items:center;gap:8px;">
+                  <iconify-icon icon="solar:stethoscope-bold-duotone" style="font-size:20px;color:#059669;"></iconify-icon>
+                  <span data-i18n="profile_diseases_title">Penyakit Penyerta &amp; Kondisi Medis Aktif</span>
+                </h2>
+                <div class="card-subtitle" data-i18n="profile_diseases_sub">
+                  Parameter penyakit ini secara langsung mengkalibrasi engine validasi makanan (CDSS) terhadap batas natrium, gula, lemak jenuh, purin, dan rasio protein/BB.
+                </div>
+              </div>
+            </div>
+
+            <!-- Disease Toggle Grid -->
+            <div style="margin-bottom:16px;">
+              <span style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:8px;">
+                Pilih Penyakit / Komorbiditas yang Anda Alami (Klik untuk mengaktifkan):
+              </span>
+              <div class="disease-chips-grid" id="profile-disease-chips">
+                <button type="button" class="disease-chip-btn active" data-disease="post-surgery" onclick="app.toggleUserDisease('post-surgery')">
+                  <span class="chip-icon">🩹</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Pasca-Operasi / Bedah</b>
+                    <span class="chip-sub">Target Protein Tinggi 1.5–2.0g/kg</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="hipertensi" onclick="app.toggleUserDisease('hipertensi')">
+                  <span class="chip-icon">🩺</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Hipertensi (Darah Tinggi)</b>
+                    <span class="chip-sub">Batas Natrium &lt;400mg</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="diabetes" onclick="app.toggleUserDisease('diabetes')">
+                  <span class="chip-icon">🩸</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Diabetes Melitus</b>
+                    <span class="chip-sub">Gula &lt;5g &amp; Karbohidrat Terkendali</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="ckd" onclick="app.toggleUserDisease('ckd')">
+                  <span class="chip-icon">🫘</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Penyakit Ginjal Kronis (CKD)</b>
+                    <span class="chip-sub">Restriksi Protein 0.6–0.8g/kg</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="gerd" onclick="app.toggleUserDisease('gerd')">
+                  <span class="chip-icon">🔥</span>
+                  <div class="chip-content">
+                    <b class="chip-label">GERD &amp; Gastritis</b>
+                    <span class="chip-sub">Bebas Pedas, Asam, &amp; Gorengan</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="asam-urat" onclick="app.toggleUserDisease('asam-urat')">
+                  <span class="chip-icon">🦴</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Asam Urat (Gout)</b>
+                    <span class="chip-sub">Bebas Purin &amp; Jeroan</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="kolesterol" onclick="app.toggleUserDisease('kolesterol')">
+                  <span class="chip-icon">🧈</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Kolesterol Tinggi</b>
+                    <span class="chip-sub">Batas Lemak Jenuh &lt;10g</span>
+                  </div>
+                </button>
+                <button type="button" class="disease-chip-btn" data-disease="rehab" onclick="app.toggleUserDisease('rehab')">
+                  <span class="chip-icon">🏃</span>
+                  <div class="chip-content">
+                    <b class="chip-label">Rehabilitasi Tulang / Fraktur</b>
+                    <span class="chip-sub">Tinggi Kalsium &amp; Kolagen</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Symptoms Selector -->
+            <div>
+              <span style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:8px;">
+                Gejala Klinis &amp; Fisiologis Terkini (Mempengaruhi Tekstur &amp; Toleransi):
+              </span>
+              <div class="symptom-chips-grid" id="profile-symptom-chips">
+                <button type="button" class="disease-chip-btn compact" data-symptom="disfagia" onclick="app.toggleUserSymptom('disfagia')">
+                  <span class="chip-icon">💧</span>
+                  <span class="chip-label">Sulit Menelan (Disfagia)</span>
+                </button>
+                <button type="button" class="disease-chip-btn compact" data-symptom="mual" onclick="app.toggleUserSymptom('mual')">
+                  <span class="chip-icon">🌊</span>
+                  <span class="chip-label">Mual / Enek</span>
+                </button>
+                <button type="button" class="disease-chip-btn compact" data-symptom="konstipasi" onclick="app.toggleUserSymptom('konstipasi')">
+                  <span class="chip-icon">🛡️</span>
+                  <span class="chip-label">Konstipasi</span>
+                </button>
+                <button type="button" class="disease-chip-btn compact" data-symptom="diare" onclick="app.toggleUserSymptom('diare')">
+                  <span class="chip-icon">⚠️</span>
+                  <span class="chip-label">Diare</span>
+                </button>
+                <button type="button" class="disease-chip-btn compact" data-symptom="nafsu" onclick="app.toggleUserSymptom('nafsu')">
+                  <span class="chip-icon">📉</span>
+                  <span class="chip-label">Nafsu Rendah</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Pantangan Makanan & Deklarasi Medis -->
           <div class="card" style="grid-column: 1 / -1;">
             <div class="card-head">
@@ -3466,6 +3580,9 @@
       <!-- Aggregated Nutrient Result (Rentang Estimasi) -->
       <div id="modal-aggregated-nutrients" style="margin-bottom:14px;"></div>
 
+      <!-- Live Clinical Food Validation Scorecard (CDSS) -->
+      <div id="modal-clinical-validation-box" class="modal-clinical-validation-box" style="margin-bottom:14px;"></div>
+
       <!-- Human-in-the-Loop Editable Segment List (FR-07) -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink);">Koreksi Bahan Hasil Deteksi:</span>
@@ -3685,6 +3802,31 @@
               Makanan</label>
             <input type="text" id="onboard-restrictions" class="form-control" style="font-size:12.5px;" value=""
               placeholder="Misal: Alergi udang, telur, susu, atau ketik 'Tidak ada'">
+          </div>
+        </div>
+
+        <!-- Penyakit Penyerta / Komorbiditas Klinis -->
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-weight:600;font-size:12px;color:#1C200E;display:block;margin-bottom:5px;">Penyakit Penyerta / Riwayat Kronis (Bisa pilih lebih dari satu):</label>
+          <div class="quiz-chips-selector" id="quiz-disease-chips">
+            <button type="button" class="quiz-chip-btn" data-disease="hipertensi" onclick="this.classList.toggle('active')">
+              🩺 Hipertensi
+            </button>
+            <button type="button" class="quiz-chip-btn" data-disease="diabetes" onclick="this.classList.toggle('active')">
+              🩸 Diabetes
+            </button>
+            <button type="button" class="quiz-chip-btn" data-disease="ckd" onclick="this.classList.toggle('active')">
+              🫘 Ginjal (CKD)
+            </button>
+            <button type="button" class="quiz-chip-btn" data-disease="gerd" onclick="this.classList.toggle('active')">
+              🔥 GERD / Lambung
+            </button>
+            <button type="button" class="quiz-chip-btn" data-disease="asam-urat" onclick="this.classList.toggle('active')">
+              🦴 Asam Urat
+            </button>
+            <button type="button" class="quiz-chip-btn" data-disease="kolesterol" onclick="this.classList.toggle('active')">
+              🧈 Kolesterol
+            </button>
           </div>
         </div>
 
@@ -5275,6 +5417,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/caregiver.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/admin_validator.js"></script>
+  <script src="js/food_clinical_validator.js"></script>
   <script src="js/app.js"></script>
 
 </body>
