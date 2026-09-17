@@ -1838,8 +1838,8 @@ const NUTRIVISION_DATA = {
       timeAgo: '2 jam yang lalu',
       timeAgoEn: '2 hours ago',
       verified: true,
-      text: 'Setelah operasi usus buntu kemarin, minggu ke-2 ini dokter minta fokus protein. Trikku: bikin telur kukus tim ala Jepang ditambah tahu sutra. Teksturnya super lembut, nggak bikin kembung, dan dapet 16g protein per porsi!',
-      textEn: 'After appendectomy last week, in this 2nd week my doctor advised prioritizing protein. My tip: make Japanese-style chawanmushi steamed egg with silken tofu. It is ultra-soft, causes no bloating, and provides 16g protein per serving!',
+      text: 'Setelah operasi usus buntu kemarin, minggu ke-2 ini ahli gizi klinis minta fokus protein. Trikku: bikin telur kukus tim ala Jepang ditambah tahu sutra. Teksturnya super lembut, nggak bikin kembung, dan dapet 16g protein per porsi!',
+      textEn: 'After appendectomy last week, in this 2nd week my clinical dietitian advised prioritizing protein. My tip: make Japanese-style chawanmushi steamed egg with silken tofu. It is ultra-soft, causes no bloating, and provides 16g protein per serving!',
       likes: 18,
       comments: [
         { author: 'Budi H.', text: 'Boleh dicoba nih resepnya, kebetulan lagi fase pemulihan juga!', textEn: 'Will definitely try this recipe, currently in recovery phase as well!' }
@@ -1864,8 +1864,8 @@ const NUTRIVISION_DATA = {
     },
     {
       id: 'comm-3',
-      author: 'dr. Hendra (Sp.KFR / Nakes)',
-      initials: 'DH',
+      author: 'Hendra Pratama (Fisioterapis Pemulihan)',
+      initials: 'HP',
       category: 'rehab',
       categoryLabel: 'Fisioterapi & Rehabilitasi ACL',
       categoryLabelEn: 'Physiotherapy & ACL Rehab',
@@ -2037,7 +2037,7 @@ const NUTRIVISION_DATA = {
     },
     'ikan-kembung-bakar': {
       title: 'Pepes Ikan Kembung Daun Pisang',
-      author: 'Dapur Nusantara Sehat & Dokter Sendi',
+      author: 'Dapur Nusantara Sehat & Fisioterapis Sendi',
       prepTime: '12m',
       cookTime: '18m',
       totalTime: '30m Time',
@@ -2219,7 +2219,7 @@ const NUTRIVISION_DATA = {
     },
     'sayur-bayam-bening': {
       title: 'Sayur Bening Bayam Jagung Manis',
-      author: 'Dokter Spesialis Gizi & Hematologi',
+      author: 'Pakar Nutrisi Klinis & Hematologi',
       prepTime: '6m',
       cookTime: '6m',
       totalTime: '12m Time',
@@ -2525,7 +2525,7 @@ const NUTRIVISION_DATA = {
     },
     'air-kelapa-murni': {
       title: 'Air Kelapa Hijau Murni Isotonik Alami',
-      author: 'Dokter Rehidrasi & Keseimbangan Cairan',
+      author: 'Konsultan Rehidrasi & Cairan Elektrolit',
       prepTime: '3m',
       cookTime: '0m',
       totalTime: '3m Time',

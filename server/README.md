@@ -123,5 +123,5 @@ npm test
 | :--- | :--- | :--- | :--- |
 | **Pasien Pasca-Bedah** | `pasien@nutrivision.id` | `pasien123` | Patient (Siti Rahma - Fase 2 Proliferasi Albumin) |
 | **Pasien Fisioterapi** | `ahmad@nutrivision.id` | `ahmad123` | Patient (Ahmad Fauzi - Fase 3 Remodeling) |
-| **Dokter Spesialis Gizi** | `hendra@nutrivision.id` | `dokter123` | Doctor (dr. Hendra Kurniawan, Sp.GK) |
-| **Super Administrator** | `admin@nutrivision.id` | `admin123` | Admin (dr. Sarah Larasati, M.Kes) |
+| **Keluarga Pendamping** | `caregiver@nutrivision.id` | `caregiver123` | Caregiver (Ratna Dewi - Pendamping Pasien) |
+| **Super Administrator** | `admin@nutrivision.id` | `admin123` | Admin (Sarah Larasati, M.Kes) |

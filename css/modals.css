@@ -2801,301 +2801,1061 @@
 /* =========================================================================
    NUTRITION BOOSTER & CUSTOM TARGET BOUNDARIES MODAL
    ========================================================================= */
+/* =========================================================================
+   NUTRITION BOOSTER & TARGET BOUNDARIES REDESIGN (MODERN CLINICAL HEALTHCARE UI)
+   ========================================================================= */
+
 .booster-modal-box {
-  max-width: 660px;
+  max-width: 900px;
   width: 95%;
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
-  border-radius: 18px;
+  border-radius: 20px;
   background: #FFFFFF;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(28, 32, 14, 0.22);
+  padding: 26px 30px;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25);
+  border: 1px solid #E2E8F0;
 }
 
-.booster-header-icon {
-  width: 44px;
-  height: 44px;
-  background: #F1F6E8;
-  border: 1px solid #D2DCB4;
-  border-radius: 12px;
+.booster-header-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.booster-title-group h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+}
+
+.booster-title-group p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.45;
+}
+
+.booster-header-right {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
   flex-shrink: 0;
 }
 
+.booster-header-right .modal-close-btn {
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.booster-header-right .modal-close-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+  transform: rotate(90deg) scale(1.05);
+}
+
+.booster-protocol-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F0F7FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+
+.booster-protocol-badge .protocol-icon {
+  font-size: 20px;
+  color: #0284C7;
+  flex-shrink: 0;
+}
+
+.booster-protocol-badge .protocol-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.booster-protocol-badge .protocol-sub {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #0369A1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booster-protocol-badge .protocol-main {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #0C4A6E;
+}
+
+/* SECTION 1: Baseline Clinical Card */
 .booster-baseline-card {
-  background: #F8FAF2;
-  border: 1.5px solid #DDE2B9;
-  border-radius: 14px;
-  padding: 14px 18px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.booster-baseline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.booster-baseline-header .title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.booster-baseline-header .status-right {
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .booster-baseline-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
-.booster-base-pill {
+.booster-base-tile {
   background: #FFFFFF;
-  border: 1px solid #E4EACB;
-  border-radius: 10px;
-  padding: 8px 10px;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-.booster-base-pill .lbl {
-  font-size: 10.5px;
-  color: #687346;
+.booster-base-tile .lbl {
+  font-size: 10px;
+  color: #64748B;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
-.booster-base-pill .val {
-  font-size: 14.5px;
+.booster-base-tile .val-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.booster-base-tile .val {
+  font-size: 22px;
   font-weight: 800;
-  color: #1C200E;
+  color: #0F172A;
+  line-height: 1;
 }
 
-.booster-base-pill .sub {
-  font-size: 10px;
-  color: #8C9970;
+.booster-base-tile .unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.booster-base-tile .sub {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.booster-baseline-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #64748B;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #E2E8F0;
+}
+
+/* SECTION 2: Presets */
+.booster-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.booster-section-title-row .sec-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.booster-section-title-row .sec-hint {
+  font-size: 11.5px;
+  color: #94A3B8;
+  font-weight: 500;
 }
 
 .booster-preset-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .booster-preset-card {
   all: unset;
   cursor: pointer;
+  background: #FFFFFF;
   border: 1.5px solid #E2E8F0;
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #FFFFFF;
-  transition: all 0.18s ease;
+  flex-direction: column;
+  gap: 4px;
   box-sizing: border-box;
+  transition: all 0.18s ease;
+  position: relative;
 }
 
 .booster-preset-card:hover {
-  border-color: #233917;
-  background: #F8FAF2;
+  border-color: #0284C7;
+  background: #F8FAFC;
   transform: translateY(-1px);
 }
 
 .booster-preset-card.active {
-  border-color: #233917;
-  background: #F4F8EE;
-  box-shadow: 0 0 0 2px #233917, 0 4px 12px rgba(35, 57, 23, 0.08);
+  background: #E0F2FE;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 1px #0284C7, 0 4px 12px rgba(2, 132, 199, 0.12);
 }
 
-.booster-preset-card .preset-icon {
-  font-size: 22px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.booster-preset-card .preset-info {
+.booster-preset-card .preset-top {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
 }
 
-.booster-preset-card .preset-info b {
+.booster-preset-card .preset-title {
   font-size: 12px;
-  color: #1C200E;
+  font-weight: 700;
+  color: #0F172A;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.booster-preset-card .preset-info span {
+.booster-preset-card .preset-icon {
+  font-size: 14px;
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.booster-preset-card.active .preset-icon {
+  color: #0284C7;
+}
+
+.booster-preset-card .preset-main {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 2px 0 0;
+}
+
+.booster-preset-card.active .preset-main {
+  color: #0369A1;
+}
+
+.booster-preset-card .preset-sub {
   font-size: 10.5px;
-  color: #556B30;
-  font-weight: 600;
+  color: #64748B;
+  line-height: 1.3;
 }
 
-.booster-inputs-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.booster-preset-card.active .preset-sub {
+  color: #0284C7;
 }
 
-.booster-field-row {
-  background: #FAFAF7;
-  border: 1px solid #E5E9D8;
-  border-radius: 12px;
-  padding: 12px 16px;
+/* SECTION 3: Side-by-Side Sliders (Protein & Calories) */
+.booster-slider-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.booster-slider-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.booster-field-row .field-label-group {
+.booster-slider-card .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.booster-field-row .color-dot {
+.booster-slider-card .title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.booster-slider-card .color-dot {
   width: 8px;
   height: 8px;
-  border-radius: 2px;
-  display: inline-block;
+  border-radius: 50%;
+  background: #0D9488;
 }
 
-.booster-field-row .field-current-value {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: #233917;
-  background: #EAF3DC;
+.booster-slider-card .limit-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748B;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
   padding: 2px 8px;
   border-radius: 6px;
-  border: 1px solid #D2DCB4;
 }
 
-.range-with-buttons {
+.limit-badge-unlimited {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #047857;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+}
+
+/* =========================================================================
+   HEALING PROTEIN MILESTONE & DIRECT OVERALL TOTAL ADJUSTMENT
+   ========================================================================= */
+
+.booster-healing-milestone-card {
+  background: linear-gradient(135deg, #F0FDF4 0%, #F0F9FF 100%);
+  border: 1.5px solid #BAE6FD;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.06);
+}
+
+.booster-healing-milestone-card .milestone-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
-.range-with-buttons .btn-step {
-  all: unset;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  color: #233917;
-  font-weight: 800;
-  font-size: 12px;
+.booster-healing-milestone-card .title-left {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+}
+
+.booster-healing-milestone-card .m-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #064E3B;
+  letter-spacing: -0.2px;
+}
+
+.booster-healing-milestone-card .m-sub {
+  display: block;
+  font-size: 11.5px;
+  color: #047857;
+  margin-top: 1px;
+}
+
+.booster-healing-milestone-card .milestone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #A7F3D0;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #047857;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.booster-healing-milestone-card .milestone-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.booster-healing-milestone-card .milestone-val-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booster-healing-milestone-card .milestone-val-wrap .lbl {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.booster-healing-milestone-card .input-unit-box {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.healing-number-input {
+  font-size: 24px;
+  font-weight: 800;
+  color: #064E3B;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 4px 10px;
+  width: 120px;
+  background: #F8FAFC;
+  outline: none;
   transition: all 0.15s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.range-with-buttons .btn-step:hover {
-  background: #233917;
-  color: #FFFFFF;
-  border-color: #233917;
+.healing-number-input:focus {
+  border-color: #059669;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
 }
 
-.booster-range-slider {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  accent-color: #233917;
-  cursor: pointer;
+.booster-healing-milestone-card .unit-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #047857;
 }
 
-.field-subtext {
+.booster-healing-milestone-card .quick-add-milestone {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.booster-healing-milestone-card .lbl-quick {
   font-size: 11px;
   color: #64748B;
   font-weight: 600;
 }
 
-.booster-chips-group {
+.booster-healing-milestone-card .quick-btns {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
-.booster-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: #F8FAF2;
-  border: 1px solid #DDE2B9;
-  border-radius: 20px;
+.btn-quick-add {
+  all: unset;
+  cursor: pointer;
+  background: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: #166534;
   font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-quick-add:hover {
+  background: #DCFCE7;
+  border-color: #22C55E;
+  color: #14532D;
+  transform: translateY(-1px);
+}
+
+.milestone-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.m-prog-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: #475569;
+}
+
+.m-prog-labels strong {
+  color: #064E3B;
+  font-weight: 800;
+}
+
+.m-prog-track {
+  width: 100%;
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.m-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #059669 0%, #0D9488 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.booster-slider-card .desc {
+  font-size: 11.5px;
+  color: #64748B;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.stepper-box-custom {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 6px;
+}
+
+.stepper-box-custom .btn-stepper-sq {
+  all: unset;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.stepper-box-custom .btn-stepper-sq:hover {
+  background: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+}
+
+.stepper-box-custom .stepper-center {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stepper-box-custom .stepper-center .num {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.stepper-box-custom .stepper-center .unit {
+  font-size: 13px;
   font-weight: 600;
-  color: #233917;
+  color: #64748B;
+}
+
+/* Stepper Center for Direct Overall Total Adjustment */
+.stepper-center-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.total-input-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.total-stepper-input {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  text-align: center;
+  width: 100px;
+  padding: 0 4px;
+  outline: none;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.total-stepper-input:hover {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+}
+
+.total-stepper-input:focus {
+  background: #FFFFFF;
+  border-color: #0D9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+}
+
+.total-sub-breakdown {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 500;
+  text-align: center;
+}
+
+.total-sub-breakdown strong {
+  color: #047857;
+  font-weight: 700;
+}
+
+/* Card 2 Healing Milestone Mini Box */
+.card2-healing-milestone-box {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.booster-chip:has(input:checked) {
-  background: #233917;
+.card2-healing-milestone-box:hover {
+  background: #DCFCE7;
+  border-color: #86EFAC;
+}
+
+.milestone-mini-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #166534;
+  font-weight: 600;
+}
+
+.milestone-mini-left strong {
+  color: #064E3B;
+  font-weight: 800;
+}
+
+.milestone-mini-left .pct-pill {
+  font-size: 10px;
+  font-weight: 800;
+  background: #047857;
   color: #FFFFFF;
-  border-color: #233917;
-  box-shadow: 0 2px 6px rgba(35, 57, 23, 0.2);
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: auto;
 }
 
-.booster-comparison-box {
-  background: linear-gradient(135deg, #F3F7EB, #EAF2DE);
-  border: 1.5px solid #C8D7A8;
-  border-radius: 14px;
-  padding: 14px 18px;
+.milestone-mini-bar {
+  width: 100%;
+  height: 5px;
+  background: #DCFCE7;
+  border-radius: 3px;
+  overflow: hidden;
 }
 
-.booster-summary-row {
+.milestone-mini-fill {
+  height: 100%;
+  background: #059669;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.booster-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background: #E2E8F0;
+  outline: none;
+  cursor: pointer;
+  margin: 10px 0 6px;
+  transition: background 0.15s ease;
+}
+
+.booster-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #044E46;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.booster-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.booster-range-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #044E46;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.booster-scale-marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+.booster-total-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed #E2E8F0;
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+.booster-total-footer b {
+  color: #0F172A;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* SECTION 4: Fokus Mikronutrien & Peptida Spesifik */
+.booster-focus-section {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.booster-focus-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.booster-focus-head .title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.booster-focus-head .count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.booster-focus-sub {
+  font-size: 11.5px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.booster-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.booster-pill-chip {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #334155;
+  box-sizing: border-box;
+}
+
+.booster-pill-chip:hover {
+  border-color: #044E46;
+}
+
+.booster-pill-chip.active {
+  background: #044E46;
+  border-color: #044E46;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(4, 78, 70, 0.25);
+}
+
+/* SECTION 5: Catatan Tambahan atau Arahan Klinis */
+.booster-note-section {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booster-note-section .note-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.booster-note-section .note-sub {
+  font-size: 11.5px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.booster-note-input-wrap {
+  position: relative;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.booster-note-input-wrap input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  padding: 10px 40px 10px 14px;
+  font-size: 12.5px;
+  color: #0F172A;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.booster-note-input-wrap input:focus {
+  border-color: #0D9488;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.booster-note-input-wrap .icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748B;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* SECTION 6: Floating Footer Summary Bar */
+.booster-bottom-summary-bar {
+  background: #F1F6FA;
+  border: 1px solid #DCE7F3;
+  border-radius: 16px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.booster-bottom-summary-bar .left-group {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.booster-summary-row .summary-col {
-  flex: 1;
+.booster-bottom-summary-bar .icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #044E46;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.booster-bottom-summary-bar .info-col {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.booster-summary-row .summary-col .sub {
-  font-size: 10px;
+.booster-bottom-summary-bar .lbl-tiny {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #0369A1;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #556B30;
-  font-weight: 700;
 }
 
-.booster-summary-row .summary-col .val {
-  font-size: 16px;
+.booster-bottom-summary-bar .val-main {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: -0.3px;
+  color: #0F172A;
 }
 
-.booster-summary-row .summary-col small {
-  font-size: 10.5px;
-  color: #687346;
+.booster-bottom-summary-bar .val-main span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
 }
 
-.booster-summary-row .summary-divider {
-  width: 1px;
-  height: 36px;
-  background: #CBDAB2;
+.booster-bottom-summary-bar .val-main .dot {
+  color: #CBD5E1;
+  margin: 0 4px;
 }
 
-@media (max-width: 640px) {
+.booster-bottom-summary-bar .center-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.booster-bottom-summary-bar .focus-names {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.booster-bottom-summary-bar .right-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.booster-bottom-summary-bar .btn-ghost-reset {
+  all: unset;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  transition: color 0.15s ease;
+}
+
+.booster-bottom-summary-bar .btn-ghost-reset:hover {
+  color: #0F172A;
+  text-decoration: underline;
+}
+
+.booster-bottom-summary-bar .btn-apply-booster-teal {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #044E46;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(4, 78, 70, 0.25);
+  transition: all 0.15s ease;
+}
+
+.booster-bottom-summary-bar .btn-apply-booster-teal:hover {
+  background: #023832;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(4, 78, 70, 0.35);
+}
+
+@media (max-width: 768px) {
+  .booster-modal-box {
+    padding: 20px 16px;
+  }
   .booster-baseline-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .booster-preset-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .booster-slider-cards-grid {
     grid-template-columns: 1fr;
   }
-  .booster-summary-row {
+  .booster-bottom-summary-bar {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: stretch;
+    gap: 14px;
   }
-  .booster-summary-row .summary-divider {
-    display: none;
+  .booster-bottom-summary-bar .right-actions {
+    justify-content: space-between;
   }
 }
 

@@ -1305,9 +1305,9 @@ Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
             </div>
 
             <div style="text-align:center;">
-              <div style="font-size:10.5px;color:#687346;margin-bottom:34px;">Dokter / Ahli Gizi / Fisioterapis (Nakes)</div>
+              <div style="font-size:10.5px;color:#687346;margin-bottom:34px;">Konsultan Nutrisi Klinis / Fisioterapis (Nakes)</div>
               <div style="font-weight:700;font-size:12px;color:#1C200E;border-bottom:1px solid #A8B585;padding-bottom:2px;display:inline-block;min-width:170px;">
-                dr. Hendra, Sp.KFR / Nakes Terdaftar
+                Hendra Kusuma, S.Gz, RD / Nakes Terdaftar
               </div>
               <div style="font-size:10px;color:#8A9664;margin-top:2px;">SIP/STR: 31.71.100.2024 · NutriVision Verified</div>
             </div>

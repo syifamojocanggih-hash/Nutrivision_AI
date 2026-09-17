@@ -712,25 +712,410 @@
   width: 100%;
 }
 
-/* 9. Responsive for Super Admin */
+/* 9. Responsive for Super Admin & Mobile PWA */
 @media (max-width: 1024px) {
   .admin-metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  #view-admin {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 16px));
+  }
+
+  .admin-header-card {
+    padding: 18px 16px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+  }
+
+  .admin-header-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .admin-badge-title {
+    width: fit-content;
+    font-size: 10.5px;
+    padding: 3px 10px;
+  }
+
+  .admin-live-indicator {
+    width: fit-content;
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .admin-header-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  .admin-btn-action {
+    justify-content: center;
+    text-align: center;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    min-height: 40px;
+    border-radius: 8px;
+  }
+
+  .admin-header-title {
+    font-size: 20px;
+    margin-bottom: 4px;
+    line-height: 1.25;
+  }
+
+  .admin-header-subtitle {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .admin-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .admin-metric-card {
+    padding: 14px 12px;
+    border-radius: 14px;
+  }
+
+  .admin-metric-val {
+    font-size: 22px;
+  }
+
+  .admin-metric-lbl {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .admin-metric-sub {
+    font-size: 10.5px;
+    padding-top: 6px;
+  }
+
+  .admin-tabs-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .admin-tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-tab-btn {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .admin-panel-card {
+    padding: 16px 14px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+  }
+
+  .admin-panel-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .admin-panel-title {
+    font-size: 15px;
+  }
+
+  .admin-panel-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .admin-search-input {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+    font-size: 13px;
+  }
+
+  .admin-filter-select {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+    font-size: 13px;
+  }
+
+  .admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+    font-size: 11.5px;
+  }
+
+  .admin-table-user-cell {
+    gap: 8px;
+  }
+
+  .admin-user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .admin-user-name {
+    font-size: 12px;
+  }
+
+  .admin-row-action-btn {
+    padding: 6px 9px;
+    font-size: 11px;
+    min-height: 32px;
+  }
+
+  .admin-clinical-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-header-actions {
+    grid-template-columns: 1fr;
+  }
+
   .admin-metrics-grid {
     grid-template-columns: 1fr;
   }
-  .admin-header-card {
-    padding: 20px;
+
+  .admin-val-scorecard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
-  .admin-header-top {
-    flex-direction: column;
-    align-items: flex-start;
+
+  .admin-val-scorecard {
+    padding: 10px 8px;
   }
-  .admin-search-input {
-    width: 100%;
+
+  .admin-val-scorecard-val {
+    font-size: 16px;
+  }
+
+  .admin-live-toast {
+    bottom: calc(78px + env(safe-area-inset-bottom, 16px));
+    left: 10px;
+    right: 10px;
+    max-width: calc(100vw - 20px);
+    box-sizing: border-box;
+    padding: 10px 14px;
+    font-size: 12px;
   }
 }
+
+/* ==========================================================================
+   REAL-TIME DATA VALIDATION & SYNC STYLES
+   ========================================================================== */
+
+/* Real-Time Row Update Pulse Animation */
+@keyframes adminRowPulse {
+  0% {
+    background-color: rgba(16, 185, 129, 0.35);
+    box-shadow: inset 0 0 0 2px #10B981;
+  }
+  40% {
+    background-color: rgba(16, 185, 129, 0.18);
+    box-shadow: inset 0 0 0 1px #34D399;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.admin-row-updated td {
+  animation: adminRowPulse 2.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Live Sync Pill Indicator */
+.admin-live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #065F46;
+}
+
+.admin-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: adminLivePulse 1.8s infinite;
+}
+
+@keyframes adminLivePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.admin-live-time {
+  font-size: 11px;
+  color: #047857;
+  font-weight: 500;
+}
+
+/* Clinical Validation Badges */
+.admin-val-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-val-badge.valid {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.admin-val-badge.warning {
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.admin-val-badge.info {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+}
+
+.admin-val-badge.pending {
+  background: #F8FAFC;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+}
+
+.admin-val-badge.verified {
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #86EFAC;
+  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.15);
+}
+
+.admin-val-badge.system {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+
+/* Action Button: Validasi & Detail */
+.admin-row-action-btn.validate {
+  background: #F0FDF4;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+}
+.admin-row-action-btn.validate:hover {
+  background: #DCFCE7;
+  border-color: #86EFAC;
+}
+
+/* Modal Clinical Validation Detail Card */
+.admin-val-scorecard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.admin-val-scorecard {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+
+.admin-val-scorecard.highlight {
+  background: #F0FDF4;
+  border-color: #86EFAC;
+}
+
+.admin-val-scorecard-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.admin-val-scorecard-lbl {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Live Toast Notification on Admin View */
+.admin-live-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: #064E3B;
+  color: #FFFFFF;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #34D399;
+  animation: adminToastSlideIn 0.3s ease;
+  max-width: 420px;
+}
+
+@keyframes adminToastSlideIn {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+

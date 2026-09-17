@@ -43,14 +43,13 @@ class NutriVisionApp {
     this.activeNotifCategory = 'all';
     this.cachedNotifications = [];
     this.dailyIntakeConfirmState = null;
-    this.currentDoctorPatientId = 'patient_siti';
-    this.doctorPatients = this.getDoctorPatients();
+    this.initRealtimeAdminSync();
   }
 
-  // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin, dokter, caregiver, atau pasien login)
+  // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin, caregiver, atau pasien login)
   isAuthenticated() {
     if (!this.userProfile) return false;
-    if (this.userProfile.role === 'admin' || this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician' || this.userProfile.role === 'caregiver') return true;
+    if (this.userProfile.role === 'admin' || this.userProfile.role === 'caregiver') return true;
     return Boolean(this.userProfile.name && (this.userProfile.contact || this.userProfile.email));
   }
 
@@ -82,7 +81,7 @@ class NutriVisionApp {
       try {
         const parsed = JSON.parse(saved);
         const role = parsed.role || 'patient';
-        const isNonPatient = role === 'admin' || role === 'doctor' || role === 'clinician' || role === 'caregiver';
+        const isNonPatient = role === 'admin' || role === 'caregiver';
         const baseTargets = parsed.baseTargets || parsed.targets || null;
         const additionalTargets = parsed.additionalTargets || {
           protein: 0,
@@ -103,6 +102,33 @@ class NutriVisionApp {
             fat: (baseTargets.fat || 0) + (additionalTargets.active ? (additionalTargets.fat || 0) : 0)
           };
         }
+        // Sanitasi batasan tambahan: jika tidak ada nilai tambah (>0), status booster wajib nonaktif
+        if ((additionalTargets.protein || 0) <= 0 && (additionalTargets.calories || 0) <= 0 && (additionalTargets.carbs || 0) <= 0 && (additionalTargets.fat || 0) <= 0) {
+          additionalTargets.active = false;
+          additionalTargets.protein = 0;
+          additionalTargets.calories = 0;
+          additionalTargets.carbs = 0;
+          additionalTargets.fat = 0;
+        }
+        if (additionalTargets.reason && additionalTargets.reason.includes('dr. Hendra')) {
+          additionalTargets.reason = '';
+        }
+
+        // Sanitasi target kesembuhan total (ribuan gram)
+        let healingTarget = parsed.healingTarget || null;
+        if (healingTarget) {
+          if (healingTarget.accumulatedGrams === 420 || !healingTarget.accumulatedGrams) {
+            healingTarget.accumulatedGrams = 0;
+          }
+          if (!healingTarget.totalGrams || healingTarget.totalGrams < 500) {
+            healingTarget.totalGrams = 2500;
+          }
+          // Jangan aktifkan target kesembuhan jika belum pernah diset/disimpan secara eksplisit
+          if (healingTarget.active === undefined) {
+            healingTarget.active = false;
+          }
+        }
+
         return {
           hasCompletedQuiz: isNonPatient ? true : (parsed.hasCompletedQuiz !== undefined ? parsed.hasCompletedQuiz : Boolean(parsed.name && parsed.targets)),
           role: role,
@@ -123,6 +149,7 @@ class NutriVisionApp {
           isDemo: Boolean(parsed.isDemo),
           baseTargets: baseTargets,
           additionalTargets: additionalTargets,
+          healingTarget: healingTarget,
           targets: effectiveTargets,
           fontSize: parsed.fontSize || 'normal',
           highContrast: parsed.highContrast || false,
@@ -164,6 +191,7 @@ class NutriVisionApp {
         active: false,
         updatedAt: null
       },
+      healingTarget: null,
       targets: null,
       fontSize: 'normal',
       highContrast: false,
@@ -270,11 +298,9 @@ class NutriVisionApp {
 
     // Router URL Hash Handling (Landing vs Dashboard)
     const hash = window.location.hash.replace('#', '');
-    const validSections = ['overview', 'planner', 'history', 'catalog', 'community', 'caregiver', 'progress', 'profile', 'doctor', 'caregiver-dashboard', 'admin'];
+    const validSections = ['overview', 'planner', 'history', 'catalog', 'community', 'caregiver', 'progress', 'profile', 'caregiver-dashboard', 'admin'];
     if (validSections.includes(hash) || hash === 'dashboard' || hash === 'app') {
-      if (this.userProfile && (this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician')) {
-        this.goToDoctorDashboard();
-      } else if (this.userProfile && this.userProfile.role === 'caregiver') {
+      if (this.userProfile && this.userProfile.role === 'caregiver') {
         this.goToCaregiverDashboard();
       } else if (this.userProfile && this.userProfile.role === 'admin') {
         this.goToAdminPortal();
@@ -793,17 +819,16 @@ class NutriVisionApp {
     }
   }
 
-  // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State, Pasien, Dokter, Caregiver & Admin)
+  // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State, Pasien, Caregiver & Admin)
   updateProfileUI() {
     const role = this.userProfile?.role || 'patient';
     const isAdmin = role === 'admin';
-    const isDoctor = role === 'doctor' || role === 'clinician';
     const isCaregiver = role === 'caregiver';
-    const isPatient = !isAdmin && !isDoctor && !isCaregiver;
+    const isPatient = !isAdmin && !isCaregiver;
     const isAuth = this.isAuthenticated();
     const hasQuiz = Boolean(this.userProfile && this.userProfile.hasCompletedQuiz);
-    const hasData = (isAuth && hasQuiz) || isAdmin || isDoctor || isCaregiver;
-    const initials = isAdmin ? 'AD' : (isDoctor ? 'HK' : (isCaregiver ? 'CG' : (isAuth && this.userProfile.name ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+')));
+    const hasData = (isAuth && hasQuiz) || isAdmin || isCaregiver;
+    const initials = isAdmin ? 'AD' : (isCaregiver ? 'CG' : (isAuth && this.userProfile.name ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+'));
     const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile?.language || 'en');
 
     // 1. Update Topbar Greeting
@@ -813,10 +838,6 @@ class NutriVisionApp {
         greetingEl.innerHTML = lang === 'id'
           ? `Panel Administrator: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetri</span>`
           : `Admin Command Center: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetry</span>`;
-      } else if (isDoctor) {
-        greetingEl.innerHTML = lang === 'id'
-          ? `Portal Pengawas Klinis: <span class="user-name-placeholder" style="color:#0284C7;">${this.userProfile?.name || 'dr. Hendra Kusuma, Sp.GK'}</span>`
-          : `Clinical Doctor Portal: <span class="user-name-placeholder" style="color:#0284C7;">${this.userProfile?.name || 'dr. Hendra Kusuma, Sp.GK'}</span>`;
       } else if (isCaregiver) {
         greetingEl.innerHTML = lang === 'id'
           ? `Portal Pendamping Pasien: <span class="user-name-placeholder" style="color:#10B981;">${this.userProfile?.name || 'Sarah (Caregiver)'}</span>`
@@ -832,29 +853,39 @@ class NutriVisionApp {
       }
     }
 
-    // 2. Update Topbar Buttons Visibility (Humanized Logic)
+    // 2. Update Topbar Buttons Visibility & Sleek Profile Avatar
+    const topbarProfileBtn = document.getElementById('topbar-profile-btn');
+    if (topbarProfileBtn) {
+      if (isAuth && initials && initials !== '+') {
+        topbarProfileBtn.innerHTML = `<span style="font-size:11px;font-weight:800;color:#fff;">${initials}</span>`;
+        topbarProfileBtn.style.background = isAdmin
+          ? 'linear-gradient(135deg,#9EA76B,#353C1B)'
+          : (isCaregiver ? 'linear-gradient(135deg,#10B981,#047857)' : 'linear-gradient(135deg,var(--coral-400),var(--coral-600))');
+        topbarProfileBtn.style.border = 'none';
+        topbarProfileBtn.style.borderRadius = '50%';
+      } else {
+        topbarProfileBtn.innerHTML = `<i data-lucide="user" style="width:17px;height:17px;"></i>`;
+        topbarProfileBtn.style.background = '';
+        topbarProfileBtn.style.border = '';
+      }
+    }
+
     const topbarProfileChip = document.getElementById('topbar-profile-chip');
     if (topbarProfileChip) {
-      topbarProfileChip.style.display = isAuth ? 'inline-flex' : 'none';
+      topbarProfileChip.style.display = 'none'; // Sembunyikan text chip agar greeting tidak terhimpit "Selama..."
     }
 
     // Toggle Sidebar Navigation Groups by Role
     const patientNav = document.getElementById('sidebar-nav-patient');
-    const doctorNav = document.getElementById('sidebar-nav-doctor');
     const caregiverNav = document.getElementById('sidebar-nav-caregiver');
     const adminNav = document.getElementById('sidebar-nav-admin');
 
     if (patientNav) patientNav.style.display = isPatient ? 'flex' : 'none';
-    if (doctorNav) doctorNav.style.display = isDoctor ? 'flex' : 'none';
     if (caregiverNav) caregiverNav.style.display = isCaregiver ? 'flex' : 'none';
     if (adminNav) adminNav.style.display = isAdmin ? 'flex' : 'none';
 
-    // Hide mobile bottom nav & scan floating button for non-patients (Doctor, Caregiver, and Admin only monitor)
-    const hidePatientTools = isAdmin || isDoctor || isCaregiver;
-    const bottomNav = document.querySelector('.bottom-nav-pwa');
-    const fabBtn = document.querySelector('.fab-scan-btn');
-    if (bottomNav) bottomNav.style.display = hidePatientTools ? 'none' : '';
-    if (fabBtn) fabBtn.style.display = hidePatientTools ? 'none' : '';
+    // Adaptasi Navigasi Bawah Mobile (PWA) Berdasarkan Peran Pengguna
+    this.renderMobileBottomNav(role);
 
     // 3. Update Profile Data Placeholders
     const nameEls = document.querySelectorAll('.user-name-placeholder');
@@ -862,9 +893,7 @@ class NutriVisionApp {
 
     const conditionEls = document.querySelectorAll('.user-condition-placeholder');
     conditionEls.forEach(el => {
-      if (isDoctor) {
-        el.textContent = 'DPJP Bedah & Gizi Klinis (Sp.GK)';
-      } else if (isCaregiver) {
+      if (isCaregiver) {
         el.textContent = 'Pendamping Pasien Pasca Bedah';
       } else if (isAdmin) {
         el.textContent = 'Super Administrator Sistem';
@@ -890,21 +919,6 @@ class NutriVisionApp {
               </div>
             </div>
             <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="${lang === 'id' ? 'Logout & Kembali ke Landing Page' : 'Sign Out & Back to Landing Page'}" aria-label="Sign Out / Logout">
-              <i data-lucide="log-out" style="width:15px;height:15px;"></i>
-            </button>
-          </div>
-        `;
-      } else if (isDoctor) {
-        sidebarProfileCard.innerHTML = `
-          <div class="sidebar-profile-flex">
-            <div class="sidebar-profile-info" onclick="app.goToDoctorDashboard()" title="Buka Portal Klinis DPJP">
-              <div class="profile-avatar" style="background:linear-gradient(135deg,#0284C7,#0369A1);color:#fff;font-weight:700;flex-shrink:0;">HK</div>
-              <div style="min-width:0;flex:1;">
-                <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile?.name || 'dr. Hendra Sp.GK'}</b>
-                <span style="font-size:10.5px;color:#BAE6FD;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">DPJP Bedah &amp; Klinis</span>
-              </div>
-            </div>
-            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout &amp; Keluar" aria-label="Logout">
               <i data-lucide="log-out" style="width:15px;height:15px;"></i>
             </button>
           </div>
@@ -1126,9 +1140,102 @@ class NutriVisionApp {
     }
   }
 
+  // Render Navigasi Bawah Mobile (PWA) Sesuai Peran: Pasien, Caregiver, atau Admin
+  renderMobileBottomNav(role = 'patient') {
+    const bottomNav = document.querySelector('.bottom-nav-pwa');
+    const fabBtn = document.querySelector('.fab-scan-btn');
+    if (!bottomNav) return;
+
+    const isAdmin = role === 'admin';
+    const isCaregiver = role === 'caregiver';
+
+    // Biarkan stylesheet responsif CSS yang mengatur display (flex di mobile <= 768px, none di desktop)
+    bottomNav.style.display = '';
+
+    if (isAdmin) {
+      if (fabBtn) fabBtn.style.display = 'none';
+      bottomNav.innerHTML = `
+        <button class="bottom-nav-btn ${this.activeSection === 'admin' ? 'active' : ''}" data-sec="admin" onclick="app.navigate('admin')" title="Monitoring Pasien">
+          <span class="nav-icon"><i data-lucide="shield-alert"></i></span>
+          <span>Monitoring</span>
+        </button>
+        <button class="bottom-nav-btn ${this.activeSection === 'admin-clinical-menu' ? 'active' : ''}" data-sec="admin-clinical-menu" onclick="app.navigate('admin-clinical-menu')" title="Analitik Pola Klinis & Pangan">
+          <span class="nav-icon"><i data-lucide="utensils"></i></span>
+          <span>Analitik</span>
+        </button>
+        <button class="bottom-nav-btn" data-sec="database" onclick="app.openDatabaseSyncModal()" title="Sinkronisasi Cloud Supabase">
+          <span class="nav-icon"><i data-lucide="database"></i></span>
+          <span>Cloud Sync</span>
+        </button>
+        <button class="bottom-nav-btn" data-sec="logout" onclick="app.handleLogout()" title="Keluar dari Akun">
+          <span class="nav-icon"><i data-lucide="log-out"></i></span>
+          <span>Keluar</span>
+        </button>
+      `;
+    } else if (isCaregiver) {
+      if (fabBtn) fabBtn.style.display = 'none';
+      bottomNav.innerHTML = `
+        <button class="bottom-nav-btn ${this.activeSection === 'caregiver-dashboard' ? 'active' : ''}" data-sec="caregiver-dashboard" onclick="app.navigate('caregiver-dashboard')" title="Dashboard Pasien">
+          <span class="nav-icon"><i data-lucide="heart-handshake"></i></span>
+          <span>Pasien</span>
+        </button>
+        <button class="bottom-nav-btn ${this.activeSection === 'profile' ? 'active' : ''}" data-sec="profile" onclick="app.navigate('profile')" title="Izin & Profil Pendamping">
+          <span class="nav-icon"><i data-lucide="user-cog"></i></span>
+          <span>Izin &amp; Profil</span>
+        </button>
+        <button class="bottom-nav-btn" data-sec="logout" onclick="app.handleLogout()" title="Keluar dari Akun">
+          <span class="nav-icon"><i data-lucide="log-out"></i></span>
+          <span>Keluar</span>
+        </button>
+      `;
+    } else {
+      if (fabBtn) fabBtn.style.display = 'none';
+      bottomNav.innerHTML = `
+        <button class="bottom-nav-btn ${this.activeSection === 'overview' ? 'active' : ''}" data-sec="overview" onclick="app.navigate('overview')">
+          <span class="nav-icon"><i data-lucide="home"></i></span>
+          <span>Ringkasan</span>
+        </button>
+        <button class="bottom-nav-btn ${this.activeSection === 'planner' ? 'active' : ''}" data-sec="planner" onclick="app.navigate('planner')">
+          <span class="nav-icon"><i data-lucide="utensils"></i></span>
+          <span>Menu</span>
+        </button>
+        <button class="bottom-nav-btn bottom-nav-scan-center" onclick="app.openScanModal()" title="Pindai Makanan">
+          <span class="nav-scan-circle"><i data-lucide="camera" style="width:20px;height:20px;"></i></span>
+          <span>Pindai</span>
+        </button>
+        <button class="bottom-nav-btn ${this.activeSection === 'progress' ? 'active' : ''}" data-sec="progress" onclick="app.navigate('progress')">
+          <span class="nav-icon"><i data-lucide="trending-up"></i></span>
+          <span>Progres</span>
+        </button>
+        <button class="bottom-nav-btn ${this.activeSection === 'profile' ? 'active' : ''}" data-sec="profile" onclick="app.navigate('profile')">
+          <span class="nav-icon"><i data-lucide="user"></i></span>
+          <span>Profil</span>
+        </button>
+      `;
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
   // =========================================================================
   // NUTRITION BOOSTER & CUSTOM TARGET BOUNDARIES (KEINGINAN GIZI TAMBAHAN)
   // =========================================================================
+
+  calculateActualAccumulatedProtein() {
+    let sum = 0;
+    if (window.progressTracker && Array.isArray(window.progressTracker.weeklyLogs)) {
+      window.progressTracker.weeklyLogs.forEach(log => {
+        if (log && typeof log.protein === 'number' && log.protein > 0) {
+          sum += log.protein;
+        }
+      });
+    } else if (window.progressTracker && window.progressTracker.todayIntake?.protein) {
+      sum += window.progressTracker.todayIntake.protein;
+    }
+    return Math.round(sum);
+  }
 
   updateBoosterUI() {
     const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile?.language || 'id');
@@ -1148,7 +1255,10 @@ class NutriVisionApp {
       reason: '',
       active: false
     };
-    const isActive = Boolean(add.active && (add.protein > 0 || add.calories > 0 || add.carbs > 0 || add.fat > 0 || (add.focus && add.focus.length > 0)));
+    const isActive = Boolean(
+      add.active &&
+      ((add.protein || 0) > 0 || (add.calories || 0) > 0 || (add.carbs || 0) > 0 || (add.fat || 0) > 0)
+    );
     const targets = this.userProfile?.targets || {
       protein: base.protein + (isActive ? (add.protein || 0) : 0),
       calories: base.calories + (isActive ? (add.calories || 0) : 0),
@@ -1249,6 +1359,31 @@ class NutriVisionApp {
           : `Current targets follow pure ERAS baseline recovery needs (<b>${base.protein}g</b> protein, <b>${(base.calories || 0).toLocaleString('en-US')} kcal</b>). Click below to customize additional booster bounds.`;
       }
     }
+
+    // 5. Update Card 2 Healing Protein Milestone Box (Ribuan Gram)
+    const c2MilestoneBox = document.getElementById('ov-card2-healing-milestone-box');
+    if (c2MilestoneBox) {
+      const healTarget = this.userProfile?.healingTarget;
+      const isHealingActive = Boolean(hasQuiz && healTarget && healTarget.active && (healTarget.totalGrams || 0) >= 500);
+
+      if (isHealingActive) {
+        c2MilestoneBox.style.display = 'flex';
+        const healTotal = healTarget.totalGrams || 2500;
+        const healAccum = this.calculateActualAccumulatedProtein();
+        const healPct = Math.min(100, Math.round((healAccum / healTotal) * 1000) / 10);
+
+        const c2Text = document.getElementById('ov-card2-healing-target-text');
+        if (c2Text) c2Text.textContent = `${healAccum.toLocaleString('id-ID')} / ${healTotal.toLocaleString('id-ID')} g Protein`;
+
+        const c2Badge = document.getElementById('ov-card2-healing-pct-badge');
+        if (c2Badge) c2Badge.textContent = `${healPct}%`;
+
+        const c2Fill = document.getElementById('ov-card2-healing-bar-fill');
+        if (c2Fill) c2Fill.style.width = `${healPct}%`;
+      } else {
+        c2MilestoneBox.style.display = 'none';
+      }
+    }
   }
 
   openNutritionBoosterModal() {
@@ -1283,58 +1418,87 @@ class NutriVisionApp {
       };
     }
 
+    // Target akumulasi kesembuhan (ribuan gram)
+    if (!this.userProfile.healingTarget) {
+      this.userProfile.healingTarget = {
+        totalGrams: 2500,
+        accumulatedGrams: 0,
+        phaseTitle: 'Program Regenerasi Jaringan Pasca-Bedah',
+        active: false
+      };
+    }
+
     const base = this.userProfile.baseTargets;
     const add = this.userProfile.additionalTargets;
+    const heal = this.userProfile.healingTarget;
     const weight = this.userProfile.weightKg || 65;
 
     // 2. Isi ringkasan klinis dasar di modal
-    const condBadge = document.getElementById('booster-condition-badge');
-    if (condBadge) condBadge.textContent = this.userProfile.conditionTitle || 'Pasca-Operasi & Bedah';
+    const condStatus = document.getElementById('booster-condition-status-text');
+    if (condStatus) {
+      condStatus.innerHTML = `<span>Status: ${this.userProfile.conditionTitle || 'Pasca Bedah Day-4'} · Terkunci</span>`;
+    }
 
     const elBaseProt = document.getElementById('booster-base-protein');
-    if (elBaseProt) elBaseProt.textContent = `${base.protein} g`;
+    if (elBaseProt) elBaseProt.textContent = `${base.protein}`;
 
     const elBaseProtPerKg = document.getElementById('booster-base-protein-perkg');
-    if (elBaseProtPerKg) elBaseProtPerKg.textContent = `${(base.protein / weight).toFixed(1)} g/kg`;
+    if (elBaseProtPerKg) elBaseProtPerKg.textContent = `${((base.protein || 75) / weight).toFixed(1)} g/kg BB/hari`;
 
     const elBaseCals = document.getElementById('booster-base-cals');
-    if (elBaseCals) elBaseCals.textContent = `${(base.calories || 1850).toLocaleString('id-ID')} kkal`;
+    if (elBaseCals) elBaseCals.textContent = `${(base.calories || 1850).toLocaleString('id-ID')}`;
+
+    const elBaseCalsBmr = document.getElementById('booster-base-cals-bmr');
+    if (elBaseCalsBmr) elBaseCalsBmr.textContent = `BMR ${Math.round((base.calories || 1850) * 0.78).toLocaleString('id-ID')} + Faktor Stres`;
 
     const elBaseCarbs = document.getElementById('booster-base-carbs');
-    if (elBaseCarbs) elBaseCarbs.textContent = `${base.carbs || 220} g`;
+    if (elBaseCarbs) elBaseCarbs.textContent = `${base.carbs || 220}`;
 
     const elBaseFat = document.getElementById('booster-base-fat');
-    if (elBaseFat) elBaseFat.textContent = `${base.fat || 55} g`;
+    if (elBaseFat) elBaseFat.textContent = `${base.fat || 55}`;
 
-    // 3. Masukkan nilai booster saat ini ke form controls
+    // 3. Masukkan nilai target kesembuhan (ribuan gram) ke input
+    const healInput = document.getElementById('booster-healing-total-input');
+    if (healInput) healInput.value = (heal.totalGrams && heal.totalGrams >= 500) ? heal.totalGrams : 2500;
+
+    // 4. Masukkan nilai booster saat ini ke form controls (0 jika belum pernah diaktifkan)
+    const curProtAdd = add.active ? (add.protein || 0) : 0;
+    const curCalsAdd = add.active ? (add.calories || 0) : 0;
+
     const inputProt = document.getElementById('booster-input-protein');
-    if (inputProt) inputProt.value = add.protein || 0;
+    if (inputProt) inputProt.value = curProtAdd;
 
     const inputCals = document.getElementById('booster-input-calories');
-    if (inputCals) inputCals.value = add.calories || 0;
+    if (inputCals) inputCals.value = curCalsAdd;
+
+    const inputProtTotal = document.getElementById('booster-total-prot-input');
+    if (inputProtTotal) inputProtTotal.value = base.protein + curProtAdd;
+
+    const inputCalsTotal = document.getElementById('booster-total-cals-input');
+    if (inputCalsTotal) inputCalsTotal.value = base.calories + curCalsAdd;
 
     const inputCarbs = document.getElementById('booster-input-carbs');
-    if (inputCarbs) inputCarbs.value = add.carbs || 0;
+    if (inputCarbs) inputCarbs.value = add.active ? (add.carbs || 0) : 0;
 
     const inputFat = document.getElementById('booster-input-fat');
-    if (inputFat) inputFat.value = add.fat || 0;
+    if (inputFat) inputFat.value = add.active ? (add.fat || 0) : 0;
 
     const inputReason = document.getElementById('booster-reason-input');
-    if (inputReason) inputReason.value = add.reason || '';
+    if (inputReason) {
+      inputReason.value = add.reason || '';
+    }
 
-    // Checkbox fokus
-    const focusList = Array.isArray(add.focus) ? add.focus : [];
-    document.querySelectorAll('.booster-chips-group input[type="checkbox"]').forEach(cb => {
-      cb.checked = focusList.includes(cb.value);
-    });
+    // Fokus mikronutrien chips
+    this.currentBoosterFocus = Array.isArray(add.focus) ? [...add.focus] : [];
+    this.renderBoosterFocusChips();
 
-    // 4. Deteksi dan sorot preset yang cocok
-    this.detectMatchingBoosterPreset(add.protein || 0, add.calories || 0);
+    // 5. Deteksi dan sorot preset yang cocok
+    this.detectMatchingBoosterPreset(curProtAdd, curCalsAdd);
 
-    // 5. Perbarui pratinjau kalkulasi langsung
+    // 6. Perbarui pratinjau kalkulasi langsung
     this.updateBoosterLivePreview();
 
-    // 6. Buka modal
+    // 7. Buka modal
     this.openModal('nutrition-booster-modal');
   }
 
@@ -1342,12 +1506,166 @@ class NutriVisionApp {
     this.closeModal('nutrition-booster-modal');
   }
 
+  // --- CONTROLLER FOR HEALING MILESTONE (RIBUAN GRAM) ---
+  onHealingTotalInput(val) {
+    const num = Math.max(100, parseInt(val, 10) || 2500);
+    const healInput = document.getElementById('booster-healing-total-input');
+    if (healInput && healInput.value !== String(num)) {
+      healInput.value = num;
+    }
+    if (!this.userProfile.healingTarget) {
+      this.userProfile.healingTarget = {
+        totalGrams: 2500,
+        accumulatedGrams: 0,
+        phaseTitle: 'Program Regenerasi Jaringan Pasca-Bedah',
+        active: false
+      };
+    }
+    this.userProfile.healingTarget.totalGrams = num;
+    this.updateBoosterLivePreview();
+  }
+
+  addHealingTarget(amount) {
+    const healInput = document.getElementById('booster-healing-total-input');
+    const cur = parseInt(healInput?.value || this.userProfile.healingTarget?.totalGrams || 2500, 10);
+    const next = cur + amount;
+    if (healInput) healInput.value = next;
+    this.onHealingTotalInput(next);
+  }
+
+  // --- DIRECT ADJUSTMENT FROM OVERALL TOTAL (MENAMBAH DARI JUMLAH KESELURUHAN) ---
+  onBoosterTotalProtInput(val) {
+    const baseProt = this.userProfile.baseTargets?.protein || 75;
+    const total = Math.max(1, parseInt(val, 10) || baseProt);
+    const delta = Math.max(0, total - baseProt);
+    const inputProt = document.getElementById('booster-input-protein');
+    if (inputProt) inputProt.value = delta;
+
+    const curCals = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
+    this.detectMatchingBoosterPreset(delta, curCals);
+    this.updateBoosterLivePreview();
+  }
+
+  onBoosterTotalCalsInput(val) {
+    const baseCals = this.userProfile.baseTargets?.calories || 1850;
+    const total = Math.max(1, parseInt(val, 10) || baseCals);
+    const delta = Math.max(0, total - baseCals);
+    const inputCals = document.getElementById('booster-input-calories');
+    if (inputCals) inputCals.value = delta;
+
+    const curProt = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
+    this.detectMatchingBoosterPreset(curProt, delta);
+    this.updateBoosterLivePreview();
+  }
+
+  stepBoosterTotal(field, step) {
+    if (field === 'protein') {
+      const baseProt = this.userProfile.baseTargets?.protein || 75;
+      const curProtAdd = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
+      const curTotal = parseInt(document.getElementById('booster-total-prot-input')?.value, 10) || (baseProt + curProtAdd);
+      const nextTotal = Math.max(baseProt, curTotal + step);
+      const inputTotal = document.getElementById('booster-total-prot-input');
+      if (inputTotal) inputTotal.value = nextTotal;
+      this.onBoosterTotalProtInput(nextTotal);
+    } else if (field === 'calories') {
+      const baseCals = this.userProfile.baseTargets?.calories || 1850;
+      const curCalsAdd = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
+      const curTotal = parseInt(document.getElementById('booster-total-cals-input')?.value, 10) || (baseCals + curCalsAdd);
+      const nextTotal = Math.max(baseCals, curTotal + step);
+      const inputTotal = document.getElementById('booster-total-cals-input');
+      if (inputTotal) inputTotal.value = nextTotal;
+      this.onBoosterTotalCalsInput(nextTotal);
+    }
+  }
+
+  toggleBoosterFocusChip(val) {
+    if (!this.currentBoosterFocus) this.currentBoosterFocus = [];
+    const idx = this.currentBoosterFocus.indexOf(val);
+    if (idx >= 0) {
+      this.currentBoosterFocus.splice(idx, 1);
+    } else {
+      this.currentBoosterFocus.push(val);
+    }
+    this.renderBoosterFocusChips();
+    this.updateBoosterLivePreview();
+  }
+
+  renderBoosterFocusChips() {
+    const focusMap = {
+      'albumin': 'Ekstra Albumin (Ikan Gabus)',
+      'zinc': 'Kolagen & Zinc Jaringan',
+      'vitc': 'Vitamin C & Imun Booster',
+      'omega3': 'Omega-3 Anti-Inflamasi',
+      'glutamine': 'L-Glutamin Mukosa'
+    };
+    const shortNames = {
+      'albumin': 'Ekstra Albumin',
+      'zinc': 'Kolagen & Zinc',
+      'vitc': 'Vitamin C & Imun',
+      'omega3': 'Omega-3',
+      'glutamine': 'L-Glutamin'
+    };
+    const list = this.currentBoosterFocus || [];
+    Object.keys(focusMap).forEach(key => {
+      const btn = document.getElementById(`chip-${key}`);
+      if (btn) {
+        const isActive = list.includes(key);
+        btn.classList.toggle('active', isActive);
+        btn.innerHTML = isActive
+          ? `<iconify-icon icon="solar:check-read-linear" class="chip-icon"></iconify-icon><span>${focusMap[key]}</span>`
+          : `<span class="chip-icon">+</span><span>${focusMap[key]}</span>`;
+      }
+    });
+
+    const badge = document.getElementById('booster-focus-count-badge');
+    if (badge) {
+      badge.textContent = `${list.length} Dipilih`;
+    }
+
+    const bottomNames = document.getElementById('booster-bar-focus-names');
+    if (bottomNames) {
+      if (list.length > 0) {
+        bottomNames.textContent = list.map(k => shortNames[k] || k).join(', ');
+      } else {
+        bottomNames.textContent = 'Standar Medis Murni';
+      }
+    }
+  }
+
   selectBoosterPreset(presetKey) {
     const presets = {
-      'default': { protein: 0, calories: 0, carbs: 0, fat: 0, focus: [] },
-      'rehab': { protein: 15, calories: 200, carbs: 25, fat: 5, focus: ['albumin', 'zinc'] },
-      'wound': { protein: 25, calories: 150, carbs: 15, fat: 5, focus: ['albumin', 'vitc', 'zinc'] },
-      'appetite': { protein: 10, calories: 350, carbs: 45, fat: 10, focus: ['omega3'] }
+      'default': {
+        protein: 0,
+        calories: 0,
+        carbs: 0,
+        fat: 0,
+        focus: [],
+        reason: ''
+      },
+      'rehab': {
+        protein: 15,
+        calories: 200,
+        carbs: 25,
+        fat: 5,
+        focus: ['albumin', 'zinc'],
+        reason: 'Fisioterapi lanjutan & mobilitas gerak'
+      },
+      'wound': {
+        protein: 20,
+        calories: 0,
+        carbs: 0,
+        fat: 0,
+        focus: ['albumin', 'zinc'],
+        reason: 'Akselerasi granulasi jaringan & sintesis albumin luka bedah'
+      },
+      'stamina': {
+        protein: 10,
+        calories: 350,
+        carbs: 45,
+        fat: 10,
+        focus: ['omega3'],
+        reason: 'Peningkatan energi & stamina aktivitas harian'
+      }
     };
 
     const target = presets[presetKey] || presets['default'];
@@ -1364,12 +1682,12 @@ class NutriVisionApp {
     const inputFat = document.getElementById('booster-input-fat');
     if (inputFat) inputFat.value = target.fat;
 
-    // Update checkboxes
-    document.querySelectorAll('.booster-chips-group input[type="checkbox"]').forEach(cb => {
-      cb.checked = target.focus.includes(cb.value);
-    });
+    const reasonInput = document.getElementById('booster-reason-input');
+    if (reasonInput && target.reason) reasonInput.value = target.reason;
 
-    // Highlight preset card
+    this.currentBoosterFocus = [...target.focus];
+    this.renderBoosterFocusChips();
+
     document.querySelectorAll('.booster-preset-card').forEach(card => {
       card.classList.toggle('active', card.getAttribute('data-preset') === presetKey);
     });
@@ -1377,19 +1695,20 @@ class NutriVisionApp {
     this.updateBoosterLivePreview();
   }
 
+  // Legacy step value method (now uncapped up to 5000/10000 without safe limit restrictions)
   stepBoosterValue(field, step) {
     let input = null;
     let min = 0;
-    let max = 1000;
+    let max = 10000;
 
     if (field === 'protein') {
       input = document.getElementById('booster-input-protein');
       min = 0;
-      max = 60;
+      max = 5000; // Bebas tanpa batasan sempit
     } else if (field === 'calories') {
       input = document.getElementById('booster-input-calories');
       min = 0;
-      max = 800;
+      max = 10000; // Bebas tanpa batasan sempit
     }
 
     if (!input) return;
@@ -1415,8 +1734,8 @@ class NutriVisionApp {
     let matched = null;
     if (prot === 0 && cals === 0) matched = 'default';
     else if (prot === 15 && cals === 200) matched = 'rehab';
-    else if (prot === 25 && cals === 150) matched = 'wound';
-    else if (prot === 10 && cals === 350) matched = 'appetite';
+    else if (prot === 20 && cals === 0) matched = 'wound';
+    else if (prot === 10 && cals === 350) matched = 'stamina';
 
     document.querySelectorAll('.booster-preset-card').forEach(card => {
       card.classList.toggle('active', matched ? card.getAttribute('data-preset') === matched : false);
@@ -1426,60 +1745,104 @@ class NutriVisionApp {
   updateBoosterLivePreview() {
     const protAdd = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
     const calsAdd = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
-    const carbsAdd = parseInt(document.getElementById('booster-input-carbs')?.value, 10) || 0;
-    const fatAdd = parseInt(document.getElementById('booster-input-fat')?.value, 10) || 0;
 
     const base = this.userProfile?.baseTargets || { protein: 75, calories: 1850, carbs: 220, fat: 55 };
+    const totProt = base.protein + protAdd;
+    const totCals = base.calories + calsAdd;
 
-    // Update Slider Displays
+    // 1. Update Stepper Total Inputs (Direct Overall Total Adjustment)
+    const inpTotProt = document.getElementById('booster-total-prot-input');
+    if (inpTotProt && document.activeElement !== inpTotProt) {
+      inpTotProt.value = totProt;
+    }
+
+    const inpTotCals = document.getElementById('booster-total-cals-input');
+    if (inpTotCals && document.activeElement !== inpTotCals) {
+      inpTotCals.value = totCals;
+    }
+
+    // 2. Update Breakdown Delta Texts
+    const deltaProtTxt = document.getElementById('booster-prot-delta-text');
+    if (deltaProtTxt) deltaProtTxt.textContent = `+${protAdd}g tambahan`;
+
+    const deltaCalsTxt = document.getElementById('booster-cals-delta-text');
+    if (deltaCalsTxt) deltaCalsTxt.textContent = `+${calsAdd} kkal tambahan`;
+
+    // 3. Update legacy hidden displays for backward test compatibility
     const dispProt = document.getElementById('booster-val-prot-display');
-    if (dispProt) dispProt.textContent = `+${protAdd} g`;
+    if (dispProt) dispProt.textContent = `+${protAdd}`;
 
     const dispCals = document.getElementById('booster-val-cals-display');
-    if (dispCals) dispCals.textContent = `+${calsAdd} kkal`;
+    if (dispCals) dispCals.textContent = `+${calsAdd}`;
 
-    // Update Input Subtext Totals
+    // 4. Dynamic track gradient fill on range sliders
+    const protSlider = document.getElementById('booster-input-protein');
+    if (protSlider && protSlider.style) {
+      const maxProt = Math.max(100, protAdd > 100 ? protAdd + 50 : 100);
+      protSlider.max = maxProt;
+      const pct = Math.min(100, Math.max(0, (protAdd / maxProt) * 100));
+      protSlider.style.background = `linear-gradient(to right, #044E46 0%, #044E46 ${pct}%, #E2E8F0 ${pct}%, #E2E8F0 100%)`;
+    }
+
+    const calsSlider = document.getElementById('booster-input-calories');
+    if (calsSlider && calsSlider.style) {
+      const maxCals = Math.max(1000, calsAdd > 1000 ? calsAdd + 500 : 1000);
+      calsSlider.max = maxCals;
+      const pct = Math.min(100, Math.max(0, (calsAdd / maxCals) * 100));
+      calsSlider.style.background = `linear-gradient(to right, #044E46 0%, #044E46 ${pct}%, #E2E8F0 ${pct}%, #E2E8F0 100%)`;
+    }
+
+    // 5. Update Total formula footers inside each slider card
     const subProt = document.getElementById('booster-calc-prot-result');
-    if (subProt) subProt.textContent = `Total target protein: ${base.protein + protAdd} g / hari`;
+    if (subProt) subProt.textContent = `${totProt} g / hari (${base.protein}g basal + ${protAdd}g)`;
 
     const subCals = document.getElementById('booster-calc-cals-result');
-    if (subCals) subCals.textContent = `Total target kalori: ${(base.calories + calsAdd).toLocaleString('id-ID')} kkal / hari`;
+    if (subCals) subCals.textContent = `${totCals.toLocaleString('id-ID')} kkal / hari (${base.calories.toLocaleString('id-ID')} basal + ${calsAdd})`;
 
-    // Comparison Card
-    const sumProt = document.getElementById('booster-summary-protein');
-    if (sumProt) sumProt.textContent = `${base.protein + protAdd} g / hari`;
+    // 6. Update Target Akumulasi Protein Kesembuhan (Ribuan Gram)
+    const healTarget = this.userProfile?.healingTarget || { totalGrams: 2500, accumulatedGrams: 0 };
+    const healTotal = healTarget.totalGrams || 2500;
+    const healAccum = this.calculateActualAccumulatedProtein();
+    const healPct = Math.min(100, Math.round((healAccum / healTotal) * 1000) / 10);
+    const remGrams = Math.max(0, healTotal - healAccum);
+    const estDays = Math.ceil(remGrams / Math.max(1, totProt));
 
-    const sumProtBreakdown = document.getElementById('booster-summary-protein-breakdown');
-    if (sumProtBreakdown) sumProtBreakdown.textContent = `${base.protein}g dasar + ${protAdd}g booster`;
+    const elAccumTxt = document.getElementById('booster-healing-accum-txt');
+    if (elAccumTxt) elAccumTxt.textContent = `${healAccum.toLocaleString('id-ID')} g`;
 
-    const sumCals = document.getElementById('booster-summary-calories');
-    if (sumCals) sumCals.textContent = `${(base.calories + calsAdd).toLocaleString('id-ID')} kkal`;
+    const elPctTxt = document.getElementById('booster-healing-pct-txt');
+    if (elPctTxt) elPctTxt.textContent = `${healPct}%`;
 
-    const sumCalsBreakdown = document.getElementById('booster-summary-cals-breakdown');
-    if (sumCalsBreakdown) sumCalsBreakdown.textContent = `${(base.calories).toLocaleString('id-ID')} dasar + ${calsAdd} booster`;
-
-    const sumStatus = document.getElementById('booster-summary-status');
-    const selectedFocus = Array.from(document.querySelectorAll('.booster-chips-group input[type="checkbox"]:checked'))
-      .map(cb => cb.value);
-
-    if (sumStatus) {
-      if (protAdd === 0 && calsAdd === 0 && carbsAdd === 0 && fatAdd === 0 && selectedFocus.length === 0) {
-        sumStatus.textContent = 'Standar Klinis';
-        sumStatus.style.color = '#233917';
+    const elEtaTxt = document.getElementById('booster-healing-eta-txt');
+    if (elEtaTxt) {
+      if (healAccum === 0) {
+        elEtaTxt.textContent = `Mulai catat makanan Anda. Estimasi ~${estDays} hari (${totProt}g/hari) menuju pemulihan`;
       } else {
-        sumStatus.textContent = `+${protAdd}g Prot · +${calsAdd} kkal`;
-        sumStatus.style.color = '#0284C7';
+        elEtaTxt.textContent = `Estimasi ~${estDays} hari lagi menuju kesembuhan penuh (${totProt}g/hari)`;
       }
     }
 
-    const sumFocusTags = document.getElementById('booster-summary-focus-tags');
-    if (sumFocusTags) {
-      if (selectedFocus.length > 0) {
-        sumFocusTags.textContent = `Fokus: ${selectedFocus.join(', ')}`;
-      } else {
-        sumFocusTags.textContent = 'Semua makro terkalibrasi';
-      }
-    }
+    const elBarFill = document.getElementById('booster-healing-fill');
+    if (elBarFill) elBarFill.style.width = `${healPct}%`;
+
+    // Also update Card 2 mini widget if present
+    const c2Text = document.getElementById('ov-card2-healing-target-text');
+    if (c2Text) c2Text.textContent = `${healAccum.toLocaleString('id-ID')} / ${healTotal.toLocaleString('id-ID')} g Protein`;
+
+    const c2Badge = document.getElementById('ov-card2-healing-pct-badge');
+    if (c2Badge) c2Badge.textContent = `${healPct}%`;
+
+    const c2Fill = document.getElementById('ov-card2-healing-bar-fill');
+    if (c2Fill) c2Fill.style.width = `${healPct}%`;
+
+    // 7. Update Bottom Summary Bar
+    const sumBarProt = document.getElementById('booster-bar-protein');
+    if (sumBarProt) sumBarProt.textContent = `${totProt} g`;
+
+    const sumBarCals = document.getElementById('booster-bar-cals');
+    if (sumBarCals) sumBarCals.textContent = `${totCals.toLocaleString('id-ID')}`;
+
+    this.renderBoosterFocusChips();
   }
 
   saveNutritionBooster() {
@@ -1488,10 +1851,11 @@ class NutriVisionApp {
     const carbsAdd = parseInt(document.getElementById('booster-input-carbs')?.value, 10) || 0;
     const fatAdd = parseInt(document.getElementById('booster-input-fat')?.value, 10) || 0;
     const reason = document.getElementById('booster-reason-input')?.value?.trim() || '';
-    const selectedFocus = Array.from(document.querySelectorAll('.booster-chips-group input[type="checkbox"]:checked'))
-      .map(cb => cb.value);
+    const selectedFocus = [...(this.currentBoosterFocus || [])];
 
-    const isActive = (protAdd > 0 || calsAdd > 0 || carbsAdd > 0 || fatAdd > 0 || selectedFocus.length > 0);
+    const healTotalInp = parseInt(document.getElementById('booster-healing-total-input')?.value, 10) || 2500;
+
+    const isActive = (protAdd > 0 || calsAdd > 0 || carbsAdd > 0 || fatAdd > 0);
 
     if (!this.userProfile.baseTargets) {
       this.userProfile.baseTargets = this.userProfile.targets || {
@@ -1512,6 +1876,14 @@ class NutriVisionApp {
       active: isActive,
       updatedAt: new Date().toISOString()
     };
+
+    // Simpan target akumulasi kesembuhan (ribuan gram)
+    if (!this.userProfile.healingTarget) {
+      this.userProfile.healingTarget = { totalGrams: 2500, accumulatedGrams: 0, active: false };
+    }
+    this.userProfile.healingTarget.totalGrams = healTotalInp;
+    this.userProfile.healingTarget.accumulatedGrams = this.calculateActualAccumulatedProtein();
+    this.userProfile.healingTarget.active = (healTotalInp >= 500);
 
     const base = this.userProfile.baseTargets;
     this.userProfile.targets = {
@@ -1544,8 +1916,8 @@ class NutriVisionApp {
     if (isActive) {
       this.showToast(
         lang === 'id'
-          ? `🎯 Batasan target gizi diperbarui: +${protAdd}g protein, +${calsAdd} kkal`
-          : `🎯 Nutrition booster applied: +${protAdd}g protein, +${calsAdd} kcal`,
+          ? `🎯 Target harian ${base.protein + protAdd}g (+${protAdd}g) & Target Kesembuhan ${healTotalInp.toLocaleString('id-ID')}g aktif!`
+          : `🎯 Daily target ${base.protein + protAdd}g (+${protAdd}g) & Healing Goal ${healTotalInp.toLocaleString('en-US')}g active!`,
         'success'
       );
     } else {
@@ -1559,34 +1931,24 @@ class NutriVisionApp {
   }
 
   resetNutritionBooster() {
-    const inputProt = document.getElementById('booster-input-protein');
-    if (inputProt) inputProt.value = 0;
-
-    const inputCals = document.getElementById('booster-input-calories');
-    if (inputCals) inputCals.value = 0;
-
-    const inputCarbs = document.getElementById('booster-input-carbs');
-    if (inputCarbs) inputCarbs.value = 0;
-
-    const inputFat = document.getElementById('booster-input-fat');
-    if (inputFat) inputFat.value = 0;
-
+    this.selectBoosterPreset('default');
     const inputReason = document.getElementById('booster-reason-input');
     if (inputReason) inputReason.value = '';
-
-    document.querySelectorAll('.booster-chips-group input[type="checkbox"]').forEach(cb => {
-      cb.checked = false;
-    });
-
-    this.selectBoosterPreset('default');
+    if (this.userProfile.healingTarget) {
+      this.userProfile.healingTarget.active = false;
+    }
     this.saveNutritionBooster();
+    if (this.userProfile.healingTarget) {
+      this.userProfile.healingTarget.active = false;
+      this.saveUserProfile();
+      this.updateBoosterUI();
+    }
   }
 
   // Switch Tab Navigasi (Router)
   navigate(sectionId) {
     const role = this.userProfile?.role || 'patient';
     const isAdmin = role === 'admin';
-    const isDoctor = role === 'doctor' || role === 'clinician';
     const isCaregiver = role === 'caregiver';
 
     // Database modal exception
@@ -1595,23 +1957,24 @@ class NutriVisionApp {
       return;
     }
 
+    // Redirect obsolete doctor route
+    if (sectionId === 'doctor') {
+      sectionId = isCaregiver ? 'caregiver-dashboard' : (isAdmin ? 'admin' : 'overview');
+    }
+
     // Role-based route guard & redirect
     if (isAdmin) {
-      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile' || sectionId === 'doctor' || sectionId === 'caregiver-dashboard') {
+      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile' || sectionId === 'caregiver-dashboard') {
         sectionId = 'admin';
       } else if (sectionId === 'planner' || sectionId === 'catalog') {
         sectionId = 'admin-clinical-menu';
       }
-    } else if (isDoctor) {
-      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'caregiver-dashboard' || sectionId === 'admin') {
-        sectionId = 'doctor';
-      }
     } else if (isCaregiver) {
-      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'doctor' || sectionId === 'admin') {
+      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'admin') {
         sectionId = 'caregiver-dashboard';
       }
     } else {
-      if (sectionId === 'admin' || sectionId === 'admin-clinical-menu' || sectionId === 'admin-audit' || sectionId === 'doctor' || sectionId === 'caregiver-dashboard') {
+      if (sectionId === 'admin' || sectionId === 'admin-clinical-menu' || sectionId === 'admin-audit' || sectionId === 'caregiver-dashboard') {
         sectionId = 'overview';
       }
     }
@@ -1642,10 +2005,6 @@ class NutriVisionApp {
     const targetSection = document.getElementById(`view-${sectionId}`);
     if (targetSection) {
       targetSection.classList.add('active-view');
-    }
-
-    if (sectionId === 'doctor') {
-      this.renderDoctorDashboard();
     }
 
     if (sectionId === 'caregiver-dashboard') {
@@ -1796,10 +2155,6 @@ class NutriVisionApp {
       return;
     }
 
-    if (this.userProfile && (this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician') && (sectionId === 'overview' || sectionId === 'doctor')) {
-      this.goToDoctorDashboard();
-      return;
-    }
 
     if (this.userProfile && this.userProfile.role === 'caregiver' && (sectionId === 'overview' || sectionId === 'caregiver-dashboard')) {
       this.goToCaregiverDashboard();
@@ -2507,9 +2862,9 @@ class NutriVisionApp {
       'caregiver': {
         title: '👨‍👩‍👧 Jalur Pendamping Pasien (Caregiver & Keluarga)',
         desc: 'Memudahkan keluarga, anak, atau perawat memantau kepatuhan makan pasien dari jarak jauh melalui tautan view-only tanpa harus login akun rumit.',
-        target: 'Pemantauan Visual Piring & Rekap Ekspor Laporan Dokter 1-Klik',
+        target: 'Pemantauan Visual Piring & Rekap Ekspor Laporan Gizi 1-Klik',
         menu: 'Rencana Menu Ramah Anggaran (Standar vs Opsi Hemat Pasar Lokal)',
-        guideline: 'Unduh rekap progres 7-30 hari dalam format WhatsApp untuk dikonsultasikan saat jadwal kontrol dokter.',
+        guideline: 'Unduh rekap progres 7-30 hari dalam format WhatsApp untuk dikonsultasikan saat jadwal kontrol tenaga kesehatan.',
         ctaTarget: 'caregiver'
       }
     };
@@ -5806,12 +6161,11 @@ class NutriVisionApp {
         'injury-rehab': 'Fisioterapi Cedera ACL',
         'gym': 'Gym & Muscle Recovery',
         'wellness': 'Pemeliharaan Gizi Medis',
-        'clinician': 'Spesialis Gizi Klinis RSUP',
         'caregiver': 'Pendamping Pasien Lansia'
       };
 
       const userRole = user.role || 'patient';
-      const isNonPatient = userRole === 'admin' || userRole === 'doctor' || userRole === 'clinician' || userRole === 'caregiver';
+      const isNonPatient = userRole === 'admin' || userRole === 'caregiver';
       const hasQuiz = isNonPatient ? true : Boolean(user.hasCompletedQuiz && (user.targetProtein || user.weight));
 
       this.userProfile = {
@@ -5848,17 +6202,6 @@ class NutriVisionApp {
       if (this.userProfile.role === 'admin') {
         await this.goToAdminPortal();
         this.showToast(`🛡️ Selamat Datang, Administrator! Super Admin Command Center aktif.`);
-        if (typeof this.pendingAuthCallback === 'function') {
-          const cb = this.pendingAuthCallback;
-          this.pendingAuthCallback = null;
-          cb();
-        }
-        return;
-      }
-
-      if (this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician') {
-        this.goToDoctorDashboard();
-        this.showToast(`🩺 Selamat Datang, Dokter! Portal Monitoring DPJP aktif.`);
         if (typeof this.pendingAuthCallback === 'function') {
           const cb = this.pendingAuthCallback;
           this.pendingAuthCallback = null;
@@ -6048,7 +6391,6 @@ class NutriVisionApp {
       'post-surgery': { email: 'pasien@nutrivision.id', pass: 'pasien123' },
       'rehab': { email: 'siti@nutrivision.id', pass: 'siti123' },
       'gym': { email: 'pasien@nutrivision.id', pass: 'pasien123' },
-      'doctor': { email: 'dokter@nutrivision.id', pass: 'dokter123' },
       'caregiver': { email: 'caregiver@nutrivision.id', pass: 'caregiver123' }
     };
 
@@ -6058,15 +6400,7 @@ class NutriVisionApp {
       if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
         user = await window.nutriVisionDB.login(cred.email, cred.pass);
       } else {
-        if (conditionKey === 'doctor') {
-          user = {
-            id: 'usr_doc_hendra',
-            name: 'dr. Hendra Kusuma, Sp.GK',
-            email: cred.email,
-            role: 'doctor',
-            hasCompletedQuiz: true
-          };
-        } else if (conditionKey === 'caregiver') {
+        if (conditionKey === 'caregiver') {
           user = {
             id: 'usr_cg_sarah',
             name: 'Sarah (Caregiver)',
@@ -6084,32 +6418,6 @@ class NutriVisionApp {
             hasCompletedQuiz: true
           };
         }
-      }
-
-      if (conditionKey === 'doctor' || user.role === 'doctor' || user.role === 'clinician') {
-        this.userProfile = {
-          ...this.userProfile,
-          ...user,
-          role: 'doctor',
-          isDemo: true,
-          contact: user.email,
-          hasCompletedQuiz: true,
-          hasAcceptedConsent: true,
-          targets: null
-        };
-        this.saveUserProfile();
-        this.updateProfileUI();
-        this.renderAuthUI();
-        this.closeModal('auth-modal');
-        this.closeModal('modal-companion-selector');
-        this.showToast(`🩺 Masuk sebagai DPJP: ${this.userProfile.name}`);
-        this.goToDoctorDashboard();
-        if (typeof this.pendingAuthCallback === 'function') {
-          const cb = this.pendingAuthCallback;
-          this.pendingAuthCallback = null;
-          cb();
-        }
-        return;
       }
 
       if (conditionKey === 'caregiver' || user.role === 'caregiver') {
@@ -6201,27 +6509,6 @@ class NutriVisionApp {
       }
     } catch (e) {
       console.error(e);
-      if (conditionKey === 'doctor') {
-        this.userProfile = {
-          ...this.userProfile,
-          id: 'usr_doc_hendra',
-          name: 'dr. Hendra Kusuma, Sp.GK',
-          email: 'dokter@nutrivision.id',
-          role: 'doctor',
-          isDemo: true,
-          contact: 'dokter@nutrivision.id',
-          hasCompletedQuiz: true,
-          hasAcceptedConsent: true
-        };
-        this.saveUserProfile();
-        this.updateProfileUI();
-        this.renderAuthUI();
-        this.closeModal('auth-modal');
-        this.closeModal('modal-companion-selector');
-        this.showToast(`🩺 Masuk sebagai DPJP: ${this.userProfile.name}`);
-        this.goToDoctorDashboard();
-        return;
-      }
       if (conditionKey === 'caregiver') {
         this.userProfile = {
           ...this.userProfile,
@@ -6528,7 +6815,7 @@ class NutriVisionApp {
       if (customContext) {
         contextLabel.textContent = `Konteks: ${customContext}`;
       } else {
-        contextLabel.textContent = text.trim().length > 0 ? 'Konteks: Menu Masukan Dokter / Pasien' : 'Konteks: Belum Ditentukan';
+        contextLabel.textContent = text.trim().length > 0 ? 'Konteks: Menu Masukan Pengguna / Pasien' : 'Konteks: Belum Ditentukan';
       }
     }
   }
@@ -6961,8 +7248,8 @@ class NutriVisionApp {
           orderTitle.textContent = 'Kesesuaian Menu Pasien Disetujui';
           orderDesc.textContent = 'Diverifikasi untuk Ruang Rawat Pasca Operasi Cempaka 3B';
         } else if (isWarning) {
-          orderTitle.textContent = 'Perhatian: Menu Memerlukan Verifikasi DPJP';
-          orderDesc.textContent = 'Terdeteksi bahan pantangan pasca operasi, butuh persetujuan dokter penanggung jawab';
+          orderTitle.textContent = 'Perhatian: Menu Memerlukan Verifikasi Klinis';
+          orderDesc.textContent = 'Terdeteksi bahan pantangan pasca operasi, butuh persetujuan ahli gizi / nakes penanggung jawab';
         } else {
           orderTitle.textContent = 'Menu Dalam Batas Toleransi Nutrisi';
           orderDesc.textContent = 'Disarankan untuk diawasi porsi konsumsi oleh perawat ruang rawat';
@@ -7419,8 +7706,8 @@ class NutriVisionApp {
     }
 
     let displayName = this.userProfile?.name || 'Pasien';
-    if (this.userProfile?.role === 'doctor' || this.userProfile?.role === 'clinician' || this.userProfile?.role === 'caregiver') {
-      const curPatient = this.doctorPatients?.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients?.[0];
+    if (this.userProfile?.role === 'caregiver') {
+      const curPatient = this.getCaregiverPatientData();
       if (curPatient) displayName = curPatient.name;
     }
     const patientName = displayName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -7877,7 +8164,7 @@ class NutriVisionApp {
     this.showToast('✅ Data telemetri berhasil diperbarui.');
   }
 
-  async renderAdminPortal() {
+  async renderAdminPortal(highlightUserId = null) {
     if (!window.nutriVisionDB) return;
 
     try {
@@ -7892,7 +8179,7 @@ class NutriVisionApp {
 
       const usersSubEl = document.getElementById('admin-kpi-users-sub');
       if (usersSubEl) {
-        usersSubEl.textContent = `${stats.patientCount} Pasien · ${stats.clinicianCount} Nakes · ${stats.adminCount} Admin`;
+        usersSubEl.textContent = `${stats.patientCount} Pasien · ${stats.caregiverCount || 0} Caregiver · ${stats.adminCount} Admin`;
       }
 
       const totalScansEl = document.getElementById('admin-kpi-total-scans');
@@ -7933,9 +8220,9 @@ class NutriVisionApp {
       const countAuditTab = document.getElementById('admin-count-audit-tab');
       if (countAuditTab) countAuditTab.textContent = auditLogs.length;
 
-      // 3. Render Tables
+      // 3. Render Tables (With Real-Time Highlight)
       this._adminCachedUsers = users;
-      this.renderAdminUsers(users);
+      this.renderAdminUsers(users, highlightUserId);
       this.renderAdminScans(scans);
       this.renderAdminAuditLogs(auditLogs);
 
@@ -7947,7 +8234,7 @@ class NutriVisionApp {
     }
   }
 
-  renderAdminUsers(users) {
+  renderAdminUsers(users, highlightUserId = null) {
     const tbody = document.getElementById('admin-users-table-body');
     if (!tbody) return;
 
@@ -7964,7 +8251,7 @@ class NutriVisionApp {
 
     const roleBadgeMap = {
       'admin': '<span class="admin-pill-badge admin"><i data-lucide="shield"></i> Super Admin</span>',
-      'clinician': '<span class="admin-pill-badge clinician"><i data-lucide="stethoscope"></i> Dokter / Nakes</span>',
+      'caregiver': '<span class="admin-pill-badge caregiver"><i data-lucide="users"></i> Caregiver</span>',
       'patient': '<span class="admin-pill-badge patient"><i data-lucide="user"></i> Pasien</span>'
     };
 
@@ -7972,16 +8259,22 @@ class NutriVisionApp {
       const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
       const roleBadge = roleBadgeMap[user.role || 'patient'] || roleBadgeMap['patient'];
       const condition = user.conditionLabel || user.condition || 'Kondisi Umum';
-      const phase = user.recoveryPhase || user.phase || 'Fase Standar';
       const targets = user.targetProtein ? `${user.targetProtein}g Prot · ${user.targetCalories || 2000} kkal` : 'Belum Ditargetkan';
       const quizBadge = user.hasCompletedQuiz
         ? '<span style="color:#059669;font-weight:700;font-size:11px;">✅ Lengkap</span>'
         : '<span style="color:#D97706;font-weight:700;font-size:11px;">⏳ Belum Kuis</span>';
 
+      // Evaluasi Validasi Klinis Real-Time
+      const val = window.nutriVisionAdminValidator
+        ? window.nutriVisionAdminValidator.validateUserClinicalData(user)
+        : { badgeClass: 'valid', label: '✅ Tervalidasi', proteinRatio: null };
+
+      const isUpdated = highlightUserId && (user.id === highlightUserId || user.email === highlightUserId);
+      const rowClass = isUpdated ? 'admin-row-updated' : '';
       const isRootAdmin = user.role === 'admin' || user.id === 'usr_admin_master';
 
       return `
-        <tr>
+        <tr class="${rowClass}" id="admin-user-row-${user.id}">
           <td>
             <div class="admin-table-user-cell">
               <div class="admin-user-avatar">${initials}</div>
@@ -7992,18 +8285,33 @@ class NutriVisionApp {
             </div>
           </td>
           <td>${roleBadge}</td>
-          <td><span style="font-weight:600;color:var(--ink-soft);">${condition}</span></td>
-          <td><span style="font-size:11.5px;color:var(--ink-mute);">${phase}</span></td>
+          <td>
+            <div style="font-weight:600;color:var(--ink-soft);">${condition}</div>
+            <div style="font-size:11px;color:var(--ink-mute);">${user.recoveryPhase || '-'}</div>
+          </td>
           <td><strong style="color:var(--matcha-700);">${targets}</strong></td>
+          <td>
+            <span class="admin-val-badge ${val.badgeClass}">
+              ${val.label}
+            </span>
+            ${val.proteinRatio ? `
+              <div style="font-size:10.5px;color:#475569;margin-top:2px;font-weight:600;">
+                Rasio: ${val.proteinRatio} g/kg BB
+              </div>
+            ` : ''}
+          </td>
           <td>${quizBadge}</td>
           <td>
             ${isRootAdmin ? `
               <span style="font-size:11px;color:var(--ink-mute);font-weight:600;">Akses Root</span>
             ` : `
-              <div style="display:flex;gap:6px;">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <button type="button" class="admin-row-action-btn validate" onclick="app.openAdminUserValidationModal('${user.id}')" title="Validasi & Audit Data Klinis Pasien">
+                  <i data-lucide="clipboard-check" style="width:11px;height:11px;"></i>
+                  <span>Validasi</span>
+                </button>
                 <button type="button" class="admin-row-action-btn danger" onclick="app.deleteAdminUser('${user.id}')" title="Hapus Akun Pengguna">
                   <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
-                  <span>Hapus</span>
                 </button>
               </div>
             `}
@@ -8028,8 +8336,8 @@ class NutriVisionApp {
       let matchRole = true;
       if (roleFilter === 'patient') {
         matchRole = (u.role === 'patient' || !u.role);
-      } else if (roleFilter === 'clinician') {
-        matchRole = (u.role === 'clinician');
+      } else if (roleFilter === 'caregiver') {
+        matchRole = (u.role === 'caregiver');
       } else if (roleFilter === 'post-surgery') {
         matchRole = (u.condition === 'post-surgery');
       } else if (roleFilter === 'injury-rehab') {
@@ -8044,6 +8352,283 @@ class NutriVisionApp {
     this.renderAdminUsers(filtered);
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
+    }
+  }
+
+  // =========================================================================
+  // REAL-TIME ADMIN SYNC & CLINICAL VALIDATION CONTROLLER
+  // =========================================================================
+
+  initRealtimeAdminSync() {
+    if (this._realtimeAdminInitialized) return;
+    this._realtimeAdminInitialized = true;
+
+    // 1. Listen ke Event Custom Internal (Tab yang sama)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('nutrivision:data-changed', (e) => {
+        if (e && e.detail) {
+          this.handleRealtimeDataChange(e.detail);
+        }
+      });
+    }
+
+    // 2. Listen ke BroadcastChannel (Lintas-Tab Modern)
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        this._adminSyncChannel = new BroadcastChannel('nutrivision_realtime_sync');
+        this._adminSyncChannel.addEventListener('message', (e) => {
+          if (e && e.data) {
+            this.handleRealtimeDataChange(e.data);
+          }
+        });
+      } catch (err) {}
+    }
+
+    // 3. Listen ke Storage Event (Fallback Multi-Tab)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'nv_last_data_change' && e.newValue) {
+          try {
+            const data = JSON.parse(e.newValue);
+            this.handleRealtimeDataChange(data);
+          } catch (err) {}
+        }
+      });
+    }
+  }
+
+  handleRealtimeDataChange(change) {
+    if (!change) return;
+
+    // 1. Perbarui Indikator Waktu Live Sync di Header Admin
+    const syncTimeEl = document.getElementById('admin-live-sync-time');
+    if (syncTimeEl) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      syncTimeEl.textContent = `Update: ${timeStr}`;
+    }
+
+    // 2. Jika Admin Portal sedang aktif, re-render reaktif dengan highlight
+    if (this.activeSection === 'admin') {
+      if (this._adminRenderTimer) clearTimeout(this._adminRenderTimer);
+      this._adminRenderTimer = setTimeout(async () => {
+        await this.renderAdminPortal(change.userId || null);
+        this.showAdminLiveToast(change);
+      }, 150);
+    }
+  }
+
+  showAdminLiveToast(change) {
+    if (this.activeSection !== 'admin') return;
+
+    const existing = document.getElementById('admin-live-toast-notification');
+    if (existing) existing.remove();
+
+    let desc = 'Data pengguna diperbarui';
+    if (change.type === 'USER_UPDATED') {
+      desc = `Target gizi / profil pasien diperbarui (${change.userName || change.userEmail || 'Pengguna'})`;
+    } else if (change.type === 'MEAL_LOGGED') {
+      desc = `Pencatatan menu makanan baru: ${change.mealName || 'Piring Makan'} (+${change.protein || 0}g Prot)`;
+    } else if (change.type === 'SCAN_RECORDED') {
+      desc = `Pemindaian piring AI baru terdeteksi: ${change.foodTitle || 'Menu Makanan'}`;
+    } else if (change.type === 'USER_REGISTERED') {
+      desc = `Pengguna baru terdaftar: ${change.userName || change.userEmail}`;
+    }
+
+    const toast = document.createElement('div');
+    toast.id = 'admin-live-toast-notification';
+    toast.className = 'admin-live-toast';
+    toast.innerHTML = `
+      <div style="background:#10B981;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i data-lucide="zap" style="width:16px;height:16px;color:#FFFFFF;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:800;color:#6EE7B7;letter-spacing:0.3px;">⚡ REAL-TIME SYNC AKTIF</div>
+        <div style="font-size:12px;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${desc}</div>
+      </div>
+      <button type="button" onclick="this.parentElement.remove()" style="background:transparent;border:none;color:#A7F3D0;cursor:pointer;padding:4px;">
+        <i data-lucide="x" style="width:14px;height:14px;"></i>
+      </button>
+    `;
+    document.body.appendChild(toast);
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+
+    setTimeout(() => {
+      if (toast && toast.parentElement) {
+        toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 400);
+      }
+    }, 4500);
+  }
+
+  async openAdminUserValidationModal(userId) {
+    if (!window.nutriVisionDB) return;
+    const users = await window.nutriVisionDB.getAllUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      this.showToast('Pengguna tidak ditemukan', 'warning');
+      return;
+    }
+
+    const val = window.nutriVisionAdminValidator
+      ? window.nutriVisionAdminValidator.validateUserClinicalData(user)
+      : { label: 'Tervalidasi', score: 100, flags: [] };
+
+    const modal = document.getElementById('modal-admin-validate-user');
+    const container = document.getElementById('admin-val-user-content');
+    if (!modal || !container) return;
+
+    const meals = await window.nutriVisionDB.getMealsByUser(user.id);
+    const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:16px;">
+        <div style="width:48px;height:48px;border-radius:50%;background:#E2E8F0;color:#1E293B;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;">
+          ${initials}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:800;color:#0F172A;">${user.name}</div>
+          <div style="font-size:12.5px;color:#64748B;">${user.email} · Peran: <span style="text-transform:capitalize;font-weight:700;">${user.role || 'Pasien'}</span></div>
+          <div style="font-size:12px;color:#334155;margin-top:2px;">Kondisi: <b>${user.conditionLabel || user.condition || '-'}</b> · ${user.recoveryPhase || '-'}</div>
+        </div>
+        <div>
+          <span class="admin-val-badge ${val.badgeClass}" style="font-size:12px;padding:5px 12px;">
+            ${val.label}
+          </span>
+        </div>
+      </div>
+
+      <div class="admin-val-scorecard-grid">
+        <div class="admin-val-scorecard">
+          <div class="admin-val-scorecard-val">${user.weight || '-'} <span style="font-size:12px;">kg</span></div>
+          <div class="admin-val-scorecard-lbl">Berat Badan</div>
+        </div>
+        <div class="admin-val-scorecard">
+          <div class="admin-val-scorecard-val">${val.bmi || '-'}</div>
+          <div class="admin-val-scorecard-lbl">BMI (${val.bmiCategory?.label || '-'})</div>
+        </div>
+        <div class="admin-val-scorecard highlight">
+          <div class="admin-val-scorecard-val" style="color:#15803D;">${user.targetProtein || '-'} <span style="font-size:12px;">g</span></div>
+          <div class="admin-val-scorecard-lbl">Target Protein</div>
+        </div>
+        <div class="admin-val-scorecard highlight">
+          <div class="admin-val-scorecard-val" style="color:#15803D;">${val.proteinRatio || '-'} <span style="font-size:12px;">g/kg</span></div>
+          <div class="admin-val-scorecard-lbl">Rasio ERAS (g/kg)</div>
+        </div>
+        <div class="admin-val-scorecard">
+          <div class="admin-val-scorecard-val">${user.targetCalories || '-'} <span style="font-size:12px;">kkal</span></div>
+          <div class="admin-val-scorecard-lbl">Target Kalori</div>
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:#0F172A;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <i data-lucide="shield-check" style="width:16px;height:16px;color:#10B981;"></i>
+          Hasil Evaluasi Aturan Klinis ERAS &amp; ESPEN:
+        </div>
+        <ul style="margin:0;padding-left:20px;font-size:12.5px;color:#334155;line-height:1.6;">
+          <li><b>Evaluasi Protein:</b> ${val.proteinComment || 'Target protein terkonfigurasi normal.'}</li>
+          <li><b>Evaluasi Energi:</b> ${val.calorieComment || 'Target kalori aman untuk pemulihan.'}</li>
+          <li><b>Status Kuis Diagnostik:</b> ${user.hasCompletedQuiz ? '✅ Pasien telah menyelesaikan asesmen gizi 5-langkah.' : '⚠️ Belum menyelesaikan kuis diagnostik.'}</li>
+          <li><b>Pantangan &amp; Alergi:</b> ${user.allergies || user.restrictions || 'Tidak ada pantangan khusus yang dideklarasikan.'}</li>
+          <li><b>Status Approval Admin:</b> ${user.isClinicallyVerified ? `🌟 Terverifikasi oleh ${user.verifiedBy || 'Admin'} pada ${new Date(user.verifiedAt).toLocaleDateString('id-ID')}` : '⏳ Belum diverifikasi manual oleh Administrator'}</li>
+        </ul>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid #E2E8F0;padding-top:14px;">
+        <div style="font-size:11.5px;color:#64748B;">
+          ID Pasien: <code style="background:#F1F5F9;padding:2px 6px;border-radius:4px;">${user.id}</code>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn-outline-glass" onclick="app.closeModal('modal-admin-validate-user')" style="font-size:12px;padding:7px 14px;">
+            Tutup
+          </button>
+          <button type="button" class="admin-btn-action matcha" style="background:#15803D;color:#FFFFFF;border:none;font-size:12px;padding:7px 16px;" onclick="app.verifyPatientClinicalData('${user.id}')">
+            <i data-lucide="check-check" class="btn-icon-sm"></i>
+            <span>${user.isClinicallyVerified ? 'Perbarui Verifikasi Admin' : 'Verifikasi &amp; Sahkan Data'}</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.openModal('modal-admin-validate-user');
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  async verifyPatientClinicalData(userId) {
+    if (!window.nutriVisionDB) return;
+    const users = await window.nutriVisionDB.getAllUsers();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    user.isClinicallyVerified = true;
+    user.verifiedAt = new Date().toISOString();
+    user.verifiedBy = this.userProfile?.email || 'admin@nutrivision.id';
+
+    await window.nutriVisionDB.saveUserDirect(user);
+    window.nutriVisionDB.addAuditLog(
+      'CLINICAL_DATA_VERIFIED',
+      this.userProfile?.email || 'admin@nutrivision.id',
+      `Sahkan data gizi pasien: ${user.name} (${user.email})`,
+      'SUCCESS'
+    );
+
+    this.closeModal('modal-admin-validate-user');
+    this.showToast(`✅ Data klinis ${user.name} berhasil disahkan dan dicatat ke Audit Trail!`, 'success');
+    await this.renderAdminPortal(userId);
+  }
+
+  async simulateUserRealtimeChange(type = 'target') {
+    if (!window.nutriVisionDB) return;
+    const users = await window.nutriVisionDB.getAllUsers();
+    const patient = users.find(u => u.id === 'usr_demo_surgery' || u.id === 'usr_demo_rehab' || u.role === 'patient') || users[0];
+    if (!patient) {
+      this.showToast('Tidak ada data pasien untuk simulasi', 'warning');
+      return;
+    }
+
+    if (type === 'target') {
+      const currentProt = parseFloat(patient.targetProtein) || 75;
+      const newProt = currentProt >= 95 ? 75 : currentProt + 15;
+      patient.targetProtein = newProt;
+      patient.targetCalories = (patient.targetCalories || 1800) + 100;
+      patient.updatedAt = new Date().toISOString();
+
+      await window.nutriVisionDB.saveUserDirect(patient);
+      this.showToast(`⚡ [Simulasi Real-Time] ${patient.name} mengubah target gizi menjadi ${newProt}g Protein!`, 'info');
+    } else if (type === 'meal') {
+      const sampleMeals = [
+        { name: 'Pepes Ikan Gabus Kukus Albumin', protein: 28, cal: 240, type: 'lunch' },
+        { name: 'Bubur Ayam Kampung & Telur Rebus', protein: 22, cal: 310, type: 'breakfast' },
+        { name: 'Sup Sayur Bening & Tempe Bacem', protein: 18, cal: 210, type: 'dinner' }
+      ];
+      const randomMeal = sampleMeals[Math.floor(Math.random() * sampleMeals.length)];
+      await window.nutriVisionDB.saveMeal({
+        userId: patient.id,
+        mealType: randomMeal.type,
+        name: randomMeal.name,
+        calories: randomMeal.cal,
+        protein: randomMeal.protein,
+        carbs: 30,
+        fat: 8,
+        createdAt: new Date().toISOString()
+      });
+      await window.nutriVisionDB.recordScan({
+        userId: patient.id,
+        userName: patient.name,
+        foodTitle: randomMeal.name,
+        confidencePct: 96.8,
+        totalProtein: randomMeal.protein,
+        totalCalories: randomMeal.cal
+      });
+      this.showToast(`⚡ [Simulasi Real-Time] ${patient.name} mencatat piring makan: ${randomMeal.name}!`, 'info');
     }
   }
 
@@ -8479,11 +9064,16 @@ class NutriVisionApp {
     }
   }
 
-  getConditionSchedules(conditionId) {
+  getConditionSchedules(conditionId, targetDate = null) {
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const curDate = targetDate || this.selectedCalendarDate;
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
     const defaults = (profile && profile.defaultDailySchedules) ? profile.defaultDailySchedules : [];
-    const custom = (this.customDailySchedules || []).filter(s => !s.conditionId || s.conditionId === cond);
+    const custom = (this.customDailySchedules || []).filter(s => {
+      const matchCond = !s.conditionId || s.conditionId === cond;
+      const matchDate = !s.targetDate || !curDate || s.targetDate === curDate;
+      return matchCond && matchDate;
+    });
     return [...defaults, ...custom];
   }
 
@@ -8606,10 +9196,9 @@ class NutriVisionApp {
     if (!listEl) return;
 
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
-    const schedules = this.getConditionSchedules(cond);
-
     const targetDate = dateStr || this.selectedCalendarDate || new Date().toISOString().split('T')[0];
     this.selectedCalendarDate = targetDate;
+    const schedules = this.getConditionSchedules(cond, targetDate);
 
     // Format tanggal Indonesia
     const dateParts = targetDate.split('-');
@@ -9180,7 +9769,7 @@ class NutriVisionApp {
         <div style="display:flex;align-items:center;gap:10px;">
           <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#DC2626;flex-shrink:0;"></i>
           <p style="margin:0;font-size:11.5px;color:#991B1B;line-height:1.45;">
-            <strong>Peringatan Klinis Dokter:</strong> Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.
+            <strong>Peringatan Klinis Medis:</strong> Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.
           </p>
         </div>
         <span style="font-size:10.5px;color:#991B1B;font-weight:600;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;">
@@ -9456,33 +10045,16 @@ class NutriVisionApp {
   }
 
   // =========================================================================
-  // DUAL-MODE COMPANION PORTAL & DOCTOR CLINICAL DASHBOARD CONTROLLER
+  // COMPANION PORTAL & CAREGIVER MONITORING CONTROLLER
   // =========================================================================
 
   openCompanionModal() {
     this.closeModal('auth-modal');
-    const modal = document.getElementById('modal-companion-selector');
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.classList.add('open');
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    }
+    this.loginAsDemo('caregiver');
   }
 
   closeCompanionModal() {
     this.closeModal('modal-companion-selector');
-  }
-
-  goToDoctorDashboard() {
-    this.isLanding = false;
-    document.body.classList.remove('is-landing-active');
-    this.navigate('doctor');
-    this.renderDoctorDashboard();
-    if (window.history.pushState) {
-      window.history.pushState(null, null, '#doctor');
-    }
   }
 
   goToCaregiverDashboard() {
@@ -9495,381 +10067,55 @@ class NutriVisionApp {
     }
   }
 
-  // Data Roster Pasien Supervisi Medis Dokter DPJP
-  getDoctorPatients() {
-    return [
-      {
-        id: 'patient_siti',
-        name: 'Siti Rahma',
-        rm: '#NV-8821',
-        age: 42,
-        gender: 'female',
-        weight: 58,
-        height: 158,
-        condition: 'Pasca Laparoskopi Kolesistektomi (Hari ke-5)',
-        phase: 'Fase Proliferasi Luka',
-        albumin: '3.4 g/dL',
-        albuminStatus: 'Mendekati Normal (Target ≥3.5 g/dL)',
-        adherencePct: 92,
-        adherenceStatus: 'Optimal (Target ERAS Terpenuhi)',
-        targets: { calories: 1750, protein: 85, carbs: 215, fat: 52 },
-        current: { calories: 1480, protein: 76.5, carbs: 185, fat: 38 },
-        instruction: 'Fase proliferasi luka berjalan sangat baik. Dorong konsumsi ekstrak ikan gabus dan putih telur kukus 2x sehari untuk mempercepat penutupan luka pembedahan.',
-        meals: [
-          { time: '07:30', name: 'Bubur Ikan Gabus Lembut + Putih Telur Kukus', cal: 320, prot: 22, carbs: 45, fat: 5, tag: 'Tinggi Albumin' },
-          { time: '10:15', name: 'Puding Susu Kedelai Tinggi Protein & Madu', cal: 180, prot: 12, carbs: 25, fat: 3, tag: 'Snack Pemulihan' },
-          { time: '12:45', name: 'Nasi Tim Sup Ayam Bening + Tahu Sutra Rebus', cal: 460, prot: 26.5, carbs: 62, fat: 12, tag: 'Menu Utama' },
-          { time: '18:30', name: 'Pure Kentang + Sup Fillet Gabus Rebus Daun Kelor', cal: 520, prot: 16, carbs: 53, fat: 18, tag: 'Anti-Inflamasi' }
-        ],
-        weeklyAdherence: [88, 90, 85, 94, 91, 95, 92]
-      },
-      {
-        id: 'patient_ahmad',
-        name: 'Ahmad Fauzi',
-        rm: '#NV-8742',
-        age: 36,
-        gender: 'male',
-        weight: 72,
-        height: 176,
-        condition: 'Rekonstruksi ACL Lutut Kiri (Minggu ke-3)',
-        phase: 'Fisioterapi & Massa Otot',
-        albumin: '4.1 g/dL',
-        albuminStatus: 'Normal (Sangat Memuaskan)',
-        adherencePct: 88,
-        adherenceStatus: 'Baik (Fase Reparasi Jaringan)',
-        targets: { calories: 2200, protein: 110, carbs: 250, fat: 55 },
-        current: { calories: 2050, protein: 102, carbs: 245, fat: 48 },
-        instruction: 'Latihan fleksibilitas fleksi 90 derajat berlangsung lancar. Pertahankan asupan protein hewani >100g/hari untuk akselerasi reparasi tenosentesis.',
-        meals: [
-          { time: '06:45', name: 'Oatmeal + Susu Whey Isolate + 2 Butir Telur Rebus', cal: 420, prot: 32, carbs: 50, fat: 8, tag: 'Tinggi Protein' },
-          { time: '12:15', name: 'Nasi Merah + Dada Ayam Panggang 150g + Brokoli Kukus', cal: 650, prot: 42, carbs: 75, fat: 12, tag: 'Menu Utama' },
-          { time: '16:00', name: 'Pisang Ambon + Susu Kedelai Rendah Gula', cal: 240, prot: 8, carbs: 42, fat: 4, tag: 'Pre-Fisio' },
-          { time: '19:15', name: 'Pepes Ikan Kembung + Tempe Bacem + Sup Bayam Jagung', cal: 740, prot: 20, carbs: 78, fat: 24, tag: 'Kaya Omega-3' }
-        ],
-        weeklyAdherence: [85, 87, 84, 90, 88, 89, 88]
-      },
-      {
-        id: 'patient_subroto',
-        name: 'Opa Subroto',
-        rm: '#NV-8690',
-        age: 71,
-        gender: 'male',
-        weight: 61,
-        height: 164,
-        condition: 'Pasca Herniorafi Inguinalis (Hari ke-10, Geriatri)',
-        phase: 'Mobilisasi Dini & Pencegahan Konstipasi',
-        albumin: '3.2 g/dL',
-        albuminStatus: 'Perlu Perhatian (Batas Bawah Normal)',
-        adherencePct: 79,
-        adherenceStatus: 'Perlu Pendampingan Asupan Serat & Cairan',
-        targets: { calories: 1600, protein: 70, carbs: 200, fat: 45 },
-        current: { calories: 1250, protein: 54, carbs: 160, fat: 35 },
-        instruction: 'Asupan serat lunak dan air mineral minimal 1.500 ml/hari harus dijaga ketat agar pasien tidak mengejan saat buang air besar.',
-        meals: [
-          { time: '07:00', name: 'Bubur Beras Halus + Suwir Ayam Kampung Lembut', cal: 310, prot: 18, carbs: 46, fat: 6, tag: 'Mudah Cerna' },
-          { time: '12:30', name: 'Nasi Lunak + Gurame Tim Jahe + Sup Labu Siam Bening', cal: 510, prot: 22, carbs: 62, fat: 11, tag: 'Kaya Serat Lunak' },
-          { time: '16:30', name: 'Jus Pepaya Madu Segar (Tanpa Ampas Kasar)', cal: 140, prot: 2, carbs: 32, fat: 1, tag: 'Cegah Konstipasi' },
-          { time: '19:00', name: 'Sup Bening Oyong Jagung Manis + Telur Rebus Empuk', cal: 290, prot: 12, carbs: 20, fat: 17, tag: 'Malam Ringan' }
-        ],
-        weeklyAdherence: [72, 75, 76, 82, 80, 78, 79]
-      }
-    ];
+  // Data Pasien Supervisi Pendamping (Caregiver)
+  getCaregiverPatientData() {
+    return {
+      id: 'patient_siti',
+      name: 'Siti Rahma',
+      rm: '#NV-8821',
+      age: 42,
+      gender: 'female',
+      weight: 58,
+      height: 158,
+      condition: 'Pasca Laparoskopi Kolesistektomi (Hari ke-5)',
+      phase: 'Fase Proliferasi Luka',
+      albumin: '3.4 g/dL',
+      albuminStatus: 'Mendekati Normal (Target ≥3.5 g/dL)',
+      adherencePct: 92,
+      adherenceStatus: 'Optimal (Target Pemulihan Terpenuhi)',
+      targets: { calories: 1750, protein: 85, carbs: 215, fat: 52 },
+      current: { calories: 1480, protein: 76.5, carbs: 185, fat: 38 },
+      instruction: 'Fase proliferasi luka berjalan sangat baik. Dorong konsumsi ekstrak ikan gabus dan putih telur kukus 2x sehari untuk mempercepat penutupan luka pembedahan.',
+      meals: [
+        { time: '07:30', name: 'Bubur Ikan Gabus Lembut + Putih Telur Kukus', cal: 320, prot: 22, carbs: 45, fat: 5, tag: 'Tinggi Albumin' },
+        { time: '10:15', name: 'Puding Susu Kedelai Tinggi Protein & Madu', cal: 180, prot: 12, carbs: 25, fat: 3, tag: 'Snack Pemulihan' },
+        { time: '12:45', name: 'Nasi Tim Sup Ayam Bening + Tahu Sutra Rebus', cal: 460, prot: 26.5, carbs: 62, fat: 12, tag: 'Menu Utama' },
+        { time: '18:30', name: 'Pure Kentang + Sup Fillet Gabus Rebus Daun Kelor', cal: 520, prot: 16, carbs: 53, fat: 18, tag: 'Anti-Inflamasi' }
+      ],
+      weeklyAdherence: [88, 90, 85, 94, 91, 95, 92]
+    };
   }
 
-  // Render Keseluruhan Dasbor Dokter
-  renderDoctorDashboard() {
-    if (!this.doctorPatients || this.doctorPatients.length === 0) {
-      this.doctorPatients = this.getDoctorPatients();
-    }
-    const currentPatient = this.doctorPatients.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients[0];
-    this.currentDoctorPatientId = currentPatient.id;
-
-    this.renderDoctorPatientSelector();
-    this.renderDoctorPatientMetrics(currentPatient);
-    this.renderDoctorPatientDonut(currentPatient);
-    this.renderDoctorPatientWeeklyChart(currentPatient);
-    this.renderDoctorPatientMeals(currentPatient);
-
-    const instrEl = document.getElementById('doctor-patient-instruction-text');
-    if (instrEl) {
-      instrEl.textContent = currentPatient.instruction;
-    }
-
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
-    }
-  }
-
-  // Render Pill Tab Pasien
-  renderDoctorPatientSelector() {
-    const container = document.getElementById('doctor-patient-selector-container');
-    const countEl = document.getElementById('doctor-patient-roster-count');
-    if (countEl) {
-      countEl.textContent = `${this.doctorPatients.length} Pasien Terpantau`;
-    }
-    if (!container) return;
-
-    container.innerHTML = this.doctorPatients.map(p => {
-      const isActive = p.id === this.currentDoctorPatientId;
-      const initials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-      return `
-        <div class="doctor-patient-pill ${isActive ? 'active' : ''}" onclick="app.selectDoctorPatient('${p.id}')">
-          <div class="doctor-pill-avatar">${initials}</div>
-          <div class="doctor-pill-info">
-            <div class="doctor-pill-name">${p.name}</div>
-            <div class="doctor-pill-meta">${p.rm} · ${p.age} th · ${p.gender === 'female' ? 'P' : 'L'}</div>
-          </div>
-          <div class="doctor-pill-adherence ${p.adherencePct >= 90 ? 'green' : (p.adherencePct >= 80 ? 'blue' : 'amber')}">
-            ${p.adherencePct}%
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  selectDoctorPatient(patientId) {
-    this.currentDoctorPatientId = patientId;
-    this.renderDoctorDashboard();
-  }
-
-  // Render Kartu Biometrik & Nutrisi Pasien Terpilih
-  renderDoctorPatientMetrics(patient) {
-    const container = document.getElementById('doctor-patient-metrics-container');
-    if (!container) return;
-
-    const bmi = (patient.weight / ((patient.height / 100) ** 2)).toFixed(1);
-    const protPct = Math.round((patient.current.protein / patient.targets.protein) * 100);
-    const calPct = Math.round((patient.current.calories / patient.targets.calories) * 100);
-
-    container.innerHTML = `
-      <div class="doctor-metric-card">
-        <div class="doctor-metric-head">
-          <span class="doctor-metric-title">Target Protein ERAS</span>
-          <span class="doctor-metric-badge ${protPct >= 90 ? 'green' : 'amber'}">${protPct}% Tercapai</span>
-        </div>
-        <div class="doctor-metric-value">${patient.current.protein} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${patient.targets.protein} g</span></div>
-        <div class="doctor-metric-sub">Defisit harian: ${Math.max(0, (patient.targets.protein - patient.current.protein).toFixed(1))} g untuk sintesis kolagen</div>
-      </div>
-
-      <div class="doctor-metric-card">
-        <div class="doctor-metric-head">
-          <span class="doctor-metric-title">Kadar Albumin Serum</span>
-          <span class="doctor-metric-badge ${parseFloat(patient.albumin) >= 3.5 ? 'green' : 'amber'}">${parseFloat(patient.albumin) >= 3.5 ? 'Normal' : 'Sub-Optimal'}</span>
-        </div>
-        <div class="doctor-metric-value">${patient.albumin}</div>
-        <div class="doctor-metric-sub">${patient.albuminStatus}</div>
-      </div>
-
-      <div class="doctor-metric-card">
-        <div class="doctor-metric-head">
-          <span class="doctor-metric-title">Kepatuhan Rencana Makan (7 Hari)</span>
-          <span class="doctor-metric-badge green">${patient.adherencePct}%</span>
-        </div>
-        <div class="doctor-metric-value">${patient.adherencePct}%</div>
-        <div class="doctor-metric-sub">${patient.adherenceStatus}</div>
-      </div>
-
-      <div class="doctor-metric-card">
-        <div class="doctor-metric-head">
-          <span class="doctor-metric-title">IMT / Status Antropometri</span>
-          <span class="doctor-metric-badge blue">Normoweight</span>
-        </div>
-        <div class="doctor-metric-value">${bmi} <span style="font-size:13px;color:#64748B;font-weight:500;">kg/m²</span></div>
-        <div class="doctor-metric-sub">BB: ${patient.weight} kg · TB: ${patient.height} cm (${patient.condition})</div>
-      </div>
-    `;
-  }
-
-  // Render Cincin Donut Makro Pasien Terpilih
-  renderDoctorPatientDonut(patient) {
-    const canvas = document.getElementById('doctor-macro-donut-canvas');
-    const calVal = document.getElementById('doctor-donut-cal-val');
-    const calTarget = document.getElementById('doctor-donut-cal-target');
-    const protTxt = document.getElementById('doctor-macro-prot-txt');
-    const carbsTxt = document.getElementById('doctor-macro-carbs-txt');
-    const fatTxt = document.getElementById('doctor-macro-fat-txt');
-    const badge = document.getElementById('doctor-patient-adherence-badge');
-
-    if (calVal) calVal.textContent = patient.current.calories.toLocaleString('id-ID');
-    if (calTarget) calTarget.textContent = `/ ${patient.targets.calories.toLocaleString('id-ID')} kkal`;
-    if (protTxt) protTxt.textContent = `Protein: ${patient.current.protein} / ${patient.targets.protein} g`;
-    if (carbsTxt) carbsTxt.textContent = `Karbo: ${patient.current.carbs} / ${patient.targets.carbs} g`;
-    if (fatTxt) fatTxt.textContent = `Lemak: ${patient.current.fat} / ${patient.targets.fat} g`;
-    if (badge) {
-      badge.textContent = `Kepatuhan: ${patient.adherencePct}%`;
-      badge.className = `doctor-metric-badge ${patient.adherencePct >= 90 ? 'green' : (patient.adherencePct >= 80 ? 'blue' : 'amber')}`;
-    }
-
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const w = canvas.width;
-    const h = canvas.height;
-    const centerX = w / 2;
-    const centerY = h / 2;
-    const radius = Math.min(centerX, centerY) - 18;
-    const lineWidth = 16;
-
-    ctx.clearRect(0, 0, w, h);
-
-    // Background track ring
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#F1F5F9';
-    ctx.lineWidth = lineWidth;
-    ctx.stroke();
-
-    // Segment arcs (Protein #384720, Carbs #9EA76B, Fat #EFE8CA)
-    const protCal = patient.current.protein * 4;
-    const carbsCal = patient.current.carbs * 4;
-    const fatCal = patient.current.fat * 9;
-    const totalCal = protCal + carbsCal + fatCal;
-
-    if (totalCal > 0) {
-      let startAngle = -0.5 * Math.PI;
-
-      // Protein Arc
-      const protAngle = (protCal / totalCal) * (2 * Math.PI);
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle, startAngle + protAngle);
-      ctx.strokeStyle = '#384720';
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-      startAngle += protAngle;
-
-      // Carbs Arc
-      const carbsAngle = (carbsCal / totalCal) * (2 * Math.PI);
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle, startAngle + carbsAngle);
-      ctx.strokeStyle = '#9EA76B';
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = 'butt';
-      ctx.stroke();
-      startAngle += carbsAngle;
-
-      // Fat Arc
-      const fatAngle = (fatCal / totalCal) * (2 * Math.PI);
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle, startAngle + fatAngle);
-      ctx.strokeStyle = '#E2D9B3';
-      ctx.lineWidth = lineWidth;
-      ctx.lineCap = 'butt';
-      ctx.stroke();
-    }
-  }
-
-  // Render Grafik Batang Kepatuhan 7 Hari Pasien
-  renderDoctorPatientWeeklyChart(patient) {
-    const canvas = document.getElementById('doctor-weekly-chart-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const w = canvas.width = canvas.parentElement?.clientWidth || 320;
-    const h = canvas.height = 120;
-    ctx.clearRect(0, 0, w, h);
-
-    const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-    const values = patient.weeklyAdherence || [85, 90, 88, 92, 95, 91, 92];
-    const barWidth = Math.min(26, Math.floor((w - 40) / days.length) - 8);
-    const spacing = (w - 40) / days.length;
-    const startX = 25;
-    const chartHeight = h - 35;
-
-    // Target 100% line (dashed)
-    const y100 = 10 + chartHeight * (1 - 100 / 120);
-    ctx.beginPath();
-    ctx.setLineDash([4, 4]);
-    ctx.moveTo(startX, y100);
-    ctx.lineTo(w - 15, y100);
-    ctx.strokeStyle = '#CBD5E1';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Draw bars
-    values.forEach((val, idx) => {
-      const x = startX + idx * spacing + (spacing - barWidth) / 2;
-      const barH = (val / 120) * chartHeight;
-      const y = h - 22 - barH;
-
-      // Color based on compliance
-      ctx.fillStyle = val >= 90 ? '#059669' : (val >= 80 ? '#0284C7' : '#F59E0B');
-      ctx.beginPath();
-      if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(x, y, barWidth, barH, [4, 4, 0, 0]);
-      } else {
-        ctx.rect(x, y, barWidth, barH);
-      }
-      ctx.fill();
-
-      // Percentage label on top
-      ctx.fillStyle = '#64748B';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${val}%`, x + barWidth / 2, y - 4);
-
-      // Day label below
-      ctx.fillStyle = '#1E293B';
-      ctx.font = idx === 6 ? 'bold 11px sans-serif' : '11px sans-serif';
-      ctx.fillText(days[idx], x + barWidth / 2, h - 6);
-    });
-  }
-
-  // Render Log Makanan Pasien Terpilih Hari Ini
-  renderDoctorPatientMeals(patient) {
-    const container = document.getElementById('doctor-patient-meals-list');
-    if (!container) return;
-
-    if (!patient.meals || patient.meals.length === 0) {
-      container.innerHTML = `<div style="text-align:center;padding:24px;color:#94A3B8;font-size:13px;">Belum ada log asupan makanan untuk hari ini.</div>`;
-      return;
-    }
-
-    container.innerHTML = patient.meals.map(m => `
-      <div class="doctor-meal-item">
-        <div class="doctor-meal-time">${m.time}</div>
-        <div class="doctor-meal-details">
-          <div class="doctor-meal-name">${m.name}</div>
-          <div class="doctor-meal-macros">${m.cal} kkal · ${m.prot}g protein · ${m.carbs}g karbo · ${m.fat}g lemak</div>
-        </div>
-        <span class="doctor-meal-badge">${m.tag}</span>
-      </div>
-    `).join('');
-  }
-
-  refreshDoctorPatientData() {
-    this.showToast('🔄 Memperbarui telemetri asupan & data pasien...');
-    this.renderDoctorDashboard();
-  }
-
-  sendClinicalAdviceToPatient() {
-    const currentPatient = this.doctorPatients.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients[0];
-    this.showToast(`✅ Instruksi gizi DPJP berhasil dikirimkan ke aplikasi ponsel ${currentPatient.name}.`);
-  }
-
-  // Buka Rekam Medis PDF Pasien Terpilih untuk DPJP atau Caregiver
-  openDoctorPatientPdf() {
-    const currentPatient = this.doctorPatients.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients[0];
+  // Buka Rekam Medis PDF Pasien untuk Pendamping / Caregiver
+  openCaregiverPatientPdf() {
+    const familyPatient = this.getCaregiverPatientData();
     const modal = document.getElementById('modal-pdf-report');
     const container = document.getElementById('pdf-report-preview-container');
     if (!modal || !container) return;
 
     const patientProfile = {
-      name: currentPatient.name,
+      name: familyPatient.name,
       role: 'patient',
-      gender: currentPatient.gender,
-      age: currentPatient.age,
-      weightKg: currentPatient.weight,
-      heightCm: currentPatient.height,
-      conditionTitle: currentPatient.condition,
-      phase: currentPatient.phase,
-      targets: currentPatient.targets,
-      bmi: (currentPatient.weight / ((currentPatient.height / 100) ** 2)).toFixed(1),
+      gender: familyPatient.gender,
+      age: familyPatient.age,
+      weightKg: familyPatient.weight,
+      heightCm: familyPatient.height,
+      conditionTitle: familyPatient.condition,
+      phase: familyPatient.phase,
+      targets: familyPatient.targets,
+      bmi: (familyPatient.weight / ((familyPatient.height / 100) ** 2)).toFixed(1),
       bmiCategory: 'Normal',
-      contact: `${currentPatient.id}@nutrivision.id`
+      contact: `${familyPatient.id}@nutrivision.id`
     };
 
     if (window.progressTracker && typeof window.progressTracker.generatePDFReportHTML === 'function') {
@@ -9884,51 +10130,53 @@ class NutriVisionApp {
     }
   }
 
+  // Alias kompatibilitas
+  openDoctorPatientPdf() {
+    this.openCaregiverPatientPdf();
+  }
+
   // Render Dasbor Pendamping Pasien (Caregiver)
   renderCaregiverDashboard() {
-    if (!this.doctorPatients || this.doctorPatients.length === 0) {
-      this.doctorPatients = this.getDoctorPatients();
-    }
-    const familyPatient = this.doctorPatients[0]; // Siti Rahma (Ibu Tercinta)
+    const familyPatient = this.getCaregiverPatientData();
 
     const metricsContainer = document.getElementById('caregiver-metrics-container');
     if (metricsContainer) {
       const protPct = Math.round((familyPatient.current.protein / familyPatient.targets.protein) * 100);
       metricsContainer.innerHTML = `
-        <div class="doctor-metric-card">
-          <div class="doctor-metric-head">
-            <span class="doctor-metric-title">Pasien Keluarga Tercinta</span>
-            <span class="doctor-metric-badge green">Terhubung</span>
+        <div class="caregiver-metric-card">
+          <div class="caregiver-metric-head">
+            <span class="caregiver-metric-title">Pasien Keluarga Tercinta</span>
+            <span class="caregiver-metric-badge green">Terhubung</span>
           </div>
-          <div class="doctor-metric-value" style="font-size:18px;">${familyPatient.name} (42 th)</div>
-          <div class="doctor-metric-sub">${familyPatient.condition}</div>
+          <div class="caregiver-metric-value" style="font-size:18px;">${familyPatient.name} (42 th)</div>
+          <div class="caregiver-metric-sub">${familyPatient.condition}</div>
         </div>
 
-        <div class="doctor-metric-card">
-          <div class="doctor-metric-head">
-            <span class="doctor-metric-title">Kecukupan Protein Hari Ini</span>
-            <span class="doctor-metric-badge green">${protPct}%</span>
+        <div class="caregiver-metric-card">
+          <div class="caregiver-metric-head">
+            <span class="caregiver-metric-title">Kecukupan Protein Hari Ini</span>
+            <span class="caregiver-metric-badge green">${protPct}%</span>
           </div>
-          <div class="doctor-metric-value">${familyPatient.current.protein} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${familyPatient.targets.protein} g</span></div>
-          <div class="doctor-metric-sub">Sisa kebutuhan: ${Math.max(0, (familyPatient.targets.protein - familyPatient.current.protein).toFixed(1))} g untuk menutup luka</div>
+          <div class="caregiver-metric-value">${familyPatient.current.protein} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${familyPatient.targets.protein} g</span></div>
+          <div class="caregiver-metric-sub">Sisa kebutuhan: ${Math.max(0, (familyPatient.targets.protein - familyPatient.current.protein).toFixed(1))} g untuk menutup luka</div>
         </div>
 
-        <div class="doctor-metric-card">
-          <div class="doctor-metric-head">
-            <span class="doctor-metric-title">Total Kalori Terpenuhi</span>
-            <span class="doctor-metric-badge green">Baik</span>
+        <div class="caregiver-metric-card">
+          <div class="caregiver-metric-head">
+            <span class="caregiver-metric-title">Total Kalori Terpenuhi</span>
+            <span class="caregiver-metric-badge green">Baik</span>
           </div>
-          <div class="doctor-metric-value">${familyPatient.current.calories} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${familyPatient.targets.calories} kkal</span></div>
-          <div class="doctor-metric-sub">Pola makan 4x sehari teratur</div>
+          <div class="caregiver-metric-value">${familyPatient.current.calories} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${familyPatient.targets.calories} kkal</span></div>
+          <div class="caregiver-metric-sub">Pola makan 4x sehari teratur</div>
         </div>
 
-        <div class="doctor-metric-card">
-          <div class="doctor-metric-head">
-            <span class="doctor-metric-title">Dokter Penanggung Jawab (DPJP)</span>
-            <span class="doctor-metric-badge blue">Klinis RSUP</span>
+        <div class="caregiver-metric-card">
+          <div class="caregiver-metric-head">
+            <span class="caregiver-metric-title">Kepatuhan Jadwal Makan</span>
+            <span class="caregiver-metric-badge green">Teratur</span>
           </div>
-          <div class="doctor-metric-value" style="font-size:16px;">dr. Hendra Kusuma, Sp.GK</div>
-          <div class="doctor-metric-sub">Catatan: Pastikan ekstrak gabus diminum rutin</div>
+          <div class="caregiver-metric-value" style="font-size:22px;">92% <span style="font-size:14px;color:#64748B;font-weight:600;">(4/4 Waktu)</span></div>
+          <div class="caregiver-metric-sub">Catatan: Pasien makan teratur sesuai jadwal diet pemulihan</div>
         </div>
       `;
     }
@@ -9936,13 +10184,13 @@ class NutriVisionApp {
     const mealsContainer = document.getElementById('caregiver-meals-list');
     if (mealsContainer) {
       mealsContainer.innerHTML = familyPatient.meals.map(m => `
-        <div class="doctor-meal-item">
-          <div class="doctor-meal-time" style="background:#EFF6FF;color:#1D4ED8;">${m.time}</div>
-          <div class="doctor-meal-details">
-            <div class="doctor-meal-name">${m.name}</div>
-            <div class="doctor-meal-macros">${m.cal} kkal · ${m.prot}g protein · Menu Pemulihan</div>
+        <div class="caregiver-meal-item">
+          <div class="caregiver-meal-time" style="background:#EFF6FF;color:#1D4ED8;">${m.time}</div>
+          <div class="caregiver-meal-details">
+            <div class="caregiver-meal-name">${m.name}</div>
+            <div class="caregiver-meal-macros">${m.cal} kkal · ${m.prot}g protein · Menu Pemulihan</div>
           </div>
-          <span class="doctor-meal-badge" style="background:#DBEAFE;color:#1E40AF;">${m.tag}</span>
+          <span class="caregiver-meal-badge" style="background:#DBEAFE;color:#1E40AF;">${m.tag}</span>
         </div>
       `).join('');
     }

@@ -230,27 +230,6 @@ class NutriVisionDatabase {
         symptoms: ['appetite']
       },
       {
-        id: 'usr_demo_doctor',
-        name: 'dr. Sarah Sp.GK',
-        email: 'dokter@nutrivision.id',
-        passwordHash: this.hashPassword('dokter123'),
-        role: 'clinician',
-        condition: 'clinician',
-        conditionLabel: 'Spesialis Gizi Klinis RSUP',
-        recoveryPhase: 'Pengawas Klinis',
-        weight: 58,
-        height: 165,
-        age: 39,
-        gender: 'female',
-        targetProtein: 90,
-        targetCalories: 2000,
-        createdAt: '2026-07-15T10:00:00.000Z',
-        avatarText: 'DS',
-        hasCompletedQuiz: true,
-        allergies: 'Tidak ada',
-        symptoms: []
-      },
-      {
         id: 'usr_demo_caregiver',
         name: 'Ratna Dewi',
         email: 'caregiver@nutrivision.id',
@@ -366,6 +345,41 @@ class NutriVisionDatabase {
   }
 
   /**
+   * Pancarkan event perubahan data real-time (BroadcastChannel + CustomEvent + localStorage signal)
+   */
+  broadcastRealtimeChange(changeEvent) {
+    if (!changeEvent) return;
+    changeEvent.timestamp = changeEvent.timestamp || Date.now();
+
+    // 1. BroadcastChannel (Lintas-Tab Modern)
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        if (!this._realtimeChannel) {
+          this._realtimeChannel = new BroadcastChannel('nutrivision_realtime_sync');
+        }
+        this._realtimeChannel.postMessage(changeEvent);
+      } catch (e) {}
+    }
+
+    // 2. CustomEvent (Tab Lokal Aktif)
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      try {
+        window.dispatchEvent(new CustomEvent('nutrivision:data-changed', { detail: changeEvent }));
+      } catch (e) {}
+    }
+
+    // 3. LocalStorage Key Signal (Fallback storage event lintas-tab)
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('nv_last_data_change', JSON.stringify({
+          ...changeEvent,
+          _sig: Math.random().toString(36).substring(2, 8)
+        }));
+      }
+    } catch (e) {}
+  }
+
+  /**
    * Simpan user ke IndexedDB & Sync ke Supabase (jika aktif)
    */
   async saveUserDirect(user) {
@@ -407,6 +421,17 @@ class NutriVisionDatabase {
       }
     }
 
+    // 3. Pancarkan Notifikasi Perubahan Data ke Admin secara Real-Time
+    this.broadcastRealtimeChange({
+      type: 'USER_UPDATED',
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      role: user.role || 'patient',
+      data: user,
+      timestamp: Date.now()
+    });
+
     return user;
   }
 
@@ -422,6 +447,12 @@ class NutriVisionDatabase {
         ...updates,
         hasCompletedQuiz: true
       };
+      this.addAuditLog(
+        'USER_PROFILE_UPDATE',
+        cleanEmail,
+        `Pembaruan data profil baru: ${updates.name || cleanEmail} (Target: ${updates.targetProtein || '-'}g Prot, ${updates.targetCalories || '-'} kkal)`,
+        'VALIDATED'
+      );
       return await this.saveUserDirect(newUser);
     }
 
@@ -432,6 +463,13 @@ class NutriVisionDatabase {
       email: cleanEmail,
       hasCompletedQuiz: true
     };
+
+    this.addAuditLog(
+      'USER_PROFILE_UPDATE',
+      cleanEmail,
+      `Pembaruan profil pasien: ${updatedUser.name || cleanEmail} (Target: ${updatedUser.targetProtein || '-'}g Prot, ${updatedUser.targetCalories || '-'} kkal)`,
+      'VALIDATED'
+    );
 
     await this.saveUserDirect(updatedUser);
     this.setCurrentSession(updatedUser);
@@ -578,6 +616,12 @@ class NutriVisionDatabase {
       symptoms: userData.symptoms || []
     };
 
+    this.addAuditLog(
+      'USER_REGISTER',
+      email,
+      `Pendaftaran akun pengguna baru (${newUser.role || 'patient'}): ${newUser.name}`,
+      'VALIDATED'
+    );
     await this.saveUserDirect(newUser);
     this.setCurrentSession(newUser);
     return newUser;
@@ -606,25 +650,6 @@ class NutriVisionDatabase {
         targetCalories: 2000,
         createdAt: new Date().toISOString(),
         avatarText: 'AD',
-        hasCompletedQuiz: true,
-        allergies: 'Tidak ada',
-        symptoms: []
-      };
-      await this.saveUserDirect(user);
-    }
-
-    if (!user && (cleanEmail === 'hendra@nutrivision.id' || cleanEmail === 'dokter@nutrivision.id')) {
-      user = {
-        id: 'usr_demo_doctor',
-        name: 'dr. Hendra Kurniawan, Sp.GK',
-        email: cleanEmail,
-        passwordHash: this.hashPassword('dokter123'),
-        role: 'doctor',
-        condition: 'clinical-specialist',
-        conditionLabel: 'Dokter Spesialis Gizi Klinis RSUP',
-        recoveryPhase: 'Pengawas Klinis Pasien',
-        createdAt: new Date().toISOString(),
-        avatarText: 'HK',
         hasCompletedQuiz: true,
         allergies: 'Tidak ada',
         symptoms: []
@@ -749,6 +774,23 @@ class NutriVisionDatabase {
       }
     }
 
+    // 3. Catat Audit Trail & Pancarkan Pembaruan Real-Time ke Admin
+    this.addAuditLog(
+      'MEAL_LOG_SAVE',
+      meal.userId || 'pasien@nutrivision.id',
+      `Pencatatan asupan gizi: ${meal.name || 'Menu Piring'} (${meal.protein || 0}g Prot, ${meal.calories || 0} kkal)`,
+      'VALIDATED'
+    );
+    this.broadcastRealtimeChange({
+      type: 'MEAL_LOGGED',
+      userId: meal.userId,
+      mealName: meal.name,
+      protein: meal.protein,
+      calories: meal.calories,
+      data: meal,
+      timestamp: Date.now()
+    });
+
     return meal;
   }
 
@@ -839,27 +881,6 @@ class NutriVisionDatabase {
         hasCompletedQuiz: true,
         allergies: 'Udang / Seafood',
         symptoms: ['appetite']
-      },
-      {
-        id: 'usr_demo_doctor',
-        name: 'dr. Sarah Sp.GK',
-        email: 'dokter@nutrivision.id',
-        passwordHash: this.hashPassword('dokter123'),
-        role: 'clinician',
-        condition: 'clinician',
-        conditionLabel: 'Spesialis Gizi Klinis RSUP',
-        recoveryPhase: 'Pengawas Klinis',
-        weight: 58,
-        height: 165,
-        age: 39,
-        gender: 'female',
-        targetProtein: 90,
-        targetCalories: 2000,
-        createdAt: '2026-07-15T10:00:00.000Z',
-        avatarText: 'DS',
-        hasCompletedQuiz: true,
-        allergies: 'Tidak ada',
-        symptoms: []
       },
       {
         id: 'usr_demo_caregiver',
@@ -1019,21 +1040,6 @@ class NutriVisionDatabase {
             { name: 'Sup Labu Halus', grams: 180, protein: 4 }
           ],
           timestamp: '2026-09-02T18:30:00.000Z'
-        },
-        {
-          id: 'meal_demo_104',
-          userId: 'usr_demo_doctor',
-          mealType: 'lunch',
-          name: 'Dada Ayam Panggang & Tempe Bacem',
-          calories: 420,
-          protein: 42,
-          carbs: 28,
-          fat: 10,
-          segments: [
-            { name: 'Dada Ayam', grams: 160, protein: 35 },
-            { name: 'Tempe Bacem', grams: 80, protein: 7 }
-          ],
-          timestamp: '2026-09-02T12:15:00.000Z'
         }
       ];
     }
@@ -1222,12 +1228,30 @@ class NutriVisionDatabase {
 
   async recordScan(scanData) {
     const scans = await this.getAllScans();
-    scans.unshift({
+    const newScan = {
       id: 'scn_' + Date.now(),
       timestamp: new Date().toISOString(),
       ...scanData
-    });
+    };
+    scans.unshift(newScan);
     localStorage.setItem('nv_db_scans', JSON.stringify(scans.slice(0, 50)));
+
+    // Catat Audit Trail & Broadcast Real-Time ke Admin
+    this.addAuditLog(
+      'AI_INFERENCE_SCAN',
+      scanData.userId || 'pasien@nutrivision.id',
+      `Pemindaian piring AI: ${scanData.foodTitle || 'Menu Makanan'} (${scanData.confidencePct || 95}% Akurasi, ${scanData.totalProtein || 0}g Prot)`,
+      'VALIDATED'
+    );
+    this.broadcastRealtimeChange({
+      type: 'SCAN_RECORDED',
+      userId: scanData.userId,
+      foodTitle: scanData.foodTitle,
+      confidencePct: scanData.confidencePct,
+      data: newScan,
+      timestamp: Date.now()
+    });
+    return newScan;
   }
 
   getAuditLogs() {
@@ -1335,7 +1359,7 @@ class NutriVisionDatabase {
     const auditLogs = this.getAuditLogs();
 
     const patientCount = users.filter(u => u.role === 'patient' || !u.role).length;
-    const clinicianCount = users.filter(u => u.role === 'clinician').length;
+    const caregiverCount = users.filter(u => u.role === 'caregiver').length;
     const adminCount = users.filter(u => u.role === 'admin').length;
 
     let totalCaloriesTracked = 0;
@@ -1352,7 +1376,8 @@ class NutriVisionDatabase {
     return {
       totalUsers: users.length,
       patientCount,
-      clinicianCount,
+      caregiverCount,
+      clinicianCount: caregiverCount,
       adminCount,
       totalScans: scans.length,
       avgConfidence,

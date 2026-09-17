@@ -1025,6 +1025,290 @@
   line-height: 1;
 }
 
+/* =========================================================================
+   Symptom-Aware Dietary Restrictions & Allergies Management Card
+   ========================================================================= */
+.symptom-restrictions-card {
+  background: #FCFBF8;
+  border: 1px solid #EAE3D6;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(83, 101, 59, 0.03);
+}
+
+.symptom-restr-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.symptom-restr-title-wrap {
+  flex: 1;
+}
+
+.symptom-restr-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.symptom-restr-icon {
+  color: #B45309;
+  flex-shrink: 0;
+}
+
+.symptom-restr-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.symptom-restr-count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.symptom-restr-sub {
+  font-size: 12px;
+  color: #64748B;
+  margin: 3px 0 0 0;
+  line-height: 1.45;
+}
+
+/* Input Row */
+.symptom-restr-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.symptom-restr-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.symptom-restr-input {
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  border: 1px solid #D6CCBC;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #1E293B;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.symptom-restr-input:focus {
+  border-color: #53653B;
+  box-shadow: 0 0 0 3px rgba(83, 101, 59, 0.12);
+}
+
+.btn-add-restriction {
+  all: unset;
+  cursor: pointer;
+  background: #53653B;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(83, 101, 59, 0.2);
+}
+
+.btn-add-restriction:hover {
+  background: #43522F;
+  box-shadow: 0 2px 6px rgba(83, 101, 59, 0.3);
+}
+
+.btn-add-restriction:active {
+  transform: scale(0.98);
+}
+
+/* Quick Suggestions */
+.symptom-restr-quick-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.symptom-restr-quick-lbl {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+  white-space: nowrap;
+}
+
+.symptom-restr-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.restr-quick-chip {
+  all: unset;
+  cursor: pointer;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #F1ECE3;
+  color: #574B3F;
+  border: 1px solid #E2D9CB;
+  transition: all 0.15s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.restr-quick-chip:hover {
+  background: #E6DFD3;
+  border-color: #D2C6B4;
+  color: #3B3128;
+}
+
+.restr-quick-chip.active {
+  background: #FEF3C7;
+  border-color: #FCD34D;
+  color: #92400E;
+  font-weight: 700;
+}
+
+/* Active Restrictions Box */
+.symptom-restr-active-box {
+  background: #FFFFFF;
+  border: 1px solid #EAE3D6;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.symptom-restr-active-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.symptom-restr-active-lbl {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.btn-clear-restr {
+  all: unset;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #EF4444;
+  transition: opacity 0.15s ease;
+}
+
+.btn-clear-restr:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.symptom-restr-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.restr-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  color: #BE123C;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  animation: fadeInTag 0.2s ease;
+}
+
+@keyframes fadeInTag {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.btn-remove-restr {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(190, 18, 60, 0.12);
+  color: #BE123C;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+
+.btn-remove-restr:hover {
+  background: #BE123C;
+  color: #FFFFFF;
+}
+
+.symptom-restr-empty {
+  font-size: 12px;
+  color: #94A3B8;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+/* Dietary warning in meal plan items */
+.meal-plan-item-warning {
+  border-color: #FECDD3 !important;
+  background: #FFF5F5 !important;
+}
+
+.restr-warning-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
 /* Dual Summary Cards Grid (2 Columns) */
 .symptom-dual-summary-grid {
   display: grid;
@@ -1201,7 +1485,7 @@
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  padding: 7px 20px;
+  padding: 7px 16px;
   font-size: 12px;
   font-weight: 700;
   font-family: inherit;
@@ -1217,6 +1501,38 @@
 .btn-symptom-select.selected {
   background: #53653B;
   color: #FFFFFF;
+}
+
+.symptom-recom-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-symptom-schedule-direct {
+  background: #EBF4E5;
+  color: #2F4D18;
+  border: 1px solid #CDE2BE;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-symptom-schedule-direct:hover {
+  background: #233917;
+  color: #FFFFFF;
+  border-color: #233917;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(35, 57, 23, 0.2);
 }
 
 /* Bottom Action Footer */

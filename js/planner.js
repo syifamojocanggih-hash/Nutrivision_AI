@@ -6,6 +6,19 @@ class NutriVisionPlanner {
     this.currentMode = 'standar'; // 'standar' atau 'hemat'
     this.activeSymptoms = new Set(['dysphagia', 'sulit-menelan', 'nausea', 'mual', 'constipation', 'konstipasi']); // Default demo matching mockup (3 aktif)
     this.selectedMealNames = new Set();
+    this.customRestrictions = new Set();
+    this.quickSuggestionList = [
+      'Udang / Seafood',
+      'Telur',
+      'Susu & Laktosa',
+      'Makanan Pedas',
+      'Gorengan',
+      'Santan Pekat',
+      'Gluten',
+      'Kacang Tanah',
+      'Kafein'
+    ];
+    this.initRestrictions();
   }
 
   setMode(mode) {
@@ -134,6 +147,32 @@ class NutriVisionPlanner {
         window.app.showToast(isId ? `"${mealName}" dipilih untuk menu pasien.` : `"${mealName}" selected for patient menu.`);
       }
     }
+
+    const applyBtn = document.getElementById('btn-symptom-apply-all');
+    if (applyBtn) {
+      const count = this.selectedMealNames.size;
+      const span = applyBtn.querySelector('span:first-child');
+      if (span) {
+        if (count > 0) {
+          span.textContent = isId 
+            ? `Terapkan ${count} Menu ke Menu Pasien & Jadwal Kalender` 
+            : `Apply ${count} Meals to Patient Menu & Calendar Schedule`;
+        } else {
+          span.textContent = isId ? 'Terapkan ke Menu Pasien (Jadwal Kalender)' : 'Apply to Patient Menu (Calendar Schedule)';
+        }
+      }
+    }
+  }
+
+  applySingleMealToCalendar(mealName) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    this.selectedMealNames.add(mealName);
+    const applied = this.applyMealsToCalendarSchedule([mealName]);
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast(isId 
+        ? `📅 "${mealName}" berhasil diterapkan ke Jadwal Kalender!` 
+        : `📅 "${mealName}" successfully applied to Calendar Schedule!`, 'success');
+    }
   }
 
   resetSymptoms() {
@@ -149,16 +188,407 @@ class NutriVisionPlanner {
 
   applyToPatientMenu() {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    const count = this.selectedMealNames.size;
-    if (count === 0) {
-      if (window.app && typeof window.app.showToast === 'function') {
-        window.app.showToast(isId ? 'Silakan klik "Pilih" pada menu rekomendasi terlebih dahulu.' : 'Please click "Select" on recommended menu items first.');
+    let names = Array.from(this.selectedMealNames);
+    if (names.length === 0) {
+      if (this.currentRecommendations && this.currentRecommendations.length > 0) {
+        names = [this.currentRecommendations[0].name];
+        this.selectedMealNames.add(names[0]);
+      } else {
+        if (window.app && typeof window.app.showToast === 'function') {
+          window.app.showToast(isId ? 'Silakan klik "Pilih" pada menu rekomendasi terlebih dahulu.' : 'Please click "Select" on recommended menu items first.');
+        }
+        return;
       }
-      return;
     }
+
+    const count = names.length;
+    this.applyMealsToCalendarSchedule(names);
     if (window.app && typeof window.app.showToast === 'function') {
-      window.app.showToast(isId ? `Berhasil menerapkan ${count} menu terverifikasi ke jadwal makan pasien!` : `Successfully applied ${count} verified meals to patient schedule!`);
+      window.app.showToast(isId 
+        ? `Berhasil menerapkan ${count} menu terverifikasi ke jadwal makan pasien!` 
+        : `Successfully applied ${count} verified meals to patient schedule!`, 'success');
     }
+  }
+
+  applyMealsToCalendarSchedule(mealNames) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    if (!Array.isArray(mealNames) || mealNames.length === 0) return 0;
+
+    const cond = (window.app && (window.app.journeyCondition || window.app.userProfile?.conditionId)) || 'post-surgery';
+    const targetDate = (window.app && window.app.selectedCalendarDate) || new Date().toISOString().split('T')[0];
+
+    const defaultSlots = [
+      { slot: 'lunch', time: '12:00 - 13:00', label: isId ? 'Makan Siang' : 'Lunch' },
+      { slot: 'snack', time: '15:30 - 16:30', label: isId ? 'Snack Pemulihan' : 'Recovery Snack' },
+      { slot: 'dinner', time: '18:30 - 19:30', label: isId ? 'Makan Malam' : 'Dinner' },
+      { slot: 'breakfast', time: '07:30 - 08:30', label: isId ? 'Sarapan' : 'Breakfast' }
+    ];
+
+    let appliedCount = 0;
+    let firstNewSchedId = null;
+
+    if (!window.app) window.app = {};
+    if (!window.app.customDailySchedules) {
+      window.app.customDailySchedules = (typeof window.app.loadCustomDailySchedules === 'function')
+        ? window.app.loadCustomDailySchedules()
+        : [];
+    }
+    if (!window.app.userDailyMealPlans) {
+      window.app.userDailyMealPlans = (typeof window.app.loadUserDailyMealPlans === 'function')
+        ? window.app.loadUserDailyMealPlans()
+        : [];
+    }
+
+    mealNames.forEach((name, idx) => {
+      const rec = (this.currentRecommendations || []).find(m => m.name === name) || {
+        name: name,
+        texture_category: 'Lunak',
+        reason: isId ? 'Menu adaptasi klinis ramah gejala pasien' : 'Patient symptom-adapted meal',
+        nutrients: ''
+      };
+
+      const slotConfig = defaultSlots[idx % defaultSlots.length];
+      const schedId = 'symptom-sched-' + Date.now() + '-' + idx;
+      if (!firstNewSchedId) firstNewSchedId = schedId;
+
+      let prot = 15;
+      let cal = 200;
+      if (rec.nutrients) {
+        const pMatch = rec.nutrients.match(/([\d\.]+)\s*g\s*(?:Protein|Albumin)/i);
+        const cMatch = rec.nutrients.match(/([\d\.]+)\s*kkal/i);
+        if (pMatch) prot = parseFloat(pMatch[1]);
+        if (cMatch) cal = parseInt(cMatch[1], 10);
+      }
+
+      // 1. Simpan ke Jadwal Kalender Klinis (customDailySchedules)
+      const newSched = {
+        id: schedId,
+        time: slotConfig.time,
+        title: rec.name,
+        desc: `${rec.texture_category ? `[${rec.texture_category}] ` : ''}${rec.reason || ''}${rec.nutrients ? ` (${rec.nutrients})` : ''}`,
+        category: 'nutrition',
+        dotColor: '#15803D',
+        scientificRationale: isId ? 'Rekomendasi Adaptif Gejala (Symptom-Aware IDDSI)' : 'Symptom-Aware Clinical IDDSI',
+        isCustom: true,
+        conditionId: cond,
+        targetDate: targetDate
+      };
+
+      const existsInSched = window.app.customDailySchedules.some(s => s.title === rec.name && (!s.targetDate || s.targetDate === targetDate));
+      if (!existsInSched) {
+        window.app.customDailySchedules.push(newSched);
+      }
+
+      // 2. Simpan ke Meal Planner Pasien (userDailyMealPlans)
+      const existsInPlans = window.app.userDailyMealPlans.some(p => p.name === rec.name);
+      if (!existsInPlans) {
+        window.app.userDailyMealPlans.push({
+          id: 'plan-sym-' + Date.now() + '-' + idx,
+          foodId: 'sym-' + idx,
+          name: rec.name,
+          slot: slotConfig.slot,
+          servings: 1,
+          portionGrams: 200,
+          protein: prot,
+          calories: cal,
+          carbs: 25,
+          fat: 6,
+          price: isId ? 'Pilihan Ramah Gejala' : 'Symptom Choice',
+          image: 'icons/nutrivision-icon.png',
+          timestamp: Date.now()
+        });
+      }
+
+      appliedCount++;
+    });
+
+    if (typeof window.app.saveCustomDailySchedules === 'function') {
+      window.app.saveCustomDailySchedules();
+    }
+    if (typeof window.app.saveUserDailyMealPlans === 'function') {
+      window.app.saveUserDailyMealPlans();
+    }
+
+    // Refresh daftar meal planner jika ada di halaman
+    this.renderPlanner();
+
+    // Sorot event baru di timeline
+    if (firstNewSchedId) {
+      window.app.activeTimelineEventId = firstNewSchedId;
+    }
+
+    // NAVIGASI OTOMATIS: Buka Kalender Klinis & Jadwal Nutrisi Pasien
+    if (window.app && typeof window.app.openCalendarModal === 'function') {
+      window.app.openCalendarModal();
+      if (typeof window.app.switchCalendarDetailTab === 'function') {
+        window.app.switchCalendarDetailTab('meals');
+      }
+      if (typeof window.app.renderUpcomingEvents === 'function') {
+        window.app.renderUpcomingEvents(targetDate);
+      }
+      if (typeof window.app.renderClinicalCalendar === 'function') {
+        window.app.renderClinicalCalendar(window.app.calendarViewMode || 'month');
+      }
+
+      // Gulir halus ke event yang baru dijadwalkan
+      setTimeout(() => {
+        const activeEl = document.querySelector('.timeline-event-row.is-active');
+        if (activeEl) {
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+    }
+
+    return appliedCount;
+  }
+
+  // =========================================================================
+  // Dietary Restrictions & Allergies Management (Symptom-Aware Add/Remove)
+  // =========================================================================
+  initRestrictions() {
+    let restrStr = '';
+    if (typeof window !== 'undefined' && window.app && window.app.userProfile && window.app.userProfile.restrictions) {
+      restrStr = window.app.userProfile.restrictions;
+    } else if (typeof localStorage !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('nutrivision_user_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.restrictions) restrStr = parsed.restrictions;
+        }
+      } catch (e) {}
+    }
+
+    if (restrStr && typeof restrStr === 'string') {
+      const items = restrStr.split(',').map(s => s.trim()).filter(Boolean);
+      items.forEach(it => this.customRestrictions.add(it));
+    }
+  }
+
+  getCustomRestrictions() {
+    return Array.from(this.customRestrictions);
+  }
+
+  addCustomRestriction(item) {
+    if (!item) return;
+    const cleanItem = item.trim();
+    if (!cleanItem) return;
+
+    // Check case-insensitive duplicate
+    const lower = cleanItem.toLowerCase();
+    const existing = Array.from(this.customRestrictions).find(r => r.toLowerCase() === lower);
+    if (!existing) {
+      this.customRestrictions.add(cleanItem);
+      this.syncRestrictionsToProfile();
+      this.renderRestrictionsUI();
+      this.renderSymptomFilter();
+      this.renderPlanner();
+
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast(isId ? `"${cleanItem}" berhasil ditambahkan ke daftar pantangan.` : `"${cleanItem}" added to dietary restrictions.`);
+      }
+    }
+  }
+
+  addCustomRestrictionFromInput() {
+    const input = document.getElementById('symptom-restriction-input');
+    if (!input) return;
+    const val = input.value.trim();
+    if (val) {
+      this.addCustomRestriction(val);
+      input.value = '';
+    }
+  }
+
+  removeCustomRestriction(item) {
+    if (!item) return;
+    const lower = item.trim().toLowerCase();
+    let found = null;
+    for (const r of this.customRestrictions) {
+      if (r.toLowerCase() === lower) {
+        found = r;
+        break;
+      }
+    }
+    if (found) {
+      this.customRestrictions.delete(found);
+      this.syncRestrictionsToProfile();
+      this.renderRestrictionsUI();
+      this.renderSymptomFilter();
+      this.renderPlanner();
+
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast(isId ? `"${found}" dihapus dari daftar pantangan.` : `"${found}" removed from dietary restrictions.`);
+      }
+    }
+  }
+
+  toggleQuickRestriction(item) {
+    const lower = item.trim().toLowerCase();
+    const isExisting = Array.from(this.customRestrictions).some(r => r.toLowerCase() === lower);
+    if (isExisting) {
+      this.removeCustomRestriction(item);
+    } else {
+      this.addCustomRestriction(item);
+    }
+  }
+
+  clearAllRestrictions() {
+    if (this.customRestrictions.size === 0) return;
+    this.customRestrictions.clear();
+    this.syncRestrictionsToProfile();
+    this.renderRestrictionsUI();
+    this.renderSymptomFilter();
+    this.renderPlanner();
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast(isId ? 'Semua pantangan makanan berhasil dibersihkan.' : 'All dietary restrictions cleared.');
+    }
+  }
+
+  syncRestrictionsToProfile() {
+    const str = Array.from(this.customRestrictions).join(', ');
+
+    if (typeof window !== 'undefined' && window.app && window.app.userProfile) {
+      window.app.userProfile.restrictions = str;
+      if (typeof window.app.saveUserProfile === 'function') {
+        window.app.saveUserProfile();
+      }
+    } else if (typeof localStorage !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('nutrivision_user_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          parsed.restrictions = str;
+          localStorage.setItem('nutrivision_user_profile', JSON.stringify(parsed));
+        }
+      } catch (e) {}
+    }
+
+    const onboardInput = document.getElementById('onboard-restrictions');
+    if (onboardInput) {
+      onboardInput.value = str;
+    }
+
+    const elStatRestr = document.getElementById('profile-stat-restrictions');
+    if (elStatRestr) {
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      elStatRestr.textContent = str || (isId ? 'Bebas pantangan khusus' : 'No dietary restrictions');
+    }
+
+    if (typeof window !== 'undefined' && window.nutriVisionDB && window.nutriVisionDB.isReady && window.app && window.app.userProfile && window.app.userProfile.contact) {
+      window.nutriVisionDB.updateUserProfile(window.app.userProfile.contact, {
+        allergies: str
+      }).catch(err => console.warn('DB restriction sync error:', err));
+    }
+  }
+
+  renderRestrictionsUI() {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const activeBox = document.getElementById('symptom-restr-active-box');
+    const badge = document.getElementById('symptom-restr-count-badge');
+    const quickList = document.getElementById('symptom-restr-quick-list');
+
+    const restrictions = Array.from(this.customRestrictions);
+
+    if (badge) {
+      badge.textContent = isId ? `${restrictions.length} pantangan` : `${restrictions.length} restriction${restrictions.length === 1 ? '' : 's'}`;
+    }
+
+    if (quickList) {
+      quickList.innerHTML = this.quickSuggestionList.map(item => {
+        const lower = item.toLowerCase();
+        const isActive = restrictions.some(r => r.toLowerCase() === lower || lower.includes(r.toLowerCase()) || r.toLowerCase().includes(lower));
+        const icon = isActive ? '✓' : '+';
+        const activeCls = isActive ? ' active' : '';
+        return `
+          <button type="button" class="restr-quick-chip${activeCls}"
+            onclick="mealPlanner.toggleQuickRestriction('${item.replace(/'/g, "\\'")}');">
+            <span>${icon}</span> <span>${item}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    if (activeBox) {
+      if (restrictions.length === 0) {
+        activeBox.innerHTML = `
+          <div class="symptom-restr-empty">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+            <span>${isId ? 'Belum ada pantangan khusus yang ditambahkan. Gunakan pilihan cepat atau ketik di atas.' : 'No personal dietary restrictions added yet. Use quick suggestions or type above.'}</span>
+          </div>
+        `;
+      } else {
+        const headLbl = isId ? `Pantangan Aktif Pasien (${restrictions.length}):` : `Active Patient Restrictions (${restrictions.length}):`;
+        const clearLbl = isId ? 'Hapus Semua' : 'Clear All';
+        const tagsHtml = restrictions.map(item => `
+          <span class="restr-active-chip">
+            <span>${item}</span>
+            <button type="button" class="btn-remove-restr" title="${isId ? 'Hapus pantangan ini' : 'Remove this restriction'}"
+              onclick="mealPlanner.removeCustomRestriction('${item.replace(/'/g, "\\'")}');">
+              &times;
+            </button>
+          </span>
+        `).join('');
+
+        activeBox.innerHTML = `
+          <div class="symptom-restr-active-head">
+            <span class="symptom-restr-active-lbl">${headLbl}</span>
+            <button type="button" class="btn-clear-restr" onclick="mealPlanner.clearAllRestrictions();">${clearLbl}</button>
+          </div>
+          <div class="symptom-restr-tags">
+            ${tagsHtml}
+          </div>
+        `;
+      }
+    }
+  }
+
+  _checkMealRestriction(mealName, mealDesc = '') {
+    if (this.customRestrictions.size === 0) return null;
+    const text = (mealName + ' ' + mealDesc).toLowerCase();
+
+    for (const rawRestr of this.customRestrictions) {
+      const restr = rawRestr.toLowerCase().trim();
+      if (!restr) continue;
+
+      if (text.includes(restr)) return rawRestr;
+
+      if (restr.includes('udang') || restr.includes('seafood')) {
+        if (text.includes('udang') || text.includes('shrimp') || text.includes('prawn') || text.includes('seafood') || text.includes('kepiting') || text.includes('cumi')) return rawRestr;
+      }
+      if (restr.includes('telur')) {
+        if (text.includes('telur') || text.includes('egg') || text.includes('chawanmushi')) return rawRestr;
+      }
+      if (restr.includes('susu') || restr.includes('laktosa')) {
+        if (text.includes('susu') || text.includes('milk') || text.includes('keju') || text.includes('cheese') || text.includes('yogurt')) return rawRestr;
+      }
+      if (restr.includes('pedas') || restr.includes('cabai')) {
+        if (text.includes('pedas') || text.includes('spicy') || text.includes('cabai') || text.includes('chili') || text.includes('sambal') || text.includes('merica')) return rawRestr;
+      }
+      if (restr.includes('gorengan')) {
+        if (text.includes('goreng') || text.includes('fried') || text.includes('crispy')) return rawRestr;
+      }
+      if (restr.includes('santan')) {
+        if (text.includes('santan') || text.includes('coconut milk')) return rawRestr;
+      }
+      if (restr.includes('gluten')) {
+        if (text.includes('terigu') || text.includes('wheat') || text.includes('gluten') || text.includes('roti') || text.includes('mie')) return rawRestr;
+      }
+      if (restr.includes('kacang')) {
+        if (text.includes('kacang') || text.includes('peanut')) return rawRestr;
+      }
+      if (restr.includes('kafein')) {
+        if (text.includes('kopi') || text.includes('coffee') || text.includes('kafein') || text.includes('teh hitam')) return rawRestr;
+      }
+    }
+    return null;
   }
 
   // Render Meal Planner UI (Concise preview on Dashboard vs Full Page with actions)
@@ -190,13 +620,17 @@ class NutriVisionPlanner {
         const displaySuitable = isId ? item.suitableFor : (item.suitableForEn || item.suitableFor);
         const displayBadge = isId ? item.badge : (item.badgeEn || item.badge);
         const swallowTag = isId ? '✓ Ramah Menelan' : '✓ Easy Swallowing';
+        const matchedRestr = this._checkMealRestriction(displayName, displaySuitable);
+        const warningTag = matchedRestr ? `<span class="restr-warning-badge" style="margin-top:4px;font-size:10px;">⚠️ ${isId ? 'Pantangan: ' : 'Restriction: '}${matchedRestr}</span>` : '';
+        const warningCls = matchedRestr ? ' meal-plan-item-warning' : '';
 
         return `
-          <div class="meal-plan-item">
+          <div class="meal-plan-item${warningCls}">
             <div class="meal-plan-info">
               <div class="name">${displayName}</div>
               <div class="macro">${displayMacro} · <span style="color:var(--teal-700)">${displaySuitable}</span></div>
               ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="margin-top:4px;font-size:10px;">${swallowTag}</span>` : ''}
+              ${warningTag}
             </div>
             <div class="meal-plan-meta">
               <div class="meal-plan-price">${item.price}</div>
@@ -274,9 +708,12 @@ class NutriVisionPlanner {
         const costLabel = isId ? 'Est. Biaya:' : 'Est. Cost:';
         const dysphagiaTag = isId ? '✓ Tekstur Lunak / Ramah Disfagia' : '✓ Soft Texture / Dysphagia Friendly';
         const logBtnText = isId ? 'Catat Asupan' : 'Log Meal';
+        const matchedRestr = this._checkMealRestriction(displayName, displaySuitable);
+        const warningTag = matchedRestr ? `<span class="restr-warning-badge" style="font-size:10.5px;">⚠️ ${isId ? 'Pantangan: ' : 'Restriction: '}${matchedRestr}</span>` : '';
+        const warningCls = matchedRestr ? ' meal-plan-item-warning' : '';
 
         return `
-          <div class="meal-plan-item" style="padding:14px;">
+          <div class="meal-plan-item${warningCls}" style="padding:14px;">
             <div class="meal-plan-info">
               <div class="name" style="font-size:15px;font-weight:600;">${displayName}</div>
               <div class="macro" style="margin-top:2px;">${displayMacro} · <span style="color:var(--teal-700);font-weight:500;">${displaySuitable}</span></div>
@@ -284,6 +721,7 @@ class NutriVisionPlanner {
                 <span class="meal-plan-tag">${displayBadge}</span>
                 <span style="font-size:12px;color:var(--ink-soft);font-weight:600;">${costLabel} ${item.price}</span>
                 ${isSoftTextureRequired && isSoftItem ? `<span class="badge teal" style="font-size:10.5px;">${dysphagiaTag}</span>` : ''}
+                ${warningTag}
               </div>
             </div>
             <div class="meal-plan-meta">
@@ -335,6 +773,7 @@ class NutriVisionPlanner {
 
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const activeList = Array.from(this.activeSymptoms);
+    const customList = this.getCustomRestrictions();
 
     if (activeList.length === 0) {
       container.innerHTML = `
@@ -348,6 +787,7 @@ class NutriVisionPlanner {
         </div>
       `;
       this.syncChipUI();
+      this.renderRestrictionsUI();
       this.renderPlanner();
       return;
     }
@@ -359,7 +799,7 @@ class NutriVisionPlanner {
         : ((typeof global !== 'undefined' && global.clinicalNutritionFilterAgent) 
           ? global.clinicalNutritionFilterAgent 
           : null));
-    const aiOutput = agent ? agent.process(activeList) : null;
+    const aiOutput = agent ? agent.process(activeList, customList) : null;
 
     if (!aiOutput) {
       return;
@@ -385,6 +825,10 @@ class NutriVisionPlanner {
       restrictedSub = isId 
         ? 'Hindari serat liat kasar, rempah biji utuh, santan pekat & suhu pan...' 
         : 'Avoid coarse fibrous foods, whole seed spices, thick coconut milk & high temp...';
+    }
+    if (customList.length > 0) {
+      const customLabel = isId ? ' • Pantangan Pasien: ' : ' • Patient Restrictions: ';
+      restrictedSub += customLabel + customList.join(', ');
     }
 
     // Dual summary grid HTML
@@ -418,6 +862,8 @@ class NutriVisionPlanner {
       </div>
     `;
 
+    this.currentRecommendations = aiOutput.recommended_menu || [];
+
     // Recommended Menu Cards HTML
     const menuCount = (aiOutput.recommended_menu || []).length;
     const recomHeadSub = isId 
@@ -445,10 +891,18 @@ class NutriVisionPlanner {
             </div>
             <p class="symptom-recom-desc">${mealReason}</p>
           </div>
-          <button type="button" class="btn-symptom-select${selectedClass}" 
-            onclick="mealPlanner.selectSymptomMeal('${m.name.replace(/'/g, "\\'")}', this);">
-            ${btnText}
-          </button>
+          <div class="symptom-recom-actions">
+            <button type="button" class="btn-symptom-select${selectedClass}" 
+              onclick="mealPlanner.selectSymptomMeal('${m.name.replace(/'/g, "\\'")}', this);">
+              ${btnText}
+            </button>
+            <button type="button" class="btn-symptom-schedule-direct" 
+              onclick="mealPlanner.applySingleMealToCalendar('${m.name.replace(/'/g, "\\'")}')"
+              title="${isId ? 'Terapkan langsung ke jadwal kalender' : 'Apply directly to calendar schedule'}">
+              <i data-lucide="calendar-plus" style="width:13px;height:13px;"></i>
+              <span>${isId ? 'Jadwalkan' : 'Schedule'}</span>
+            </button>
+          </div>
         </div>
       `;
     }).join('');
@@ -463,8 +917,9 @@ class NutriVisionPlanner {
           <button type="button" class="btn-symptom-reset" onclick="mealPlanner.resetSymptoms();">
             ${isId ? 'Reset Pilihan' : 'Reset Selection'}
           </button>
-          <button type="button" class="btn-symptom-apply" onclick="mealPlanner.applyToPatientMenu();">
-            <span>${isId ? 'Terapkan ke Menu Pasien' : 'Apply to Patient Menu'}</span>
+          <button type="button" class="btn-symptom-apply" id="btn-symptom-apply-all" onclick="mealPlanner.applyToPatientMenu();">
+            <i data-lucide="calendar-check" style="width:15px;height:15px;"></i>
+            <span>${isId ? 'Terapkan ke Menu Pasien & Jadwal Kalender' : 'Apply to Patient Menu & Calendar Schedule'}</span>
             <span>&rarr;</span>
           </button>
         </div>
@@ -486,7 +941,12 @@ class NutriVisionPlanner {
       ${actionFooterHtml}
     `;
 
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: container });
+    }
+
     this.syncChipUI();
+    this.renderRestrictionsUI();
     this.renderPlanner();
   }
 }
@@ -494,8 +954,15 @@ class NutriVisionPlanner {
 const mealPlanner = new NutriVisionPlanner();
 if (typeof window !== 'undefined') {
   window.mealPlanner = mealPlanner;
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('DOMContentLoaded', () => {
+      mealPlanner.initRestrictions();
+      mealPlanner.renderRestrictionsUI();
+    });
+  }
 }
 if (typeof global !== 'undefined') {
   global.mealPlanner = mealPlanner;
 }
+
 

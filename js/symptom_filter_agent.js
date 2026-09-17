@@ -108,10 +108,16 @@ class ClinicalNutritionFilterAgent {
   /**
    * Mengeksekusi logika hirarki keselamatan dan resolusi konflik
    * @param {Array<string>} rawSymptoms 
+   * @param {Array<string>|string} customRestrictions 
    * @returns {Object} JSON Response sesuai OUTPUT FORMAT REQUIREMENT
    */
-  process(rawSymptoms = []) {
+  process(rawSymptoms = [], customRestrictions = []) {
     const activeFilters = this.normalizeSymptoms(rawSymptoms);
+    const customList = Array.isArray(customRestrictions)
+      ? customRestrictions.map(s => (s || '').trim()).filter(Boolean)
+      : (typeof customRestrictions === 'string'
+        ? customRestrictions.split(',').map(s => (s || '').trim()).filter(Boolean)
+        : []);
 
     // Kasus 0: Tanpa gejala aktif
     if (activeFilters.length === 0) {
@@ -119,7 +125,8 @@ class ClinicalNutritionFilterAgent {
         active_filters: [],
         safety_level: "Standard",
         texture_requirement: "Normal Seimbang (Tekstur Bebas Sesuai Selera)",
-        restricted_ingredients: [],
+        restricted_ingredients: customList,
+        custom_restrictions: customList,
         recommended_menu: [
           {
             name: "Dada Ayam Panggang Herbal & Nasi Merah",
@@ -147,6 +154,11 @@ class ClinicalNutritionFilterAgent {
     let textureRequirement = "Normal / Soft";
     const restrictedIngredients = new Set();
     const recommendedMenu = [];
+
+    // Tambahkan pantangan kustom personal dari pasien
+    customList.forEach(item => {
+      restrictedIngredients.add(item);
+    });
 
     // =========================================================================
     // 1. PRIORITY 1: KESELAMATAN FISIK (SAFETY FIRST - DYSPHAGIA)

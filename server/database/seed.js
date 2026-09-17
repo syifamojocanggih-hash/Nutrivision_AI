@@ -23,7 +23,7 @@ async function seedDatabase(db) {
     const passwordHashAdmin = bcrypt.hashSync('admin123', 10);
     const passwordHashPatient = bcrypt.hashSync('pasien123', 10);
     const passwordHashRehab = bcrypt.hashSync('ahmad123', 10);
-    const passwordHashDoctor = bcrypt.hashSync('dokter123', 10);
+    const passwordHashCaregiver = bcrypt.hashSync('caregiver123', 10);
 
     // 1. Users
     const insertUserSql = `
@@ -105,26 +105,26 @@ async function seedDatabase(db) {
     ]);
 
     await db.run(insertUserSql, [
-      'usr_doctor_hendra',
-      'dr. Hendra Kurniawan, Sp.GK',
-      'hendra@nutrivision.id',
-      passwordHashDoctor,
+      'usr_caregiver_sarah',
+      'Sarah (Caregiver)',
+      'caregiver@nutrivision.id',
+      passwordHashCaregiver,
       '081166660004',
-      'doctor',
-      44,
-      'male',
-      'clinical-specialist',
+      'caregiver',
+      32,
+      'female',
+      'caregiver',
       'phase3',
-      68.0,
-      172.0,
-      23.0,
+      55.0,
+      162.0,
+      21.0,
       'moderate',
       JSON.stringify([]),
       JSON.stringify([]),
-      2100,
-      90.0,
-      260.0,
-      60.0
+      1800,
+      60.0,
+      220.0,
+      50.0
     ]);
 
     // 2. Indonesian Food Catalog (TKPI Bappenas / Kemenkes)
@@ -480,14 +480,14 @@ async function seedDatabase(db) {
       'Pasca-Bedah Digestif · Minggu 2',
       'resep',
       'Resep Tim Ikan Gabus Kuah Kuning Ramah Mual & Cepat Kering',
-      'Alhamdulillah setelah rutin makan tim gabus 150g per hari, luka bekas jahitan saya mengering lebih cepat menurut dokter saat kontrol kemarin. Kuncinya kunyit dibakar dulu supaya tidak langu di lidah!',
+      'Alhamdulillah setelah rutin makan tim gabus 150g per hari, luka bekas jahitan saya mengering lebih cepat menurut tenaga kesehatan saat kontrol kemarin. Kuncinya kunyit dibakar dulu supaya tidak langu di lidah!',
       JSON.stringify({
         ingredients: ['150g Ikan Gabus Segar', '2 ruas Kunyit Bakar', '1 batang Sereh', '100ml Air Kaldu'],
         proteinTotal: '36g Protein'
       }),
       24,
       JSON.stringify([
-        { author: 'dr. Hendra Kurniawan, Sp.GK', text: 'Pilihan luar biasa Bu Siti! Albumin gabus memang memicu granulasi sel lebih cepat.' }
+        { author: 'Hendra Kusuma, S.Gz, RD', text: 'Pilihan luar biasa Bu Siti! Albumin gabus memang memicu granulasi sel lebih cepat.' }
       ])
     ]);
 

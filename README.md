@@ -46,7 +46,6 @@
 | 📄 **Clinical Telehealth** | **1-Click Official Medical PDF** | Client-side vector rendering of formal A4 medical reports complete with 7-day adherence charts, active symptoms, clinical targets, and physician/caregiver signature spaces. |
 | 🥣 **Symptom Engine** | **Symptom-Aware Texture Filter** | Dynamically adapts recipes for post-anesthetic complications: **Dysphagia (pureed/soft)**, **Nausea (clear broth, ginger)**, **Constipation (soluble fiber)**, and **Low Appetite (dense small meals)**. |
 | 🍱 **Meal Planner** | **Dual-Mode Diet Engine** | Toggles between **Optimal/Clinical Grade** (wild fish, lean meats) and **Budget-Friendly** (tempeh, boiled eggs, local mackerel) without compromising biological recovery targets. |
-| 🩺 **Clinical Portal** | **Doctor DPJP Dashboard** | Specialist view to supervise outpatient recovery, review serum albumin trends, inspect scanned food logs, and issue telehealth diet adjustments. |
 | 👨‍👩‍👧 **Family Caregiver** | **Tokenized Caregiver Portal** | Secure, read-only encrypted link allowing family members to monitor elderly or bedridden patient nutrition remotely without risking accidental data modifications. |
 | 🔔 **Proactive Care** | **Smart Clinical Notifications** | Automated notifications for morning protein targets, wound hydration reminders, and clinical milestone achievements. |
 | ♿ **Accessibility** | **Senior-Friendly & WCAG 2.1 AAA** | 3-tier font enlargement (Standard, Medium, Large), ultra-high contrast black/white theme (>13:1 contrast ratio), thumb-friendly layout, and 100% offline-first PWA caching. |
@@ -97,7 +96,6 @@ The application employs a **Unified Single Sign-On (SSO)** architecture. You do 
 | :--- | :--- | :--- | :--- | :--- |
 | **Post-Op Patient** | Siti Rahma / Rangga | `pasien@nutrivision.id` | `pasien123` | **Patient Dashboard** (Phase 2 Proliferation, Albumin Macro Rings, AI Food Plate Scanner) |
 | **Physical Therapy** | Siti Rahmawati / Ahmad | `siti@nutrivision.id` *(or `ahmad@nutrivision.id`)* | `siti123` *(or `ahmad123`)* | **Patient Dashboard** (ACL Tear Rehab, Low-Budget TKPI Meal Planner) |
-| **Clinical Doctor (DPJP)** | dr. Hendra Kurniawan, Sp.GK | `dokter@nutrivision.id` *(or `hendra@nutrivision.id`)* | `dokter123` | **Doctor Clinical Portal** (Patient Supervision, Serum Albumin Lab Evaluation, Medical PDF Verification) |
 | **Family Caregiver** | Ratna Dewi / Rina | `caregiver@nutrivision.id` | `caregiver123` | **Caregiver Portal** (Patient Compliance Tracking, Dietary Restrictions, Home Care Tips) |
 | **Super Administrator** | Administrator NutriVision | `admin@nutrivision.id` | `admin123` | **Admin Command Center** (Audit Trail Logs, Cloud Synchronization, Database Management) |
 

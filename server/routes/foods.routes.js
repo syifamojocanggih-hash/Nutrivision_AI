@@ -92,12 +92,12 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * POST /api/foods (Admin or Doctor only)
+ * POST /api/foods (Admin only)
  */
 router.post('/', requireAuth, async (req, res) => {
   try {
-    if (req.user.role !== 'admin' && req.user.role !== 'doctor') {
-      return res.status(403).json({ success: false, message: 'Hanya dokter atau administrator yang dapat menambah katalog pangan.' });
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Hanya administrator yang dapat menambah katalog pangan.' });
     }
 
     const {

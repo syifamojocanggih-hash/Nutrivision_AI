@@ -1,0 +1,409 @@
+/* ==========================================================================
+   NutriVision AI — Caregiver & Family Monitor Styles
+   WCAG AAA Compliant · Forest Matcha & Milky Clinical Design System
+   ========================================================================== */
+
+/* 1. Caregiver Dashboard Layout */
+.caregiver-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Header Banner Card */
+.caregiver-header-card {
+  background: linear-gradient(135deg, #1E3A8A 0%, #172554 100%);
+  border: 1px solid rgba(191, 219, 254, 0.22);
+  border-radius: 18px;
+  padding: 24px 28px;
+  color: #FFFFFF;
+  box-shadow: 0 10px 30px rgba(30, 58, 138, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.caregiver-header-card::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.caregiver-badge-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #DBEAFE;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+}
+
+.caregiver-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #60A5FA;
+  box-shadow: 0 0 10px #60A5FA;
+  animation: pulseCaregiver 2s infinite;
+}
+
+@keyframes pulseCaregiver {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(96, 165, 250, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
+}
+
+.caregiver-header-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.caregiver-header-subtitle {
+  font-size: 13px;
+  color: #DDD4B0;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  max-width: 820px;
+}
+
+.caregiver-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.caregiver-btn-action {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.18s ease;
+  touch-action: manipulation;
+}
+
+.caregiver-btn-action.matcha {
+  background: linear-gradient(135deg, #9EA76B, #8B9456);
+  color: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(158, 167, 107, 0.35);
+}
+
+.caregiver-btn-action.glass {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.caregiver-btn-action.glass:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* 2. Caregiver Panel & Metrics Cards */
+.caregiver-panel-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.caregiver-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.caregiver-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.caregiver-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.caregiver-metric-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.caregiver-metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.caregiver-metric-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.caregiver-metric-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.caregiver-metric-badge.green {
+  background: #DEF7EC;
+  color: #03543F;
+}
+
+.caregiver-metric-badge.blue {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.caregiver-metric-badge.amber {
+  background: #FEF08A;
+  color: #854D0E;
+}
+
+.caregiver-metric-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.5px;
+}
+
+.caregiver-metric-sub {
+  font-size: 11.5px;
+  color: #059669;
+  font-weight: 500;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 3. Meal List in Caregiver View */
+.caregiver-meal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.caregiver-meal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #F8FAFC;
+  border: 1px solid #EDF2F7;
+  gap: 12px;
+}
+
+.caregiver-meal-time {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  flex-shrink: 0;
+}
+
+.caregiver-meal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.caregiver-meal-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.caregiver-meal-macros {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.caregiver-meal-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* 4. Companion Selection Modal Styles */
+.companion-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.companion-role-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.companion-role-card:hover {
+  border-color: #2563EB;
+  background: #F8FAFC;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+}
+
+.companion-role-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.companion-role-card.caregiver .companion-role-icon {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.companion-role-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.companion-role-desc {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.companion-role-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  margin-top: auto;
+  transition: all 0.15s ease;
+  background: #2563EB;
+  color: #FFFFFF;
+}
+
+/* 5. Responsive Mobile PWA for Caregiver */
+@media (max-width: 768px) {
+  #view-caregiver-dashboard {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 16px));
+  }
+
+  .caregiver-header-card {
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .caregiver-header-title {
+    font-size: 20px;
+  }
+
+  .caregiver-header-subtitle {
+    font-size: 12px;
+  }
+
+  .caregiver-header-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .caregiver-btn-action {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .caregiver-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .caregiver-panel-card {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .caregiver-meal-item {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .caregiver-meal-macros {
+    width: 100%;
+    font-size: 11.5px;
+    color: #475569;
+  }
+}
+
+@media (max-width: 480px) {
+  .caregiver-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .caregiver-header-actions {
+    flex-direction: column;
+  }
+}
+

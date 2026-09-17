@@ -1,5 +1,5 @@
 // NutriVision AI — Portal Pendamping (Caregiver View — View-Only)
-// Sesuai FR-12: Akses lihat-saja untuk keluarga/tenaga medis pendamping
+// Akses lihat-saja terproteksi untuk keluarga pendamping pasien
 
 class NutriVisionCaregiver {
   constructor() {
@@ -14,17 +14,6 @@ class NutriVisionCaregiver {
         hasAccess: true,
         lastSeen: '15 menit yang lalu',
         lastSeenEn: '15 minutes ago'
-      },
-      {
-        id: 'cg-2',
-        name: 'dr. Hendra (Sp.KFR)',
-        nameEn: 'Dr. Hendra (Physiatrist)',
-        role: 'Dokter / Fisioterapis',
-        roleEn: 'Physician / Physiatrist',
-        initials: 'DH',
-        hasAccess: true,
-        lastSeen: 'Kemarin, 16:30',
-        lastSeenEn: 'Yesterday, 16:30'
       }
     ];
   }
@@ -78,4 +67,7 @@ class NutriVisionCaregiver {
 }
 
 const caregiverHandler = new NutriVisionCaregiver();
+if (typeof window !== 'undefined') {
+  window.caregiverHandler = caregiverHandler;
+}
 

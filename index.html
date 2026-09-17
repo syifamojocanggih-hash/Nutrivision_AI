@@ -596,7 +596,7 @@
               <div class="lp-scard-title" data-i18n="support_card3_title">Caregiver &amp; Telehealth Portal</div>
             </div>
             <p class="lp-scard-desc" data-i18n="support_card3_desc">Share encrypted read-only nutritional reports and
-              weekly recovery charts with attending doctors, dietitians, or family caregivers.</p>
+              weekly recovery charts with attending dietitians, clinical nutritionists, or family caregivers.</p>
             <div class="lp-scard-data-box">
               <div class="lp-data-row"><span class="lbl">Family Access</span><span class="val">Shared Link
                   View-Only</span></div>
@@ -900,35 +900,6 @@
           </button>
         </div>
 
-        <!-- Doctor Clinical Navigation Group -->
-        <div id="sidebar-nav-doctor" class="sidebar-nav-group" style="display:none;">
-          <button class="nav-item active" data-sec="doctor" onclick="app.navigate('doctor')"
-            title="Portal Pemantauan Pasien Medis">
-            <span class="nav-icon"><i data-lucide="stethoscope" style="color:#9EA76B;"></i></span>
-            <span>Roster Pasien DPJP</span>
-          </button>
-          <button class="nav-item" data-sec="ai-text" onclick="app.goToAITextPage()"
-            title="Evaluasi Menu Pasien (Model AI Teks)">
-            <span class="nav-icon"><i data-lucide="cpu" style="color:#9EA76B;"></i></span>
-            <span>Evaluasi Menu AI Teks</span>
-          </button>
-          <button class="nav-item" data-sec="catalog" onclick="app.navigate('catalog')"
-            title="Ensiklopedia Bahan Pangan Super Lokal">
-            <span class="nav-icon"><i data-lucide="book-open" style="color:#9EA76B;"></i></span>
-            <span>Katalog Pangan Klinis</span>
-          </button>
-          <button class="nav-item" data-sec="admin-clinical-menu" onclick="app.navigate('admin-clinical-menu')"
-            title="Analisis Pola Penyakit &amp; Gizi">
-            <span class="nav-icon"><i data-lucide="utensils" style="color:#9EA76B;"></i></span>
-            <span>Food Analytics</span>
-          </button>
-          <button class="nav-item" data-sec="profile" onclick="app.navigate('profile')"
-            title="Profil &amp; Sesi Login Dokter">
-            <span class="nav-icon"><i data-lucide="user-check" style="color:#9EA76B;"></i></span>
-            <span>Profil Dokter Sp.GK</span>
-          </button>
-        </div>
-
         <!-- Caregiver Navigation Group -->
         <div id="sidebar-nav-caregiver" class="sidebar-nav-group" style="display:none;">
           <button class="nav-item active" data-sec="caregiver-dashboard" onclick="app.navigate('caregiver-dashboard')"
@@ -1119,6 +1090,11 @@
               <span class="admin-pulse-dot"></span>
               <span>NutriVision AI · Super Admin Command Center</span>
             </div>
+            <div class="admin-live-indicator" id="admin-live-indicator-pill" title="Sistem mendengarkan perubahan data pengguna secara real-time">
+              <span class="admin-live-dot"></span>
+              <span>Real-Time Sync Aktif</span>
+              <span class="admin-live-time" id="admin-live-sync-time">Tersinkronisasi</span>
+            </div>
             <div class="admin-header-actions">
               <button type="button" class="admin-btn-action matcha" onclick="app.syncAllDataToSupabase()"
                 title="Upload &amp; Salin Seluruh Data dari Chrome ke Supabase"
@@ -1244,10 +1220,10 @@
                 <select id="admin-user-role-filter" class="admin-filter-select" onchange="app.filterAdminUsers()">
                   <option value="all">Semua Peran &amp; Kondisi</option>
                   <option value="patient">Pasien Saja</option>
+                  <option value="caregiver">Caregiver / Pendamping</option>
                   <option value="post-surgery">Pasca-Operasi</option>
                   <option value="injury-rehab">Fisioterapi &amp; Rehab</option>
                   <option value="gym">Gym Recovery</option>
-                  <option value="clinician">Spesialis Medis</option>
                 </select>
                 <button type="button" class="admin-row-action-btn" onclick="app.refreshAdminData()">
                   <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
@@ -1261,12 +1237,12 @@
                 <thead>
                   <tr>
                     <th>Pasien / Pengguna</th>
-                    <th>Peran (Role)</th>
+                    <th>Peran</th>
                     <th>Kondisi Klinis</th>
-                    <th>Fase Pemulihan</th>
-                    <th>Target Harian</th>
-                    <th>Kuis Diagnostik</th>
-                    <th>Aksi</th>
+                    <th>Target Nutrisi</th>
+                    <th>Validasi Klinis ERAS</th>
+                    <th>Status Kuis</th>
+                    <th>Aksi &amp; Audit</th>
                   </tr>
                 </thead>
                 <tbody id="admin-users-table-body">
@@ -1393,6 +1369,29 @@
                   <i data-lucide="rotate-ccw" class="btn-icon-sm"></i>
                   <span>Re-Seed Akun Demo</span>
                 </button>
+              </div>
+
+              <!-- 3. Uji Real-Time Simulasi Perubahan User -->
+              <div style="padding:16px;border:1px solid #BBF7D0;border-radius:12px;background:#F0FDF4;grid-column:1 / -1;">
+                <div style="font-weight:700;color:#166534;margin-bottom:6px;display:flex;align-items:center;gap:6px;font-size:14px;">
+                  <i data-lucide="zap" style="width:18px;height:18px;color:#10B981;"></i>
+                  Uji Validasi Real-Time: Simulasi Perubahan Data Pasien
+                </div>
+                <div style="font-size:12.5px;color:#14532D;margin-bottom:14px;line-height:1.5;">
+                  Simulasikan kejadian saat pasien mengubah target gizi, menyelesaikan kuis, atau mencatat asupan makanan. Sistem admin akan langsung bereaksi, memperbarui metrik telemetri, dan menyorot baris data pasien secara live tanpa me-refresh browser.
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button type="button" class="admin-btn-action matcha" style="background:#15803D;color:#FFFFFF;border:none;"
+                    onclick="app.simulateUserRealtimeChange('target')">
+                    <i data-lucide="activity" class="btn-icon-sm"></i>
+                    <span>⚡ Simulasi: Pasien Tambah Target (+15g Prot)</span>
+                  </button>
+                  <button type="button" class="admin-btn-action matcha" style="background:#047857;color:#FFFFFF;border:none;"
+                    onclick="app.simulateUserRealtimeChange('meal')">
+                    <i data-lucide="camera" class="btn-icon-sm"></i>
+                    <span>⚡ Simulasi: Pasien Catat Piring Makan Baru</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1586,167 +1585,27 @@
       </div>
 
       <!-- =========================================================================
-         VIEW: DOCTOR CLINICAL DASHBOARD (Portal Pengawas Klinis & Spesialis Gizi)
-         ========================================================================= -->
-      <div class="view-section" id="view-doctor">
-        <div class="doctor-page-wrapper">
-
-          <!-- 1. Doctor Header Banner -->
-          <div class="doctor-header-card">
-            <div class="doctor-badge-title">
-              <span class="doctor-pulse-dot"></span>
-              <span>NutriVision AI · Portal Dokter Spesialis &amp; Pengawas Klinis (Sp.GK)</span>
-            </div>
-            <h1 class="doctor-header-title">Monitoring Kepatuhan Nutrisi &amp; Progres Pasien</h1>
-            <p class="doctor-header-subtitle">
-              Pusat supervisi klinis dokter DPJP: memantau pemenuhan target protein dan albumin pasien pasca-bedah, memeriksa log kepatuhan makan harian, mengevaluasi toleransi gejala, serta memvalidasi rekam medis telehealth resmi.
-            </p>
-            <div class="doctor-header-actions">
-              <button type="button" class="doctor-btn-action matcha" onclick="app.openDoctorPatientPdf()"
-                title="Cetak &amp; Verifikasi Rekam Medis PDF Pasien Terpilih">
-                <i data-lucide="file-text" class="btn-icon-sm"></i>
-                <span>📄 Cetak Rekam Medis Pasien</span>
-              </button>
-              <button type="button" class="doctor-btn-action glass" onclick="app.goToAITextPage()"
-                title="Evaluasi Kelayakan Menu dengan AI Model Teks">
-                <i data-lucide="cpu" class="btn-icon-sm"></i>
-                <span>🧪 Evaluasi Menu AI Teks</span>
-              </button>
-              <button type="button" class="doctor-btn-action glass" onclick="app.navigate('catalog')"
-                title="Lihat Kandungan Pangan Super Lokal">
-                <i data-lucide="book-open" class="btn-icon-sm"></i>
-                <span>🥗 Katalog Pangan Klinis</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 2. Patient Roster & Selector Bar -->
-          <div class="doctor-roster-card">
-            <div class="doctor-roster-head">
-              <div class="doctor-roster-title">
-                <i data-lucide="users" style="width:18px;height:18px;color:#384720;"></i>
-                <span>Daftar Pasien Binaan Aktif (Pilih untuk Memantau)</span>
-              </div>
-              <span style="font-size:12px;color:#64748B;font-weight:600;" id="doctor-patient-roster-count">3 Pasien Terpantau</span>
-            </div>
-            <div class="doctor-patient-pills-row" id="doctor-patient-selector-container">
-              <!-- Rendered dynamically by app.renderDoctorPatientSelector() -->
-            </div>
-          </div>
-
-          <!-- 3. Selected Patient Biometrics & Nutrition Summary -->
-          <div class="doctor-metrics-grid" id="doctor-patient-metrics-container">
-            <!-- Rendered dynamically by app.renderDoctorPatientMetrics() -->
-          </div>
-
-          <!-- 4. Progress & Intake Monitoring (Dual Panel) -->
-          <div class="doctor-progress-grid">
-            <!-- Panel Kiri: Cincin Makro & Grafik Kepatuhan Mingguan -->
-            <div class="doctor-panel-card">
-              <div class="doctor-panel-head">
-                <div class="doctor-panel-title">
-                  <i data-lucide="pie-chart" style="width:18px;height:18px;color:#384720;"></i>
-                  <span>Cincin Pemenuhan Gizi Pasien Hari Ini</span>
-                </div>
-                <span class="doctor-metric-badge green" id="doctor-patient-adherence-badge">Kepatuhan: 92%</span>
-              </div>
-
-              <!-- Macro Donut Canvas for Doctor -->
-              <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0;">
-                <div style="position:relative;width:180px;height:180px;">
-                  <canvas id="doctor-macro-donut-canvas" width="180" height="180" style="width:180px;height:180px;"></canvas>
-                  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
-                    <div id="doctor-donut-cal-val" style="font-size:22px;font-weight:800;color:#1E293B;">1.420</div>
-                    <div id="doctor-donut-cal-target" style="font-size:11px;color:#64748B;font-weight:600;">/ 1.820 kkal</div>
-                  </div>
-                </div>
-                <!-- Macro Breakdown Legend -->
-                <div style="display:flex;gap:18px;margin-top:14px;flex-wrap:wrap;justify-content:center;">
-                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-                    <span style="width:10px;height:10px;border-radius:50%;background:#384720;"></span>
-                    <span id="doctor-macro-prot-txt" style="font-weight:700;color:#1E293B;">Protein: 62 / 93 g</span>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-                    <span style="width:10px;height:10px;border-radius:50%;background:#9EA76B;"></span>
-                    <span id="doctor-macro-carbs-txt" style="font-weight:700;color:#1E293B;">Karbo: 180 / 215 g</span>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-                    <span style="width:10px;height:10px;border-radius:50%;background:#EFE8CA;"></span>
-                    <span id="doctor-macro-fat-txt" style="font-weight:700;color:#1E293B;">Lemak: 38 / 52 g</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 7-Day Adherence Bar Chart -->
-              <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
-                <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
-                  <span>Grafik Kepatuhan 7 Hari Terakhir</span>
-                  <span style="font-size:11px;color:#059669;font-weight:600;">Target ERAS Tercapai 6/7 Hari</span>
-                </div>
-                <div style="height:120px;width:100%;">
-                  <canvas id="doctor-weekly-chart-canvas" style="width:100%;height:120px;"></canvas>
-                </div>
-              </div>
-            </div>
-
-            <!-- Panel Kanan: Riwayat Makanan Pasien Hari Ini -->
-            <div class="doctor-panel-card">
-              <div class="doctor-panel-head">
-                <div class="doctor-panel-title">
-                  <i data-lucide="utensils" style="width:18px;height:18px;color:#384720;"></i>
-                  <span>Riwayat Makanan Pasien Hari Ini</span>
-                </div>
-                <button type="button" class="admin-row-action-btn" onclick="app.refreshDoctorPatientData()" title="Segarkan Data Pasien">
-                  <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i>
-                  <span>Segarkan</span>
-                </button>
-              </div>
-
-              <div class="doctor-meal-list" id="doctor-patient-meals-list">
-                <!-- Rendered dynamically by app.renderDoctorPatientMeals() -->
-              </div>
-
-              <!-- Catatan Dokter DPJP Box -->
-              <div style="margin-top:18px;padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;">
-                <div style="font-size:12.5px;font-weight:700;color:#1E293B;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-                  <i data-lucide="stethoscope" style="width:15px;height:15px;color:#059669;"></i>
-                  <span>Instruksi Medis DPJP untuk Pasien Ini</span>
-                </div>
-                <p id="doctor-patient-instruction-text" style="font-size:12px;color:#475569;margin:0 0 10px 0;line-height:1.5;">
-                  Tingkatkan asupan albumin dari ikan gabus atau putih telur minimal 30g per sesi makan utama untuk mempercepat penutupan luka pembedahan.
-                </p>
-                <button type="button" class="doctor-btn-action matcha" style="font-size:11.5px;padding:6px 12px;border-radius:8px;" onclick="app.sendClinicalAdviceToPatient()">
-                  <i data-lucide="send" style="width:12px;height:12px;"></i>
-                  <span>Kirim Instruksi Nutrisi ke Pasien</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       <!-- =========================================================================
          VIEW: CAREGIVER DASHBOARD (Portal Pendamping Pasien & Keluarga)
          ========================================================================= -->
       <div class="view-section" id="view-caregiver-dashboard">
-        <div class="doctor-page-wrapper">
-          <div class="doctor-header-card" style="background:linear-gradient(135deg, #1E3A8A 0%, #172554 100%);">
-            <div class="doctor-badge-title" style="background:rgba(59,130,246,0.2);border-color:rgba(96,165,250,0.4);color:#DBEAFE;">
-              <span class="doctor-pulse-dot" style="background:#60A5FA;box-shadow:0 0 10px #60A5FA;"></span>
+        <div class="caregiver-page-wrapper">
+          <div class="caregiver-header-card" style="background:linear-gradient(135deg, #1E3A8A 0%, #172554 100%);">
+            <div class="caregiver-badge-title" style="background:rgba(59,130,246,0.2);border-color:rgba(96,165,250,0.4);color:#DBEAFE;">
+              <span class="caregiver-pulse-dot" style="background:#60A5FA;box-shadow:0 0 10px #60A5FA;"></span>
               <span>NutriVision AI · Portal Pendamping Pasien (Caregiver &amp; Keluarga)</span>
             </div>
-            <h1 class="doctor-header-title">Pemantauan Pemulihan Keluarga Tercinta</h1>
-            <p class="doctor-header-subtitle">
+            <h1 class="caregiver-header-title">Pemantauan Pemulihan Keluarga Tercinta</h1>
+            <p class="caregiver-header-subtitle">
               Akses khusus pendamping keluarga dan perawat homecare: memantau asupan makan harian pasien tanpa harus mengisi kuis diagnostik, mengecek catatan pantangan, serta memastikan kecukupan cairan dan protein pasien di rumah.
             </p>
-            <div class="doctor-header-actions">
-              <button type="button" class="doctor-btn-action" style="background:#2563EB;color:#fff;" onclick="app.openDoctorPatientPdf()"
+            <div class="caregiver-header-actions">
+              <button type="button" class="caregiver-btn-action" style="background:#2563EB;color:#fff;" onclick="app.openCaregiverPatientPdf()"
                 title="Lihat &amp; Cetak Berkas Rekam Medis PDF Pasien">
                 <i data-lucide="file-text" class="btn-icon-sm"></i>
                 <span>📄 Unduh Laporan Gizi Pasien</span>
               </button>
-              <button type="button" class="doctor-btn-action glass" onclick="app.navigate('catalog')"
+              <button type="button" class="caregiver-btn-action glass" onclick="app.navigate('catalog')"
                 title="Lihat Menu Bahan Pangan Lunak Pasien">
                 <i data-lucide="book-open" class="btn-icon-sm"></i>
                 <span>🥗 Panduan Menu Pemulihan</span>
@@ -1755,20 +1614,20 @@
           </div>
 
           <!-- Caregiver Monitor Cards Container -->
-          <div class="doctor-panel-card" style="margin-top:10px;">
-            <div class="doctor-panel-head">
-              <div class="doctor-panel-title">
+          <div class="caregiver-panel-card" style="margin-top:10px;">
+            <div class="caregiver-panel-head">
+              <div class="caregiver-panel-title">
                 <i data-lucide="heart-pulse" style="width:18px;height:18px;color:#2563EB;"></i>
                 <span>Status Pemenuhan Nutrisi Pasien Hari Ini</span>
               </div>
-              <span class="doctor-metric-badge green">Terpantau Baik</span>
+              <span class="caregiver-metric-badge green">Terpantau Baik</span>
             </div>
-            <div class="doctor-metrics-grid" id="caregiver-metrics-container">
+            <div class="caregiver-metrics-grid" id="caregiver-metrics-container">
               <!-- Rendered dynamically -->
             </div>
             <div style="margin-top:20px;">
               <h4 style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:10px;">Riwayat Makan Pasien Hari Ini</h4>
-              <div class="doctor-meal-list" id="caregiver-meals-list">
+              <div class="caregiver-meal-list" id="caregiver-meals-list">
                 <!-- Rendered dynamically -->
               </div>
             </div>
@@ -1941,6 +1800,19 @@
               <button type="button" class="booster-banner-edit-btn" onclick="app.openNutritionBoosterModal()">
                 Ubah Batasan
               </button>
+            </div>
+
+            <!-- Card 2 Healing Protein Milestone Box (Ribuan Gram) -->
+            <div id="ov-card2-healing-milestone-box" class="card2-healing-milestone-box" onclick="app.openNutritionBoosterModal()" title="Klik untuk mengatur target protein kesembuhan total" style="display:none;">
+              <div class="milestone-mini-left">
+                <iconify-icon icon="solar:cup-star-bold" style="font-size:16px;color:#059669;flex-shrink:0;"></iconify-icon>
+                <span>Target Kesembuhan Jaringan:</span>
+                <strong id="ov-card2-healing-target-text">0 / 2.500 g Protein</strong>
+                <span class="pct-pill" id="ov-card2-healing-pct-badge">0%</span>
+              </div>
+              <div class="milestone-mini-bar">
+                <div class="milestone-mini-fill" id="ov-card2-healing-bar-fill" style="width: 0%;"></div>
+              </div>
             </div>
 
             <div class="macro-ring-container">
@@ -2292,6 +2164,50 @@
               onclick="mealPlanner.toggleSymptom('low_appetite', this);">
               <span class="symptom-chip-icon">+</span> <span data-i18n="symp_low_appetite">Nafsu Makan Rendah</span>
             </button>
+          </div>
+
+          <!-- Symptom-Aware Dietary Restrictions & Allergies Section -->
+          <div class="symptom-restrictions-card" id="symptom-restrictions-section">
+            <div class="symptom-restr-head">
+              <div class="symptom-restr-title-wrap">
+                <div class="symptom-restr-title-row">
+                  <svg class="symptom-restr-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                  </svg>
+                  <h3 class="symptom-restr-title" data-i18n="plan_restr_title">Daftar Pantangan &amp; Alergi Makanan</h3>
+                  <span class="symptom-restr-count-badge" id="symptom-restr-count-badge">0 pantangan</span>
+                </div>
+                <p class="symptom-restr-sub" data-i18n="plan_restr_sub">Tambah atau kurangi pantangan personal secara langsung tanpa perlu mengulang kuis diagnosa dari awal.</p>
+              </div>
+            </div>
+
+            <!-- Input bar -->
+            <div class="symptom-restr-input-row">
+              <div class="symptom-restr-input-wrap">
+                <input type="text" id="symptom-restriction-input" class="symptom-restr-input"
+                  placeholder="Ketik pantangan (cth: Udang, Telur, Gluten, Santan, Kacang)..."
+                  data-i18n-placeholder="plan_restr_placeholder"
+                  onkeydown="if(event.key === 'Enter') { event.preventDefault(); mealPlanner.addCustomRestrictionFromInput(); }">
+              </div>
+              <button type="button" class="btn-add-restriction" id="btn-add-symptom-restriction" onclick="mealPlanner.addCustomRestrictionFromInput();">
+                <span class="btn-icon">+</span> <span data-i18n="plan_restr_add_btn">Tambah</span>
+              </button>
+            </div>
+
+            <!-- Quick suggestion chips -->
+            <div class="symptom-restr-quick-wrap">
+              <span class="symptom-restr-quick-lbl" data-i18n="plan_restr_quick_title">Pilihan Cepat:</span>
+              <div class="symptom-restr-quick-chips" id="symptom-restr-quick-list">
+                <!-- Dynamically bound by mealPlanner -->
+              </div>
+            </div>
+
+            <!-- Active Restrictions List -->
+            <div class="symptom-restr-active-box" id="symptom-restr-active-box">
+              <!-- Dynamically populated by mealPlanner.renderRestrictionsUI() -->
+            </div>
           </div>
 
           <div class="symptom-result-container" id="symptom-result-box" style="margin-top:16px;">
@@ -2698,7 +2614,7 @@
                 <h4 style="margin:0;font-size:13.5px;font-weight:700;color:var(--ink);">Kalender Siklus Pemulihan &amp;
                   Jadwal Harian Pasien</h4>
                 <p style="margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);">Target klinis 3 bulan terukur, anjuran
-                  gizi tervalidasi dokter, &amp; checklist rutinitas harian.</p>
+                  gizi tervalidasi ahli gizi klinis, &amp; checklist rutinitas harian.</p>
               </div>
             </div>
             <button type="button" class="btn-direct-calendar-pill" onclick="app.openCalendarModal()"
@@ -2992,7 +2908,7 @@
                   <span data-i18n="profile_caregiver_title">Caregiver Portal (Caregiver Access)</span>
                 </h2>
                 <div class="card-subtitle" data-i18n="profile_caregiver_subtitle">Manage remote monitoring permissions
-                  for family and clinical team</div>
+                  for family caregivers</div>
               </div>
               <span class="badge"
                 style="background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200);font-size:11px;display:inline-flex;align-items:center;gap:4px;">
@@ -3395,13 +3311,9 @@
       <span class="nav-icon"><i data-lucide="utensils"></i></span>
       <span data-i18n="nav_planner">Menu</span>
     </button>
-    <button class="bottom-nav-btn" data-sec="catalog" onclick="app.navigate('catalog')">
-      <span class="nav-icon"><i data-lucide="book-open"></i></span>
-      <span>Katalog</span>
-    </button>
-    <button class="bottom-nav-btn" data-sec="community" onclick="app.navigate('community')">
-      <span class="nav-icon"><i data-lucide="users"></i></span>
-      <span>Komunitas</span>
+    <button class="bottom-nav-btn bottom-nav-scan-center" onclick="app.openScanModal()" title="Pindai Makanan">
+      <span class="nav-scan-circle"><i data-lucide="camera" style="width:20px;height:20px;"></i></span>
+      <span>Pindai</span>
     </button>
     <button class="bottom-nav-btn" data-sec="progress" onclick="app.navigate('progress')">
       <span class="nav-icon"><i data-lucide="trending-up"></i></span>
@@ -3413,8 +3325,8 @@
     </button>
   </nav>
 
-  <!-- Floating Action Button for Scan on Mobile -->
-  <button class="fab-scan-btn" onclick="app.openScanModal()" title="Buka Kamera Scan Makanan">
+  <!-- Floating Action Button for Scan on Mobile (Terintegrasi di Navigasi Bawah PWA) -->
+  <button class="fab-scan-btn" onclick="app.openScanModal()" title="Buka Kamera Scan Makanan" style="display:none !important;">
     <i data-lucide="camera" style="width:24px;height:24px;"></i>
   </button>
 
@@ -3937,232 +3849,355 @@
        ========================================================================= -->
   <div class="modal-overlay" id="nutrition-booster-modal" onclick="app.closeNutritionBoosterModal()">
     <div class="modal-box booster-modal-box" onclick="event.stopPropagation()">
-      <div class="modal-header" style="border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="booster-header-icon">
-            <iconify-icon icon="solar:tuning-square-2-bold-duotone" style="font-size:24px;color:#233917;"></iconify-icon>
-          </div>
-          <div>
-            <h3 class="modal-title" data-i18n="ov_target_booster_title" style="margin:0;font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-0.3px;">
-              Keinginan Gizi Tambahan &amp; Penyesuaian Batasan
-            </h3>
-            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);" data-i18n="ov_target_booster_sub">
-              Sesuaikan atau tambahkan kuota gizi di atas batas dasar pemulihan klinis untuk fisioterapi lanjutan atau tujuan kebugaran pribadi.
-            </p>
-          </div>
+      <!-- 1. Header with Title, Subtitle, ESPEN Protocol Badge & Close Button -->
+      <div class="booster-header-wrapper">
+        <div class="booster-title-group">
+          <h3 data-i18n="ov_target_booster_title">Penyesuaian Target Gizi Tambahan</h3>
+          <p data-i18n="ov_target_booster_sub">Tingkatkan kuota protein &amp; kalori di atas batas medis dasar sesuai kebutuhan mobilitas atau percepatan pemulihan.</p>
         </div>
-        <button type="button" class="modal-close-btn" onclick="app.closeNutritionBoosterModal()" aria-label="Tutup modal">
-          <i data-lucide="x"></i>
-        </button>
-      </div>
-
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:18px;">
-        <!-- 1. Baseline Reference Card -->
-        <div class="booster-baseline-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:11.5px;font-weight:800;color:#233917;text-transform:uppercase;letter-spacing:0.6px;display:flex;align-items:center;gap:6px;">
-              <iconify-icon icon="solar:shield-check-bold" style="font-size:15px;color:#233917;"></iconify-icon>
-              <span data-i18n="booster_base_hdr">Kebutuhan Medis Dasar Pemulihan (ERAS / ESPEN)</span>
-            </div>
-            <span class="badge teal" id="booster-condition-badge" style="font-size:10.5px;font-weight:700;">Pasca-Operasi</span>
-          </div>
-          <div class="booster-baseline-grid">
-            <div class="booster-base-pill">
-              <span class="lbl">Protein Dasar</span>
-              <b class="val" id="booster-base-protein">75 g</b>
-              <small class="sub" id="booster-base-protein-perkg">1.5 g/kg</small>
-            </div>
-            <div class="booster-base-pill">
-              <span class="lbl">Energi / Kalori</span>
-              <b class="val" id="booster-base-cals">1.850 kkal</b>
-              <small class="sub">TDEE</small>
-            </div>
-            <div class="booster-base-pill">
-              <span class="lbl">Karbohidrat</span>
-              <b class="val" id="booster-base-carbs">240 g</b>
-              <small class="sub">Energi</small>
-            </div>
-            <div class="booster-base-pill">
-              <span class="lbl">Lemak Sehat</span>
-              <b class="val" id="booster-base-fat">51 g</b>
-              <small class="sub">Lipid</small>
+        <div class="booster-header-right">
+          <div class="booster-protocol-badge">
+            <iconify-icon icon="solar:shield-check-bold" class="protocol-icon"></iconify-icon>
+            <div class="protocol-text">
+              <span class="protocol-sub">Protokol Valid</span>
+              <span class="protocol-main">ESPEN Clinical Target</span>
             </div>
           </div>
-        </div>
-
-        <!-- 2. Quick Booster Presets -->
-        <div>
-          <label style="font-size:12.5px;font-weight:700;color:var(--ink);display:block;margin-bottom:8px;" data-i18n="booster_preset_hdr">
-            Pilihan Cepat Target Booster:
-          </label>
-          <div class="booster-preset-grid">
-            <button type="button" class="booster-preset-card active" id="preset-btn-default" data-preset="default" onclick="app.selectBoosterPreset('default')">
-              <div class="preset-icon">🔄</div>
-              <div class="preset-info">
-                <b>Standar Murni (+0g)</b>
-                <span>Sesuai anjuran medis dasar</span>
-              </div>
-            </button>
-            <button type="button" class="booster-preset-card" id="preset-btn-rehab" data-preset="rehab" onclick="app.selectBoosterPreset('rehab')">
-              <div class="preset-icon">🏋️</div>
-              <div class="preset-info">
-                <b>Fisioterapi &amp; Mobilitas</b>
-                <span>+15g Protein · +200 kkal</span>
-              </div>
-            </button>
-            <button type="button" class="booster-preset-card" id="preset-btn-wound" data-preset="wound" onclick="app.selectBoosterPreset('wound')">
-              <div class="preset-icon">🩹</div>
-              <div class="preset-info">
-                <b>Jaringan &amp; Ekstra Albumin</b>
-                <span>+25g Protein · +150 kkal</span>
-              </div>
-            </button>
-            <button type="button" class="booster-preset-card" id="preset-btn-appetite" data-preset="appetite" onclick="app.selectBoosterPreset('appetite')">
-              <div class="preset-icon">⚡</div>
-              <div class="preset-info">
-                <b>Energi &amp; Nafsu Makan</b>
-                <span>+10g Protein · +350 kkal</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3. Interactive Adjustment Sliders & Number Controls -->
-        <div class="booster-inputs-container">
-          <!-- Extra Protein -->
-          <div class="booster-field-row">
-            <div class="field-label-group">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span class="color-dot" style="background:#D92D20;"></span>
-                <strong data-i18n="booster_input_prot">Tambahan Protein (g/hari)</strong>
-              </div>
-              <span class="field-current-value" id="booster-val-prot-display">+0 g</span>
-            </div>
-            <div class="range-with-buttons">
-              <button type="button" class="btn-step" onclick="app.stepBoosterValue('protein', -5)">-5</button>
-              <input type="range" id="booster-input-protein" min="0" max="60" step="5" value="0"
-                oninput="app.onBoosterSliderChange('protein', this.value)" class="booster-range-slider">
-              <button type="button" class="btn-step" onclick="app.stepBoosterValue('protein', 5)">+5</button>
-            </div>
-            <div class="field-subtext" id="booster-calc-prot-result">Total target protein: 75 g / hari</div>
-          </div>
-
-          <!-- Extra Calories -->
-          <div class="booster-field-row">
-            <div class="field-label-group">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span class="color-dot" style="background:#137333;"></span>
-                <strong data-i18n="booster_input_cals">Tambahan Kalori (kkal/hari)</strong>
-              </div>
-              <span class="field-current-value" id="booster-val-cals-display">+0 kkal</span>
-            </div>
-            <div class="range-with-buttons">
-              <button type="button" class="btn-step" onclick="app.stepBoosterValue('calories', -50)">-50</button>
-              <input type="range" id="booster-input-calories" min="0" max="800" step="50" value="0"
-                oninput="app.onBoosterSliderChange('calories', this.value)" class="booster-range-slider">
-              <button type="button" class="btn-step" onclick="app.stepBoosterValue('calories', 50)">+50</button>
-            </div>
-            <div class="field-subtext" id="booster-calc-cals-result">Total target kalori: 1.850 kkal / hari</div>
-          </div>
-
-          <!-- Advanced: Carbs & Fats Toggle / Expandable -->
-          <details class="booster-advanced-details" style="background:#FAFAF7;border:1px solid #E5E9D8;border-radius:10px;padding:8px 14px;">
-            <summary style="font-size:12px;font-weight:700;color:#233917;cursor:pointer;padding:2px 0;">
-              ⚙️ Penyesuaian Karbohidrat &amp; Lemak Sehat (Opsional)
-            </summary>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px;">
-              <div>
-                <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="booster_input_carbs">Tambahan Karbohidrat (g)</label>
-                <input type="number" id="booster-input-carbs" min="0" max="150" step="5" value="0"
-                  class="input-clean" oninput="app.updateBoosterLivePreview()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #CBD5E1;box-sizing:border-box;">
-              </div>
-              <div>
-                <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="booster_input_fat">Tambahan Lemak Sehat (g)</label>
-                <input type="number" id="booster-input-fat" min="0" max="40" step="5" value="0"
-                  class="input-clean" oninput="app.updateBoosterLivePreview()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #CBD5E1;box-sizing:border-box;">
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <!-- 4. Focused Nutrients Checkchips -->
-        <div>
-          <label style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:6px;" data-i18n="booster_focus_hdr">
-            Fokus Nutrisi / Mikronutrien Khusus:
-          </label>
-          <div class="booster-chips-group">
-            <label class="booster-chip">
-              <input type="checkbox" id="booster-focus-albumin" value="albumin" onchange="app.updateBoosterLivePreview()">
-              <span>🐟 Ekstra Albumin (Channa striata)</span>
-            </label>
-            <label class="booster-chip">
-              <input type="checkbox" id="booster-focus-zinc" value="zinc" onchange="app.updateBoosterLivePreview()">
-              <span>⚡ Kolagen &amp; Zinc</span>
-            </label>
-            <label class="booster-chip">
-              <input type="checkbox" id="booster-focus-vitc" value="vitc" onchange="app.updateBoosterLivePreview()">
-              <span>🍊 Vitamin C &amp; Imun</span>
-            </label>
-            <label class="booster-chip">
-              <input type="checkbox" id="booster-focus-omega3" value="omega3" onchange="app.updateBoosterLivePreview()">
-              <span>🥑 Omega-3 Anti-inflamasi</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 5. Reason / Clinical Context Note -->
-        <div>
-          <label for="booster-reason-input" style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:4px;" data-i18n="booster_reason_label">
-            Konteks / Alasan Tambahan Batasan:
-          </label>
-          <input type="text" id="booster-reason-input" class="input-clean"
-            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #CBD5E1;font-size:13px;box-sizing:border-box;"
-            placeholder="Contoh: Sesi fisioterapi 3x seminggu, nafsu makan bertambah, anjuran dokter...">
-        </div>
-
-        <!-- 6. Total Effective Target Live Comparison -->
-        <div class="booster-comparison-box">
-          <div style="font-size:12px;font-weight:800;color:#1E3A1E;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-            <iconify-icon icon="solar:chart-2-bold" style="font-size:16px;color:#233917;"></iconify-icon>
-            <span data-i18n="booster_preview_hdr">Ringkasan Total Target Harian Baru</span>
-          </div>
-          <div class="booster-summary-row">
-            <div class="summary-col">
-              <span class="sub">Total Protein</span>
-              <strong class="val" id="booster-summary-protein" style="color:#D92D20;">75 g / hari</strong>
-              <small id="booster-summary-protein-breakdown">75g dasar + 0g ekstra</small>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-col">
-              <span class="sub">Total Kalori</span>
-              <strong class="val" id="booster-summary-calories" style="color:#137333;">1.850 kkal</strong>
-              <small id="booster-summary-cals-breakdown">1.850 kkal dasar + 0 kkal ekstra</small>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-col">
-              <span class="sub">Status Batasan</span>
-              <strong class="val" id="booster-summary-status" style="color:#233917;">Standar Klinis</strong>
-              <small id="booster-summary-focus-tags">Semua makro terkalibrasi</small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Footer Actions -->
-      <div class="modal-footer" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap;">
-        <button type="button" class="btn-outline-glass" onclick="app.resetNutritionBooster()"
-          style="color:#64748B;font-size:12.5px;padding:8px 14px;border-radius:8px;" data-i18n="booster_btn_reset">
-          Reset ke Batas Klinis Dasar
-        </button>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="btn-outline-glass" onclick="app.closeNutritionBoosterModal()"
-            style="font-size:12.5px;padding:8px 14px;border-radius:8px;">
-            Batal
+          <button type="button" class="modal-close-btn" onclick="app.closeNutritionBoosterModal()" aria-label="Tutup modal">
+            <i data-lucide="x"></i>
           </button>
-          <button type="button" class="btn-primary-coral" onclick="app.saveNutritionBooster()"
-            style="font-size:12.5px;padding:8px 18px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;">
-            <i data-lucide="check-circle" class="btn-icon-sm"></i>
-            <span data-i18n="booster_btn_apply">Terapkan Batasan Baru</span>
+        </div>
+      </div>
+
+      <!-- 2. Target Medis Dasar (Clinical Baseline) Card -->
+      <div class="booster-baseline-card">
+        <div class="booster-baseline-header">
+          <div class="title-left">
+            <iconify-icon icon="solar:stethoscope-bold-duotone" style="font-size:18px;color:#0D9488;"></iconify-icon>
+            <span>Target Medis Dasar (Clinical Baseline)</span>
+          </div>
+          <div class="status-right" id="booster-condition-status-text">
+            <span>Status: Pasca Bedah Day-4 · Terkunci</span>
+          </div>
+        </div>
+
+        <div class="booster-baseline-grid">
+          <!-- Protein Tile -->
+          <div class="booster-base-tile">
+            <span class="lbl">PROTEIN DASAR</span>
+            <div class="val-wrap">
+              <span class="val" id="booster-base-protein">75</span>
+              <span class="unit">gram</span>
+            </div>
+            <span class="sub" id="booster-base-protein-perkg">1.2 g/kg BB/hari</span>
+          </div>
+
+          <!-- Calories Tile -->
+          <div class="booster-base-tile">
+            <span class="lbl">KALORI DASAR</span>
+            <div class="val-wrap">
+              <span class="val" id="booster-base-cals">1.850</span>
+              <span class="unit">kkal</span>
+            </div>
+            <span class="sub" id="booster-base-cals-bmr">BMR 1.450 + Faktor Stres</span>
+          </div>
+
+          <!-- Carbs Tile -->
+          <div class="booster-base-tile">
+            <span class="lbl">KARBOHIDRAT</span>
+            <div class="val-wrap">
+              <span class="val" id="booster-base-carbs">220</span>
+              <span class="unit">gram</span>
+            </div>
+            <span class="sub" id="booster-base-carbs-ratio">50% Rasio Makronutrien</span>
+          </div>
+
+          <!-- Fat Tile -->
+          <div class="booster-base-tile">
+            <span class="lbl">LEMAK SEHAT</span>
+            <div class="val-wrap">
+              <span class="val" id="booster-base-fat">55</span>
+              <span class="unit">gram</span>
+            </div>
+            <span class="sub" id="booster-base-fat-ratio">25% Asupan Lipida</span>
+          </div>
+        </div>
+
+        <div class="booster-baseline-note">
+          <iconify-icon icon="solar:info-circle-linear" style="font-size:15px;color:#0284C7;flex-shrink:0;"></iconify-icon>
+          <span>Dihitung otomatis berdasarkan rekam medis dr. Sarah Wijaya, Sp.GK &amp; standar nutrisi bedah digestif ESPEN.</span>
+        </div>
+      </div>
+
+      <!-- 3. Preset Cepat (Quick Booster) -->
+      <div class="booster-section-title-row">
+        <span class="sec-title">Preset Cepat (Quick Booster)</span>
+        <span class="sec-hint">Pilih rekomendasi otomatis sesuai agenda hari ini</span>
+      </div>
+
+      <div class="booster-preset-grid">
+        <!-- Preset 1: Standar Medis -->
+        <button type="button" class="booster-preset-card" id="preset-btn-default" data-preset="default" onclick="app.selectBoosterPreset('default')">
+          <div class="preset-top">
+            <span class="preset-title">Standar Medis</span>
+            <span class="preset-icon">—</span>
+          </div>
+          <div class="preset-main">+0g Protein</div>
+          <div class="preset-sub">Kembali ke baseline klinik</div>
+        </button>
+
+        <!-- Preset 2: Fisioterapi & Mobilitas -->
+        <button type="button" class="booster-preset-card" id="preset-btn-rehab" data-preset="rehab" onclick="app.selectBoosterPreset('rehab')">
+          <div class="preset-top">
+            <span class="preset-title">Fisioterapi &amp; Mobilitas</span>
+            <iconify-icon icon="solar:running-2-bold" class="preset-icon"></iconify-icon>
+          </div>
+          <div class="preset-main">+15g Protein</div>
+          <div class="preset-sub">+200 kkal energi latihan</div>
+        </button>
+
+        <!-- Preset 3: Pemulihan Luka Bedah (Active by default) -->
+        <button type="button" class="booster-preset-card active" id="preset-btn-wound" data-preset="wound" onclick="app.selectBoosterPreset('wound')">
+          <div class="preset-top">
+            <span class="preset-title">Pemulihan Luka Bedah</span>
+            <iconify-icon icon="solar:check-circle-bold" class="preset-icon" style="color:#0284C7;font-size:16px;"></iconify-icon>
+          </div>
+          <div class="preset-main">+20g Protein</div>
+          <div class="preset-sub">+0 kkal (Fokus anabolisme)</div>
+        </button>
+
+        <!-- Preset 4: Energi & Stamina -->
+        <button type="button" class="booster-preset-card" id="preset-btn-stamina" data-preset="stamina" onclick="app.selectBoosterPreset('stamina')">
+          <div class="preset-top">
+            <span class="preset-title">Energi &amp; Stamina</span>
+            <iconify-icon icon="solar:bolt-bold" class="preset-icon" style="color:#F59E0B;"></iconify-icon>
+          </div>
+          <div class="preset-main">+10g Protein</div>
+          <div class="preset-sub">+350 kkal kalori aktif</div>
+        </button>
+      </div>
+
+      <!-- 4. Target Akumulasi Protein Kesembuhan (Milestone Program - Ribuan Gram) -->
+      <div class="booster-healing-milestone-card">
+        <div class="milestone-head">
+          <div class="title-left">
+            <iconify-icon icon="solar:cup-star-bold-duotone" style="font-size:24px;color:#059669;flex-shrink:0;"></iconify-icon>
+            <div>
+              <span class="m-title">Target Protein untuk Kesembuhan Total</span>
+              <span class="m-sub">Akumulasi kuota protein jangka panjang untuk penutupan luka &amp; regenerasi jaringan tuntas</span>
+            </div>
+          </div>
+          <div class="milestone-badge">
+            <iconify-icon icon="solar:shield-check-bold" style="font-size:14px;color:#059669;"></iconify-icon>
+            <span>Program Regenerasi Jaringan</span>
+          </div>
+        </div>
+
+        <div class="milestone-body">
+          <div class="milestone-input-row">
+            <div class="milestone-val-wrap">
+              <span class="lbl">JUMLAH KESELURUHAN TARGET KESEMBUHAN</span>
+              <div class="input-unit-box">
+                <input type="number" id="booster-healing-total-input" value="2500" min="500" step="100"
+                  oninput="app.onHealingTotalInput(this.value)" class="healing-number-input" title="Atur jumlah keseluruhan target protein kesembuhan">
+                <span class="unit-text">gram</span>
+              </div>
+            </div>
+
+            <div class="quick-add-milestone">
+              <span class="lbl-quick">Tambah dari Jumlah Keseluruhan:</span>
+              <div class="quick-btns">
+                <button type="button" class="btn-quick-add" onclick="app.addHealingTarget(250)">+250g</button>
+                <button type="button" class="btn-quick-add" onclick="app.addHealingTarget(500)">+500g</button>
+                <button type="button" class="btn-quick-add" onclick="app.addHealingTarget(1000)">+1.000g</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar Akumulasi Kesembuhan -->
+          <div class="milestone-progress-container">
+            <div class="m-prog-labels">
+              <span class="accum-text">Terkumpul: <strong id="booster-healing-accum-txt">0 g</strong> (<span id="booster-healing-pct-txt">0%</span>)</span>
+              <span class="estim-text" id="booster-healing-eta-txt">Estimasi berdasarkan pencatatan menu harian Anda</span>
+            </div>
+            <div class="m-prog-track">
+              <div class="m-prog-fill" id="booster-healing-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Sliders: Penyesuaian Langsung dari Jumlah Keseluruhan (Bebas Kustomisasi · Tanpa Batas) -->
+      <div class="booster-slider-cards-grid">
+        <!-- Left: Target Protein Harian (Tambah dari Jumlah Keseluruhan) -->
+        <div class="booster-slider-card">
+          <div class="card-head">
+            <div class="title-wrap">
+              <span class="color-dot"></span>
+              <span>Target Protein Harian</span>
+            </div>
+            <span class="limit-badge-unlimited">Bebas Kustomisasi · Tanpa Batas</span>
+          </div>
+          <p class="desc">Dukungan sintesis jaringan harian. Anda dapat menambah langsung dari jumlah keseluruhan target harian.</p>
+
+          <div class="stepper-box-custom">
+            <button type="button" class="btn-stepper-sq" onclick="app.stepBoosterTotal('protein', -5)" aria-label="Kurangi 5g protein">−</button>
+            <div class="stepper-center-total">
+              <div class="total-input-row">
+                <input type="number" id="booster-total-prot-input" class="total-stepper-input" value="75" min="1" step="5"
+                  oninput="app.onBoosterTotalProtInput(this.value)" title="Ketik langsung jumlah keseluruhan protein">
+                <span class="unit" style="font-size:14px;font-weight:700;color:#64748B;">gram</span>
+              </div>
+              <div class="total-sub-breakdown">
+                <span>Dasar Medis 75g + </span>
+                <strong id="booster-prot-delta-text">+0g tambahan</strong>
+              </div>
+              <!-- Hidden element to preserve backwards compatibility with test scripts -->
+              <span id="booster-val-prot-display" style="display:none;">+0</span>
+            </div>
+            <button type="button" class="btn-stepper-sq" onclick="app.stepBoosterTotal('protein', 5)" aria-label="Tambah 5g protein">+</button>
+          </div>
+
+          <input type="range" id="booster-input-protein" min="0" max="250" step="5" value="0"
+            oninput="app.onBoosterSliderChange('protein', this.value)" class="booster-range-slider">
+
+          <div class="booster-scale-marks">
+            <span>75g (Basal)</span>
+            <span>95g</span>
+            <span>115g</span>
+            <span>135g</span>
+            <span>175g+</span>
+          </div>
+
+          <div class="booster-total-footer">
+            <span>Total Target Harian</span>
+            <b id="booster-calc-prot-result">75 g / hari (75g basal + 0g)</b>
+          </div>
+        </div>
+
+        <!-- Right: Target Kalori Harian (Tambah dari Jumlah Keseluruhan) -->
+        <div class="booster-slider-card">
+          <div class="card-head">
+            <div class="title-wrap">
+              <span class="color-dot"></span>
+              <span>Target Kalori Harian</span>
+            </div>
+            <span class="limit-badge-unlimited">Bebas Kustomisasi · Tanpa Batas</span>
+          </div>
+          <p class="desc">Kompensasi pengeluaran energi harian. Tambah langsung dari jumlah kalori total.</p>
+
+          <div class="stepper-box-custom">
+            <button type="button" class="btn-stepper-sq" onclick="app.stepBoosterTotal('calories', -50)" aria-label="Kurangi 50 kkal">−</button>
+            <div class="stepper-center-total">
+              <div class="total-input-row">
+                <input type="number" id="booster-total-cals-input" class="total-stepper-input" value="1850" min="1" step="50"
+                  oninput="app.onBoosterTotalCalsInput(this.value)" title="Ketik langsung jumlah keseluruhan kalori">
+                <span class="unit" style="font-size:14px;font-weight:700;color:#64748B;">kkal</span>
+              </div>
+              <div class="total-sub-breakdown">
+                <span>Dasar Medis 1.850 + </span>
+                <strong id="booster-cals-delta-text">+0 kkal tambahan</strong>
+              </div>
+              <!-- Hidden element to preserve backwards compatibility with test scripts -->
+              <span id="booster-val-cals-display" style="display:none;">+0</span>
+            </div>
+            <button type="button" class="btn-stepper-sq" onclick="app.stepBoosterTotal('calories', 50)" aria-label="Tambah 50 kkal">+</button>
+          </div>
+
+          <input type="range" id="booster-input-calories" min="0" max="3500" step="50" value="0"
+            oninput="app.onBoosterSliderChange('calories', this.value)" class="booster-range-slider">
+
+          <div class="booster-scale-marks">
+            <span>1.850 (Basal)</span>
+            <span>2.150</span>
+            <span>2.450</span>
+            <span>2.750</span>
+            <span>3.500+</span>
+          </div>
+
+          <div class="booster-total-footer">
+            <span>Total Target Harian</span>
+            <b id="booster-calc-cals-result">1.850 kkal / hari (1.850 basal + 0)</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden supporting inputs for carbs & fat to retain full state support -->
+      <input type="hidden" id="booster-input-carbs" value="0">
+      <input type="hidden" id="booster-input-fat" value="0">
+
+      <!-- 5. Fokus Mikronutrien & Peptida Spesifik -->
+      <div class="booster-focus-section">
+        <div class="booster-focus-head">
+          <span class="title">Fokus Mikronutrien &amp; Peptida Spesifik</span>
+          <span class="count" id="booster-focus-count-badge">0 Dipilih</span>
+        </div>
+        <p class="booster-focus-sub">Pilihan senyawa bioaktif yang akan diprioritaskan oleh AI ke dalam penyusunan bahan dapur klinis.</p>
+
+        <div class="booster-chips-wrap">
+          <button type="button" class="booster-pill-chip" id="chip-albumin" data-val="albumin" onclick="app.toggleBoosterFocusChip('albumin')">
+            <span class="chip-icon">+</span>
+            <span>Ekstra Albumin (Ikan Gabus)</span>
+          </button>
+          <button type="button" class="booster-pill-chip" id="chip-zinc" data-val="zinc" onclick="app.toggleBoosterFocusChip('zinc')">
+            <span class="chip-icon">+</span>
+            <span>Kolagen &amp; Zinc Jaringan</span>
+          </button>
+          <button type="button" class="booster-pill-chip" id="chip-vitc" data-val="vitc" onclick="app.toggleBoosterFocusChip('vitc')">
+            <span class="chip-icon">+</span>
+            <span>Vitamin C &amp; Imun Booster</span>
+          </button>
+          <button type="button" class="booster-pill-chip" id="chip-omega3" data-val="omega3" onclick="app.toggleBoosterFocusChip('omega3')">
+            <span class="chip-icon">+</span>
+            <span>Omega-3 Anti-Inflamasi</span>
+          </button>
+          <button type="button" class="booster-pill-chip" id="chip-glutamine" data-val="glutamine" onclick="app.toggleBoosterFocusChip('glutamine')">
+            <span class="chip-icon">+</span>
+            <span>L-Glutamin Mukosa</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 6. Catatan Tambahan atau Arahan Klinis -->
+      <div class="booster-note-section">
+        <span class="note-title">Catatan Tambahan atau Arahan Klinis</span>
+        <p class="note-sub">Berikan konteks aktivitas atau anjuran spesialis agar sistem mencatat audit trail secara presisi.</p>
+        <div class="booster-note-input-wrap">
+          <input type="text" id="booster-reason-input"
+            value=""
+            placeholder="Contoh: Saran akselerasi mobilisasi pemulihan jaringan pasca-operasi">
+          <iconify-icon icon="solar:pen-linear" class="icon"></iconify-icon>
+        </div>
+      </div>
+
+      <!-- 7. Floating Footer Summary Bar -->
+      <div class="booster-bottom-summary-bar">
+        <div class="left-group">
+          <div class="icon-box">
+            <iconify-icon icon="solar:tuning-square-2-bold-duotone" style="font-size:22px;"></iconify-icon>
+          </div>
+          <div class="info-col">
+            <span class="lbl-tiny">TARGET BARU TERHITUNG</span>
+            <div class="val-main">
+              <strong id="booster-bar-protein">75 g</strong>
+              <span>Protein</span>
+              <span class="dot">·</span>
+              <strong id="booster-bar-cals">1.850</strong>
+              <span>kkal</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="center-group">
+          <span class="lbl-tiny">FOKUS TERPILIH</span>
+          <div class="focus-names" id="booster-bar-focus-names">Standar Medis Murni</div>
+        </div>
+
+        <div class="right-actions">
+          <button type="button" class="btn-ghost-reset" onclick="app.resetNutritionBooster()">Reset ke Medis Dasar</button>
+          <button type="button" class="btn-apply-booster-teal" onclick="app.saveNutritionBooster()">
+            <span>Terapkan Batasan Baru</span>
+            <iconify-icon icon="solar:arrow-right-linear" style="font-size:16px;"></iconify-icon>
           </button>
         </div>
       </div>
@@ -5047,7 +5082,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
           <div>
             <h3 style="margin:0;font-size:15px;font-weight:700;color:var(--ink);">Tambah Rutinitas Harian</h3>
             <p style="margin:2px 0 0;font-size:11px;color:var(--ink-soft);">Tambahkan jadwal makan khusus atau terapi
-              dokter</p>
+              medis/nutrisi</p>
           </div>
         </div>
         <button type="button" class="close-btn" onclick="app.closeAddScheduleModal()">
@@ -5177,38 +5212,49 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
         </button>
       </div>
     </div>
-  <!-- MODAL: DUAL-MODE COMPANION SELECTOR (DOKTER SPESIALIS vs KELUARGA PENDAMPING) -->
+  <!-- MODAL: COMPANION SELECTOR (KELUARGA PENDAMPING) -->
   <div class="modal" id="modal-companion-selector" style="display:none;" role="dialog" aria-labelledby="comp-modal-title">
-    <div class="modal-card" style="max-width:540px;">
+    <div class="modal-card" style="max-width:480px;">
       <div class="modal-header">
         <h3 id="comp-modal-title" style="display:flex;align-items:center;gap:8px;margin:0;font-size:18px;font-weight:800;color:#1E293B;">
-          <i data-lucide="stethoscope" style="width:20px;height:20px;color:#059669;"></i>
-          <span data-i18n="comp_modal_title">Pilih Peran Pendamping &amp; Pemantau</span>
+          <i data-lucide="heart-pulse" style="width:20px;height:20px;color:#2563EB;"></i>
+          <span data-i18n="comp_modal_title">Portal Pendamping Pasien</span>
         </h3>
         <button type="button" class="modal-close-btn" onclick="app.closeModal('modal-companion-selector')" aria-label="Tutup modal">
           <i data-lucide="x" style="width:18px;height:18px;"></i>
         </button>
       </div>
       <p data-i18n="comp_modal_desc" style="font-size:13px;color:#64748B;margin:6px 0 16px 0;line-height:1.45;">
-        Pilih jenis peran pendamping yang sesuai untuk masuk ke dasbor pemantauan pasien:
+        Akses khusus keluarga pendamping atau perawat homecare untuk memantau asupan gizi harian pasien di rumah:
       </p>
       <div class="companion-selector-grid">
-        <div class="companion-role-card doctor" onclick="app.loginAsDemo('doctor')">
-          <div class="companion-role-icon">🩺</div>
-          <div class="companion-role-title" data-i18n="comp_role_doctor_title">Dokter Spesialis / DPJP</div>
-          <div class="companion-role-desc" data-i18n="comp_role_doctor_desc">
-            Supervisi rekam kepatuhan klinis, cek target protein &amp; albumin pasien, validasi rekam medis PDF, dan evaluasi menu via AI Teks.
-          </div>
-          <button type="button" class="companion-role-btn" data-i18n="comp_role_doctor_btn">Masuk Mode Dokter</button>
-        </div>
         <div class="companion-role-card caregiver" onclick="app.loginAsDemo('caregiver')">
           <div class="companion-role-icon">👨‍👩‍👧</div>
-          <div class="companion-role-title" data-i18n="comp_role_caregiver_title">Keluarga Pendamping</div>
+          <div class="companion-role-title" data-i18n="comp_role_caregiver_title">Keluarga Pendamping / Caregiver</div>
           <div class="companion-role-desc" data-i18n="comp_role_caregiver_desc">
             Pantau asupan makan harian pasien keluarga, periksa catatan pantangan medis, dan dapatkan tips perawatan pemulihan di rumah.
           </div>
           <button type="button" class="companion-role-btn" data-i18n="comp_role_caregiver_btn">Masuk Mode Caregiver</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN CLINICAL DATA VALIDATION & AUDIT (Sesuai Standar Mobile Bottom-Sheet & Desktop Dialog) -->
+  <div class="modal-overlay" id="modal-admin-validate-user" role="dialog" aria-labelledby="admin-val-modal-title" onclick="if(event.target===this) app.closeModal('modal-admin-validate-user')">
+    <div class="modal-box" style="max-width:620px;">
+      <div class="modal-header">
+        <h3 id="admin-val-modal-title" style="display:flex;align-items:center;gap:8px;margin:0;font-size:17px;font-weight:800;color:#1E293B;">
+          <i data-lucide="clipboard-check" style="width:20px;height:20px;color:#10B981;"></i>
+          <span>Validasi &amp; Audit Data Klinis Pasien</span>
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('modal-admin-validate-user')" aria-label="Tutup modal">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+
+      <div id="admin-val-user-content" style="margin-top:12px;">
+        <!-- Populated dynamically by app.openAdminUserValidationModal() -->
       </div>
     </div>
   </div>
@@ -5228,6 +5274,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/community.js"></script>
   <script src="js/caregiver.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/admin_validator.js"></script>
   <script src="js/app.js"></script>
 
 </body>

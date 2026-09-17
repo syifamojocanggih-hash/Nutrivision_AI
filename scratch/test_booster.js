@@ -244,7 +244,50 @@ if (p4.targets.protein !== 75 || p4.additionalTargets.active !== false || card2B
   throw new Error('Reset booster failed to restore clinical baseline!');
 }
 
-  console.log('\n🎉 ALL NUTRITION BOOSTER TESTS PASSED FLAWLESSLY!');
+console.log('\n=== TEST 5: Direct Adjustment from Overall Total (No Caps/No Limits) ===');
+testApp.openNutritionBoosterModal();
+// User directly inputs total protein = 130g (beyond old +35g limit)
+testApp.onBoosterTotalProtInput(130);
+const inpProtTotal = getElementById('booster-total-prot-input');
+console.log('Total Prot Input value:', inpProtTotal.value, '(Expected: 130)');
+console.log('Calculated Delta Prot:', getElementById('booster-input-protein').value, '(Expected: 55)');
+
+// User clicks [+] to step from overall total: 130 + 10 = 140g
+testApp.stepBoosterTotal('protein', 10);
+console.log('Stepped Total Prot:', inpProtTotal.value, '(Expected: 140)');
+testApp.saveNutritionBooster();
+
+const p5 = testApp.userProfile;
+console.log('Effective Protein Target:', p5.targets.protein, '(Expected: 140)');
+console.log('Additional Protein Delta:', p5.additionalTargets.protein, '(Expected: 65)');
+if (p5.targets.protein !== 140 || p5.additionalTargets.protein !== 65) {
+  throw new Error('Direct adjustment from overall total failed!');
+}
+
+console.log('\n=== TEST 6: Healing Protein Milestone (Ribuan Gram) ===');
+testApp.openNutritionBoosterModal();
+const healInput = getElementById('booster-healing-total-input');
+console.log('Initial Healing Target:', healInput.value, '(Expected: 2500)');
+
+// User adds +500g from overall total
+testApp.addHealingTarget(500);
+console.log('After +500g Healing Target:', healInput.value, '(Expected: 3000)');
+
+// User directly enters 4000g
+testApp.onHealingTotalInput(4000);
+console.log('Direct 4000g Healing Target:', healInput.value, '(Expected: 4000)');
+testApp.saveNutritionBooster();
+
+const p6 = testApp.userProfile;
+console.log('Saved Healing Target Total:', p6.healingTarget.totalGrams, '(Expected: 4000)');
+const c2HealText = getElementById('ov-card2-healing-target-text');
+console.log('Card 2 Healing Text:', c2HealText.textContent);
+
+if (p6.healingTarget.totalGrams !== 4000 || !c2HealText.textContent.includes('4.000')) {
+  throw new Error('Healing protein milestone test failed!');
+}
+
+  console.log('\n🎉 ALL NUTRITION BOOSTER TESTS (INCLUDING UNCAPPED TOTALS & THOUSANDS HEALING TARGETS) PASSED FLAWLESSLY!');
 }
 
 runTests().catch(err => {

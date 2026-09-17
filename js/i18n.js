@@ -105,7 +105,7 @@
       support_card2_desc: 'Harnessing Channa striata (gabus) albumin, tempeh bio-peptides, and moringa oleifera to accelerate wound closure up to 2x faster.',
       support_card2_badge: 'Evidence-Based',
       support_card3_title: 'Caregiver & Telehealth Portal',
-      support_card3_desc: 'Share encrypted read-only nutritional reports and weekly recovery charts with attending doctors, dietitians, or family caregivers.',
+      support_card3_desc: 'Share encrypted read-only nutritional reports and weekly recovery charts with dietitians, clinical nutritionists, or family caregivers.',
       support_card3_badge: 'Protected Access',
 
       // Local Superfoods Section
@@ -168,7 +168,7 @@
       profile_activity_label: 'Activity Level & Therapy:',
       profile_activity_empty: 'No activity level declared',
       profile_caregiver_title: 'Caregiver Portal (Caregiver Access)',
-      profile_caregiver_subtitle: 'Manage remote monitoring permissions for family and clinical team',
+      profile_caregiver_subtitle: 'Manage remote monitoring permissions for family caregivers',
       profile_caregiver_badge: 'Protected Read-Only Mode',
       profile_caregiver_desc: 'Caregivers with a designated link can only view daily nutrition summaries and meal history without permission to alter profile or medical records.',
       profile_caregiver_link_label: 'Encrypted Caregiver Access Link:',
@@ -309,6 +309,18 @@
       symp_diarrhea: 'Diarrhea',
       symp_constipation: 'Constipation / Bowel Sluggishness',
       symp_low_appetite: 'Low Appetite',
+      plan_restr_title: 'Dietary Restrictions & Allergies',
+      plan_restr_sub: 'Add or remove personal restrictions directly without re-taking the diagnostic quiz.',
+      plan_restr_placeholder: 'Type restriction (e.g., Shrimp, Eggs, Gluten, Coconut milk, Peanuts)...',
+      plan_restr_add_btn: 'Add',
+      plan_restr_quick_title: 'Quick Suggestions:',
+      plan_restr_empty: 'No personal dietary restrictions added.',
+      plan_restr_clear_all: 'Clear All',
+      plan_restr_active_label: 'Active Restrictions:',
+      plan_restr_warning: 'Contains Restriction',
+      plan_restr_toast_added: 'added to dietary restrictions.',
+      plan_restr_toast_removed: 'removed from dietary restrictions.',
+      plan_restr_toast_cleared: 'All dietary restrictions cleared.',
       plan_main_title: 'Adaptive Recovery Meal Planner',
       plan_main_sub: 'Structured daily meal itinerary matched to your clinical recovery profile',
       plan_desc: 'Choose between fully optimized standard clinical options or budget-friendly local superfood alternatives while fulfilling complete tissue repair protein targets.',
@@ -316,11 +328,8 @@
       plan_opt_budget: 'Low-Budget Option (Local Superfoods)',
 
       // Modals
-      comp_modal_title: 'Select Companion & Monitoring Role',
-      comp_modal_desc: 'Select the appropriate companion role to access the patient monitoring dashboard:',
-      comp_role_doctor_title: 'Specialist Physician / Attending Doctor',
-      comp_role_doctor_desc: 'Supervise clinical compliance logs, monitor protein & albumin targets, validate PDF medical summaries, and evaluate diets via AI.',
-      comp_role_doctor_btn: 'Enter Doctor Mode',
+      comp_modal_title: 'Family Caregiver Portal',
+      comp_modal_desc: 'Access dedicated family caregiver dashboard to monitor daily nutrition intake at home:',
       comp_role_caregiver_title: 'Family Caregiver',
       comp_role_caregiver_desc: 'Monitor daily meal intake for family members, review dietary restrictions, and receive home recovery care tips.',
       comp_role_caregiver_btn: 'Enter Caregiver Mode',
@@ -380,7 +389,12 @@
       toast_font_changed: 'Text size set to: ',
       toast_contrast_on: 'High Contrast Mode Enabled',
       toast_contrast_off: 'Standard Contrast Mode Enabled',
-      toast_caregiver_copied: 'Caregiver access link copied to clipboard!'
+      toast_caregiver_copied: 'Caregiver access link copied to clipboard!',
+
+      // Nutrition Booster
+      ov_target_booster_title: 'Additional Clinical Nutrition Target Adjustment',
+      ov_target_booster_sub: 'Increase protein & calorie quotas above medical baseline according to mobility demands or accelerated tissue recovery.',
+      ov_target_booster_btn: 'Additional Target Boundaries'
     },
 
     id: {
@@ -407,7 +421,7 @@
       nav_scan: 'Pindai Piring',
 
       // Transparency Alert Banner
-      banner_notice: '<strong>Pemberitahuan Layanan Publik & Pendukung Keputusan:</strong> Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (<em>clinical decision-support</em>), bukan pengganti nasihat, resep, atau diagnosis medis profesional dokter/ahli gizi.',
+      banner_notice: '<strong>Pemberitahuan Layanan Publik & Pendukung Keputusan:</strong> Seluruh segmentasi citra dan estimasi gizi pada aplikasi ini disajikan sebagai rentang pendukung keputusan (<em>clinical decision-support</em>), bukan pengganti nasihat, resep, atau diagnosis medis tenaga medis atau ahli gizi profesional.',
 
       // Hero Section
       hero_title: 'Scan makanan, bukan tebak-tebak gizi <span class="highlight-coral">pemulihan</span>.',
@@ -466,7 +480,7 @@
       support_card2_desc: 'Pemanfaatan albumin ikan gabus, peptida tempe, daun kelor, dan ragam pangan lokal dengan bioavailabilitas tinggi untuk akselerasi penyembuhan 2x lebih cepat.',
       support_card2_badge: 'Berbasis Riset',
       support_card3_title: 'Portal Pendamping & Telehealth',
-      support_card3_desc: 'Bagikan tautan rekapitulasi asupan gizi harian secara terenkripsi kepada dokter, ahli gizi, atau keluarga pendamping.',
+      support_card3_desc: 'Bagikan tautan rekapitulasi asupan gizi harian secara terenkripsi kepada ahli gizi, tenaga kesehatan, atau keluarga pendamping.',
       support_card3_badge: 'Akses Terproteksi',
 
       // Local Superfoods Section
@@ -496,7 +510,7 @@
       // Footer
       footer_desc: 'NutriVision AI adalah platform cerdas pemandu gizi berbasis computer vision untuk percepatan pemulihan bedah, rehabilitasi fisik, dan rawat lansia.',
       footer_copyright: '© 2026 NutriVision AI. Dikembangkan untuk GAYATAMA 5 — International Web Technology Competition.',
-      footer_disclaimer: 'Pernyataan: Aplikasi ini memberikan rekomendasi pendukung keputusan klinis dan tidak menggantikan konsultasi medis dokter.',
+      footer_disclaimer: 'Pernyataan: Aplikasi ini memberikan rekomendasi pendukung keputusan klinis dan tidak menggantikan konsultasi medis profesional.',
 
       // Profile Page
       profile_empty_title: 'Profil Pasien Belum Dikonfigurasi',
@@ -529,7 +543,7 @@
       profile_activity_label: 'Tingkat Aktivitas & Terapi:',
       profile_activity_empty: 'Belum mengisi tingkat aktivitas',
       profile_caregiver_title: 'Portal Pendamping (Caregiver Access)',
-      profile_caregiver_subtitle: 'Kelola izin pantau jarak jauh untuk keluarga dan tim medis pendamping',
+      profile_caregiver_subtitle: 'Kelola izin pantau jarak jauh untuk keluarga pendamping pasien',
       profile_caregiver_badge: 'Mode Lihat-Saja Terproteksi',
       profile_caregiver_desc: 'Pendamping dengan tautan khusus hanya dapat melihat rekapitulasi asupan gizi harian dan riwayat piring makan tanpa izin mengubah pengaturan profil atau data rekam medis pasien.',
       profile_caregiver_link_label: 'Tautan Akses Pendamping Terenkripsi:',
@@ -652,7 +666,7 @@
       ov_btn_caregiver_text: 'Salin Teks Nakes',
       ov_target_booster_btn: 'Batasan Target Tambahan',
       ov_target_booster_title: 'Keinginan Gizi Tambahan & Penyesuaian Batasan',
-      ov_target_booster_sub: 'Sesuaikan atau tambahkan kuota gizi di atas batas dasar pemulihan klinis untuk fisioterapi lanjutan, pembentukan jaringan otot, atau anjuran spesifik dokter.',
+      ov_target_booster_sub: 'Sesuaikan atau tambahkan kuota gizi di atas batas dasar pemulihan klinis untuk fisioterapi lanjutan, pembentukan jaringan otot, atau anjuran spesifik tenaga kesehatan.',
       booster_base_hdr: 'Kebutuhan Medis Dasar Pemulihan (ERAS / ESPEN)',
       booster_preset_hdr: 'Pilihan Cepat Target Booster',
       booster_preset_default: 'Standar Pemulihan Murni (+0g)',
@@ -686,6 +700,18 @@
       symp_diarrhea: 'Diare',
       symp_constipation: 'Konstipasi / Sembelit',
       symp_low_appetite: 'Nafsu Makan Rendah',
+      plan_restr_title: 'Daftar Pantangan & Alergi Makanan',
+      plan_restr_sub: 'Tambah atau kurangi pantangan personal secara langsung tanpa perlu mengulang kuis diagnosa dari awal.',
+      plan_restr_placeholder: 'Ketik pantangan (cth: Udang, Telur, Gluten, Santan, Kacang)...',
+      plan_restr_add_btn: 'Tambah',
+      plan_restr_quick_title: 'Pilihan Cepat:',
+      plan_restr_empty: 'Belum ada pantangan khusus yang ditambahkan.',
+      plan_restr_clear_all: 'Hapus Semua',
+      plan_restr_active_label: 'Pantangan Aktif:',
+      plan_restr_warning: 'Mengandung Pantangan',
+      plan_restr_toast_added: 'ditambahkan ke daftar pantangan.',
+      plan_restr_toast_removed: 'dihapus dari daftar pantangan.',
+      plan_restr_toast_cleared: 'Semua pantangan makanan dibersihkan.',
       plan_main_title: 'Recovery Meal Planner Adaptif',
       plan_main_sub: 'Rencana menu harian terstruktur berdasarkan profil kondisi klinis',
       plan_desc: 'Pilih antara opsi standar bergizi penuh atau opsi hemat biaya berbasis pangan lokal yang ramah anggaran namun tetap mencukupi target protein untuk regenerasi jaringan.',
@@ -693,12 +719,9 @@
       plan_opt_budget: 'Opsi Hemat / Low-Budget',
 
       // Modals
-      comp_modal_title: 'Pilih Peran Pendamping & Pemantau',
-      comp_modal_desc: 'Pilih jenis peran pendamping yang sesuai untuk masuk ke dasbor pemantauan pasien:',
-      comp_role_doctor_title: 'Dokter Spesialis / DPJP',
-      comp_role_doctor_desc: 'Supervisi rekam kepatuhan klinis, cek target protein & albumin pasien, validasi rekam medis PDF, dan evaluasi menu via AI Teks.',
-      comp_role_doctor_btn: 'Masuk Mode Dokter',
-      comp_role_caregiver_title: 'Keluarga Pendamping',
+      comp_modal_title: 'Portal Pendamping Pasien',
+      comp_modal_desc: 'Akses khusus keluarga pendamping atau perawat homecare untuk memantau asupan gizi harian pasien di rumah:',
+      comp_role_caregiver_title: 'Keluarga Pendamping / Caregiver',
       comp_role_caregiver_desc: 'Pantau asupan makan harian pasien keluarga, periksa catatan pantangan medis, dan dapatkan tips perawatan pemulihan di rumah.',
       comp_role_caregiver_btn: 'Masuk Mode Caregiver',
       reset_sched_modal_title: 'Reset Jadwal & Checklist?',
@@ -757,7 +780,12 @@
       toast_font_changed: 'Ukuran teks diatur ke: ',
       toast_contrast_on: 'Mode Kontras Tinggi Diaktifkan',
       toast_contrast_off: 'Mode Standar Diaktifkan',
-      toast_caregiver_copied: 'Tautan pendamping berhasil disalin!'
+      toast_caregiver_copied: 'Tautan pendamping berhasil disalin!',
+
+      // Nutrition Booster
+      ov_target_booster_title: 'Penyesuaian Target Gizi Tambahan',
+      ov_target_booster_sub: 'Tingkatkan kuota protein & kalori di atas batas medis dasar sesuai kebutuhan mobilitas atau percepatan pemulihan.',
+      ov_target_booster_btn: 'Batasan Target Tambahan'
     }
   };
 
