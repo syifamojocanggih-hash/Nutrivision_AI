@@ -554,8 +554,8 @@ class ClinicalNutritionFilterAgent {
     let textureTitleEn = "IDDSI Level 4 Safety Standard (Puree / Soft Mash)";
     let textureSub = "Homogen, aman risiko aspirasi, disajikan pada suhu ruang nyaman.";
     let textureSubEn = "Homogeneous, safe from aspiration risk, served at comfortable room temperature.";
-    let restrictedSummary = "Hindari serat liat kasar, rempah biji utuh, santan pekat & suhu pan...";
-    let restrictedSummaryEn = "Avoid coarse fibrous foods, whole seed spices, thick coconut milk & high temp...";
+    let restrictedSummary = "Hindari serat liat kasar, rempah biji utuh, santan pekat, dan sajian terlalu panas.";
+    let restrictedSummaryEn = "Avoid coarse fibrous foods, whole seed spices, thick coconut milk, and scalding hot meals.";
 
     if (!hasDysphagia) {
       if (hasGerd || hasNausea || hasDiarrhea) {
@@ -563,8 +563,8 @@ class ClinicalNutritionFilterAgent {
         textureTitleEn = "IDDSI Level 6 Safety Standard (Soft & Bite-Sized)";
         textureSub = "Tekstur lunak mudah cerna, ramah mukosa lambung dan motilitas usus.";
         textureSubEn = "Soft easy-to-digest texture, gentle on gastric mucosa and intestinal motility.";
-        restrictedSummary = "Hindari asam tajam, cabai pedas, santan kental & gorengan...";
-        restrictedSummaryEn = "Avoid sharp acids, spicy chili, thick coconut milk & fried foods...";
+        restrictedSummary = "Hindari asam tajam, cabai pedas, santan kental, serta gorengan.";
+        restrictedSummaryEn = "Avoid sharp acids, spicy chili, thick coconut milk, and deep-fried dishes.";
       } else {
         textureTitle = "Standar Keamanan IDDSI Level 7 (Regular)";
         textureTitleEn = "IDDSI Level 7 Safety Standard (Regular)";

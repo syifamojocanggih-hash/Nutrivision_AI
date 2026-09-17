@@ -1,4 +1,4 @@
-with open('js/app.js', 'r', encoding='utf-8') as f:
-    for i, l in enumerate(f, 1):
-        if 'openmodal(' in l.lower() or 'closemodal(' in l.lower():
-            print(f'{i}: {l.strip()[:80]}')
+s = open('index.html', encoding='utf-8').read().split('\n')
+for i in range(4280, 4360):
+    if i < len(s):
+        print(f"{i+1}: {s[i]}")
