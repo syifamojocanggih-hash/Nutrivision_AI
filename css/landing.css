@@ -161,6 +161,48 @@ body:not(.is-landing-active) #landing-page-view {
   flex-shrink: 0;
 }
 
+.lp-btn-nav-outline {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: #E11D48;
+  background: rgba(225, 29, 72, 0.08);
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  touch-action: manipulation;
+  box-sizing: border-box;
+}
+
+.lp-btn-nav-outline:hover {
+  background: #E11D48;
+  border-color: #FDA4AF;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.3);
+}
+
+.lp-btn-nav-outline:active {
+  transform: scale(0.95);
+  background: #BE123C;
+}
+
+.lp-btn-nav-outline i,
+.lp-btn-nav-outline svg {
+  width: 15px !important;
+  height: 15px !important;
+  pointer-events: none;
+  stroke: currentColor;
+}
+
 .lp-mobile-toggle {
   display: none;
   background: var(--bg);

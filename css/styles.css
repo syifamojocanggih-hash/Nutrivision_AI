@@ -33,3 +33,7 @@
 
 /* 10. Evaluasi Kelayakan Menu Pasien (AI Model Teks) */
 @import url('ai_text_eval.css');
+
+/* 11. Doctor Clinical Dashboard & Caregiver Monitor */
+@import url('doctor.css');
+

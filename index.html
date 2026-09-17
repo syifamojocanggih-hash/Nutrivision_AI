@@ -903,6 +903,54 @@
             <span>System Audit Trail</span>
           </button>
         </div>
+
+        <!-- Doctor Clinical Navigation Group -->
+        <div id="sidebar-nav-doctor" class="sidebar-nav-group" style="display:none;">
+          <button class="nav-item active" data-sec="doctor" onclick="app.navigate('doctor')"
+            title="Portal Pemantauan Pasien Medis">
+            <span class="nav-icon"><i data-lucide="stethoscope" style="color:#9EA76B;"></i></span>
+            <span>Roster Pasien DPJP</span>
+          </button>
+          <button class="nav-item" data-sec="ai-text" onclick="app.goToAITextPage()"
+            title="Evaluasi Menu Pasien (Model AI Teks)">
+            <span class="nav-icon"><i data-lucide="cpu" style="color:#9EA76B;"></i></span>
+            <span>Evaluasi Menu AI Teks</span>
+          </button>
+          <button class="nav-item" data-sec="catalog" onclick="app.navigate('catalog')"
+            title="Ensiklopedia Bahan Pangan Super Lokal">
+            <span class="nav-icon"><i data-lucide="book-open" style="color:#9EA76B;"></i></span>
+            <span>Katalog Pangan Klinis</span>
+          </button>
+          <button class="nav-item" data-sec="admin-clinical-menu" onclick="app.navigate('admin-clinical-menu')"
+            title="Analisis Pola Penyakit &amp; Gizi">
+            <span class="nav-icon"><i data-lucide="utensils" style="color:#9EA76B;"></i></span>
+            <span>Food Analytics</span>
+          </button>
+          <button class="nav-item" data-sec="profile" onclick="app.navigate('profile')"
+            title="Profil &amp; Sesi Login Dokter">
+            <span class="nav-icon"><i data-lucide="user-check" style="color:#9EA76B;"></i></span>
+            <span>Profil Dokter Sp.GK</span>
+          </button>
+        </div>
+
+        <!-- Caregiver Navigation Group -->
+        <div id="sidebar-nav-caregiver" class="sidebar-nav-group" style="display:none;">
+          <button class="nav-item active" data-sec="caregiver-dashboard" onclick="app.navigate('caregiver-dashboard')"
+            title="Pemantauan Pasien Keluarga">
+            <span class="nav-icon"><i data-lucide="heart-handshake" style="color:#9EA76B;"></i></span>
+            <span>Pantau Pasien Keluarga</span>
+          </button>
+          <button class="nav-item" data-sec="catalog" onclick="app.navigate('catalog')"
+            title="Katalog Pangan Pemulihan">
+            <span class="nav-icon"><i data-lucide="book-open" style="color:#9EA76B;"></i></span>
+            <span>Panduan Pangan Sehat</span>
+          </button>
+          <button class="nav-item" data-sec="profile" onclick="app.navigate('profile')"
+            title="Profil Pendamping">
+            <span class="nav-icon"><i data-lucide="user" style="color:#9EA76B;"></i></span>
+            <span>Profil Pendamping</span>
+          </button>
+        </div>
       </nav>
 
       <!-- Sidebar Dedicated Patient Profile Widget -->
@@ -1539,6 +1587,197 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- =========================================================================
+         VIEW: DOCTOR CLINICAL DASHBOARD (Portal Pengawas Klinis & Spesialis Gizi)
+         ========================================================================= -->
+      <div class="view-section" id="view-doctor">
+        <div class="doctor-page-wrapper">
+
+          <!-- 1. Doctor Header Banner -->
+          <div class="doctor-header-card">
+            <div class="doctor-badge-title">
+              <span class="doctor-pulse-dot"></span>
+              <span>NutriVision AI · Portal Dokter Spesialis &amp; Pengawas Klinis (Sp.GK)</span>
+            </div>
+            <h1 class="doctor-header-title">Monitoring Kepatuhan Nutrisi &amp; Progres Pasien</h1>
+            <p class="doctor-header-subtitle">
+              Pusat supervisi klinis dokter DPJP: memantau pemenuhan target protein dan albumin pasien pasca-bedah, memeriksa log kepatuhan makan harian, mengevaluasi toleransi gejala, serta memvalidasi rekam medis telehealth resmi.
+            </p>
+            <div class="doctor-header-actions">
+              <button type="button" class="doctor-btn-action matcha" onclick="app.openDoctorPatientPdf()"
+                title="Cetak &amp; Verifikasi Rekam Medis PDF Pasien Terpilih">
+                <i data-lucide="file-text" class="btn-icon-sm"></i>
+                <span>📄 Cetak Rekam Medis Pasien</span>
+              </button>
+              <button type="button" class="doctor-btn-action glass" onclick="app.goToAITextPage()"
+                title="Evaluasi Kelayakan Menu dengan AI Model Teks">
+                <i data-lucide="cpu" class="btn-icon-sm"></i>
+                <span>🧪 Evaluasi Menu AI Teks</span>
+              </button>
+              <button type="button" class="doctor-btn-action glass" onclick="app.navigate('catalog')"
+                title="Lihat Kandungan Pangan Super Lokal">
+                <i data-lucide="book-open" class="btn-icon-sm"></i>
+                <span>🥗 Katalog Pangan Klinis</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Patient Roster & Selector Bar -->
+          <div class="doctor-roster-card">
+            <div class="doctor-roster-head">
+              <div class="doctor-roster-title">
+                <i data-lucide="users" style="width:18px;height:18px;color:#384720;"></i>
+                <span>Daftar Pasien Binaan Aktif (Pilih untuk Memantau)</span>
+              </div>
+              <span style="font-size:12px;color:#64748B;font-weight:600;" id="doctor-patient-roster-count">3 Pasien Terpantau</span>
+            </div>
+            <div class="doctor-patient-pills-row" id="doctor-patient-selector-container">
+              <!-- Rendered dynamically by app.renderDoctorPatientSelector() -->
+            </div>
+          </div>
+
+          <!-- 3. Selected Patient Biometrics & Nutrition Summary -->
+          <div class="doctor-metrics-grid" id="doctor-patient-metrics-container">
+            <!-- Rendered dynamically by app.renderDoctorPatientMetrics() -->
+          </div>
+
+          <!-- 4. Progress & Intake Monitoring (Dual Panel) -->
+          <div class="doctor-progress-grid">
+            <!-- Panel Kiri: Cincin Makro & Grafik Kepatuhan Mingguan -->
+            <div class="doctor-panel-card">
+              <div class="doctor-panel-head">
+                <div class="doctor-panel-title">
+                  <i data-lucide="pie-chart" style="width:18px;height:18px;color:#384720;"></i>
+                  <span>Cincin Pemenuhan Gizi Pasien Hari Ini</span>
+                </div>
+                <span class="doctor-metric-badge green" id="doctor-patient-adherence-badge">Kepatuhan: 92%</span>
+              </div>
+
+              <!-- Macro Donut Canvas for Doctor -->
+              <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0;">
+                <div style="position:relative;width:180px;height:180px;">
+                  <canvas id="doctor-macro-donut-canvas" width="180" height="180" style="width:180px;height:180px;"></canvas>
+                  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                    <div id="doctor-donut-cal-val" style="font-size:22px;font-weight:800;color:#1E293B;">1.420</div>
+                    <div id="doctor-donut-cal-target" style="font-size:11px;color:#64748B;font-weight:600;">/ 1.820 kkal</div>
+                  </div>
+                </div>
+                <!-- Macro Breakdown Legend -->
+                <div style="display:flex;gap:18px;margin-top:14px;flex-wrap:wrap;justify-content:center;">
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+                    <span style="width:10px;height:10px;border-radius:50%;background:#384720;"></span>
+                    <span id="doctor-macro-prot-txt" style="font-weight:700;color:#1E293B;">Protein: 62 / 93 g</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+                    <span style="width:10px;height:10px;border-radius:50%;background:#9EA76B;"></span>
+                    <span id="doctor-macro-carbs-txt" style="font-weight:700;color:#1E293B;">Karbo: 180 / 215 g</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+                    <span style="width:10px;height:10px;border-radius:50%;background:#EFE8CA;"></span>
+                    <span id="doctor-macro-fat-txt" style="font-weight:700;color:#1E293B;">Lemak: 38 / 52 g</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 7-Day Adherence Bar Chart -->
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F1F5F9;">
+                <div style="font-size:13px;font-weight:700;color:#1E293B;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+                  <span>Grafik Kepatuhan 7 Hari Terakhir</span>
+                  <span style="font-size:11px;color:#059669;font-weight:600;">Target ERAS Tercapai 6/7 Hari</span>
+                </div>
+                <div style="height:120px;width:100%;">
+                  <canvas id="doctor-weekly-chart-canvas" style="width:100%;height:120px;"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel Kanan: Riwayat Makanan Pasien Hari Ini -->
+            <div class="doctor-panel-card">
+              <div class="doctor-panel-head">
+                <div class="doctor-panel-title">
+                  <i data-lucide="utensils" style="width:18px;height:18px;color:#384720;"></i>
+                  <span>Riwayat Makanan Pasien Hari Ini</span>
+                </div>
+                <button type="button" class="admin-row-action-btn" onclick="app.refreshDoctorPatientData()" title="Segarkan Data Pasien">
+                  <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i>
+                  <span>Segarkan</span>
+                </button>
+              </div>
+
+              <div class="doctor-meal-list" id="doctor-patient-meals-list">
+                <!-- Rendered dynamically by app.renderDoctorPatientMeals() -->
+              </div>
+
+              <!-- Catatan Dokter DPJP Box -->
+              <div style="margin-top:18px;padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;">
+                <div style="font-size:12.5px;font-weight:700;color:#1E293B;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+                  <i data-lucide="stethoscope" style="width:15px;height:15px;color:#059669;"></i>
+                  <span>Instruksi Medis DPJP untuk Pasien Ini</span>
+                </div>
+                <p id="doctor-patient-instruction-text" style="font-size:12px;color:#475569;margin:0 0 10px 0;line-height:1.5;">
+                  Tingkatkan asupan albumin dari ikan gabus atau putih telur minimal 30g per sesi makan utama untuk mempercepat penutupan luka pembedahan.
+                </p>
+                <button type="button" class="doctor-btn-action matcha" style="font-size:11.5px;padding:6px 12px;border-radius:8px;" onclick="app.sendClinicalAdviceToPatient()">
+                  <i data-lucide="send" style="width:12px;height:12px;"></i>
+                  <span>Kirim Instruksi Nutrisi ke Pasien</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =========================================================================
+         VIEW: CAREGIVER DASHBOARD (Portal Pendamping Pasien & Keluarga)
+         ========================================================================= -->
+      <div class="view-section" id="view-caregiver-dashboard">
+        <div class="doctor-page-wrapper">
+          <div class="doctor-header-card" style="background:linear-gradient(135deg, #1E3A8A 0%, #172554 100%);">
+            <div class="doctor-badge-title" style="background:rgba(59,130,246,0.2);border-color:rgba(96,165,250,0.4);color:#DBEAFE;">
+              <span class="doctor-pulse-dot" style="background:#60A5FA;box-shadow:0 0 10px #60A5FA;"></span>
+              <span>NutriVision AI · Portal Pendamping Pasien (Caregiver &amp; Keluarga)</span>
+            </div>
+            <h1 class="doctor-header-title">Pemantauan Pemulihan Keluarga Tercinta</h1>
+            <p class="doctor-header-subtitle">
+              Akses khusus pendamping keluarga dan perawat homecare: memantau asupan makan harian pasien tanpa harus mengisi kuis diagnostik, mengecek catatan pantangan, serta memastikan kecukupan cairan dan protein pasien di rumah.
+            </p>
+            <div class="doctor-header-actions">
+              <button type="button" class="doctor-btn-action" style="background:#2563EB;color:#fff;" onclick="app.openDoctorPatientPdf()"
+                title="Lihat &amp; Cetak Berkas Rekam Medis PDF Pasien">
+                <i data-lucide="file-text" class="btn-icon-sm"></i>
+                <span>📄 Unduh Laporan Gizi Pasien</span>
+              </button>
+              <button type="button" class="doctor-btn-action glass" onclick="app.navigate('catalog')"
+                title="Lihat Menu Bahan Pangan Lunak Pasien">
+                <i data-lucide="book-open" class="btn-icon-sm"></i>
+                <span>🥗 Panduan Menu Pemulihan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Caregiver Monitor Cards Container -->
+          <div class="doctor-panel-card" style="margin-top:10px;">
+            <div class="doctor-panel-head">
+              <div class="doctor-panel-title">
+                <i data-lucide="heart-pulse" style="width:18px;height:18px;color:#2563EB;"></i>
+                <span>Status Pemenuhan Nutrisi Pasien Hari Ini</span>
+              </div>
+              <span class="doctor-metric-badge green">Terpantau Baik</span>
+            </div>
+            <div class="doctor-metrics-grid" id="caregiver-metrics-container">
+              <!-- Rendered dynamically -->
+            </div>
+            <div style="margin-top:20px;">
+              <h4 style="font-size:14px;font-weight:700;color:#1E293B;margin-bottom:10px;">Riwayat Makan Pasien Hari Ini</h4>
+              <div class="doctor-meal-list" id="caregiver-meals-list">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- =========================================================================
@@ -2778,9 +3017,9 @@
                   Patient Account</span>
               </button>
               <button class="btn-outline-glass"
-                style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;"
-                onclick="app.logout()">
-                <i data-lucide="log-out" class="btn-icon-sm"></i> <span data-i18n="profile_session_logout">Sign Out
+                style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;cursor:pointer;"
+                onclick="app.handleLogout()">
+                <i data-lucide="log-out" class="btn-icon-sm" style="pointer-events:none;"></i> <span data-i18n="profile_session_logout">Sign Out
                   (Logout)</span>
               </button>
             </div>
@@ -3828,6 +4067,13 @@
             </button>
           </div>
 
+          <div style="margin-top:12px;">
+            <button type="button" class="btn-outline-glass" style="width:100%;justify-content:center;border-color:rgba(56,71,32,0.28);background:rgba(158,167,107,0.12);color:#2A3617;font-size:12.5px;font-weight:700;padding:9px 14px;border-radius:10px;display:flex;align-items:center;gap:7px;cursor:pointer;" onclick="app.openCompanionModal()">
+              <i data-lucide="stethoscope" style="width:16px;height:16px;color:#059669;"></i>
+              <span>Masuk Mode Pendamping (🩺 Dokter / 👨‍👩‍👧 Caregiver)</span>
+            </button>
+          </div>
+
 
           <div class="auth-switch-footer-text">
             Belum memiliki akun? <a onclick="app.switchAuthTab('register')">Daftar Sekarang (Sign Up)</a>
@@ -4572,6 +4818,40 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
           <i data-lucide="copy" class="btn-icon-sm"></i>
           <span>Salin Daftar Belanja</span>
         </button>
+      </div>
+    </div>
+  <!-- MODAL: DUAL-MODE COMPANION SELECTOR (DOKTER SPESIALIS vs KELUARGA PENDAMPING) -->
+  <div class="modal" id="modal-companion-selector" style="display:none;" role="dialog" aria-labelledby="comp-modal-title">
+    <div class="modal-card" style="max-width:540px;">
+      <div class="modal-header">
+        <h3 id="comp-modal-title" style="display:flex;align-items:center;gap:8px;margin:0;font-size:18px;font-weight:800;color:#1E293B;">
+          <i data-lucide="stethoscope" style="width:20px;height:20px;color:#059669;"></i>
+          <span>Pilih Peran Pendamping &amp; Pemantau</span>
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="app.closeModal('modal-companion-selector')" aria-label="Tutup modal">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+      <p style="font-size:13px;color:#64748B;margin:6px 0 16px 0;line-height:1.45;">
+        Pilih jenis peran pendamping yang sesuai untuk masuk ke dasbor pemantauan pasien:
+      </p>
+      <div class="companion-selector-grid">
+        <div class="companion-role-card doctor" onclick="app.loginAsDemo('doctor')">
+          <div class="companion-role-icon">🩺</div>
+          <div class="companion-role-title">Dokter Spesialis / DPJP</div>
+          <div class="companion-role-desc">
+            Supervisi rekam kepatuhan klinis, cek target protein &amp; albumin pasien, validasi rekam medis PDF, dan evaluasi menu via AI Teks.
+          </div>
+          <button type="button" class="companion-role-btn">Masuk Mode Dokter</button>
+        </div>
+        <div class="companion-role-card caregiver" onclick="app.loginAsDemo('caregiver')">
+          <div class="companion-role-icon">👨‍👩‍👧</div>
+          <div class="companion-role-title">Keluarga Pendamping</div>
+          <div class="companion-role-desc">
+            Pantau asupan makan harian pasien keluarga, periksa catatan pantangan medis, dan dapatkan tips perawatan pemulihan di rumah.
+          </div>
+          <button type="button" class="companion-role-btn">Masuk Mode Caregiver</button>
+        </div>
       </div>
     </div>
   </div>

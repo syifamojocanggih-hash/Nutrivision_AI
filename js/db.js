@@ -613,6 +613,44 @@ class NutriVisionDatabase {
       await this.saveUserDirect(user);
     }
 
+    if (!user && (cleanEmail === 'hendra@nutrivision.id' || cleanEmail === 'dokter@nutrivision.id')) {
+      user = {
+        id: 'usr_demo_doctor',
+        name: 'dr. Hendra Kurniawan, Sp.GK',
+        email: cleanEmail,
+        passwordHash: this.hashPassword('dokter123'),
+        role: 'doctor',
+        condition: 'clinical-specialist',
+        conditionLabel: 'Dokter Spesialis Gizi Klinis RSUP',
+        recoveryPhase: 'Pengawas Klinis Pasien',
+        createdAt: new Date().toISOString(),
+        avatarText: 'HK',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
+      };
+      await this.saveUserDirect(user);
+    }
+
+    if (!user && cleanEmail === 'caregiver@nutrivision.id') {
+      user = {
+        id: 'usr_demo_caregiver',
+        name: 'Ratna Dewi',
+        email: 'caregiver@nutrivision.id',
+        passwordHash: this.hashPassword('caregiver123'),
+        role: 'caregiver',
+        condition: 'caregiver',
+        conditionLabel: 'Pendamping Pasien Lansia',
+        recoveryPhase: 'Pendamping Rawat',
+        createdAt: new Date().toISOString(),
+        avatarText: 'RD',
+        hasCompletedQuiz: true,
+        allergies: 'Tidak ada',
+        symptoms: []
+      };
+      await this.saveUserDirect(user);
+    }
+
     if (!user) {
       throw new Error(`Akun dengan email "${email}" tidak ditemukan. Silakan klik "Daftar Baru" untuk membuat akun.`);
     }

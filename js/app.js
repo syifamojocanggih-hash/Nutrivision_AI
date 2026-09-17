@@ -43,12 +43,14 @@ class NutriVisionApp {
     this.activeNotifCategory = 'all';
     this.cachedNotifications = [];
     this.dailyIntakeConfirmState = null;
+    this.currentDoctorPatientId = 'patient_siti';
+    this.doctorPatients = this.getDoctorPatients();
   }
 
-  // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin atau pasien login)
+  // Auth Helper: Memeriksa apakah pengguna saat ini sudah terotentikasi (admin, dokter, caregiver, atau pasien login)
   isAuthenticated() {
     if (!this.userProfile) return false;
-    if (this.userProfile.role === 'admin') return true;
+    if (this.userProfile.role === 'admin' || this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician' || this.userProfile.role === 'caregiver') return true;
     return Boolean(this.userProfile.name && (this.userProfile.contact || this.userProfile.email));
   }
 
@@ -78,10 +80,11 @@ class NutriVisionApp {
     const storedLang = localStorage.getItem('nutrivision_lang') || 'en';
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
+        const role = parsed.role || 'patient';
+        const isNonPatient = role === 'admin' || role === 'doctor' || role === 'clinician' || role === 'caregiver';
         return {
-          hasCompletedQuiz: parsed.hasCompletedQuiz !== undefined ? parsed.hasCompletedQuiz : Boolean(parsed.name && parsed.targets),
-          role: parsed.role || 'patient',
+          hasCompletedQuiz: isNonPatient ? true : (parsed.hasCompletedQuiz !== undefined ? parsed.hasCompletedQuiz : Boolean(parsed.name && parsed.targets)),
+          role: role,
           name: parsed.name || '',
           contact: parsed.contact || '',
           gender: parsed.gender || 'male',
@@ -93,7 +96,7 @@ class NutriVisionApp {
           conditionTitle: parsed.conditionTitle || 'Belum Diatur',
           phase: parsed.phase || 'Belum Diatur',
           restrictions: parsed.restrictions || '',
-          hasAcceptedConsent: parsed.hasAcceptedConsent || false,
+          hasAcceptedConsent: isNonPatient ? true : Boolean(parsed.hasAcceptedConsent),
           bmi: parsed.bmi || '--',
           bmiCategory: parsed.bmiCategory || '--',
           isDemo: Boolean(parsed.isDemo),
@@ -233,9 +236,17 @@ class NutriVisionApp {
 
     // Router URL Hash Handling (Landing vs Dashboard)
     const hash = window.location.hash.replace('#', '');
-    const validSections = ['overview', 'planner', 'history', 'catalog', 'community', 'caregiver', 'progress', 'profile'];
+    const validSections = ['overview', 'planner', 'history', 'catalog', 'community', 'caregiver', 'progress', 'profile', 'doctor', 'caregiver-dashboard', 'admin'];
     if (validSections.includes(hash) || hash === 'dashboard' || hash === 'app') {
-      this.goToDashboard(validSections.includes(hash) ? hash : 'overview');
+      if (this.userProfile && (this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician')) {
+        this.goToDoctorDashboard();
+      } else if (this.userProfile && this.userProfile.role === 'caregiver') {
+        this.goToCaregiverDashboard();
+      } else if (this.userProfile && this.userProfile.role === 'admin') {
+        this.goToAdminPortal();
+      } else {
+        this.goToDashboard(validSections.includes(hash) ? hash : 'overview');
+      }
     } else {
       this.goToLanding();
     }
@@ -748,13 +759,17 @@ class NutriVisionApp {
     }
   }
 
-  // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State & Filled State)
+  // Update Header, Sidebar, dan Ringkasan UI Profil (Mendukung Empty State, Pasien, Dokter, Caregiver & Admin)
   updateProfileUI() {
-    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+    const role = this.userProfile?.role || 'patient';
+    const isAdmin = role === 'admin';
+    const isDoctor = role === 'doctor' || role === 'clinician';
+    const isCaregiver = role === 'caregiver';
+    const isPatient = !isAdmin && !isDoctor && !isCaregiver;
     const isAuth = this.isAuthenticated();
     const hasQuiz = Boolean(this.userProfile && this.userProfile.hasCompletedQuiz);
-    const hasData = (isAuth && hasQuiz) || isAdmin;
-    const initials = isAdmin ? 'AD' : (isAuth && this.userProfile.name ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+');
+    const hasData = (isAuth && hasQuiz) || isAdmin || isDoctor || isCaregiver;
+    const initials = isAdmin ? 'AD' : (isDoctor ? 'HK' : (isCaregiver ? 'CG' : (isAuth && this.userProfile.name ? (this.userProfile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'P') : '+')));
     const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile?.language || 'en');
 
     // 1. Update Topbar Greeting
@@ -764,6 +779,14 @@ class NutriVisionApp {
         greetingEl.innerHTML = lang === 'id'
           ? `Panel Administrator: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetri</span>`
           : `Admin Command Center: <span class="user-name-placeholder" style="color:var(--matcha-600);">Super Admin Telemetry</span>`;
+      } else if (isDoctor) {
+        greetingEl.innerHTML = lang === 'id'
+          ? `Portal Pengawas Klinis: <span class="user-name-placeholder" style="color:#0284C7;">${this.userProfile?.name || 'dr. Hendra Kusuma, Sp.GK'}</span>`
+          : `Clinical Doctor Portal: <span class="user-name-placeholder" style="color:#0284C7;">${this.userProfile?.name || 'dr. Hendra Kusuma, Sp.GK'}</span>`;
+      } else if (isCaregiver) {
+        greetingEl.innerHTML = lang === 'id'
+          ? `Portal Pendamping Pasien: <span class="user-name-placeholder" style="color:#10B981;">${this.userProfile?.name || 'Sarah (Caregiver)'}</span>`
+          : `Caregiver Companion Portal: <span class="user-name-placeholder" style="color:#10B981;">${this.userProfile?.name || 'Sarah (Caregiver)'}</span>`;
       } else if (isAuth && this.userProfile?.name) {
         greetingEl.innerHTML = lang === 'id'
           ? `Selamat datang, <span class="user-name-placeholder">${this.userProfile.name.split(' ')[0]}</span>`
@@ -781,24 +804,40 @@ class NutriVisionApp {
       topbarProfileChip.style.display = isAuth ? 'inline-flex' : 'none';
     }
 
-    // Toggle Patient vs Super Admin Sidebar Navigation Groups
+    // Toggle Sidebar Navigation Groups by Role
     const patientNav = document.getElementById('sidebar-nav-patient');
+    const doctorNav = document.getElementById('sidebar-nav-doctor');
+    const caregiverNav = document.getElementById('sidebar-nav-caregiver');
     const adminNav = document.getElementById('sidebar-nav-admin');
-    if (patientNav) patientNav.style.display = isAdmin ? 'none' : 'flex';
+
+    if (patientNav) patientNav.style.display = isPatient ? 'flex' : 'none';
+    if (doctorNav) doctorNav.style.display = isDoctor ? 'flex' : 'none';
+    if (caregiverNav) caregiverNav.style.display = isCaregiver ? 'flex' : 'none';
     if (adminNav) adminNav.style.display = isAdmin ? 'flex' : 'none';
 
-    // Hide mobile bottom nav & scan floating button for admin (admin does not need patient input tools)
+    // Hide mobile bottom nav & scan floating button for non-patients (Doctor, Caregiver, and Admin only monitor)
+    const hidePatientTools = isAdmin || isDoctor || isCaregiver;
     const bottomNav = document.querySelector('.bottom-nav-pwa');
     const fabBtn = document.querySelector('.fab-scan-btn');
-    if (bottomNav) bottomNav.style.display = isAdmin ? 'none' : '';
-    if (fabBtn) fabBtn.style.display = isAdmin ? 'none' : '';
+    if (bottomNav) bottomNav.style.display = hidePatientTools ? 'none' : '';
+    if (fabBtn) fabBtn.style.display = hidePatientTools ? 'none' : '';
 
     // 3. Update Profile Data Placeholders
     const nameEls = document.querySelectorAll('.user-name-placeholder');
     nameEls.forEach(el => el.textContent = (isAuth && this.userProfile.name) ? this.userProfile.name : (lang === 'id' ? 'Profil Pasien' : 'Patient Profile'));
 
     const conditionEls = document.querySelectorAll('.user-condition-placeholder');
-    conditionEls.forEach(el => el.textContent = hasQuiz ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : (lang === 'id' ? 'Belum dikonfigurasi (Mulai Diagnostik Gizi)' : 'Not configured (Start Nutrition Diagnostic)'));
+    conditionEls.forEach(el => {
+      if (isDoctor) {
+        el.textContent = 'DPJP Bedah & Gizi Klinis (Sp.GK)';
+      } else if (isCaregiver) {
+        el.textContent = 'Pendamping Pasien Pasca Bedah';
+      } else if (isAdmin) {
+        el.textContent = 'Super Administrator Sistem';
+      } else {
+        el.textContent = hasQuiz ? `${this.userProfile.conditionTitle} · ${this.userProfile.phase}` : (lang === 'id' ? 'Belum dikonfigurasi (Mulai Diagnostik Gizi)' : 'Not configured (Start Nutrition Diagnostic)');
+      }
+    });
 
     const avatarEls = document.querySelectorAll('.user-avatar-placeholder');
     avatarEls.forEach(el => el.textContent = initials);
@@ -817,6 +856,36 @@ class NutriVisionApp {
               </div>
             </div>
             <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="${lang === 'id' ? 'Logout & Kembali ke Landing Page' : 'Sign Out & Back to Landing Page'}" aria-label="Sign Out / Logout">
+              <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+            </button>
+          </div>
+        `;
+      } else if (isDoctor) {
+        sidebarProfileCard.innerHTML = `
+          <div class="sidebar-profile-flex">
+            <div class="sidebar-profile-info" onclick="app.goToDoctorDashboard()" title="Buka Portal Klinis DPJP">
+              <div class="profile-avatar" style="background:linear-gradient(135deg,#0284C7,#0369A1);color:#fff;font-weight:700;flex-shrink:0;">HK</div>
+              <div style="min-width:0;flex:1;">
+                <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile?.name || 'dr. Hendra Sp.GK'}</b>
+                <span style="font-size:10.5px;color:#BAE6FD;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">DPJP Bedah &amp; Klinis</span>
+              </div>
+            </div>
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout &amp; Keluar" aria-label="Logout">
+              <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+            </button>
+          </div>
+        `;
+      } else if (isCaregiver) {
+        sidebarProfileCard.innerHTML = `
+          <div class="sidebar-profile-flex">
+            <div class="sidebar-profile-info" onclick="app.goToCaregiverDashboard()" title="Buka Dasbor Pendamping">
+              <div class="profile-avatar" style="background:linear-gradient(135deg,#10B981,#047857);color:#fff;font-weight:700;flex-shrink:0;">CG</div>
+              <div style="min-width:0;flex:1;">
+                <b style="color:#fff;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${this.userProfile?.name || 'Sarah (Caregiver)'}</b>
+                <span style="font-size:10.5px;color:#A7F3D0;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pendamping Siti Rahma</span>
+              </div>
+            </div>
+            <button type="button" class="sidebar-logout-btn" onclick="event.stopPropagation(); app.handleLogout();" title="Logout &amp; Keluar" aria-label="Logout">
               <i data-lucide="log-out" style="width:15px;height:15px;"></i>
             </button>
           </div>
@@ -858,10 +927,10 @@ class NutriVisionApp {
       }
     }
 
-    // 5. Update Overview Unconfigured Onboarding Banner
+    // 5. Update Overview Unconfigured Onboarding Banner (STRICTLY patient-only)
     const overviewBanner = document.getElementById('overview-unconfigured-banner');
     if (overviewBanner) {
-      overviewBanner.style.display = (isAuth && !hasQuiz && !isAdmin) ? 'block' : 'none';
+      overviewBanner.style.display = (isAuth && !hasQuiz && isPatient) ? 'block' : 'none';
     }
 
     // 6. Update Card 2 Status & Action
@@ -978,8 +1047,8 @@ class NutriVisionApp {
           <button class="btn-sm-teal" style="display:inline-flex;align-items:center;gap:4px;" onclick="app.openAuthModal('login')">
             <i data-lucide="user-check" class="btn-icon-sm"></i> ${lang === 'id' ? 'Ganti Akun Pasien' : 'Switch Patient Account'}
           </button>
-          <button class="btn-outline-glass" style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;" onclick="app.logout()">
-            <i data-lucide="log-out" class="btn-icon-sm"></i> ${lang === 'id' ? 'Keluar (Logout)' : 'Sign Out (Logout)'}
+          <button class="btn-outline-glass" style="color:var(--coral-600);border-color:var(--coral-100);background:var(--coral-50);font-size:12px;padding:6px 12px;border-radius:var(--radius-xs);display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="app.handleLogout()">
+            <i data-lucide="log-out" class="btn-icon-sm" style="pointer-events:none;"></i> ${lang === 'id' ? 'Keluar (Logout)' : 'Sign Out (Logout)'}
           </button>
         `;
       } else {
@@ -1024,7 +1093,10 @@ class NutriVisionApp {
 
   // Switch Tab Navigasi (Router)
   navigate(sectionId) {
-    const isAdmin = Boolean(this.userProfile && this.userProfile.role === 'admin');
+    const role = this.userProfile?.role || 'patient';
+    const isAdmin = role === 'admin';
+    const isDoctor = role === 'doctor' || role === 'clinician';
+    const isCaregiver = role === 'caregiver';
 
     // Database modal exception
     if (sectionId === 'database') {
@@ -1034,13 +1106,21 @@ class NutriVisionApp {
 
     // Role-based route guard & redirect
     if (isAdmin) {
-      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile') {
+      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile' || sectionId === 'doctor' || sectionId === 'caregiver-dashboard') {
         sectionId = 'admin';
       } else if (sectionId === 'planner' || sectionId === 'catalog') {
         sectionId = 'admin-clinical-menu';
       }
+    } else if (isDoctor) {
+      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'caregiver-dashboard' || sectionId === 'admin') {
+        sectionId = 'doctor';
+      }
+    } else if (isCaregiver) {
+      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'doctor' || sectionId === 'admin') {
+        sectionId = 'caregiver-dashboard';
+      }
     } else {
-      if (sectionId === 'admin' || sectionId === 'admin-clinical-menu' || sectionId === 'admin-audit') {
+      if (sectionId === 'admin' || sectionId === 'admin-clinical-menu' || sectionId === 'admin-audit' || sectionId === 'doctor' || sectionId === 'caregiver-dashboard') {
         sectionId = 'overview';
       }
     }
@@ -1071,6 +1151,14 @@ class NutriVisionApp {
     const targetSection = document.getElementById(`view-${sectionId}`);
     if (targetSection) {
       targetSection.classList.add('active-view');
+    }
+
+    if (sectionId === 'doctor') {
+      this.renderDoctorDashboard();
+    }
+
+    if (sectionId === 'caregiver-dashboard') {
+      this.renderCaregiverDashboard();
     }
 
     if (sectionId === 'profile') {
@@ -1206,6 +1294,16 @@ class NutriVisionApp {
       return;
     }
 
+    if (this.userProfile && (this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician') && (sectionId === 'overview' || sectionId === 'doctor')) {
+      this.goToDoctorDashboard();
+      return;
+    }
+
+    if (this.userProfile && this.userProfile.role === 'caregiver' && (sectionId === 'overview' || sectionId === 'caregiver-dashboard')) {
+      this.goToCaregiverDashboard();
+      return;
+    }
+
     this.isLanding = false;
     document.body.classList.remove('is-landing-active');
     if (sectionId === 'catalog') {
@@ -1218,7 +1316,7 @@ class NutriVisionApp {
 
     this.updatePreviewBanner();
 
-    if (triggerModal === 'quiz') {
+    if (triggerModal === 'quiz' && (!this.userProfile || this.userProfile.role === 'patient')) {
       setTimeout(() => this.openQuizModal(1), 120);
     } else if (triggerModal === 'scan') {
       setTimeout(() => this.openScanModal(), 120);
@@ -2127,6 +2225,11 @@ class NutriVisionApp {
       this.requireAuth(() => this.openQuizModal(step), 'diagnostik gizi');
       return;
     }
+    // STRICT ROLE GUARD: Wajib hanya pasien yang mengisi form diagnostik gizi
+    if (this.userProfile?.role && this.userProfile.role !== 'patient') {
+      console.warn(`[NutriVision] Kuis diagnostik hanya untuk peran pasien. Akses diblokir untuk peran: ${this.userProfile.role}`);
+      return;
+    }
     const onboardName = document.getElementById('onboard-name');
     const onboardContact = document.getElementById('onboard-contact');
     const consentCheck = document.getElementById('onboard-consent-check');
@@ -2698,6 +2801,10 @@ class NutriVisionApp {
 
   // Buka Alur Diagnostik Pasca-Login
   openDiagnosticQuiz(step = 1) {
+    if (this.userProfile?.role && this.userProfile.role !== 'patient') {
+      console.warn(`[NutriVision] Kuis diagnostik hanya untuk peran pasien. Akses diblokir untuk peran: ${this.userProfile.role}`);
+      return;
+    }
     this.openModal('onboarding-modal');
     this.goToQuizStep(step);
 
@@ -5180,12 +5287,14 @@ class NutriVisionApp {
         'caregiver': 'Pendamping Pasien Lansia'
       };
 
-      const hasQuiz = Boolean(user.hasCompletedQuiz && (user.targetProtein || user.weight));
+      const userRole = user.role || 'patient';
+      const isNonPatient = userRole === 'admin' || userRole === 'doctor' || userRole === 'clinician' || userRole === 'caregiver';
+      const hasQuiz = isNonPatient ? true : Boolean(user.hasCompletedQuiz && (user.targetProtein || user.weight));
 
       this.userProfile = {
         ...this.userProfile,
         id: user.id,
-        role: user.role || 'patient',
+        role: userRole,
         name: user.name || this.userProfile.name,
         contact: user.email,
         gender: user.gender || 'male',
@@ -5211,6 +5320,7 @@ class NutriVisionApp {
       this.updateProfileUI();
       this.renderAuthUI();
       this.closeModal('auth-modal');
+      this.closeModal('modal-companion-selector');
 
       if (this.userProfile.role === 'admin') {
         await this.goToAdminPortal();
@@ -5223,6 +5333,29 @@ class NutriVisionApp {
         return;
       }
 
+      if (this.userProfile.role === 'doctor' || this.userProfile.role === 'clinician') {
+        this.goToDoctorDashboard();
+        this.showToast(`🩺 Selamat Datang, Dokter! Portal Monitoring DPJP aktif.`);
+        if (typeof this.pendingAuthCallback === 'function') {
+          const cb = this.pendingAuthCallback;
+          this.pendingAuthCallback = null;
+          cb();
+        }
+        return;
+      }
+
+      if (this.userProfile.role === 'caregiver') {
+        this.goToCaregiverDashboard();
+        this.showToast(`👨‍👩‍👧 Selamat Datang, Pendamping Pasien! Dasbor Monitoring Keluarga aktif.`);
+        if (typeof this.pendingAuthCallback === 'function') {
+          const cb = this.pendingAuthCallback;
+          this.pendingAuthCallback = null;
+          cb();
+        }
+        return;
+      }
+
+      // Default: Patient Flow
       this.goToDashboard('overview');
 
       if (!hasQuiz || !this.userProfile.targets) {
@@ -5402,19 +5535,91 @@ class NutriVisionApp {
       if (window.nutriVisionDB && window.nutriVisionDB.isReady) {
         user = await window.nutriVisionDB.login(cred.email, cred.pass);
       } else {
-        user = {
-          id: 'usr_demo',
-          name: 'Rangga Pratama',
-          email: cred.email,
-          role: 'patient',
-          targetProtein: 75,
-          hasCompletedQuiz: true
-        };
+        if (conditionKey === 'doctor') {
+          user = {
+            id: 'usr_doc_hendra',
+            name: 'dr. Hendra Kusuma, Sp.GK',
+            email: cred.email,
+            role: 'doctor',
+            hasCompletedQuiz: true
+          };
+        } else if (conditionKey === 'caregiver') {
+          user = {
+            id: 'usr_cg_sarah',
+            name: 'Sarah (Caregiver)',
+            email: cred.email,
+            role: 'caregiver',
+            hasCompletedQuiz: true
+          };
+        } else {
+          user = {
+            id: 'usr_demo',
+            name: 'Rangga Pratama',
+            email: cred.email,
+            role: 'patient',
+            targetProtein: 75,
+            hasCompletedQuiz: true
+          };
+        }
       }
 
+      if (conditionKey === 'doctor' || user.role === 'doctor' || user.role === 'clinician') {
+        this.userProfile = {
+          ...this.userProfile,
+          ...user,
+          role: 'doctor',
+          isDemo: true,
+          contact: user.email,
+          hasCompletedQuiz: true,
+          hasAcceptedConsent: true,
+          targets: null
+        };
+        this.saveUserProfile();
+        this.updateProfileUI();
+        this.renderAuthUI();
+        this.closeModal('auth-modal');
+        this.closeModal('modal-companion-selector');
+        this.showToast(`🩺 Masuk sebagai DPJP: ${this.userProfile.name}`);
+        this.goToDoctorDashboard();
+        if (typeof this.pendingAuthCallback === 'function') {
+          const cb = this.pendingAuthCallback;
+          this.pendingAuthCallback = null;
+          cb();
+        }
+        return;
+      }
+
+      if (conditionKey === 'caregiver' || user.role === 'caregiver') {
+        this.userProfile = {
+          ...this.userProfile,
+          ...user,
+          role: 'caregiver',
+          isDemo: true,
+          contact: user.email,
+          hasCompletedQuiz: true,
+          hasAcceptedConsent: true,
+          targets: null
+        };
+        this.saveUserProfile();
+        this.updateProfileUI();
+        this.renderAuthUI();
+        this.closeModal('auth-modal');
+        this.closeModal('modal-companion-selector');
+        this.showToast(`👨‍👩‍👧 Masuk sebagai Caregiver: ${this.userProfile.name}`);
+        this.goToCaregiverDashboard();
+        if (typeof this.pendingAuthCallback === 'function') {
+          const cb = this.pendingAuthCallback;
+          this.pendingAuthCallback = null;
+          cb();
+        }
+        return;
+      }
+
+      // Patient Flow
       this.userProfile = {
         ...this.userProfile,
         ...user,
+        role: 'patient',
         isDemo: true,
         contact: user.email,
         hasCompletedQuiz: true,
@@ -5430,8 +5635,9 @@ class NutriVisionApp {
       this.updateProfileUI();
       this.renderAuthUI();
       this.closeModal('auth-modal');
+      this.closeModal('modal-companion-selector');
 
-      // Terapkan data ke dasbor
+      // Terapkan data ke dasbor pasien
       cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
       this.renderOverviewPlate();
       progressTracker.loadDemoData(this.userProfile);
@@ -5454,6 +5660,49 @@ class NutriVisionApp {
       }
     } catch (e) {
       console.error(e);
+      if (conditionKey === 'doctor') {
+        this.userProfile = {
+          ...this.userProfile,
+          id: 'usr_doc_hendra',
+          name: 'dr. Hendra Kusuma, Sp.GK',
+          email: 'dokter@nutrivision.id',
+          role: 'doctor',
+          isDemo: true,
+          contact: 'dokter@nutrivision.id',
+          hasCompletedQuiz: true,
+          hasAcceptedConsent: true
+        };
+        this.saveUserProfile();
+        this.updateProfileUI();
+        this.renderAuthUI();
+        this.closeModal('auth-modal');
+        this.closeModal('modal-companion-selector');
+        this.showToast(`🩺 Masuk sebagai DPJP: ${this.userProfile.name}`);
+        this.goToDoctorDashboard();
+        return;
+      }
+      if (conditionKey === 'caregiver') {
+        this.userProfile = {
+          ...this.userProfile,
+          id: 'usr_cg_sarah',
+          name: 'Sarah (Caregiver)',
+          email: 'caregiver@nutrivision.id',
+          role: 'caregiver',
+          isDemo: true,
+          contact: 'caregiver@nutrivision.id',
+          hasCompletedQuiz: true,
+          hasAcceptedConsent: true
+        };
+        this.saveUserProfile();
+        this.updateProfileUI();
+        this.renderAuthUI();
+        this.closeModal('auth-modal');
+        this.closeModal('modal-companion-selector');
+        this.showToast(`👨‍👩‍👧 Masuk sebagai Caregiver: ${this.userProfile.name}`);
+        this.goToCaregiverDashboard();
+        return;
+      }
+
       cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
       this.renderOverviewPlate();
       progressTracker.loadDemoData(this.userProfile);
@@ -5488,9 +5737,21 @@ class NutriVisionApp {
     setTimeout(() => this.handleLogin(), 200);
   }
 
+  // Alias untuk kompatibilitas tombol/event logout
+  logout() {
+    this.handleLogout();
+  }
+
   handleLogout() {
-    if (window.nutriVisionDB) {
-      window.nutriVisionDB.logout();
+    try {
+      if (window.nutriVisionDB && typeof window.nutriVisionDB.logout === 'function') {
+        window.nutriVisionDB.logout();
+      }
+      if (window.apiClient && typeof window.apiClient.logout === 'function') {
+        window.apiClient.logout();
+      }
+    } catch (e) {
+      console.warn('DB / API client logout error:', e);
     }
     this.isAdminPreviewMode = false;
     const banner = document.getElementById('admin-preview-banner');
@@ -6605,7 +6866,12 @@ class NutriVisionApp {
       return;
     }
 
-    const patientName = (this.userProfile?.name || 'Pasien').replace(/[^a-zA-Z0-9]/g, '_');
+    let displayName = this.userProfile?.name || 'Pasien';
+    if (this.userProfile?.role === 'doctor' || this.userProfile?.role === 'clinician' || this.userProfile?.role === 'caregiver') {
+      const curPatient = this.doctorPatients?.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients?.[0];
+      if (curPatient) displayName = curPatient.name;
+    }
+    const patientName = displayName.replace(/[^a-zA-Z0-9]/g, '_');
     const dateStr = new Date().toISOString().slice(0, 10);
     const fileName = `Laporan_Gizi_NutriVision_${patientName}_${dateStr}.pdf`;
 
@@ -8635,6 +8901,503 @@ class NutriVisionApp {
     this.renderPantanganMakanan(cond);
     this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
     this.renderClinicalCalendar(this.calendarViewMode || 'month');
+  }
+
+  // =========================================================================
+  // DUAL-MODE COMPANION PORTAL & DOCTOR CLINICAL DASHBOARD CONTROLLER
+  // =========================================================================
+
+  openCompanionModal() {
+    this.closeModal('auth-modal');
+    const modal = document.getElementById('modal-companion-selector');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('open');
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+  }
+
+  closeCompanionModal() {
+    this.closeModal('modal-companion-selector');
+  }
+
+  goToDoctorDashboard() {
+    this.isLanding = false;
+    document.body.classList.remove('is-landing-active');
+    this.navigate('doctor');
+    this.renderDoctorDashboard();
+    if (window.history.pushState) {
+      window.history.pushState(null, null, '#doctor');
+    }
+  }
+
+  goToCaregiverDashboard() {
+    this.isLanding = false;
+    document.body.classList.remove('is-landing-active');
+    this.navigate('caregiver-dashboard');
+    this.renderCaregiverDashboard();
+    if (window.history.pushState) {
+      window.history.pushState(null, null, '#caregiver-dashboard');
+    }
+  }
+
+  // Data Roster Pasien Supervisi Medis Dokter DPJP
+  getDoctorPatients() {
+    return [
+      {
+        id: 'patient_siti',
+        name: 'Siti Rahma',
+        rm: '#NV-8821',
+        age: 42,
+        gender: 'female',
+        weight: 58,
+        height: 158,
+        condition: 'Pasca Laparoskopi Kolesistektomi (Hari ke-5)',
+        phase: 'Fase Proliferasi Luka',
+        albumin: '3.4 g/dL',
+        albuminStatus: 'Mendekati Normal (Target ≥3.5 g/dL)',
+        adherencePct: 92,
+        adherenceStatus: 'Optimal (Target ERAS Terpenuhi)',
+        targets: { calories: 1750, protein: 85, carbs: 215, fat: 52 },
+        current: { calories: 1480, protein: 76.5, carbs: 185, fat: 38 },
+        instruction: 'Fase proliferasi luka berjalan sangat baik. Dorong konsumsi ekstrak ikan gabus dan putih telur kukus 2x sehari untuk mempercepat penutupan luka pembedahan.',
+        meals: [
+          { time: '07:30', name: 'Bubur Ikan Gabus Lembut + Putih Telur Kukus', cal: 320, prot: 22, carbs: 45, fat: 5, tag: 'Tinggi Albumin' },
+          { time: '10:15', name: 'Puding Susu Kedelai Tinggi Protein & Madu', cal: 180, prot: 12, carbs: 25, fat: 3, tag: 'Snack Pemulihan' },
+          { time: '12:45', name: 'Nasi Tim Sup Ayam Bening + Tahu Sutra Rebus', cal: 460, prot: 26.5, carbs: 62, fat: 12, tag: 'Menu Utama' },
+          { time: '18:30', name: 'Pure Kentang + Sup Fillet Gabus Rebus Daun Kelor', cal: 520, prot: 16, carbs: 53, fat: 18, tag: 'Anti-Inflamasi' }
+        ],
+        weeklyAdherence: [88, 90, 85, 94, 91, 95, 92]
+      },
+      {
+        id: 'patient_ahmad',
+        name: 'Ahmad Fauzi',
+        rm: '#NV-8742',
+        age: 36,
+        gender: 'male',
+        weight: 72,
+        height: 176,
+        condition: 'Rekonstruksi ACL Lutut Kiri (Minggu ke-3)',
+        phase: 'Fisioterapi & Massa Otot',
+        albumin: '4.1 g/dL',
+        albuminStatus: 'Normal (Sangat Memuaskan)',
+        adherencePct: 88,
+        adherenceStatus: 'Baik (Fase Reparasi Jaringan)',
+        targets: { calories: 2200, protein: 110, carbs: 250, fat: 55 },
+        current: { calories: 2050, protein: 102, carbs: 245, fat: 48 },
+        instruction: 'Latihan fleksibilitas fleksi 90 derajat berlangsung lancar. Pertahankan asupan protein hewani >100g/hari untuk akselerasi reparasi tenosentesis.',
+        meals: [
+          { time: '06:45', name: 'Oatmeal + Susu Whey Isolate + 2 Butir Telur Rebus', cal: 420, prot: 32, carbs: 50, fat: 8, tag: 'Tinggi Protein' },
+          { time: '12:15', name: 'Nasi Merah + Dada Ayam Panggang 150g + Brokoli Kukus', cal: 650, prot: 42, carbs: 75, fat: 12, tag: 'Menu Utama' },
+          { time: '16:00', name: 'Pisang Ambon + Susu Kedelai Rendah Gula', cal: 240, prot: 8, carbs: 42, fat: 4, tag: 'Pre-Fisio' },
+          { time: '19:15', name: 'Pepes Ikan Kembung + Tempe Bacem + Sup Bayam Jagung', cal: 740, prot: 20, carbs: 78, fat: 24, tag: 'Kaya Omega-3' }
+        ],
+        weeklyAdherence: [85, 87, 84, 90, 88, 89, 88]
+      },
+      {
+        id: 'patient_subroto',
+        name: 'Opa Subroto',
+        rm: '#NV-8690',
+        age: 71,
+        gender: 'male',
+        weight: 61,
+        height: 164,
+        condition: 'Pasca Herniorafi Inguinalis (Hari ke-10, Geriatri)',
+        phase: 'Mobilisasi Dini & Pencegahan Konstipasi',
+        albumin: '3.2 g/dL',
+        albuminStatus: 'Perlu Perhatian (Batas Bawah Normal)',
+        adherencePct: 79,
+        adherenceStatus: 'Perlu Pendampingan Asupan Serat & Cairan',
+        targets: { calories: 1600, protein: 70, carbs: 200, fat: 45 },
+        current: { calories: 1250, protein: 54, carbs: 160, fat: 35 },
+        instruction: 'Asupan serat lunak dan air mineral minimal 1.500 ml/hari harus dijaga ketat agar pasien tidak mengejan saat buang air besar.',
+        meals: [
+          { time: '07:00', name: 'Bubur Beras Halus + Suwir Ayam Kampung Lembut', cal: 310, prot: 18, carbs: 46, fat: 6, tag: 'Mudah Cerna' },
+          { time: '12:30', name: 'Nasi Lunak + Gurame Tim Jahe + Sup Labu Siam Bening', cal: 510, prot: 22, carbs: 62, fat: 11, tag: 'Kaya Serat Lunak' },
+          { time: '16:30', name: 'Jus Pepaya Madu Segar (Tanpa Ampas Kasar)', cal: 140, prot: 2, carbs: 32, fat: 1, tag: 'Cegah Konstipasi' },
+          { time: '19:00', name: 'Sup Bening Oyong Jagung Manis + Telur Rebus Empuk', cal: 290, prot: 12, carbs: 20, fat: 17, tag: 'Malam Ringan' }
+        ],
+        weeklyAdherence: [72, 75, 76, 82, 80, 78, 79]
+      }
+    ];
+  }
+
+  // Render Keseluruhan Dasbor Dokter
+  renderDoctorDashboard() {
+    if (!this.doctorPatients || this.doctorPatients.length === 0) {
+      this.doctorPatients = this.getDoctorPatients();
+    }
+    const currentPatient = this.doctorPatients.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients[0];
+    this.currentDoctorPatientId = currentPatient.id;
+
+    this.renderDoctorPatientSelector();
+    this.renderDoctorPatientMetrics(currentPatient);
+    this.renderDoctorPatientDonut(currentPatient);
+    this.renderDoctorPatientWeeklyChart(currentPatient);
+    this.renderDoctorPatientMeals(currentPatient);
+
+    const instrEl = document.getElementById('doctor-patient-instruction-text');
+    if (instrEl) {
+      instrEl.textContent = currentPatient.instruction;
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Render Pill Tab Pasien
+  renderDoctorPatientSelector() {
+    const container = document.getElementById('doctor-patient-selector-container');
+    const countEl = document.getElementById('doctor-patient-roster-count');
+    if (countEl) {
+      countEl.textContent = `${this.doctorPatients.length} Pasien Terpantau`;
+    }
+    if (!container) return;
+
+    container.innerHTML = this.doctorPatients.map(p => {
+      const isActive = p.id === this.currentDoctorPatientId;
+      const initials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      return `
+        <div class="doctor-patient-pill ${isActive ? 'active' : ''}" onclick="app.selectDoctorPatient('${p.id}')">
+          <div class="doctor-pill-avatar">${initials}</div>
+          <div class="doctor-pill-info">
+            <div class="doctor-pill-name">${p.name}</div>
+            <div class="doctor-pill-meta">${p.rm} · ${p.age} th · ${p.gender === 'female' ? 'P' : 'L'}</div>
+          </div>
+          <div class="doctor-pill-adherence ${p.adherencePct >= 90 ? 'green' : (p.adherencePct >= 80 ? 'blue' : 'amber')}">
+            ${p.adherencePct}%
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  selectDoctorPatient(patientId) {
+    this.currentDoctorPatientId = patientId;
+    this.renderDoctorDashboard();
+  }
+
+  // Render Kartu Biometrik & Nutrisi Pasien Terpilih
+  renderDoctorPatientMetrics(patient) {
+    const container = document.getElementById('doctor-patient-metrics-container');
+    if (!container) return;
+
+    const bmi = (patient.weight / ((patient.height / 100) ** 2)).toFixed(1);
+    const protPct = Math.round((patient.current.protein / patient.targets.protein) * 100);
+    const calPct = Math.round((patient.current.calories / patient.targets.calories) * 100);
+
+    container.innerHTML = `
+      <div class="doctor-metric-card">
+        <div class="doctor-metric-head">
+          <span class="doctor-metric-title">Target Protein ERAS</span>
+          <span class="doctor-metric-badge ${protPct >= 90 ? 'green' : 'amber'}">${protPct}% Tercapai</span>
+        </div>
+        <div class="doctor-metric-value">${patient.current.protein} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${patient.targets.protein} g</span></div>
+        <div class="doctor-metric-sub">Defisit harian: ${Math.max(0, (patient.targets.protein - patient.current.protein).toFixed(1))} g untuk sintesis kolagen</div>
+      </div>
+
+      <div class="doctor-metric-card">
+        <div class="doctor-metric-head">
+          <span class="doctor-metric-title">Kadar Albumin Serum</span>
+          <span class="doctor-metric-badge ${parseFloat(patient.albumin) >= 3.5 ? 'green' : 'amber'}">${parseFloat(patient.albumin) >= 3.5 ? 'Normal' : 'Sub-Optimal'}</span>
+        </div>
+        <div class="doctor-metric-value">${patient.albumin}</div>
+        <div class="doctor-metric-sub">${patient.albuminStatus}</div>
+      </div>
+
+      <div class="doctor-metric-card">
+        <div class="doctor-metric-head">
+          <span class="doctor-metric-title">Kepatuhan Rencana Makan (7 Hari)</span>
+          <span class="doctor-metric-badge green">${patient.adherencePct}%</span>
+        </div>
+        <div class="doctor-metric-value">${patient.adherencePct}%</div>
+        <div class="doctor-metric-sub">${patient.adherenceStatus}</div>
+      </div>
+
+      <div class="doctor-metric-card">
+        <div class="doctor-metric-head">
+          <span class="doctor-metric-title">IMT / Status Antropometri</span>
+          <span class="doctor-metric-badge blue">Normoweight</span>
+        </div>
+        <div class="doctor-metric-value">${bmi} <span style="font-size:13px;color:#64748B;font-weight:500;">kg/m²</span></div>
+        <div class="doctor-metric-sub">BB: ${patient.weight} kg · TB: ${patient.height} cm (${patient.condition})</div>
+      </div>
+    `;
+  }
+
+  // Render Cincin Donut Makro Pasien Terpilih
+  renderDoctorPatientDonut(patient) {
+    const canvas = document.getElementById('doctor-macro-donut-canvas');
+    const calVal = document.getElementById('doctor-donut-cal-val');
+    const calTarget = document.getElementById('doctor-donut-cal-target');
+    const protTxt = document.getElementById('doctor-macro-prot-txt');
+    const carbsTxt = document.getElementById('doctor-macro-carbs-txt');
+    const fatTxt = document.getElementById('doctor-macro-fat-txt');
+    const badge = document.getElementById('doctor-patient-adherence-badge');
+
+    if (calVal) calVal.textContent = patient.current.calories.toLocaleString('id-ID');
+    if (calTarget) calTarget.textContent = `/ ${patient.targets.calories.toLocaleString('id-ID')} kkal`;
+    if (protTxt) protTxt.textContent = `Protein: ${patient.current.protein} / ${patient.targets.protein} g`;
+    if (carbsTxt) carbsTxt.textContent = `Karbo: ${patient.current.carbs} / ${patient.targets.carbs} g`;
+    if (fatTxt) fatTxt.textContent = `Lemak: ${patient.current.fat} / ${patient.targets.fat} g`;
+    if (badge) {
+      badge.textContent = `Kepatuhan: ${patient.adherencePct}%`;
+      badge.className = `doctor-metric-badge ${patient.adherencePct >= 90 ? 'green' : (patient.adherencePct >= 80 ? 'blue' : 'amber')}`;
+    }
+
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const centerX = w / 2;
+    const centerY = h / 2;
+    const radius = Math.min(centerX, centerY) - 18;
+    const lineWidth = 16;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background track ring
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#F1F5F9';
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+
+    // Segment arcs (Protein #384720, Carbs #9EA76B, Fat #EFE8CA)
+    const protCal = patient.current.protein * 4;
+    const carbsCal = patient.current.carbs * 4;
+    const fatCal = patient.current.fat * 9;
+    const totalCal = protCal + carbsCal + fatCal;
+
+    if (totalCal > 0) {
+      let startAngle = -0.5 * Math.PI;
+
+      // Protein Arc
+      const protAngle = (protCal / totalCal) * (2 * Math.PI);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, startAngle + protAngle);
+      ctx.strokeStyle = '#384720';
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      startAngle += protAngle;
+
+      // Carbs Arc
+      const carbsAngle = (carbsCal / totalCal) * (2 * Math.PI);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, startAngle + carbsAngle);
+      ctx.strokeStyle = '#9EA76B';
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+      startAngle += carbsAngle;
+
+      // Fat Arc
+      const fatAngle = (fatCal / totalCal) * (2 * Math.PI);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, startAngle + fatAngle);
+      ctx.strokeStyle = '#E2D9B3';
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+    }
+  }
+
+  // Render Grafik Batang Kepatuhan 7 Hari Pasien
+  renderDoctorPatientWeeklyChart(patient) {
+    const canvas = document.getElementById('doctor-weekly-chart-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = canvas.width = canvas.parentElement?.clientWidth || 320;
+    const h = canvas.height = 120;
+    ctx.clearRect(0, 0, w, h);
+
+    const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    const values = patient.weeklyAdherence || [85, 90, 88, 92, 95, 91, 92];
+    const barWidth = Math.min(26, Math.floor((w - 40) / days.length) - 8);
+    const spacing = (w - 40) / days.length;
+    const startX = 25;
+    const chartHeight = h - 35;
+
+    // Target 100% line (dashed)
+    const y100 = 10 + chartHeight * (1 - 100 / 120);
+    ctx.beginPath();
+    ctx.setLineDash([4, 4]);
+    ctx.moveTo(startX, y100);
+    ctx.lineTo(w - 15, y100);
+    ctx.strokeStyle = '#CBD5E1';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw bars
+    values.forEach((val, idx) => {
+      const x = startX + idx * spacing + (spacing - barWidth) / 2;
+      const barH = (val / 120) * chartHeight;
+      const y = h - 22 - barH;
+
+      // Color based on compliance
+      ctx.fillStyle = val >= 90 ? '#059669' : (val >= 80 ? '#0284C7' : '#F59E0B');
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(x, y, barWidth, barH, [4, 4, 0, 0]);
+      } else {
+        ctx.rect(x, y, barWidth, barH);
+      }
+      ctx.fill();
+
+      // Percentage label on top
+      ctx.fillStyle = '#64748B';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${val}%`, x + barWidth / 2, y - 4);
+
+      // Day label below
+      ctx.fillStyle = '#1E293B';
+      ctx.font = idx === 6 ? 'bold 11px sans-serif' : '11px sans-serif';
+      ctx.fillText(days[idx], x + barWidth / 2, h - 6);
+    });
+  }
+
+  // Render Log Makanan Pasien Terpilih Hari Ini
+  renderDoctorPatientMeals(patient) {
+    const container = document.getElementById('doctor-patient-meals-list');
+    if (!container) return;
+
+    if (!patient.meals || patient.meals.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:24px;color:#94A3B8;font-size:13px;">Belum ada log asupan makanan untuk hari ini.</div>`;
+      return;
+    }
+
+    container.innerHTML = patient.meals.map(m => `
+      <div class="doctor-meal-item">
+        <div class="doctor-meal-time">${m.time}</div>
+        <div class="doctor-meal-details">
+          <div class="doctor-meal-name">${m.name}</div>
+          <div class="doctor-meal-macros">${m.cal} kkal · ${m.prot}g protein · ${m.carbs}g karbo · ${m.fat}g lemak</div>
+        </div>
+        <span class="doctor-meal-badge">${m.tag}</span>
+      </div>
+    `).join('');
+  }
+
+  refreshDoctorPatientData() {
+    this.showToast('🔄 Memperbarui telemetri asupan & data pasien...');
+    this.renderDoctorDashboard();
+  }
+
+  sendClinicalAdviceToPatient() {
+    const currentPatient = this.doctorPatients.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients[0];
+    this.showToast(`✅ Instruksi gizi DPJP berhasil dikirimkan ke aplikasi ponsel ${currentPatient.name}.`);
+  }
+
+  // Buka Rekam Medis PDF Pasien Terpilih untuk DPJP atau Caregiver
+  openDoctorPatientPdf() {
+    const currentPatient = this.doctorPatients.find(p => p.id === this.currentDoctorPatientId) || this.doctorPatients[0];
+    const modal = document.getElementById('modal-pdf-report');
+    const container = document.getElementById('pdf-report-preview-container');
+    if (!modal || !container) return;
+
+    const patientProfile = {
+      name: currentPatient.name,
+      role: 'patient',
+      gender: currentPatient.gender,
+      age: currentPatient.age,
+      weightKg: currentPatient.weight,
+      heightCm: currentPatient.height,
+      conditionTitle: currentPatient.condition,
+      phase: currentPatient.phase,
+      targets: currentPatient.targets,
+      bmi: (currentPatient.weight / ((currentPatient.height / 100) ** 2)).toFixed(1),
+      bmiCategory: 'Normal',
+      contact: `${currentPatient.id}@nutrivision.id`
+    };
+
+    if (window.progressTracker && typeof window.progressTracker.generatePDFReportHTML === 'function') {
+      container.innerHTML = window.progressTracker.generatePDFReportHTML(
+        patientProfile,
+        typeof mealPlanner !== 'undefined' ? mealPlanner : null
+      );
+    }
+    modal.classList.add('open');
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  // Render Dasbor Pendamping Pasien (Caregiver)
+  renderCaregiverDashboard() {
+    if (!this.doctorPatients || this.doctorPatients.length === 0) {
+      this.doctorPatients = this.getDoctorPatients();
+    }
+    const familyPatient = this.doctorPatients[0]; // Siti Rahma (Ibu Tercinta)
+
+    const metricsContainer = document.getElementById('caregiver-metrics-container');
+    if (metricsContainer) {
+      const protPct = Math.round((familyPatient.current.protein / familyPatient.targets.protein) * 100);
+      metricsContainer.innerHTML = `
+        <div class="doctor-metric-card">
+          <div class="doctor-metric-head">
+            <span class="doctor-metric-title">Pasien Keluarga Tercinta</span>
+            <span class="doctor-metric-badge green">Terhubung</span>
+          </div>
+          <div class="doctor-metric-value" style="font-size:18px;">${familyPatient.name} (42 th)</div>
+          <div class="doctor-metric-sub">${familyPatient.condition}</div>
+        </div>
+
+        <div class="doctor-metric-card">
+          <div class="doctor-metric-head">
+            <span class="doctor-metric-title">Kecukupan Protein Hari Ini</span>
+            <span class="doctor-metric-badge green">${protPct}%</span>
+          </div>
+          <div class="doctor-metric-value">${familyPatient.current.protein} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${familyPatient.targets.protein} g</span></div>
+          <div class="doctor-metric-sub">Sisa kebutuhan: ${Math.max(0, (familyPatient.targets.protein - familyPatient.current.protein).toFixed(1))} g untuk menutup luka</div>
+        </div>
+
+        <div class="doctor-metric-card">
+          <div class="doctor-metric-head">
+            <span class="doctor-metric-title">Total Kalori Terpenuhi</span>
+            <span class="doctor-metric-badge green">Baik</span>
+          </div>
+          <div class="doctor-metric-value">${familyPatient.current.calories} <span style="font-size:15px;color:#64748B;font-weight:600;">/ ${familyPatient.targets.calories} kkal</span></div>
+          <div class="doctor-metric-sub">Pola makan 4x sehari teratur</div>
+        </div>
+
+        <div class="doctor-metric-card">
+          <div class="doctor-metric-head">
+            <span class="doctor-metric-title">Dokter Penanggung Jawab (DPJP)</span>
+            <span class="doctor-metric-badge blue">Klinis RSUP</span>
+          </div>
+          <div class="doctor-metric-value" style="font-size:16px;">dr. Hendra Kusuma, Sp.GK</div>
+          <div class="doctor-metric-sub">Catatan: Pastikan ekstrak gabus diminum rutin</div>
+        </div>
+      `;
+    }
+
+    const mealsContainer = document.getElementById('caregiver-meals-list');
+    if (mealsContainer) {
+      mealsContainer.innerHTML = familyPatient.meals.map(m => `
+        <div class="doctor-meal-item">
+          <div class="doctor-meal-time" style="background:#EFF6FF;color:#1D4ED8;">${m.time}</div>
+          <div class="doctor-meal-details">
+            <div class="doctor-meal-name">${m.name}</div>
+            <div class="doctor-meal-macros">${m.cal} kkal · ${m.prot}g protein · Menu Pemulihan</div>
+          </div>
+          <span class="doctor-meal-badge" style="background:#DBEAFE;color:#1E40AF;">${m.tag}</span>
+        </div>
+      `).join('');
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 }
 

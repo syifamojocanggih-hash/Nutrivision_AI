@@ -1,0 +1,489 @@
+/* ==========================================================================
+   NutriVision AI — Doctor Clinical Dashboard & Caregiver Monitor Styles
+   WCAG AAA Compliant · Forest Matcha & Milky Clinical Design System
+   ========================================================================== */
+
+/* 1. Doctor Dashboard Layout */
+.doctor-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Header Banner Card */
+.doctor-header-card {
+  background: linear-gradient(135deg, #1C240E 0%, #2A3617 100%);
+  border: 1px solid rgba(239, 232, 202, 0.22);
+  border-radius: 18px;
+  padding: 24px 28px;
+  color: #FFFFFF;
+  box-shadow: 0 10px 30px rgba(28, 36, 12, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.doctor-header-card::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(158, 167, 107, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.doctor-badge-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(158, 167, 107, 0.2);
+  border: 1px solid rgba(177, 187, 129, 0.4);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #EFE8CA;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+}
+
+.doctor-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 10px #10B981;
+  animation: pulseDoctor 2s infinite;
+}
+
+@keyframes pulseDoctor {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.doctor-header-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.doctor-header-subtitle {
+  font-size: 13px;
+  color: #DDD4B0;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  max-width: 820px;
+}
+
+.doctor-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.doctor-btn-action {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.18s ease;
+  touch-action: manipulation;
+}
+
+.doctor-btn-action.matcha {
+  background: linear-gradient(135deg, #9EA76B, #8B9456);
+  color: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(158, 167, 107, 0.35);
+}
+
+.doctor-btn-action.matcha:hover {
+  background: linear-gradient(135deg, #8B9456, #7A8347);
+  transform: translateY(-1px);
+}
+
+.doctor-btn-action.glass {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.doctor-btn-action.glass:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* 2. Patient Roster & Selector Section */
+.doctor-roster-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.doctor-roster-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.doctor-roster-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doctor-patient-pills-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.doctor-patient-pill {
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #F8FAFC;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doctor-patient-pill:hover {
+  border-color: #9EA76B;
+  background: #F4F6EA;
+  transform: translateY(-1px);
+}
+
+.doctor-patient-pill.active {
+  border-color: #384720;
+  background: #F3F5EA;
+  box-shadow: 0 4px 14px rgba(56, 71, 32, 0.12);
+}
+
+.doctor-patient-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9EA76B, #4B552A);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.doctor-patient-pill.active .doctor-patient-avatar {
+  background: linear-gradient(135deg, #384720, #1C240E);
+  box-shadow: 0 2px 8px rgba(28, 36, 12, 0.3);
+}
+
+.doctor-patient-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.doctor-patient-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doctor-patient-condition {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doctor-patient-status-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #DCFCE7;
+  color: #15803D;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* 3. Patient Clinical Metrics Overview */
+.doctor-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.doctor-metric-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.doctor-metric-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.doctor-metric-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F1F5E9;
+  color: #384720;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctor-metric-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.doctor-metric-badge.green {
+  background: #DEF7EC;
+  color: #03543F;
+}
+
+.doctor-metric-badge.amber {
+  background: #FEF08A;
+  color: #854D0E;
+}
+
+.doctor-metric-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.5px;
+}
+
+.doctor-metric-lbl {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748B;
+  margin-top: 2px;
+}
+
+.doctor-metric-sub {
+  font-size: 11.5px;
+  color: #059669;
+  font-weight: 500;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 4. Two-Column Clinical Progress Section */
+.doctor-progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .doctor-progress-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.doctor-panel-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.doctor-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.doctor-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Meal Logs Table for Doctor */
+.doctor-meal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doctor-meal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #F8FAFC;
+  border: 1px solid #EDF2F7;
+  gap: 10px;
+}
+
+.doctor-meal-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.doctor-meal-time {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  flex-shrink: 0;
+}
+
+.doctor-meal-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doctor-meal-macros {
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+  flex-shrink: 0;
+}
+
+/* 5. Dual-Mode Companion Selection Modal */
+.companion-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+@media (max-width: 580px) {
+  .companion-selector-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.companion-role-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.companion-role-card:hover {
+  border-color: #9EA76B;
+  background: #F9FAF4;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(158, 167, 107, 0.18);
+}
+
+.companion-role-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.companion-role-card.doctor .companion-role-icon {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.companion-role-card.caregiver .companion-role-icon {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.companion-role-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.companion-role-desc {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.companion-role-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  margin-top: auto;
+  transition: all 0.15s ease;
+}
+
+.companion-role-card.doctor .companion-role-btn {
+  background: #059669;
+  color: #FFFFFF;
+}
+
+.companion-role-card.caregiver .companion-role-btn {
+  background: #2563EB;
+  color: #FFFFFF;
+}
