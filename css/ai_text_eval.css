@@ -1,0 +1,714 @@
+/* ==========================================================================
+   NutriVision AI — Evaluasi Kelayakan Menu Pasien (AI Model Teks)
+   Dedicated View Stylesheet
+   ========================================================================== */
+
+.ai-eval-page-wrapper {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 10px 40px 10px;
+}
+
+/* 1. Header Navigation & Title Bar */
+.ai-eval-top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.ai-eval-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #064E3B;
+  background: #FFFFFF;
+  border: 1px solid #D1FAE5;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.ai-eval-back-btn:hover {
+  background: #ECFDF5;
+  border-color: #A7F3D0;
+  transform: translateX(-2px);
+}
+
+.ai-eval-header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ai-eval-header-left {
+  flex: 1;
+  min-width: 280px;
+}
+
+.ai-eval-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.ai-eval-main-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.ai-eval-badge-room {
+  background: #CCFBF1;
+  color: #0F766E;
+  border: 1px solid #99F6E4;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.ai-eval-subtitle {
+  font-size: 14px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Status AI Klinis Widget (Top Right) */
+.ai-eval-status-widget {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.ai-eval-status-dot-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  display: inline-block;
+  animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.ai-eval-status-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ai-eval-status-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* 2. Main 2-Column Grid Layout */
+.ai-eval-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 991px) {
+  .ai-eval-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Common Card Style */
+.ai-eval-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* 3. Left Panel: Input & Presets */
+.ai-eval-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-eval-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.ai-eval-patient-tag {
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.ai-eval-section-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* Preset Chips */
+.ai-eval-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 480px) {
+  .ai-eval-presets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ai-eval-preset-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+  user-select: none;
+}
+
+.ai-eval-preset-pill:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+.ai-eval-preset-pill.active {
+  background: #ECFDF5;
+  border-color: #10B981;
+  color: #064E3B;
+  font-weight: 700;
+}
+
+.ai-eval-preset-icon {
+  font-size: 14px;
+}
+
+/* Textarea Input Container */
+.ai-eval-input-container {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.ai-eval-input-container:focus-within {
+  background: #FFFFFF;
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.ai-eval-textarea {
+  width: 100%;
+  min-height: 96px;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #0F172A;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.ai-eval-input-subbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: #64748B;
+  border-top: 1px solid #E2E8F0;
+  padding-top: 8px;
+  margin-top: 6px;
+}
+
+/* Input Action Buttons */
+.ai-eval-action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ai-eval-btn-submit {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #064E3B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(6, 78, 59, 0.2);
+}
+
+.ai-eval-btn-submit:hover {
+  background: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(6, 78, 59, 0.25);
+}
+
+.ai-eval-btn-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-eval-btn-reset:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.ai-eval-btn-reset:active {
+  transform: scale(0.92);
+}
+
+.ai-eval-btn-reset.rotating svg,
+.ai-eval-btn-reset.rotating i {
+  animation: ai-reset-spin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ai-reset-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* 4. Left Panel Card 2: Keywords */
+.ai-eval-keywords-card {
+  margin-top: 18px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.ai-eval-keywords-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ai-eval-keywords-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.ai-eval-keywords-desc {
+  font-size: 12px;
+  color: #64748B;
+  margin: 0 0 12px 0;
+}
+
+.ai-eval-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ai-eval-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.ai-eval-chip.safe {
+  background: #D1FAE5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.ai-eval-chip.warning {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.ai-eval-chip.neutral {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+/* 5. Right Panel: Assessment Output */
+.ai-eval-output-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 24px 26px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.ai-eval-status-box {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.ai-eval-status-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 1;
+  min-width: 240px;
+}
+
+.ai-eval-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-eval-icon-circle.safe {
+  background: #D1FAE5;
+  color: #059669;
+}
+
+.ai-eval-icon-circle.warning {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.ai-eval-icon-circle.neutral {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.ai-eval-status-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
+}
+
+.ai-eval-status-desc {
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ai-eval-goal-pill {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Confidence Progress Bar Section */
+.ai-eval-confidence-section {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.ai-eval-conf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  margin-bottom: 8px;
+}
+
+.ai-eval-conf-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.ai-eval-conf-val {
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.ai-eval-progress-track {
+  height: 8px;
+  background: #E2E8F0;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ai-eval-progress-fill {
+  height: 100%;
+  background: #064E3B;
+  border-radius: 9999px;
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-eval-conf-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: #64748B;
+}
+
+/* Clinical Evaluation Checklist */
+.ai-eval-notes-section {
+  margin-bottom: 22px;
+}
+
+.ai-eval-notes-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+.ai-eval-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-eval-note-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #1E293B;
+}
+
+.ai-eval-note-check {
+  color: #10B981;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Nutrients Grid */
+.ai-eval-nutrients-section {
+  margin-bottom: 22px;
+}
+
+.ai-eval-nutrients-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ai-eval-nutrients-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.ai-eval-nutrients-source {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+.ai-eval-nutri-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .ai-eval-nutri-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ai-eval-nutri-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+}
+
+.ai-eval-nutri-card:hover {
+  background: #F1F5F9;
+  transform: translateY(-2px);
+}
+
+.ai-eval-nutri-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.ai-eval-nutri-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 2px;
+  letter-spacing: -0.3px;
+}
+
+.ai-eval-nutri-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+/* Bottom Confirmation Order Banner */
+.ai-eval-order-banner {
+  margin-top: 18px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ai-eval-order-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-eval-order-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #ECFDF5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-eval-order-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 2px 0;
+}
+
+.ai-eval-order-desc {
+  font-size: 11.5px;
+  color: #64748B;
+  margin: 0;
+}
+
+.ai-eval-btn-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #064E3B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ai-eval-btn-order:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}

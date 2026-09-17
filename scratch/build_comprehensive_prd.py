@@ -496,15 +496,20 @@ def build_comprehensive_prd(output_path):
         "4) ERAS Guideline Update: Edukasi periodik protokol pemulihan bedah dari Kemenkes RI dan ESPEN."
     )
 
-    add_h2("7.11 Live AI Model Tester Modal (Uji Langsung Model AI di Bilah Atas)")
+    add_h2("7.11 Halaman Khusus Evaluasi Kelayakan Menu Pasien (AI Model Teks)")
     add_body(
-        "Tersedia modal pengujian interaktif (ai-tester-modal) yang dapat diakses langsung dari tombol \"Uji AI Model\" di bilah atas aplikasi. "
-        "Pengguna atau dewan juri dapat mengetikkan teks nama hidangan atau resep makanan apa pun secara live untuk menguji inferensi model DistilBERT Multilingual Safetensors. "
-        "Modal ini menampilkan: "
-        "• Badge Intent Terdeteksi: Menampilkan hasil klasifikasi dari intent_map.json (Meal Plan, Nutrisi, atau Workout); "
-        "• Skor Keamanan & Keyakinan (Confidence Score %): Evaluasi kepatuhan klinis; "
-        "• Catatan Peringatan Konflik Alergi Pasien: Deteksi otomatis bahan yang bertentangan dengan profil medis pengguna; "
-        "• Pengukur Latensi Real-Time: Waktu eksekusi inferensi ultra-cepat (<15 milidetik) berkat optimasi tokenizer.json lokal dan komputasi NumPy."
+        "Tersedia halaman khusus yang didedikasikan untuk evaluasi klinis resep dan menu makanan pasien pasca-bedah, "
+        "yang dapat diakses langsung secara eksklusif dari tombol navigasi \"AI Model Teks\" di bilah atas aplikasi "
+        "(tanpa masuk ke menu sidebar reguler pasien guna menjaga kerapian alur kerja klinis). "
+        "Halaman ini dilengkapi tombol kembali ('Kembali ke Dashboard') untuk kembali secara instan ke tampilan ikhtisar utama. "
+        "Fitur pada halaman ini mencakup: "
+        "1) Status AI Klinis Real-Time: Menampilkan indikator latensi ultra-cepat (<18 milidetik) dan status operasional model Safetensors; "
+        "2) Panel Masukan Menu Pasien: Memuat 6 contoh menu cepat (Bakso Sapi Kuah, Sup Ikan Gabus, Bening Bayam Jagung, Bubur Salmon, Rendang Pedas, Ayam Goreng Tepung), area teks resep, penghitung karakter dinamis, dan penanda konteks medis; "
+        "3) Kata Kunci yang Dianalisis: Chip deteksi otomatis bahan utama pangan yang paling memengaruhi keamanan pasien; "
+        "4) Hasil Evaluasi Klinis: Triage keselamatan 3 tingkat (Aman Sangat Direkomendasikan, Netral, Peringatan Pantangan), bar tingkat keyakinan (Confidence %), dan validasi protokol bedah ESPEN; "
+        "5) Catatan Evaluasi Gizi: Tiga butir rekomendasi klinis terperinci mengenai daya cerna lambung, perbaikan jaringan luka, dan pemeriksaan alergen; "
+        "6) Estimasi Nutrisi Per Porsi: Empat kartu metrik gizi standar TKPI Kemenkes (Protein & Albumin dalam gram, Total Kalori Energi Basal, Seng/Zinc untuk sintesis jaringan, dan Natrium/Garam); "
+        "7) Banner Persetujuan Menu: Tombol aksi langsung 'Kirim ke Dapur Gizi Pasien' yang terhubung dengan rekam medis elektronik rumah sakit."
     )
 
     add_h2("7.12 Portal Super Administrator Medis & Audit Trail Explorer")
@@ -604,7 +609,7 @@ def build_comprehensive_prd(output_path):
         ["FR-18", "Komunitas", "Menyediakan ruang berbagi resep pemulihan dengan fitur suka (like), komentar, dan filter kategori kondisi pemulihan.", "Must Have (Implemented)"],
         ["FR-19", "AI Screening", "Melakukan klasifikasi keamanan klinis resep komunitas via DistilBERT Safetensors (Aman Tinggi Gizi, Netral, Peringatan).", "Must Have (Implemented)"],
         ["FR-20", "AI Intent Mapping", "Memetakan intent inferensi teks ke 3 domain klinis (meal_plan, nutrisi, workout) berdasarkan intent_map.json.", "Must Have (Implemented)"],
-        ["FR-21", "Uji Model AI", "Menyediakan modal tester interaktif di navbar untuk pengujian langsung inferensi DistilBERT Safetensors, intent_map, dan latensi.", "Must Have (Implemented)"],
+        ["FR-21", "AI Model Teks", "Menyediakan halaman khusus 'Evaluasi Kelayakan Menu Pasien' yang diakses via tombol 'AI Model Teks' di navbar (dengan tombol kembali ke dashboard), memuat 6 preset resep, ekstraksi kata kunci, triage klinis, bar keyakinan, estimasi nutrisi per porsi, dan integrasi dapur gizi.", "Must Have (Implemented)"],
         ["FR-22", "Admin Portal", "Menyediakan portal super admin medis dengan monitoring pengguna, pemindaian masuk, audit logs, dan ekspor JSON.", "Must Have (Implemented)"],
         ["FR-23", "Smart Notifikasi", "Memicu notifikasi pengingat pagi (06:00), peringatan defisit albumin malam (18:00), info harga pangan, dan edukasi ERAS.", "Must Have (Implemented)"],
         ["FR-24", "Katalog TKPI", "Menyediakan ensiklopedia pangan super lokal Nusantara kaya albumin (Ikan Gabus, Tempe, Telur) dengan fitur Favorit.", "Must Have (Implemented)"],

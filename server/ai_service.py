@@ -151,6 +151,78 @@ def load_ai_model():
         model_loaded = False
         return False
 
+def estimate_nutrients(text, pred_class):
+    text_l = text.lower()
+    # Baseline depending on predicted class
+    if pred_class == 0:  # AMAN_TINGGI_GIZI / meal_plan kaya albumin
+        prot = 26.5
+        alb = 5.8
+        cals = 330
+        carbs = 36.0
+        fat = 5.5
+        vit = 85
+        min_pct = 80
+    elif pred_class == 1:  # NETRAL_MODERASI / nutrisi seimbang
+        prot = 17.0
+        alb = 2.4
+        cals = 390
+        carbs = 48.0
+        fat = 12.0
+        vit = 65
+        min_pct = 60
+    else:  # PERINGATAN_PANTANGAN / tinggi lemak jenuh
+        prot = 9.0
+        alb = 0.8
+        cals = 520
+        carbs = 44.0
+        fat = 26.0
+        vit = 30
+        min_pct = 35
+
+    # Refinements based on detected ingredients
+    if any(k in text_l for k in ['gabus', 'channa']):
+        prot += 10.0
+        alb += 4.5
+        cals += 40
+        min_pct += 15
+    if any(k in text_l for k in ['telur', 'putih telur']):
+        prot += 6.5
+        alb += 2.0
+        cals += 50
+    if any(k in text_l for k in ['tempe', 'tahu', 'kedelai']):
+        prot += 7.0
+        carbs += 6.0
+        cals += 60
+        min_pct += 10
+    if any(k in text_l for k in ['ayam', 'dada ayam']):
+        prot += 12.0
+        alb += 1.5
+        cals += 70
+    if any(k in text_l for k in ['bayam', 'sayur bening', 'labu', 'sayur']):
+        vit += 15
+        min_pct += 12
+        carbs += 4.0
+        cals += 25
+    if any(k in text_l for k in ['nasi', 'bubur', 'oatmeal', 'kentang']):
+        carbs += 22.0
+        cals += 110
+    if any(k in text_l for k in ['goreng', 'minyak', 'santan']):
+        fat += 12.0
+        cals += 130
+        vit = max(15, vit - 20)
+
+    return {
+        "protein": round(min(90.0, prot), 1),
+        "albumin": round(min(20.0, alb), 1),
+        "calories": int(min(1200, cals)),
+        "carbs": round(min(150.0, carbs), 1),
+        "fat": round(min(80.0, fat), 1),
+        "vitaminsPct": int(min(100, vit)),
+        "mineralsPct": int(min(100, min_pct)),
+        "targetProtein": 98.0,
+        "targetCalories": 1850
+    }
+
 def predict_text(text, patient_allergies=None, patient_restrictions=None):
     global weights, tokenizer, model_loaded
 
@@ -217,6 +289,8 @@ def predict_text(text, patient_allergies=None, patient_restrictions=None):
             if allergy.lower() in text_lower:
                 conflict_notes.append(f"Mengandung bahan alergi: {allergy}")
 
+    nutrients = estimate_nutrients(text, pred_class)
+
     return {
         "predictedClass": pred_class,
         "intent": predicted_intent,
@@ -238,6 +312,7 @@ def predict_text(text, patient_allergies=None, patient_restrictions=None):
             intent_map.get("1", "nutrisi"): round(float(probs[1]) * 100, 1),
             intent_map.get("2", "workout"): round(float(probs[2]) * 100, 1)
         },
+        "nutrients": nutrients,
         "clinicalAdvice": label_info["advice"],
         "conflictNotes": conflict_notes,
         "engine": engine_name,

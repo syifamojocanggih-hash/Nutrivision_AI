@@ -30,3 +30,6 @@
 
 /* 9. Super Admin Command Center & Monitoring Portal */
 @import url('admin.css');
+
+/* 10. Evaluasi Kelayakan Menu Pasien (AI Model Teks) */
+@import url('ai_text_eval.css');

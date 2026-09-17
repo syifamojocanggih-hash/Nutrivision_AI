@@ -114,11 +114,11 @@
             </div>
 
             <div class="lp-nav-actions" id="lp-nav-actions-container">
-              <button class="lp-btn-nav-ai" id="lp-nav-ai-btn" onclick="app.openAITesterModal()"
-                title="Uji Coba Model AI Safetensors"
+              <button class="lp-btn-nav-ai" id="lp-nav-ai-btn" onclick="app.goToAITextPage()"
+                title="Evaluasi Kelayakan Menu Pasien (AI Model Teks)"
                 style="all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:#064E3B;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);transition:all 0.18s ease;">
                 <i data-lucide="cpu" style="width:14px;height:14px;color:#059669;"></i>
-                <span>Uji AI Model</span>
+                <span>AI Model Teks</span>
               </button>
               <button class="lp-btn-nav-db" id="lp-nav-db-btn" onclick="app.openDatabaseSyncModal()"
                 title="Database Status &amp; Supabase Cloud" style="display:none;">
@@ -938,12 +938,12 @@
             <span class="topbar-db-lbl">DB</span>
           </button>
 
-          <!-- Safetensors AI Model Tester Trigger -->
+          <!-- Safetensors AI Model Teks Trigger -->
           <button class="btn-outline-glass" id="topbar-ai-tester-btn"
             style="color:#064E3B;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.12);padding:7px 12px;border-radius:var(--radius-sm);font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
-            onclick="app.openAITesterModal()" title="Uji Coba Model AI Safetensors">
+            onclick="app.goToAITextPage()" title="Evaluasi Kelayakan Menu Pasien (AI Model Teks)">
             <i data-lucide="cpu" class="btn-icon-sm" style="color:#059669;"></i>
-            <span style="font-size:12px;">Uji AI Model</span>
+            <span style="font-size:12px;">AI Model Teks</span>
           </button>
 
           <!-- Smart Clinical Notification Center -->
@@ -2789,7 +2789,251 @@
         </div>
       </div>
 
-    </main>
+      <!-- =========================================================================
+         VIEW 8: EVALUASI KELAYAKAN MENU PASIEN (AI MODEL TEKS)
+         ========================================================================= -->
+      <div class="view-section" id="view-ai-text">
+        <div class="ai-eval-page-wrapper">
+
+          <!-- Top Navigation Bar: Back to Dashboard -->
+          <div class="ai-eval-top-nav">
+            <button type="button" class="ai-eval-back-btn" onclick="app.navigate('overview')" title="Kembali ke Dashboard NutriVision">
+              <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
+              <span>Kembali ke Dashboard</span>
+            </button>
+            <div style="font-size:12px;color:#64748B;font-weight:600;">
+              NutriVision AI · Modul Evaluasi Klinis
+            </div>
+          </div>
+
+          <!-- Page Header Banner -->
+          <div class="ai-eval-header-card">
+            <div class="ai-eval-header-left">
+              <div class="ai-eval-title-row">
+                <h1 class="ai-eval-main-title">Evaluasi Kelayakan Menu Pasien</h1>
+                <span class="ai-eval-badge-room">Ruang Rawat Bedah</span>
+              </div>
+              <p class="ai-eval-subtitle">
+                Periksa keamanan bahan makanan dan kesesuaian nutrisi dengan kondisi klinis pasien secara instan.
+              </p>
+            </div>
+
+            <div class="ai-eval-status-widget">
+              <span class="ai-eval-status-dot-pulse"></span>
+              <div>
+                <div class="ai-eval-status-label">Status AI Klinis</div>
+                <div class="ai-eval-status-val" id="ai-eval-status-val">Aktif &amp; Respon Cepat (~18ms)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main 2-Column Grid Layout -->
+          <div class="ai-eval-main-grid">
+
+            <!-- LEFT COLUMN: Input & Keywords Panel -->
+            <div class="ai-eval-left-col">
+              
+              <!-- Card 1: Input Panel -->
+              <div class="ai-eval-card">
+                <div class="ai-eval-card-header">
+                  <h3 class="ai-eval-card-title">
+                    <i data-lucide="book-open" style="width:18px;height:18px;color:#0F766E;"></i>
+                    <span>Masukan Menu Pasien</span>
+                  </h3>
+                  <span class="ai-eval-patient-tag" id="ai-eval-patient-badge">Pasien #NV-4029</span>
+                </div>
+
+                <label class="ai-eval-section-label">Pilih Contoh Menu Cepat:</label>
+                <div class="ai-eval-presets-grid" id="ai-eval-presets-container">
+                  <button type="button" class="ai-eval-preset-pill" onclick="app.selectAIEvalPreset('bakso')">
+                    <span>Bakso Sapi Kuah</span>
+                  </button>
+                  <button type="button" class="ai-eval-preset-pill" onclick="app.selectAIEvalPreset('gabus')">
+                    <span>Sup Ikan Gabus</span>
+                  </button>
+                  <button type="button" class="ai-eval-preset-pill" onclick="app.selectAIEvalPreset('bayam')">
+                    <span>Bening Bayam Jagung</span>
+                  </button>
+                  <button type="button" class="ai-eval-preset-pill" onclick="app.selectAIEvalPreset('salmon')">
+                    <span>Bubur Salmon</span>
+                  </button>
+                  <button type="button" class="ai-eval-preset-pill" onclick="app.selectAIEvalPreset('rendang')">
+                    <span>Rendang Pedas</span>
+                  </button>
+                  <button type="button" class="ai-eval-preset-pill" onclick="app.selectAIEvalPreset('gorengan')">
+                    <span>Ayam Goreng Tepung</span>
+                  </button>
+                </div>
+
+                <label class="ai-eval-section-label" for="ai-eval-input-text">Deskripsi Menu atau Resep:</label>
+                <div class="ai-eval-input-container">
+                  <textarea id="ai-eval-input-text" class="ai-eval-textarea"
+                    placeholder="Ketik nama menu, bahan masakan, atau deskripsi resep pasien..."
+                    oninput="app.handleAIEvalInput(this.value)">bakso sapi kuah bening dengan taburan seledri &amp; bawang putih goreng untuk pasien pasca laparotomi</textarea>
+                  <div class="ai-eval-input-subbar">
+                    <span id="ai-eval-context-label">Konteks: Pasca Operasi Perut</span>
+                    <span id="ai-eval-char-counter">97 karakter</span>
+                  </div>
+                </div>
+
+                <div class="ai-eval-action-row">
+                  <button type="button" class="ai-eval-btn-submit" id="ai-eval-run-btn" onclick="app.executeAIEvalPage()">
+                    <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+                    <span>Analisis Rekomendasi Menu</span>
+                  </button>
+                  <button type="button" class="ai-eval-btn-reset" id="ai-eval-reset-btn" onclick="app.resetAIEvalPage()" title="Bersihkan dan reset formulir evaluasi">
+                    <i data-lucide="rotate-ccw" style="width:16px;height:16px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card 2: Keywords Analysis -->
+              <div class="ai-eval-keywords-card">
+                <div class="ai-eval-keywords-header">
+                  <div class="ai-eval-keywords-title">
+                    <i data-lucide="check-circle-2" style="width:16px;height:16px;color:#10B981;"></i>
+                    <span>Kata Kunci yang Dianalisis</span>
+                  </div>
+                  <span class="ai-eval-patient-tag" style="background:#F1F5F9;font-size:11px;">Deteksi Bahan Utama</span>
+                </div>
+                <p class="ai-eval-keywords-desc">
+                  Bahan dan istilah yang paling memengaruhi keputusan keamanan menu pasien:
+                </p>
+                <div class="ai-eval-chips-container" id="ai-eval-chips-box">
+                  <span class="ai-eval-chip safe">✓ bakso sapi</span>
+                  <span class="ai-eval-chip safe">✓ kuah bening</span>
+                  <span class="ai-eval-chip safe">✓ seledri</span>
+                  <span class="ai-eval-chip neutral">bawang putih</span>
+                  <span class="ai-eval-chip neutral">pasca laparotomi</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Clinical Assessment Output Panel -->
+            <div class="ai-eval-right-col">
+              <div class="ai-eval-output-card" id="ai-eval-output-card">
+
+                <!-- 1. Triage Status Box -->
+                <div class="ai-eval-status-box">
+                  <div class="ai-eval-status-meta">
+                    <div class="ai-eval-icon-circle safe" id="ai-eval-status-icon-box">
+                      <i data-lucide="check-circle" id="ai-eval-status-icon" style="width:26px;height:26px;"></i>
+                    </div>
+                    <div>
+                      <h2 class="ai-eval-status-title" id="ai-eval-result-title">Aman &amp; Sangat Direkomendasikan</h2>
+                      <p class="ai-eval-status-desc" id="ai-eval-result-desc">
+                        Menu kaya albumin alami yang mempercepat penyembuhan luka pasca operasi.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="ai-eval-goal-pill" id="ai-eval-goal-pill">
+                    Tujuan: Pemulihan Jaringan
+                  </div>
+                </div>
+
+                <!-- 2. Confidence Progress Bar & Protocol Sub-labels -->
+                <div class="ai-eval-confidence-section">
+                  <div class="ai-eval-conf-head">
+                    <div class="ai-eval-conf-title">
+                      <i data-lucide="check-circle" style="width:14px;height:14px;color:#10B981;"></i>
+                      <span>Tingkat Keyakinan Rekomendasi AI</span>
+                    </div>
+                    <div class="ai-eval-conf-val" id="ai-eval-confidence-val">89.4% (Tinggi)</div>
+                  </div>
+                  <div class="ai-eval-progress-track">
+                    <div class="ai-eval-progress-fill" id="ai-eval-progress-bar" style="width: 89.4%;"></div>
+                  </div>
+                  <div class="ai-eval-conf-foot">
+                    <span id="ai-eval-domain-category">Kategori Utama: Perencanaan Menu Pasca Bedah</span>
+                    <span style="font-weight:600;color:#0F766E;">Tervalidasi Protokol ESPEN</span>
+                  </div>
+                </div>
+
+                <!-- 3. Catatan Evaluasi Gizi Checklist -->
+                <div class="ai-eval-notes-section">
+                  <div class="ai-eval-notes-title">Catatan Evaluasi Gizi:</div>
+                  <div class="ai-eval-notes-list" id="ai-eval-notes-list">
+                    <div class="ai-eval-note-item">
+                      <span class="ai-eval-note-check">✓</span>
+                      <span><strong>Sangat ramah cerna:</strong> Kaldu bening bebas cabai dan bumbu pedas, aman dari risiko iritasi lambung.</span>
+                    </div>
+                    <div class="ai-eval-note-item">
+                      <span class="ai-eval-note-check">✓</span>
+                      <span><strong>Dukungan Penyembuhan:</strong> Kandungan protein hewani mudah diserap untuk perbaikan luka bedah.</span>
+                    </div>
+                    <div class="ai-eval-note-item">
+                      <span class="ai-eval-note-check">✓</span>
+                      <span><strong>Pemeriksaan Alergi:</strong> Tidak terdeteksi bahan yang bertentangan dengan rekam medis pasien.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4. Estimasi Nutrisi Per Porsi (4 Cards) -->
+                <div class="ai-eval-nutrients-section">
+                  <div class="ai-eval-nutrients-head">
+                    <div class="ai-eval-nutrients-title">Estimasi Nutrisi Per Porsi:</div>
+                    <div class="ai-eval-nutrients-source">Standar TKPI Kemenkes</div>
+                  </div>
+                  <div class="ai-eval-nutri-grid">
+                    <div class="ai-eval-nutri-card">
+                      <div class="ai-eval-nutri-card-head">
+                        <span>Protein &amp; Albumin</span>
+                      </div>
+                      <div class="ai-eval-nutri-val" id="ai-eval-nutri-protein">28.5 g</div>
+                      <div class="ai-eval-nutri-sub" id="ai-eval-nutri-protein-sub">29% Kebutuhan</div>
+                    </div>
+
+                    <div class="ai-eval-nutri-card">
+                      <div class="ai-eval-nutri-card-head">
+                        <span>Total Energi</span>
+                      </div>
+                      <div class="ai-eval-nutri-val" id="ai-eval-nutri-cals">340 kkal</div>
+                      <div class="ai-eval-nutri-sub">Optimal Pemulihan</div>
+                    </div>
+
+                    <div class="ai-eval-nutri-card">
+                      <div class="ai-eval-nutri-card-head">
+                        <span>Seng (Zinc)</span>
+                      </div>
+                      <div class="ai-eval-nutri-val" id="ai-eval-nutri-zinc">4.2 mg</div>
+                      <div class="ai-eval-nutri-sub">Sintesis Jaringan</div>
+                    </div>
+
+                    <div class="ai-eval-nutri-card">
+                      <div class="ai-eval-nutri-card-head">
+                        <span>Natrium (Garam)</span>
+                      </div>
+                      <div class="ai-eval-nutri-val" id="ai-eval-nutri-sodium">380 mg</div>
+                      <div class="ai-eval-nutri-sub">Batas Normal</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 5. Bottom Action / Order Banner -->
+                <div class="ai-eval-order-banner">
+                  <div class="ai-eval-order-info">
+                    <div class="ai-eval-order-icon">
+                      <i data-lucide="clipboard-check" style="width:20px;height:20px;"></i>
+                    </div>
+                    <div>
+                      <div class="ai-eval-order-title" id="ai-eval-order-title">Kesesuaian Menu Pasien Disetujui</div>
+                      <div class="ai-eval-order-desc" id="ai-eval-order-desc">Diverifikasi untuk Ruang Rawat Pasca Operasi Cempaka 3B</div>
+                    </div>
+                  </div>
+                  <button type="button" class="ai-eval-btn-order" onclick="app.sendMenuToKitchen()">
+                    <i data-lucide="check" style="width:15px;height:15px;"></i>
+                    <span>Kirim ke Dapur Gizi Pasien</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
   </div>
 
   <!-- =========================================================================
