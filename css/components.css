@@ -1956,34 +1956,7 @@ input:checked+.toggle-slider:before {
   line-height: 1.25;
 }
 
-/* WEEK TABS (FOR 30 DAYS DURATION) */
-.budget-week-tabs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
 
-.budget-week-tab {
-  border: 1px solid #CBD5E1;
-  background: #F8FAFC;
-  color: #475569;
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.budget-week-tab.active {
-  background: #233917;
-  color: #FFFFFF;
-  border-color: #233917;
-}
 
 /* DAY CHIPS NAVIGATOR (EXACTLY MATCHING USER SCREENSHOT) */
 .budget-day-navigator {
@@ -1992,7 +1965,11 @@ input:checked+.toggle-slider:before {
   gap: 8px;
   overflow-x: auto;
   padding: 2px 2px 6px;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.budget-day-navigator::-webkit-scrollbar {
+  display: none;
 }
 
 .budget-day-chip {
@@ -2207,13 +2184,526 @@ input:checked+.toggle-slider:before {
   border-color: #233917;
 }
 
+/* MODERN BUDGET PLANNER REDESIGN (MATCHING BRAND COLOR PALETTE) */
+.budget-modern-strip {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1.35fr auto;
+  gap: 16px;
+  align-items: center;
+  background: #F5EFE4;
+  border: 1px solid #E5DDCF;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 960px) {
+  .budget-modern-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 580px) {
+  .budget-modern-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budget-strip-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.budget-strip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #575E4F;
+}
+
+.budget-strip-tag {
+  font-size: 10.5px;
+  color: #7D8F69;
+}
+
+.budget-strip-tag.teal {
+  color: #53653B;
+  font-weight: 700;
+}
+
+.budget-strip-badge.green {
+  background: #53653B;
+  color: #FFFFFF;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1.5px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.budget-strip-input-wrap, .budget-strip-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.budget-strip-input-wrap input, .budget-strip-select-wrap select {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid #D6CCBC;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1F2815;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.budget-strip-input-wrap input:focus, .budget-strip-select-wrap select:focus {
+  border-color: #53653B;
+  box-shadow: 0 0 0 2px rgba(83, 101, 59, 0.15);
+}
+
+.budget-strip-input-wrap .budget-strip-icon {
+  position: absolute;
+  right: 10px;
+  width: 13px;
+  height: 13px;
+  color: #7D8F69;
+  pointer-events: none;
+}
+
+.btn-budget-modern-update {
+  background: #53653B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(83, 101, 59, 0.25);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-budget-modern-update:hover {
+  background: #43522F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(83, 101, 59, 0.35);
+}
+
+.btn-budget-modern-update:active {
+  transform: translateY(0);
+}
+
+/* 4 KPI CARDS (GENEROUS SPACING & BORDER) */
+.budget-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+@media (max-width: 860px) {
+  .budget-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .budget-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budget-kpi-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE3D6;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 1px 3px rgba(83, 101, 59, 0.03);
+}
+
+.budget-kpi-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7D8F69;
+}
+
+.budget-kpi-val {
+  font-size: 20.5px;
+  font-weight: 800;
+  color: #1F2815;
+  line-height: 1.25;
+}
+
+.budget-kpi-val small {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7D8F69;
+}
+
+.budget-kpi-sub {
+  font-size: 11px;
+  color: #6A7360;
+  line-height: 1.4;
+  margin-top: 3px;
+}
+
+.budget-pill-green {
+  background: #EEF2E9;
+  color: #53653B;
+  border: 1px solid #D8E2CE;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.budget-kpi-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+/* DAY SCHEDULE ROW (CLEAN & FLAT - NO BOX CONTAINER, NO SCROLLBAR) */
+.budget-schedule-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 24px 0;
+  padding: 0;
+  flex-wrap: wrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.budget-schedule-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.budget-schedule-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.budget-schedule-left::-webkit-scrollbar {
+  display: none;
+}
+
+.budget-schedule-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1F2815;
+  flex-shrink: 0;
+}
+
+.budget-schedule-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.budget-schedule-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.budget-day-tab-btn {
+  background: transparent;
+  border: none;
+  color: #575E4F;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.budget-day-tab-btn:hover {
+  color: #1F2815;
+  background: #ECE5D8;
+}
+
+.budget-day-tab-btn.active {
+  background: #53653B;
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(83, 101, 59, 0.25);
+}
+
+.btn-schedule-nav-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #53653B;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.btn-schedule-nav-arrow:hover {
+  color: #384527;
+  background: #ECE5D8;
+  transform: scale(1.1);
+}
+
+.budget-schedule-right {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7D8F69;
+  white-space: nowrap;
+}
+
+/* 3-COLUMN MEALS GRID (COMFORTABLE VERTICAL SPACING) */
+.budget-meals-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+@media (max-width: 860px) {
+  .budget-meals-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budget-meal-col-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE3D6;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+  box-shadow: 0 1px 3px rgba(83, 101, 59, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.budget-meal-col-card:hover {
+  border-color: #D8CEBE;
+  box-shadow: 0 4px 14px rgba(83, 101, 59, 0.07);
+}
+
+.meal-col-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.meal-col-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: #53653B;
+}
+
+.meal-col-price {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #1F2815;
+}
+
+.meal-col-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1F2815;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.meal-col-desc {
+  font-size: 11.5px;
+  color: #575E4F;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.meal-col-focus {
+  font-size: 11px;
+  font-weight: 700;
+  color: #53653B;
+  margin-bottom: 16px;
+}
+
+.meal-col-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #EFEAE0;
+  padding-top: 14px;
+}
+
+.meal-col-meta {
+  font-size: 11.5px;
+  color: #1F2815;
+}
+
+.btn-meal-swap-link {
+  background: transparent;
+  border: none;
+  color: #7D8F69;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.btn-meal-swap-link:hover {
+  color: #53653B;
+  text-decoration: underline;
+}
+
+/* MODERN FOOTER (SPACED) */
+.budget-modern-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  padding: 2px 0;
+}
+
+.budget-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-budget-indigo {
+  background: #FDF4E7;
+  color: #C48A2C;
+  border: 1px solid #F6DFB8;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-budget-indigo:hover {
+  background: #F7EAD7;
+  color: #9A6818;
+}
+
+.btn-budget-ghost {
+  background: #F5EFE4;
+  color: #53653B;
+  border: 1px solid #E5DDCF;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-budget-ghost:hover {
+  background: #ECE5D8;
+  color: #384527;
+}
+
+.budget-simrs-tag {
+  font-size: 11.5px;
+  color: #7D8F69;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.btn-budget-emerald {
+  background: #53653B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 2px 6px rgba(83, 101, 59, 0.25);
+  transition: all 0.15s;
+}
+
+.btn-budget-emerald:hover {
+  background: #43522F;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(83, 101, 59, 0.35);
+}
+
+.budget-evidence-callout {
+  background: #F5EFE4;
+  border: 1px solid #E5DDCF;
+  border-radius: 12px;
+  padding: 16px 22px;
+}
+
+.budget-evidence-head {
+  font-size: 12.5px;
+  color: #53653B;
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 800;
+}
+
+.budget-evidence-text {
+  margin: 0;
+  font-size: 12px;
+  color: #575E4F;
+  line-height: 1.6;
+}
+
+.budget-evidence-text b {
+  color: #C48A2C;
+  font-weight: 800;
+}
+
 /* GROCERY MODAL */
 .grocery-item-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #EFEAE0;
   gap: 12px;
 }
 
@@ -2230,25 +2720,25 @@ input:checked+.toggle-slider:before {
 .grocery-item-cat {
   font-size: 10px;
   font-weight: 700;
-  color: #64748B;
+  color: #7D8F69;
   text-transform: uppercase;
 }
 
 .grocery-item-name {
   font-size: 13px;
   font-weight: 700;
-  color: #1E293B;
+  color: #1F2815;
 }
 
 .grocery-item-note {
   font-size: 11px;
-  color: #64748B;
+  color: #575E4F;
 }
 
 .grocery-item-price {
   font-size: 13.5px;
   font-weight: 800;
-  color: #15803D;
+  color: #53653B;
   white-space: nowrap;
 }
 

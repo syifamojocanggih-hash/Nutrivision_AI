@@ -206,108 +206,158 @@ class ClinicalNutritionFilterAgent {
       // Disfagia AKTIF (IDDSI Puree/Soft Mash)
       if (hasConstipation) {
         recommendedMenu.push({
-          name: "Puree Pepaya Matang Halus IDDSI 4",
+          name: "Puree Pepaya Matang Halus",
+          nameEn: "Smooth Ripe Papaya Puree",
           texture_category: "Puree",
-          reason: "[Resolusi Konflik P1 vs P2] Mengatasi konstipasi dengan serat larut pektin, namun disajikan dalam bentuk puree halus bebas biji/serat kasar agar aman 100% dari risiko aspirasi disfagia."
+          texture_category_en: "Puree",
+          nutrients: "• 140 kkal • 2.1g Serat Larut",
+          nutrientsEn: "• 140 kcal • 2.1g Soluble Fiber",
+          reason: "Membantu peristaltik usus dengan pektin alami tanpa menimbulkan residu faring.",
+          reasonEn: "Supports bowel peristalsis with natural pectin without leaving pharyngeal residue."
         });
         recommendedMenu.push({
-          name: "Bubur Saring Oatmeal Kaldu Labu Kuning",
+          name: "Bubur Saring Oatmeal Kaldu Labu",
+          nameEn: "Strained Oatmeal Pumpkin Broth",
           texture_category: "Soft Mash",
-          reason: "Beta-glukan larut air melancarkan motilitas usus tanpa mengorbankan keamanan menelan pasien."
+          texture_category_en: "Soft Mash",
+          nutrients: "• 185 kkal • 4.8g Protein",
+          nutrientsEn: "• 185 kcal • 4.8g Protein",
+          reason: "Kombinasi beta-glukan terlarut lembut untuk saluran cerna tanpa memicu refluks lambung.",
+          reasonEn: "Gentle dissolved beta-glucan combination for digestive tract without triggering acid reflux."
         });
       }
 
       if (hasNausea) {
         recommendedMenu.push({
-          name: "Bubur Saring Ikan Gabus Suhu Ruang",
+          name: "Bubur Saring Ikan Gabus",
+          nameEn: "Strained Snakehead Fish Porridge",
           texture_category: "Puree",
-          reason: "Tekstur lumat IDDSI level 4, disajikan pada suhu ruang tanpa aroma uap panas tajam untuk meredam refleks mual. Albumin mempercepat granulasi jaringan."
+          texture_category_en: "Puree",
+          nutrients: "• 210 kkal • 14.2g Albumin",
+          nutrientsEn: "• 210 kcal • 14.2g Albumin",
+          reason: "Kaya albumin untuk regenerasi jaringan pasca bedah, disajikan netral aroma peredam mual.",
+          reasonEn: "Rich in albumin for post-surgical tissue repair, served with neutral aroma to alleviate nausea."
         });
       } else if (!hasConstipation) {
         recommendedMenu.push({
-          name: "Bubur Saring Ikan Gabus & Kaldu Wortel",
+          name: "Bubur Saring Ikan Gabus",
+          nameEn: "Strained Snakehead Fish Porridge",
           texture_category: "Puree",
-          reason: "Tekstur puree halus sesuai standar IDDSI, kaya albumin dan asam amino esensial penyembuh luka bedah."
+          texture_category_en: "Puree",
+          nutrients: "• 210 kkal • 14.2g Albumin",
+          nutrientsEn: "• 210 kcal • 14.2g Albumin",
+          reason: "Tekstur puree halus sesuai standar IDDSI, kaya albumin dan asam amino esensial penyembuh luka bedah.",
+          reasonEn: "Smooth puree texture meeting IDDSI standards, rich in albumin and essential amino acids for surgical wound healing."
         });
       }
 
-      if (hasLowAppetite) {
-        recommendedMenu.push({
-          name: "Puree Alpukat Telur Kukus Padat Kalori",
-          texture_category: "Puree",
-          reason: "Densitas kalori dan protein tinggi dalam porsi kecil (small frequent), tekstur lumat lembut aman ditelan tanpa perlu tenaga kunyah."
-        });
-      } else {
-        recommendedMenu.push({
-          name: "Sup Tahu Sutra Halus Kaldu Bening",
-          texture_category: "Puree/Soft",
-          reason: "Protein nabati halus lembut, non-iritatif pada saluran cerna dan kerongkongan."
-        });
-      }
+      recommendedMenu.push({
+        name: "Puree Alpukat Telur Kukus",
+        nameEn: "Steamed Egg & Avocado Puree",
+        texture_category: "Puree",
+        texture_category_en: "Puree",
+        nutrients: "• 260 kkal • 9.5g Protein",
+        nutrientsEn: "• 260 kcal • 9.5g Protein",
+        reason: "Densitas kalori padat volume ringkas, mudah ditelan mulus tanpa resistensi orofaring.",
+        reasonEn: "Compact caloric density in small volume, easily swallowed without oropharyngeal resistance."
+      });
     } else {
       // Tanpa Disfagia: Prioritas 2 (GI Tract) & 3 (Appetite)
       if (hasNausea && hasGerd) {
         recommendedMenu.push({
           name: "Nasi Tim Kaldu Ayam Bening Wortel Rebus",
+          nameEn: "Steamed Rice in Clear Chicken Broth & Boiled Carrots",
           texture_category: "Soft",
-          reason: "Tekstur lembut ramah lambung, pH netral tanpa asam citrus/tomat, aroma lembut tidak memicu rasa mual."
+          texture_category_en: "Soft",
+          reason: "Tekstur lembut ramah lambung, pH netral tanpa asam citrus/tomat, aroma lembut tidak memicu rasa mual.",
+          reasonEn: "Gentle stomach-friendly texture, neutral pH without citrus/tomato acidity, mild aroma preventing nausea."
         });
         recommendedMenu.push({
           name: "Sup Tahu Sutra Labu Siam Bening",
+          nameEn: "Clear Silken Tofu & Chayote Squash Soup",
           texture_category: "Bland",
-          reason: "Rendah lemak, tidak memicu refluks asam lambung, serta hidrasi elektrolit seimbang."
+          texture_category_en: "Bland",
+          reason: "Rendah lemak, tidak memicu refluks asam lambung, serta hidrasi elektrolit seimbang.",
+          reasonEn: "Low in fat, prevents acid reflux, and delivers balanced electrolyte hydration."
         });
       } else if (hasGerd) {
         recommendedMenu.push({
           name: "Kentang Kukus Tumbuk & Fillet Dada Ayam Tim",
+          nameEn: "Mashed Steamed Potatoes & Steamed Chicken Breast Fillet",
           texture_category: "Soft",
-          reason: "Bebas asam, tanpa cabai, rendah lemak jenuh sehingga mencegah relaksasi sfingter esofagus bawah."
+          texture_category_en: "Soft",
+          reason: "Bebas asam, tanpa cabai, rendah lemak jenuh sehingga mencegah relaksasi sfingter esofagus bawah.",
+          reasonEn: "Acid-free, no chili, low saturated fat preventing lower esophageal sphincter relaxation."
         });
         recommendedMenu.push({
           name: "Sayur Bening Bayam & Jagung Manis Pipil Lembut",
+          nameEn: "Clear Spinach & Sweet Corn Soup",
           texture_category: "Soft",
-          reason: "Kuah alkali alami menetralkan asam lambung, sumber mikronutrien zat besi."
+          texture_category_en: "Soft",
+          reason: "Kuah alkali alami menetralkan asam lambung, sumber mikronutrien zat besi.",
+          reasonEn: "Naturally alkaline broth neutralizing stomach acid, source of dietary iron."
         });
       } else if (hasNausea) {
         recommendedMenu.push({
           name: "Bubur Beras Putih Ayam Suwir Dingin/Suhu Ruang",
+          nameEn: "Room-Temperature White Rice Porridge with Shredded Chicken",
           texture_category: "Soft",
-          reason: "Disajikan pada suhu ruang dengan aroma netral untuk menekan hiperaktivitas pusat mual di otak."
+          texture_category_en: "Soft",
+          reason: "Disajikan pada suhu ruang dengan aroma netral untuk menekan hiperaktivitas pusat mual di otak.",
+          reasonEn: "Served at room temperature with neutral aroma to suppress nausea trigger centers."
         });
         recommendedMenu.push({
           name: "Puding Kacang Hijau Santan Encer Dingin",
+          nameEn: "Chilled Mung Bean Pudding with Light Coconut Milk",
           texture_category: "Soft",
-          reason: "Aroma segar tidak menyengat, sumber vitamin B kompleks peredam rasa mual."
+          texture_category_en: "Soft",
+          reason: "Aroma segar tidak menyengat, sumber vitamin B kompleks peredam rasa mual.",
+          reasonEn: "Refreshing gentle aroma, rich in vitamin B-complex to alleviate nausea."
         });
       } else if (hasDiarrhea) {
         recommendedMenu.push({
           name: "Bubur Beras Putih Dada Ayam Rebus (Low Residue)",
+          nameEn: "White Rice Porridge with Boiled Chicken Breast (Low Residue)",
           texture_category: "Bland",
-          reason: "Diet rendah residu meminimalkan beban kolon, bebas laktosa untuk mencegah fermentasi gas diare."
+          texture_category_en: "Bland",
+          reason: "Diet rendah residu meminimalkan beban kolon, bebas laktosa untuk mencegah fermentasi gas diare.",
+          reasonEn: "Low residue diet minimizes colon workload, lactose-free to avoid gaseous fermentation."
         });
         recommendedMenu.push({
           name: "Pisang Kepok Kukus Halus",
+          nameEn: "Steamed Kepok Banana Mash",
           texture_category: "Soft",
-          reason: "Kaya kalium pengganti elektrolit yang hilang dan serat pektin pemadat feses."
+          texture_category_en: "Soft",
+          reason: "Kaya kalium pengganti elektrolit yang hilang dan serat pektin pemadat feses.",
+          reasonEn: "Rich in potassium to replenish lost electrolytes and pectin fiber to firm stools."
         });
       } else if (hasConstipation) {
         recommendedMenu.push({
           name: "Sayur Bayam Kuah Bening & Tempe Panggang",
+          nameEn: "Clear Spinach Soup & Baked Tempeh",
           texture_category: "Normal",
-          reason: "Serat selulosa alami dan probiotik tempe memperlancar peristaltik usus besar."
+          texture_category_en: "Normal",
+          reason: "Serat selulosa alami dan probiotik tempe memperlancar peristaltik usus besar.",
+          reasonEn: "Natural cellulose fiber and tempeh probiotics support healthy large intestine peristalsis."
         });
         recommendedMenu.push({
           name: "Potongan Buah Pepaya Segar & Jeruk Manis",
+          nameEn: "Fresh Papaya Slices & Sweet Orange",
           texture_category: "Normal",
-          reason: "Enzim papain dan serat air tinggi melunakkan masa feses."
+          texture_category_en: "Normal",
+          reason: "Enzim papain dan serat air tinggi melunakkan masa feses.",
+          reasonEn: "Papain enzymes and high water fiber soften stool consistency."
         });
       }
 
       if (hasLowAppetite && recommendedMenu.length < 3) {
         recommendedMenu.push({
           name: "Tim Telur Daging Cincang Lembut Padat Nutrisi",
+          nameEn: "Nutrient-Dense Soft Steamed Egg with Minced Meat",
           texture_category: "Soft",
-          reason: "Kalori dan protein terkonsentrasi dalam porsi saji kecil, mudah dihabiskan saat nafsu makan menurun."
+          texture_category_en: "Soft",
+          reason: "Kalori dan protein terkonsentrasi dalam porsi saji kecil, mudah dihabiskan saat nafsu makan menurun.",
+          reasonEn: "Concentrated calories and protein in a small serving size, easy to finish when appetite is low."
         });
       }
     }
@@ -316,15 +366,49 @@ class ClinicalNutritionFilterAgent {
     if (recommendedMenu.length === 0) {
       recommendedMenu.push({
         name: "Sup Wortel Kentang Kaldu Bening Ayam",
+        nameEn: "Clear Chicken Broth Soup with Carrots & Potatoes",
         texture_category: hasDysphagia ? "Puree" : "Soft",
-        reason: "Menu pemulihan netral yang aman untuk semua spektrum keluhan gastrointestinal."
+        texture_category_en: hasDysphagia ? "Puree" : "Soft",
+        reason: "Menu pemulihan netral yang aman untuk semua spektrum keluhan gastrointestinal.",
+        reasonEn: "Neutral recovery dish safe for all gastrointestinal complaints."
       });
+    }
+
+    let textureTitle = "Standar Keamanan IDDSI Level 4 (Puree / Soft Mash)";
+    let textureTitleEn = "IDDSI Level 4 Safety Standard (Puree / Soft Mash)";
+    let textureSub = "Homogen, aman risiko aspirasi, disajikan pada suhu ruang nyaman.";
+    let textureSubEn = "Homogeneous, safe from aspiration risk, served at comfortable room temperature.";
+    let restrictedSummary = "Hindari serat liat kasar, rempah biji utuh, santan pekat & suhu pan...";
+    let restrictedSummaryEn = "Avoid coarse fibrous foods, whole seed spices, thick coconut milk & high temp...";
+
+    if (!hasDysphagia) {
+      if (hasGerd || hasNausea || hasDiarrhea) {
+        textureTitle = "Standar Keamanan IDDSI Level 6 (Soft & Bite-Sized)";
+        textureTitleEn = "IDDSI Level 6 Safety Standard (Soft & Bite-Sized)";
+        textureSub = "Tekstur lunak mudah cerna, ramah mukosa lambung dan motilitas usus.";
+        textureSubEn = "Soft easy-to-digest texture, gentle on gastric mucosa and intestinal motility.";
+        restrictedSummary = "Hindari asam tajam, cabai pedas, santan kental & gorengan...";
+        restrictedSummaryEn = "Avoid sharp acids, spicy chili, thick coconut milk & fried foods...";
+      } else {
+        textureTitle = "Standar Keamanan IDDSI Level 7 (Regular)";
+        textureTitleEn = "IDDSI Level 7 Safety Standard (Regular)";
+        textureSub = "Tekstur bebas gizi seimbang sesuai toleransi pemulihan klinis.";
+        textureSubEn = "Balanced texture according to clinical recovery tolerance.";
+        restrictedSummary = "Bebas bahan iritatif akut; utamakan hidrasi dan protein teratur.";
+        restrictedSummaryEn = "Free from acute irritants; prioritize regular hydration and protein.";
+      }
     }
 
     return {
       active_filters: activeFilters,
       safety_level: safetyLevel,
       texture_requirement: textureRequirement,
+      texture_title: textureTitle,
+      texture_title_en: textureTitleEn,
+      texture_sub: textureSub,
+      texture_sub_en: textureSubEn,
+      restricted_summary: restrictedSummary,
+      restricted_summary_en: restrictedSummaryEn,
       restricted_ingredients: Array.from(restrictedIngredients),
       recommended_menu: recommendedMenu,
       raw_prompt: this.getSystemPrompt(activeFilters)
@@ -334,6 +418,12 @@ class ClinicalNutritionFilterAgent {
 
 // Instance global yang siap digunakan di frontend dan backend
 const clinicalNutritionFilterAgent = new ClinicalNutritionFilterAgent();
+if (typeof window !== 'undefined') {
+  window.clinicalNutritionFilterAgent = clinicalNutritionFilterAgent;
+}
+if (typeof global !== 'undefined') {
+  global.clinicalNutritionFilterAgent = clinicalNutritionFilterAgent;
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {

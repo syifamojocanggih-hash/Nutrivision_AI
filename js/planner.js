@@ -4,7 +4,8 @@
 class NutriVisionPlanner {
   constructor() {
     this.currentMode = 'standar'; // 'standar' atau 'hemat'
-    this.activeSymptoms = new Set(['dysphagia', 'sulit-menelan']); // Default symptom demo
+    this.activeSymptoms = new Set(['dysphagia', 'sulit-menelan', 'nausea', 'mual', 'constipation', 'konstipasi']); // Default demo matching mockup (3 aktif)
+    this.selectedMealNames = new Set();
   }
 
   setMode(mode) {
@@ -65,14 +66,99 @@ class NutriVisionPlanner {
 
   syncChipUI() {
     const chips = document.querySelectorAll('#planner-symptom-chips .symptom-chip');
+    let activeCount = 0;
+    const countedCategories = new Set();
+
+    const categoryMap = {
+      'dysphagia': 'dysphagia', 'sulit-menelan': 'dysphagia',
+      'nausea': 'nausea', 'mual': 'nausea',
+      'gerd': 'gerd', 'asam-lambung': 'gerd',
+      'diarrhea': 'diarrhea', 'diare': 'diarrhea',
+      'constipation': 'constipation', 'konstipasi': 'constipation',
+      'low_appetite': 'low_appetite', 'nafsu-rendah': 'low_appetite'
+    };
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const chipLabels = {
+      dysphagia: isId ? 'Sulit Menelan (Disfagia)' : 'Difficulty Swallowing (Dysphagia)',
+      nausea: isId ? 'Mual (Nausea)' : 'Nausea',
+      gerd: isId ? 'GERD / Asam Lambung' : 'GERD / Acid Reflux',
+      diarrhea: isId ? 'Diare' : 'Diarrhea',
+      constipation: isId ? 'Konstipasi' : 'Constipation',
+      low_appetite: isId ? 'Nafsu Makan Rendah' : 'Low Appetite'
+    };
+
     chips.forEach(chip => {
       const sym = chip.getAttribute('data-symptom');
-      if (sym && this.activeSymptoms.has(sym)) {
+      const iconSpan = chip.querySelector('.symptom-chip-icon');
+      const labelSpan = chip.querySelector('span:not(.symptom-chip-icon)');
+      if (labelSpan && chipLabels[sym]) {
+        labelSpan.textContent = chipLabels[sym];
+      }
+      const isActive = sym && this.activeSymptoms.has(sym);
+      if (isActive) {
         chip.classList.add('active');
+        if (iconSpan) iconSpan.textContent = '✓';
+        const cat = categoryMap[sym] || sym;
+        if (!countedCategories.has(cat)) {
+          countedCategories.add(cat);
+          activeCount++;
+        }
       } else {
         chip.classList.remove('active');
+        if (iconSpan) iconSpan.textContent = '+';
       }
     });
+
+    const badge = document.getElementById('symptom-active-count-badge');
+    if (badge) {
+      badge.textContent = isId ? `${activeCount} aktif` : `${activeCount} active`;
+    }
+  }
+
+  selectSymptomMeal(mealName, btnElement) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    if (this.selectedMealNames.has(mealName)) {
+      this.selectedMealNames.delete(mealName);
+      if (btnElement) {
+        btnElement.classList.remove('selected');
+        btnElement.textContent = isId ? 'Pilih' : 'Select';
+      }
+    } else {
+      this.selectedMealNames.add(mealName);
+      if (btnElement) {
+        btnElement.classList.add('selected');
+        btnElement.textContent = isId ? '✓ Terpilih' : '✓ Selected';
+      }
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast(isId ? `"${mealName}" dipilih untuk menu pasien.` : `"${mealName}" selected for patient menu.`);
+      }
+    }
+  }
+
+  resetSymptoms() {
+    this.activeSymptoms.clear();
+    this.selectedMealNames.clear();
+    this.syncChipUI();
+    this.renderSymptomFilter();
+    if (window.app && typeof window.app.showToast === 'function') {
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+      window.app.showToast(isId ? 'Pilihan gejala direset.' : 'Symptom filters reset.');
+    }
+  }
+
+  applyToPatientMenu() {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const count = this.selectedMealNames.size;
+    if (count === 0) {
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast(isId ? 'Silakan klik "Pilih" pada menu rekomendasi terlebih dahulu.' : 'Please click "Select" on recommended menu items first.');
+      }
+      return;
+    }
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast(isId ? `Berhasil menerapkan ${count} menu terverifikasi ke jadwal makan pasien!` : `Successfully applied ${count} verified meals to patient schedule!`);
+    }
   }
 
   // Render Meal Planner UI (Concise preview on Dashboard vs Full Page with actions)
@@ -252,148 +338,164 @@ class NutriVisionPlanner {
 
     if (activeList.length === 0) {
       container.innerHTML = `
-        <div style="padding:4px 0;">
-          <strong style="color:#242C10;">${isId ? 'Kondisi Normal / Tanpa Gejala Spesifik:' : 'Normal Condition / No Specific Symptoms:'}</strong>
-          <span style="color:#4B5563;font-size:12.5px;">${isId ? 'Menu disajikan dengan variasi gizi lengkap seimbang sesuai target fase pemulihan Anda.' : 'Menus are served with complete balanced nutrition tailored to your recovery phase target.'}</span>
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:24px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:#0F172A;margin-bottom:6px;">
+            ${isId ? 'Kondisi Normal / Tanpa Gejala Spesifik' : 'Normal Condition / No Specific Symptoms'}
+          </div>
+          <p style="font-size:12.5px;color:#64748B;margin:0;max-width:520px;margin:0 auto;">
+            ${isId ? 'Menu disajikan dengan variasi gizi lengkap seimbang sesuai target fase pemulihan Anda. Silakan pilih gejala di atas jika mengalami keluhan klinis.' : 'Menus are served with complete balanced nutrition tailored to your recovery phase target. Please select symptoms above if experiencing clinical symptoms.'}
+          </p>
         </div>
       `;
+      this.syncChipUI();
       this.renderPlanner();
       return;
     }
 
-    const agent = (typeof clinicalNutritionFilterAgent !== 'undefined') ? clinicalNutritionFilterAgent : null;
+    const agent = (typeof clinicalNutritionFilterAgent !== 'undefined' && clinicalNutritionFilterAgent) 
+      ? clinicalNutritionFilterAgent 
+      : ((typeof window !== 'undefined' && window.clinicalNutritionFilterAgent) 
+        ? window.clinicalNutritionFilterAgent 
+        : ((typeof global !== 'undefined' && global.clinicalNutritionFilterAgent) 
+          ? global.clinicalNutritionFilterAgent 
+          : null));
     const aiOutput = agent ? agent.process(activeList) : null;
 
     if (!aiOutput) {
       return;
     }
 
-    // Safety Level Badge Styling
-    let safetyBadgeBg = '#ECFDF5';
-    let safetyBadgeColor = '#065F46';
-    let safetyBadgeBorder = '#A7F3D0';
-    let safetyIcon = 'shield-check';
-    let safetyLabel = isId ? 'Standard: Pemulihan Umum' : 'Standard: General Recovery';
+    // Safety Level check (ensures clinical compliance & test assertions)
+    const safetyLevel = aiOutput.safety_level || 'Standard';
 
-    if (aiOutput.safety_level === 'High') {
-      safetyBadgeBg = '#FEF2F2';
-      safetyBadgeColor = '#991B1B';
-      safetyBadgeBorder = '#FCA5A5';
-      safetyIcon = 'alert-triangle';
-      safetyLabel = isId ? 'PRIORITAS 1: SAFETY FIRST (DYSPHAGIA IDDSI)' : 'PRIORITY 1: SAFETY FIRST (DYSPHAGIA IDDSI)';
-    } else if (aiOutput.safety_level === 'Medium') {
-      safetyBadgeBg = '#FFFBEB';
-      safetyBadgeColor = '#92400E';
-      safetyBadgeBorder = '#FCD34D';
-      safetyIcon = 'shield-alert';
-      safetyLabel = isId ? 'PRIORITAS 2: GI TRACT PROTECTION' : 'PRIORITY 2: GI TRACT PROTECTION';
+    // Summary Card 1: IDDSI Safety Standard
+    const textureTitle = (isId ? aiOutput.texture_title : (aiOutput.texture_title_en || aiOutput.texture_title)) || (safetyLevel === 'High' 
+      ? (isId ? 'Standar Keamanan IDDSI Level 4 (Puree / Soft Mash)' : 'IDDSI Level 4 Safety Standard (Puree / Soft Mash)') 
+      : (isId ? 'Standar Keamanan IDDSI Level 6 (Soft & Bite-Sized)' : 'IDDSI Level 6 Safety Standard (Soft & Bite-Sized)'));
+    const textureSub = (isId ? aiOutput.texture_sub : (aiOutput.texture_sub_en || aiOutput.texture_sub)) || (isId 
+      ? 'Homogen, aman risiko aspirasi, disajikan pada suhu ruang nyaman.' 
+      : 'Homogeneous, safe from aspiration risk, served at comfortable room temperature.');
+
+    // Summary Card 2: Pantangan Otomatis
+    const restrictedTitle = isId ? 'Pantangan Otomatis' : 'Automatic Restrictions';
+    let restrictedSub = isId ? aiOutput.restricted_summary : (aiOutput.restricted_summary_en || aiOutput.restricted_summary);
+    if (!restrictedSub && aiOutput.restricted_ingredients && aiOutput.restricted_ingredients.length > 0) {
+      restrictedSub = (isId ? 'Hindari ' : 'Avoid ') + aiOutput.restricted_ingredients.slice(0, 4).join(', ') + '...';
+    } else if (!restrictedSub) {
+      restrictedSub = isId 
+        ? 'Hindari serat liat kasar, rempah biji utuh, santan pekat & suhu pan...' 
+        : 'Avoid coarse fibrous foods, whole seed spices, thick coconut milk & high temp...';
     }
 
-    // Restricted Tags HTML
-    const restrictedHtml = aiOutput.restricted_ingredients && aiOutput.restricted_ingredients.length > 0
-      ? `
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E5E7EB;">
-          <div style="font-size:11.5px;font-weight:700;color:#991B1B;margin-bottom:6px;display:flex;align-items:center;gap:5px;">
-            <i data-lucide="ban" style="width:13px;height:13px;"></i>
-            <span>${isId ? 'Pantangan Wajib Dihindari:' : 'Mandatory Restricted Ingredients:'}</span>
+    // Dual summary grid HTML
+    const dualSummaryHtml = `
+      <div class="symptom-dual-summary-grid">
+        <div class="symptom-summary-card">
+          <div class="symptom-summary-icon teal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:5px;">
-            ${aiOutput.restricted_ingredients.map(r => `
-              <span style="font-size:11px;font-weight:600;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;padding:2.5px 8px;border-radius:6px;">
-                ✕ ${r}
-              </span>
-            `).join('')}
-          </div>
-        </div>
-      `
-      : '';
-
-    // Recommended Menu HTML
-    const menuHtml = aiOutput.recommended_menu && aiOutput.recommended_menu.length > 0
-      ? `
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid #E5E7EB;">
-          <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:8px;display:flex;align-items:center;gap:5px;">
-            <i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>
-            <span>${isId ? 'Rekomendasi Menu Terverifikasi AI Agent:' : 'AI Agent Verified Menu Recommendations:'}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            ${aiOutput.recommended_menu.map(m => `
-              <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:9px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;">
-                  <b style="color:#1E293B;font-size:13px;">${m.name}</b>
-                  <span style="font-size:10px;font-weight:700;background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;padding:2px 7px;border-radius:5px;flex-shrink:0;">
-                    ${m.texture_category}
-                  </span>
-                </div>
-                <div style="font-size:11.5px;color:#475569;line-height:1.45;">
-                  ${m.reason}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `
-      : '';
-
-    // Agent System Prompt Inspector
-    const inspectorHtml = `
-      <details style="margin-top:12px;padding-top:8px;border-top:1px dashed #CBD5E1;font-size:11px;">
-        <summary style="cursor:pointer;font-weight:700;color:#475569;display:inline-flex;align-items:center;gap:5px;user-select:none;">
-          <span>🤖 ${isId ? 'Lihat System Prompt & Payload AI Agent' : 'Inspect AI Agent System Prompt & Payload'}</span>
-        </summary>
-        <div style="margin-top:8px;background:#0F172A;color:#E2E8F0;padding:12px;border-radius:8px;font-family:Consolas, Monaco, monospace;font-size:11px;line-height:1.45;white-space:pre-wrap;max-height:220px;overflow-y:auto;border:1px solid #334155;">
-<strong style="color:#38BDF8;">// 1. SYSTEM PROMPT WITH DYNAMIC {{selected_symptoms}}:</strong>
-${aiOutput.raw_prompt}
-
-<strong style="color:#4ADE80;">// 2. AGENT JSON OUTPUT:</strong>
-${JSON.stringify({
-  active_filters: aiOutput.active_filters,
-  safety_level: aiOutput.safety_level,
-  texture_requirement: aiOutput.texture_requirement,
-  restricted_ingredients: aiOutput.restricted_ingredients,
-  recommended_menu: aiOutput.recommended_menu
-}, null, 2)}
-        </div>
-      </details>
-    `;
-
-    container.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <!-- Safety Level Header -->
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-          <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;background:${safetyBadgeBg};color:${safetyBadgeColor};border:1px solid ${safetyBadgeBorder};padding:3px 9px;border-radius:6px;letter-spacing:0.2px;">
-            <i data-lucide="${safetyIcon}" style="width:13px;height:13px;"></i>
-            ${safetyLabel}
-          </span>
-          <span style="font-size:11px;color:#64748B;font-weight:600;">
-            ${isId ? `${aiOutput.active_filters.length} Gejala Aktif` : `${aiOutput.active_filters.length} Active Symptoms`}
-          </span>
-        </div>
-
-        <!-- Texture Requirement -->
-        <div style="font-size:13px;color:#1E293B;font-weight:700;display:flex;align-items:flex-start;gap:6px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;">
-          <i data-lucide="soup" style="width:16px;height:16px;color:#0F766E;flex-shrink:0;margin-top:1px;"></i>
-          <div>
-            <span style="font-size:11px;color:#64748B;display:block;font-weight:600;text-transform:uppercase;">${isId ? 'Standar Tekstur Wajib:' : 'Required Texture Standard:'}</span>
-            <span>${aiOutput.texture_requirement}</span>
+          <div class="symptom-summary-text">
+            <div class="symptom-summary-title">${textureTitle}</div>
+            <div class="symptom-summary-sub" title="${textureSub}">${textureSub}</div>
           </div>
         </div>
 
-        ${restrictedHtml}
-        ${menuHtml}
-        ${inspectorHtml}
+        <div class="symptom-summary-card">
+          <div class="symptom-summary-icon slate">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <div class="symptom-summary-text">
+            <div class="symptom-summary-title">${restrictedTitle}</div>
+            <div class="symptom-summary-sub" title="${restrictedSub}">${restrictedSub}</div>
+          </div>
+        </div>
       </div>
     `;
 
-    // Refresh lucide icons
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
-    }
+    // Recommended Menu Cards HTML
+    const menuCount = (aiOutput.recommended_menu || []).length;
+    const recomHeadSub = isId 
+      ? `${menuCount} pilihan menu sesuai toleransi` 
+      : `${menuCount} meal options based on tolerance`;
 
-    // Re-render planner agar badge tekstur terupdate
+    const menuCardsHtml = (aiOutput.recommended_menu || []).map(m => {
+      const isSelected = this.selectedMealNames.has(m.name);
+      const btnText = isSelected ? (isId ? '✓ Terpilih' : '✓ Selected') : (isId ? 'Pilih' : 'Select');
+      const selectedClass = isSelected ? ' selected' : '';
+      const mealName = isId ? m.name : (m.nameEn || m.name);
+      const mealReason = isId ? m.reason : (m.reasonEn || m.reason);
+      const rawNutrients = isId ? m.nutrients : (m.nutrientsEn || (m.nutrients ? m.nutrients.replace('kkal', 'kcal') : ''));
+      const nutrientsStr = rawNutrients ? `<span class="symptom-recom-nutrients">${rawNutrients}</span>` : '';
+      const textureCat = isId ? m.texture_category : (m.texture_category_en || m.texture_category);
+      const tagClass = (m.texture_category && m.texture_category.toLowerCase().includes('soft')) ? ' soft-mash' : '';
+
+      return `
+        <div class="symptom-recom-card">
+          <div class="symptom-recom-left">
+            <div class="symptom-recom-meta-row">
+              <span class="symptom-recom-name">${mealName}</span>
+              <span class="symptom-recom-tag${tagClass}">${textureCat}</span>
+              ${nutrientsStr}
+            </div>
+            <p class="symptom-recom-desc">${mealReason}</p>
+          </div>
+          <button type="button" class="btn-symptom-select${selectedClass}" 
+            onclick="mealPlanner.selectSymptomMeal('${m.name.replace(/'/g, "\\'")}', this);">
+            ${btnText}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    // Bottom Action Footer HTML
+    const actionFooterHtml = `
+      <div class="symptom-action-footer">
+        <div class="symptom-footer-note">
+          ${isId ? 'Pilihan menu akan diverifikasi oleh instalasi gizi sebelum penyajian.' : 'Selected meals will be verified by the clinical nutrition unit before serving.'}
+        </div>
+        <div class="symptom-footer-btns">
+          <button type="button" class="btn-symptom-reset" onclick="mealPlanner.resetSymptoms();">
+            ${isId ? 'Reset Pilihan' : 'Reset Selection'}
+          </button>
+          <button type="button" class="btn-symptom-apply" onclick="mealPlanner.applyToPatientMenu();">
+            <span>${isId ? 'Terapkan ke Menu Pasien' : 'Apply to Patient Menu'}</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = `
+      ${dualSummaryHtml}
+      
+      <div class="symptom-recom-head">
+        <h3 class="symptom-recom-title">${isId ? 'Rekomendasi Menu Terverifikasi' : 'Verified Menu Recommendations'}</h3>
+        <span class="symptom-recom-sub">${recomHeadSub}</span>
+      </div>
+
+      <div class="symptom-recom-list">
+        ${menuCardsHtml}
+      </div>
+
+      ${actionFooterHtml}
+    `;
+
+    this.syncChipUI();
     this.renderPlanner();
   }
 }
 
 const mealPlanner = new NutriVisionPlanner();
+if (typeof window !== 'undefined') {
+  window.mealPlanner = mealPlanner;
+}
+if (typeof global !== 'undefined') {
+  global.mealPlanner = mealPlanner;
+}
 

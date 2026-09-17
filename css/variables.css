@@ -7,6 +7,17 @@
    ========================================================================== */
 
 :root {
+  /* User Specified Brand Palette */
+  --palette-primary: #53653B;
+  --palette-primary-hover: #43522F;
+  --palette-primary-light: #EEF2E9;
+  --palette-secondary: #7D8F69;
+  --palette-secondary-light: #F2F5EE;
+  --palette-tertiary: #C48A2C;
+  --palette-tertiary-light: #FDF4E7;
+  --palette-neutral: #F5EFE4;
+  --palette-neutral-border: #E5DDCF;
+
   /* Primary Matcha Palette (Exact Hex: #9EA76B) */
   --matcha-base: #9EA76B;
   /* Exact MATCHA from image */

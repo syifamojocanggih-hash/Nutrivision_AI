@@ -17,8 +17,8 @@ class NutriVisionBudgetPlanner {
       breakfast: [
         {
           id: 'bf-1',
-          name: 'Bubur Ayam Kaldu Kuning Suwir + Telur Rebus 1 Butir',
-          nameEn: 'Shredded Chicken Yellow Broth Porridge + 1 Boiled Egg',
+          name: 'Bubur Ayam Kaldu Kuning Suwir + Telur Rebus',
+          nameEn: 'Shredded Chicken Yellow Broth Porridge + Boiled Egg',
           price: 8500,
           calories: 360,
           protein: 18,
@@ -28,6 +28,8 @@ class NutriVisionBudgetPlanner {
           badge: 'Ramah Cerna',
           badgeEn: 'Easy Digest',
           tier: 'budget',
+          desc: 'Porsi lunak mudah dicerna pasca tindakan medis dengan asam amino lengkap.',
+          focus: 'Albumin Telur Utuh & Serat Lunak',
           ingredients: 'Beras pulen, kaldu ayam kampung, dada ayam suwir, 1 butir telur rebus, taburan daun seledri'
         },
         {
@@ -139,18 +141,20 @@ class NutriVisionBudgetPlanner {
       lunch: [
         {
           id: 'lu-1',
-          name: 'Nasi Putih + Dada Ayam Ungkep Kunyit + Sayur Bening Bayam Jagung',
-          nameEn: 'White Rice + Turmeric Braised Chicken Breast + Spinach Corn Soup',
-          price: 13500,
-          calories: 520,
-          protein: 34,
+          name: 'Nasi Putih, Bening Bayam + Tempe Bacem & Tongkol',
+          nameEn: 'White Rice, Clear Spinach + Braised Tempeh & Tuna',
+          price: 11500,
+          calories: 610,
+          protein: 26,
           carbs: 64,
           fat: 9,
           texture: 'regular',
           badge: 'Tinggi Protein Otot',
           badgeEn: 'High Muscle Protein',
           tier: 'budget',
-          ingredients: 'Nasi putih 1 porsi, dada ayam fillet 100g ungkep kunyit jahe, bayam hijau segar, jagung manis'
+          desc: 'Kombinasi asam folat, zat besi sayur segar, dan protein ikan laut ekonomis.',
+          focus: 'Sintesis Hemoglobin & Regenerasi Jaringan',
+          ingredients: 'Nasi putih 1 porsi, tempe bacem kukus, ikan tongkol suwir bumbu tomat segar, bayam bening'
         },
         {
           id: 'lu-2',
@@ -261,18 +265,20 @@ class NutriVisionBudgetPlanner {
       dinner: [
         {
           id: 'di-1',
-          name: 'Nasi Putih + Sup Tahu Sutra Telur Puyuh Rebus + Wortel Bening',
-          nameEn: 'White Rice + Silken Tofu Quail Egg Soup + Clear Carrots',
+          name: 'Sup Oyong Wortel Tahu Sutra + Poached Egg',
+          nameEn: 'Clear Luffa Carrot Soup + Silken Tofu & Poached Egg',
           price: 9500,
-          calories: 390,
-          protein: 20,
+          calories: 470,
+          protein: 19,
           carbs: 52,
           fat: 7,
           texture: 'soft',
           badge: 'Ringan & Menenangkan',
           badgeEn: 'Light & Soothing',
           tier: 'super_budget',
-          ingredients: 'Nasi putih, tahu sutra putih potong dadu, 4 btr telur puyuh, kaldu sayur bening, wortel'
+          desc: 'Kuah hangat hidrasi optimal, rendah minyak jenuh untuk regenerasi sel malam hari.',
+          focus: 'Isoflavon Kedelai, Glutamin & Vitamin A',
+          ingredients: 'Oyong manis empuk, wortel serut, tahu sutra dadu, telur rebus setengah matang kuah kaldu'
         },
         {
           id: 'di-2',
@@ -435,37 +441,68 @@ class NutriVisionBudgetPlanner {
   }
 
   async initRegionSelector() {
+    const combinedSelect = document.getElementById('budget-select-combined-region');
     const provSelect = document.getElementById('budget-select-province');
     const citySelect = document.getElementById('budget-select-city');
     const badgeEl = document.getElementById('budget-region-badge');
     const descEl = document.getElementById('budget-region-desc');
-    if (!provSelect || !window.BappenasFoodAPI) return;
+    if (!window.BappenasFoodAPI) return;
 
     try {
+      // Default to Jawa Tengah · Kab. Magelang (0.95x) to match clinical demo screenshot
+      if (!window.BappenasFoodAPI.hasCustomRegion) {
+        window.BappenasFoodAPI.setActiveRegion({
+          provinceId: 13,
+          provinceName: 'Jawa Tengah',
+          cityName: 'Kab. Magelang',
+          multiplier: 0.95,
+          zone: 'Zona 1 (Jawa & Bali)',
+          label: 'Jawa Tengah · Kab. Magelang'
+        });
+      }
+
       const activeRegion = window.BappenasFoodAPI.getActiveRegion();
       const provinces = await window.BappenasFoodAPI.getProvinces();
 
-      // Isi dropdown Provinsi
-      provSelect.innerHTML = provinces.map(p => 
-        `<option value="${p.id}" ${(p.name.toLowerCase() === activeRegion.provinceName.toLowerCase() || p.id === activeRegion.provinceId) ? 'selected' : ''}>${p.name} (${p.multiplier}x)</option>`
-      ).join('');
+      if (combinedSelect) {
+        combinedSelect.innerHTML = `
+          <option value="13|Kab. Magelang" selected>Jawa Tengah - Kab. Magelang (0.95x)</option>
+          <option value="11|Kota Jakarta Selatan">DKI Jakarta - Kota Jakarta Selatan (1.00x)</option>
+          <option value="12|Kota Bandung">Jawa Barat - Kota Bandung (0.98x)</option>
+          <option value="14|Kota Yogyakarta">DI Yogyakarta - Kota Yogyakarta (0.95x)</option>
+          <option value="15|Kota Surabaya">Jawa Timur - Kota Surabaya (0.96x)</option>
+          <option value="17|Kota Denpasar">Bali - Kota Denpasar (1.05x)</option>
+          <option value="2|Kota Medan">Sumatera Utara - Kota Medan (1.08x)</option>
+          <option value="27|Kota Makassar">Sulawesi Selatan - Kota Makassar (1.04x)</option>
+          <option value="34|Kota Jayapura">Papua - Kota Jayapura (1.60x)</option>
+        `;
+      }
+
+      // Isi dropdown Provinsi untuk kompatibilitas
+      if (provSelect) {
+        provSelect.innerHTML = provinces.map(p => 
+          `<option value="${p.id}" ${(p.id === activeRegion.provinceId) ? 'selected' : ''}>${p.name} (${p.multiplier}x)</option>`
+        ).join('');
+      }
 
       // Update Badge & Keterangan
+      const isIdInit = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
       if (badgeEl) {
-        badgeEl.textContent = `Bapanas RI · ${activeRegion.multiplier.toFixed(2)}x`;
+        badgeEl.textContent = isIdInit ? 'Terkalibrasi' : 'Calibrated';
       }
       if (descEl) {
-        descEl.textContent = `Wilayah: ${activeRegion.label || activeRegion.provinceName} (${activeRegion.zone || 'Regional'})`;
+        descEl.textContent = isIdInit ? `Wilayah: ${activeRegion.label || activeRegion.provinceName} (${activeRegion.zone || 'Regional'})` : `Region: ${activeRegion.label || activeRegion.provinceName} (${activeRegion.zone || 'Regional'})`;
       }
 
       // Isi dropdown Kota untuk provinsi awal
-      const selProvId = provSelect.value || activeRegion.provinceId || 11;
+      const selProvId = provSelect ? provSelect.value : (activeRegion.provinceId || 13);
       await this.populateCities(selProvId, activeRegion.cityName);
 
       // Dengarkan perubahan wilayah dari komponen lain
       window.BappenasFoodAPI.onRegionChange((reg) => {
-        if (badgeEl) badgeEl.textContent = `Bapanas RI · ${reg.multiplier.toFixed(2)}x`;
-        if (descEl) descEl.textContent = `Wilayah: ${reg.label} (${reg.zone})`;
+        const isIdChange = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+        if (badgeEl) badgeEl.textContent = isIdChange ? 'Terkalibrasi' : 'Calibrated';
+        if (descEl) descEl.textContent = isIdChange ? `Wilayah: ${reg.label} (${reg.zone})` : `Region: ${reg.label} (${reg.zone})`;
         if (provSelect && provSelect.value != reg.provinceId) {
           provSelect.value = reg.provinceId;
           this.populateCities(reg.provinceId, reg.cityName);
@@ -476,6 +513,35 @@ class NutriVisionBudgetPlanner {
     } catch (e) {
       console.warn('Init region selector notice:', e);
     }
+  }
+
+  onCombinedRegionChange(val) {
+    if (!val || !window.BappenasFoodAPI) return;
+    const parts = val.split('|');
+    const provId = parseInt(parts[0], 10);
+    const cityName = parts[1] || 'Semua Wilayah';
+
+    const multMap = {
+      13: 0.95, 11: 1.00, 12: 0.98, 14: 0.95, 15: 0.96,
+      17: 1.05, 2: 1.08, 27: 1.04, 34: 1.60
+    };
+    const provNames = {
+      13: 'Jawa Tengah', 11: 'DKI Jakarta', 12: 'Jawa Barat', 14: 'DI Yogyakarta',
+      15: 'Jawa Timur', 17: 'Bali', 2: 'Sumatera Utara', 27: 'Sulawesi Selatan', 34: 'Papua'
+    };
+
+    window.BappenasFoodAPI.hasCustomRegion = true;
+    window.BappenasFoodAPI.setActiveRegion({
+      provinceId: provId,
+      provinceName: provNames[provId] || 'Wilayah Regional',
+      cityName: cityName,
+      multiplier: multMap[provId] || 1.00,
+      zone: 'Zona 1 (Jawa & Bali)',
+      label: `${provNames[provId] || 'Wilayah'} · ${cityName}`
+    });
+
+    this.generatePlan();
+    this.render();
   }
 
   async populateCities(provinceId, selectedCityName = '') {
@@ -758,10 +824,28 @@ class NutriVisionBudgetPlanner {
   }
 
   selectWeek(weekNum) {
+    const numWeeks = Math.ceil(this.durationDays / 7);
+    if (weekNum < 1 || weekNum > numWeeks) return;
     this.activeWeek = weekNum;
     const startDay = (weekNum - 1) * 7 + 1;
     this.activeDay = Math.min(startDay, this.durationDays);
     this.render();
+  }
+
+  changeWeek(delta) {
+    const numWeeks = Math.ceil(this.durationDays / 7);
+    const targetWeek = this.activeWeek + delta;
+    if (targetWeek >= 1 && targetWeek <= numWeeks) {
+      this.selectWeek(targetWeek);
+    }
+  }
+
+  nextWeek() {
+    this.changeWeek(1);
+  }
+
+  prevWeek() {
+    this.changeWeek(-1);
   }
 
   // Menukar variasi salah satu waktu makan (Sarapan, Siang, atau Malam)
@@ -1054,62 +1138,123 @@ class NutriVisionBudgetPlanner {
     const kpiTotal = document.getElementById('budget-kpi-total-cost');
     const kpiSavings = document.getElementById('budget-kpi-savings');
     const kpiProt = document.getElementById('budget-kpi-avg-protein');
+    const kpiTotalSub = document.getElementById('budget-kpi-total-sub');
+    const kpiSavingsSub = document.getElementById('budget-kpi-savings-sub');
 
     if (kpiDaily) {
       kpiDaily.textContent = this.formatRupiah(dailyAllocation) + (isId ? ' / hari' : ' / day');
+      kpiDaily.innerHTML = `${this.formatRupiah(dailyAllocation)} <small>${isId ? '/hari' : '/day'}</small>`;
     }
     if (kpiTotal) {
       kpiTotal.textContent = this.formatRupiah(totalEstPlanCost);
     }
+    if (kpiTotalSub) {
+      kpiTotalSub.textContent = isId 
+        ? `Dari total pagu ${this.formatRupiah(this.budgetAmount)}`
+        : `Of total budget ${this.formatRupiah(this.budgetAmount)}`;
+    }
     if (kpiSavings) {
       if (totalSavings >= 0) {
-        kpiSavings.innerHTML = `<span style="color:#1B5E20;font-weight:700;">Hemat ${this.formatRupiah(totalSavings)}</span>`;
+        kpiSavings.textContent = isId ? `Hemat ${this.formatRupiah(totalSavings)}` : `Saved ${this.formatRupiah(totalSavings)}`;
+        kpiSavings.style.color = '#53653B';
       } else {
-        kpiSavings.innerHTML = `<span style="color:#C62828;font-weight:700;">Defisit ${this.formatRupiah(Math.abs(totalSavings))}</span>`;
+        kpiSavings.textContent = isId ? `Defisit ${this.formatRupiah(Math.abs(totalSavings))}` : `Deficit ${this.formatRupiah(Math.abs(totalSavings))}`;
+        kpiSavings.style.color = '#DC2626';
+      }
+    }
+    if (kpiSavingsSub) {
+      const pct = this.budgetAmount > 0 ? ((Math.abs(totalSavings) / this.budgetAmount) * 100).toFixed(1) : '0';
+      if (totalSavings >= 0) {
+        kpiSavingsSub.innerHTML = `
+          <span class="budget-pill-green">Under-budget ${pct}%</span>
+          <span class="budget-kpi-sub">${isId ? 'Sisa dana aman' : 'Remaining balance safe'}</span>
+        `;
+      } else {
+        kpiSavingsSub.innerHTML = `
+          <span class="budget-pill-green" style="background:#FEE2E2;color:#991B1B;">Over-budget ${pct}%</span>
+          <span class="budget-kpi-sub">${isId ? 'Perlu penyesuaian' : 'Adjustment required'}</span>
+        `;
       }
     }
     if (kpiProt) {
-      kpiProt.textContent = `~${avgDailyProt}g Protein / hari`;
+      kpiProt.textContent = `~${avgDailyProt}g ${isId ? 'Protein / hari' : 'Protein / day'}`;
+      kpiProt.innerHTML = `~${avgDailyProt}g <small>${isId ? 'Protein/hari' : 'Protein/day'}</small>`;
     }
 
-    // 3. Render Day Navigator
+    // 3. Render Day Navigator & Duration labels
+    const badgeEl = document.getElementById('budget-region-badge');
+    if (badgeEl) {
+      badgeEl.textContent = isId ? 'Terkalibrasi' : 'Calibrated';
+    }
+    const durTag = document.getElementById('budget-selected-duration-tag');
+    if (durTag) {
+      durTag.textContent = isId ? `Terpilih: ${this.durationDays} Hari` : `Selected: ${this.durationDays} Days`;
+    }
+    const durSelect = document.getElementById('budget-select-duration');
+    if (durSelect) {
+      durSelect.value = String(this.durationDays);
+      const opt7 = durSelect.querySelector('option[value="7"]');
+      const opt30 = durSelect.querySelector('option[value="30"]');
+      if (opt7) opt7.textContent = isId ? 'Seminggu (7 Hari)' : '1 Week (7 Days)';
+      if (opt30) opt30.textContent = isId ? 'Sebulan (30 Hari)' : '1 Month (30 Days)';
+    }
+    const groceryBtnText = document.getElementById('budget-btn-grocery-text');
+    if (groceryBtnText) {
+      groceryBtnText.textContent = isId ? `Daftar Belanja Bahan (${this.durationDays} Hari)` : `Grocery Shopping List (${this.durationDays} Days)`;
+    }
+
     const dayNavBox = document.getElementById('budget-day-navigator-box');
     const weekTabsBox = document.getElementById('budget-week-tabs-box');
 
-    if (this.durationDays > 7 && weekTabsBox) {
-      weekTabsBox.style.display = 'flex';
-      const numWeeks = Math.ceil(this.durationDays / 7);
-      weekTabsBox.innerHTML = Array.from({ length: numWeeks }, (_, i) => {
-        const w = i + 1;
-        const isActive = w === this.activeWeek;
-        const startDay = (w - 1) * 7 + 1;
-        const endDay = Math.min(w * 7, this.durationDays);
-        return `
-          <button class="budget-week-tab ${isActive ? 'active' : ''}" onclick="budgetPlanner.selectWeek(${w})">
-            ${isId ? `Minggu ${w}` : `Week ${w}`} <small>(${startDay}-${endDay})</small>
-          </button>
-        `;
-      }).join('');
-    } else if (weekTabsBox) {
+    if (weekTabsBox) {
       weekTabsBox.style.display = 'none';
+      weekTabsBox.innerHTML = '';
     }
 
     if (dayNavBox) {
-      // Tampilkan hari-hari di minggu aktif jika > 7 hari, atau seluruh 7 hari jika 7 hari
+      const numWeeks = Math.ceil(this.durationDays / 7);
       let daysToShow = this.plan;
       if (this.durationDays > 7) {
         daysToShow = this.plan.filter(p => p.weekNumber === this.activeWeek);
       }
 
-      dayNavBox.innerHTML = daysToShow.map(p => {
+      const hasPrev = this.durationDays > 7 && this.activeWeek > 1;
+      const hasNext = this.durationDays > 7 && this.activeWeek < numWeeks;
+
+      let navHtml = '';
+
+      if (hasPrev) {
+        navHtml += `
+          <button type="button" class="btn-schedule-nav-arrow" onclick="budgetPlanner.changeWeek(-1)" title="${isId ? 'Hari sebelumnya' : 'Previous days'}" aria-label="Previous days">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+        `;
+      }
+
+      navHtml += daysToShow.map(p => {
         const isCurrent = p.dayNumber === this.activeDay;
         return `
-          <button class="budget-day-chip ${isCurrent ? 'active' : ''}" onclick="budgetPlanner.selectDay(${p.dayNumber})">
-            <span class="day-num">Day ${p.dayNumber}</span>
-            <span class="day-cost">${this.formatRupiah(p.totalDayCost)}</span>
+          <button type="button" class="budget-day-tab-btn ${isCurrent ? 'active' : ''}" onclick="budgetPlanner.selectDay(${p.dayNumber})">
+            ${isId ? `Hari ${p.dayNumber}` : `Day ${p.dayNumber}`}
           </button>
         `;
       }).join('');
+
+      if (hasNext) {
+        navHtml += `
+          <button type="button" class="btn-schedule-nav-arrow" onclick="budgetPlanner.changeWeek(1)" title="${isId ? 'Lanjut hari berikutnya' : 'Next days'}" aria-label="Next days">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        `;
+      }
+
+      dayNavBox.innerHTML = navHtml;
+    }
+
+    const schedTotal = document.getElementById('budget-schedule-total');
+    if (schedTotal) {
+      const calUnit = isId ? 'kkal' : 'kcal';
+      schedTotal.textContent = `Total: ${dayPlan.totalDayProtein}g Protein • ${dayPlan.totalDayCalories.toLocaleString('id-ID')} ${calUnit}`;
     }
 
     // 4. Render Active Day Meals (Sarapan, Makan Siang, Makan Malam)
@@ -1145,39 +1290,67 @@ class NutriVisionBudgetPlanner {
     const cardEl = document.getElementById(`meal-card-${mealType}`);
     if (!cardEl) return;
 
-    let iconName = 'sun';
+    let timeStr = '07:00';
     let typeLabel = isId ? 'Sarapan' : 'Breakfast';
-    let typeColor = '#D97706';
     if (mealType === 'lunch') {
-      iconName = 'utensils';
+      timeStr = '12:30';
       typeLabel = isId ? 'Makan Siang' : 'Lunch';
-      typeColor = '#0284C7';
     } else if (mealType === 'dinner') {
-      iconName = 'moon';
+      timeStr = '18:30';
       typeLabel = isId ? 'Makan Malam' : 'Dinner';
-      typeColor = '#6366F1';
     }
 
+    const focusMap = {
+      'Albumin Telur Utuh & Serat Lunak': 'Whole Egg Albumin & Gentle Fiber',
+      'Sintesis Hemoglobin & Regenerasi Jaringan': 'Hemoglobin Synthesis & Tissue Repair',
+      'Isoflavon Kedelai, Glutamin & Vitamin A': 'Soy Isoflavones, Glutamine & Vitamin A',
+      'Regenerasi Jaringan & Serat Alami': 'Tissue Regeneration & Natural Fiber'
+    };
+    const descMap = {
+      'Porsi lunak mudah dicerna pasca tindakan medis dengan asam amino lengkap.': 'Gentle, easily digestible post-medical portion with complete amino acids.',
+      'Kombinasi asam folat, zat besi sayur segar, dan protein ikan laut ekonomis.': 'Folic acid, fresh vegetable iron, and affordable marine fish protein.',
+      'Kuah hangat hidrasi optimal, rendah minyak jenuh untuk regenerasi sel malam hari.': 'Warm broth optimal hydration, low saturated fats for nighttime cellular repair.'
+    };
+
     const displayName = isId ? meal.name : (meal.nameEn || meal.name);
-    const swapText = isId ? 'Ganti' : 'Swap';
+    const swapText = isId ? 'Ganti Alternatif' : 'Swap Alternative';
+    const mealDesc = isId 
+      ? (meal.desc || meal.ingredients || 'Porsi seimbang pemulihan klinis dengan asam amino lengkap.')
+      : (descMap[meal.desc] || meal.descEn || 'Balanced clinical recovery portion with complete amino acids.');
+    const mealFocus = isId 
+      ? (meal.focus || 'Regenerasi Jaringan & Serat Alami') 
+      : (focusMap[meal.focus] || meal.focusEn || 'Tissue Repair & Natural Fiber');
+    const appliedPrice = meal.appliedCost || meal.price;
+    const focusPrefix = isId ? 'Fokus: ' : 'Focus: ';
+    const calUnit = isId ? 'kkal' : 'kcal';
 
     cardEl.innerHTML = `
-      <div class="meal-clean-time">
-        <i data-lucide="${iconName}" style="width:14px;height:14px;color:${typeColor};"></i>
-        <span>${typeLabel}</span>
+      <div class="meal-col-top">
+        <span class="meal-col-time">${typeLabel} • ${timeStr}</span>
+        <span class="meal-col-price">${this.formatRupiah(appliedPrice)}</span>
       </div>
-      <div class="meal-clean-info">
-        <span class="meal-clean-name">${displayName}</span>
-        <span class="meal-clean-meta">${meal.protein}g Protein · ${meal.calories} kkal</span>
-      </div>
-      <div class="meal-clean-action">
-        <span class="meal-clean-price">${this.formatRupiah(meal.appliedCost || meal.price)}</span>
-        <button type="button" class="btn-clean-swap" onclick="budgetPlanner.swapMeal(${this.activeDay}, '${mealType}')" title="${isId ? 'Ganti menu alternatif' : 'Swap dish'}">
-          <i data-lucide="refresh-cw" style="width:11px;height:11px;"></i>
-          <span>${swapText}</span>
+      <h4 class="meal-col-title">${displayName}</h4>
+      <p class="meal-col-desc">${mealDesc}</p>
+      <div class="meal-col-focus">${focusPrefix}${mealFocus}</div>
+      <div class="meal-col-bottom">
+        <span class="meal-col-meta"><b>${meal.protein}g Protein</b> &nbsp;${meal.calories} ${calUnit}</span>
+        <button type="button" class="btn-meal-swap-link" onclick="budgetPlanner.swapMeal(${this.activeDay}, '${mealType}')" title="${isId ? 'Ganti menu alternatif' : 'Swap alternative dish'}">
+          ${swapText}
         </button>
       </div>
     `;
+  }
+
+  printMealPlan() {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    if (window.app && typeof window.app.showToast === 'function') {
+      window.app.showToast(isId 
+        ? '🖨️ Menyiapkan dokumen cetak rencana gizi klinis...' 
+        : '🖨️ Preparing clinical meal plan document for printing...');
+    }
+    setTimeout(() => {
+      window.print();
+    }, 400);
   }
 }
 

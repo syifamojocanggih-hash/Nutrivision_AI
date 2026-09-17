@@ -108,14 +108,13 @@ window.budgetPlanner.setPresetBudget(1000000, 30);
 console.log('New KPI Daily Quota (30 days):', elements['budget-kpi-daily-quota'].textContent);
 console.log('New KPI Total Cost (30 days):', elements['budget-kpi-total-cost'].textContent);
 console.log('New KPI Savings (30 days):', elements['budget-kpi-savings'].innerHTML);
-console.log('Week Tabs display:', elements['budget-week-tabs-box'].style.display);
-console.log('Week Tabs HTML contains Minggu 1:', elements['budget-week-tabs-box'].innerHTML.includes('Minggu 1'));
+console.log('Day Navigator contains next arrow >:', elements['budget-day-navigator-box'].innerHTML.includes('changeWeek(1)'));
 
 if (!elements['budget-kpi-daily-quota'].textContent.includes('33')) {
   throw new Error('Daily quota for 1M / 30d should be ~33.333!');
 }
-if (elements['budget-week-tabs-box'].style.display !== 'flex') {
-  throw new Error('Week tabs should be visible for 30-day view!');
+if (!elements['budget-day-navigator-box'].innerHTML.includes('changeWeek(1)')) {
+  throw new Error('Next day navigation arrow > should be visible for 30-day view!');
 }
 
 console.log('\n--- TEST 4: Day Selection (Day 15) & Meal Swapping ---');
