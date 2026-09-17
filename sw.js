@@ -1,5 +1,5 @@
 // NutriVision AI Service Worker
-const CACHE_NAME = 'nutrivision-v1.3.6';
+const CACHE_NAME = 'nutrivision-v1.3.7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -32,6 +32,11 @@ const ASSETS_TO_CACHE = [
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/favicon.png',
+  './icons/nutrivision-icon.png',
+  './icons/nutrivision-logo.png',
+  './icons/nutrivision-logo-horizontal.png',
+  './icons/nutrivision-logo-horizontal-dark.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
 ];
 

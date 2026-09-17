@@ -1124,16 +1124,12 @@ Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
       <div class="pdf-printable-sheet" id="pdf-printable-report" style="background:#FFFFFF;color:#1C200E;font-family:'Inter',system-ui,-apple-system,sans-serif;padding:30px 34px;box-sizing:border-box;max-width:800px;margin:0 auto;border:1px solid #DDE2B9;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.06);">
         <!-- Kop Surat Medis NutriVision AI -->
         <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #233917;padding-bottom:16px;margin-bottom:18px;">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:46px;height:46px;border-radius:10px;background:#233917;display:flex;align-items:center;justify-content:center;color:#FFFFFF;flex-shrink:0;">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-                <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
-              </svg>
-            </div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <img src="icons/nutrivision-icon.png" alt="NutriVision AI" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;" />
             <div>
               <h1 style="margin:0;font-size:20px;font-weight:800;color:#233917;letter-spacing:-0.4px;">NUTRIVISION AI</h1>
-              <p style="margin:2px 0 0;font-size:11.5px;color:#556633;font-weight:600;">Sistem Pemantauan Gizi Klinis &amp; Rekam Telehealth Pemulihan ERAS</p>
+              <p style="margin:2px 0 0;font-size:10px;color:#556633;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">FROM WHAT YOU EAT TO WHAT YOU NEED</p>
+              <p style="margin:2px 0 0;font-size:11px;color:#687346;">Sistem Pemantauan Gizi Klinis &amp; Rekam Telehealth Pemulihan ERAS</p>
             </div>
           </div>
           <div style="text-align:right;">

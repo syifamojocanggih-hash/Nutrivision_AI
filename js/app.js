@@ -80,8 +80,29 @@ class NutriVisionApp {
     const storedLang = localStorage.getItem('nutrivision_lang') || 'en';
     if (saved) {
       try {
+        const parsed = JSON.parse(saved);
         const role = parsed.role || 'patient';
         const isNonPatient = role === 'admin' || role === 'doctor' || role === 'clinician' || role === 'caregiver';
+        const baseTargets = parsed.baseTargets || parsed.targets || null;
+        const additionalTargets = parsed.additionalTargets || {
+          protein: 0,
+          calories: 0,
+          carbs: 0,
+          fat: 0,
+          focus: [],
+          reason: '',
+          active: false,
+          updatedAt: null
+        };
+        let effectiveTargets = parsed.targets || null;
+        if (baseTargets) {
+          effectiveTargets = {
+            protein: (baseTargets.protein || 0) + (additionalTargets.active ? (additionalTargets.protein || 0) : 0),
+            calories: (baseTargets.calories || 0) + (additionalTargets.active ? (additionalTargets.calories || 0) : 0),
+            carbs: (baseTargets.carbs || 0) + (additionalTargets.active ? (additionalTargets.carbs || 0) : 0),
+            fat: (baseTargets.fat || 0) + (additionalTargets.active ? (additionalTargets.fat || 0) : 0)
+          };
+        }
         return {
           hasCompletedQuiz: isNonPatient ? true : (parsed.hasCompletedQuiz !== undefined ? parsed.hasCompletedQuiz : Boolean(parsed.name && parsed.targets)),
           role: role,
@@ -100,7 +121,9 @@ class NutriVisionApp {
           bmi: parsed.bmi || '--',
           bmiCategory: parsed.bmiCategory || '--',
           isDemo: Boolean(parsed.isDemo),
-          targets: parsed.targets || null,
+          baseTargets: baseTargets,
+          additionalTargets: additionalTargets,
+          targets: effectiveTargets,
           fontSize: parsed.fontSize || 'normal',
           highContrast: parsed.highContrast || false,
           language: parsed.language || storedLang,
@@ -130,6 +153,17 @@ class NutriVisionApp {
       hasAcceptedConsent: false,
       bmi: '--',
       bmiCategory: '--',
+      baseTargets: null,
+      additionalTargets: {
+        protein: 0,
+        calories: 0,
+        carbs: 0,
+        fat: 0,
+        focus: [],
+        reason: '',
+        active: false,
+        updatedAt: null
+      },
       targets: null,
       fontSize: 'normal',
       highContrast: false,
@@ -1085,10 +1119,467 @@ class NutriVisionApp {
     });
 
     this.updatePreviewBanner();
+    this.updateBoosterUI();
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
+  }
+
+  // =========================================================================
+  // NUTRITION BOOSTER & CUSTOM TARGET BOUNDARIES (KEINGINAN GIZI TAMBAHAN)
+  // =========================================================================
+
+  updateBoosterUI() {
+    const lang = window.i18n ? window.i18n.getLanguage() : (this.userProfile?.language || 'id');
+    const hasQuiz = Boolean(this.userProfile && (this.userProfile.hasCompletedQuiz || this.userProfile.isDemo));
+    const base = this.userProfile?.baseTargets || this.userProfile?.targets || {
+      protein: 75,
+      calories: 1850,
+      carbs: 220,
+      fat: 55
+    };
+    const add = this.userProfile?.additionalTargets || {
+      protein: 0,
+      calories: 0,
+      carbs: 0,
+      fat: 0,
+      focus: [],
+      reason: '',
+      active: false
+    };
+    const isActive = Boolean(add.active && (add.protein > 0 || add.calories > 0 || add.carbs > 0 || add.fat > 0 || (add.focus && add.focus.length > 0)));
+    const targets = this.userProfile?.targets || {
+      protein: base.protein + (isActive ? (add.protein || 0) : 0),
+      calories: base.calories + (isActive ? (add.calories || 0) : 0),
+      carbs: base.carbs + (isActive ? (add.carbs || 0) : 0),
+      fat: base.fat + (isActive ? (add.fat || 0) : 0)
+    };
+
+    // 1. Overview Card 2 Badge (+Xg / Active)
+    const card2Badge = document.getElementById('ov-card2-booster-badge');
+    if (card2Badge) {
+      if (isActive) {
+        card2Badge.style.display = 'inline-flex';
+        card2Badge.textContent = `+${add.protein || 0}g Prot · +${add.calories || 0} kkal`;
+      } else {
+        card2Badge.style.display = 'none';
+      }
+    }
+
+    // 2. Overview Card 2 Active Booster Banner
+    const card2Banner = document.getElementById('ov-card2-booster-active-banner');
+    const card2BannerText = document.getElementById('ov-card2-booster-banner-text');
+    if (card2Banner) {
+      if (isActive) {
+        card2Banner.style.display = 'flex';
+        if (card2BannerText) {
+          const reasonPart = add.reason ? ` (${add.reason})` : '';
+          card2BannerText.innerHTML = lang === 'id'
+            ? `🎯 <strong>Batasan Gizi Tambahan Aktif:</strong> +${add.protein || 0}g Protein · +${add.calories || 0} kkal${reasonPart}`
+            : `🎯 <strong>Active Nutrition Booster:</strong> +${add.protein || 0}g Protein · +${add.calories || 0} kcal${reasonPart}`;
+        }
+      } else {
+        card2Banner.style.display = 'none';
+      }
+    }
+
+    // 3. Card 2 Macro Subtitles (Protein & Calories)
+    const subProt = document.getElementById('macro-sub-protein');
+    const subCals = document.getElementById('macro-sub-cals');
+    if (subProt) {
+      if (isActive && add.protein > 0) {
+        subProt.style.display = 'inline-block';
+        subProt.textContent = lang === 'id'
+          ? `Basal ${base.protein}g + Booster ${add.protein}g`
+          : `Base ${base.protein}g + Booster ${add.protein}g`;
+      } else {
+        subProt.style.display = 'none';
+      }
+    }
+    if (subCals) {
+      if (isActive && add.calories > 0) {
+        subCals.style.display = 'inline-block';
+        subCals.textContent = lang === 'id'
+          ? `Basal ${(base.calories || 0).toLocaleString('id-ID')} + Booster ${add.calories} kkal`
+          : `Base ${(base.calories || 0).toLocaleString('en-US')} + Booster ${add.calories} kcal`;
+      } else {
+        subCals.style.display = 'none';
+      }
+    }
+
+    // 4. Update Profile Page Booster Box
+    const profileBoosterBox = document.getElementById('profile-booster-box');
+    const profileBadge = document.getElementById('profile-booster-status-badge');
+    const profileDetails = document.getElementById('profile-booster-details');
+    if (profileBoosterBox) {
+      profileBoosterBox.style.display = hasQuiz ? 'block' : 'none';
+    }
+    if (profileBadge) {
+      if (isActive) {
+        profileBadge.className = 'badge teal';
+        profileBadge.textContent = lang === 'id'
+          ? `Booster Aktif (+${add.protein || 0}g Prot)`
+          : `Booster Active (+${add.protein || 0}g Prot)`;
+      } else {
+        profileBadge.className = 'badge gray';
+        profileBadge.textContent = lang === 'id'
+          ? 'Standar Klinis Murni (+0g)'
+          : 'Clinical Baseline (+0g)';
+      }
+    }
+    if (profileDetails) {
+      if (isActive) {
+        const focusHtml = (add.focus && add.focus.length > 0)
+          ? `<br><span style="font-size:11px;color:#1B4332;">Fokus Mikro: <b>${add.focus.map(f => f.toUpperCase()).join(', ')}</b></span>`
+          : '';
+        const reasonHtml = add.reason ? `<br><span style="font-style:italic;color:#64748B;">"${add.reason}"</span>` : '';
+        profileDetails.innerHTML = lang === 'id'
+          ? `Dasar Klinis: <b>${base.protein}g</b> / <b>${(base.calories || 0).toLocaleString('id-ID')} kkal</b><br>` +
+            `Tambahan Booster: <b style="color:#D92D20;">+${add.protein || 0}g Prot</b> / <b style="color:#137333;">+${add.calories || 0} kkal</b><br>` +
+            `Total Target Efektif: <b>${targets.protein}g</b> / <b>${(targets.calories || 0).toLocaleString('id-ID')} kkal</b>` +
+            focusHtml + reasonHtml
+          : `Clinical Base: <b>${base.protein}g</b> / <b>${(base.calories || 0).toLocaleString('en-US')} kcal</b><br>` +
+            `Booster Extra: <b style="color:#D92D20;">+${add.protein || 0}g Prot</b> / <b style="color:#137333;">+${add.calories || 0} kcal</b><br>` +
+            `Effective Target: <b>${targets.protein}g</b> / <b>${(targets.calories || 0).toLocaleString('en-US')} kcal</b>` +
+            focusHtml + reasonHtml;
+      } else {
+        profileDetails.innerHTML = lang === 'id'
+          ? `Target saat ini mengikuti batas dasar pemulihan klinis ERAS murni (<b>${base.protein}g</b> protein, <b>${(base.calories || 0).toLocaleString('id-ID')} kkal</b>). Klik tombol di bawah untuk menambah batas target gizi.`
+          : `Current targets follow pure ERAS baseline recovery needs (<b>${base.protein}g</b> protein, <b>${(base.calories || 0).toLocaleString('en-US')} kcal</b>). Click below to customize additional booster bounds.`;
+      }
+    }
+  }
+
+  openNutritionBoosterModal() {
+    // 1. Pastikan profil pengguna memiliki struktur target dasar dan tambahan
+    if (!this.userProfile.baseTargets) {
+      if (this.userProfile.targets) {
+        this.userProfile.baseTargets = {
+          protein: this.userProfile.targets.protein || 75,
+          calories: this.userProfile.targets.calories || 1850,
+          carbs: this.userProfile.targets.carbs || 220,
+          fat: this.userProfile.targets.fat || 55
+        };
+      } else {
+        this.userProfile.baseTargets = {
+          protein: 75,
+          calories: 1850,
+          carbs: 220,
+          fat: 55
+        };
+      }
+    }
+    if (!this.userProfile.additionalTargets) {
+      this.userProfile.additionalTargets = {
+        protein: 0,
+        calories: 0,
+        carbs: 0,
+        fat: 0,
+        focus: [],
+        reason: '',
+        active: false,
+        updatedAt: null
+      };
+    }
+
+    const base = this.userProfile.baseTargets;
+    const add = this.userProfile.additionalTargets;
+    const weight = this.userProfile.weightKg || 65;
+
+    // 2. Isi ringkasan klinis dasar di modal
+    const condBadge = document.getElementById('booster-condition-badge');
+    if (condBadge) condBadge.textContent = this.userProfile.conditionTitle || 'Pasca-Operasi & Bedah';
+
+    const elBaseProt = document.getElementById('booster-base-protein');
+    if (elBaseProt) elBaseProt.textContent = `${base.protein} g`;
+
+    const elBaseProtPerKg = document.getElementById('booster-base-protein-perkg');
+    if (elBaseProtPerKg) elBaseProtPerKg.textContent = `${(base.protein / weight).toFixed(1)} g/kg`;
+
+    const elBaseCals = document.getElementById('booster-base-cals');
+    if (elBaseCals) elBaseCals.textContent = `${(base.calories || 1850).toLocaleString('id-ID')} kkal`;
+
+    const elBaseCarbs = document.getElementById('booster-base-carbs');
+    if (elBaseCarbs) elBaseCarbs.textContent = `${base.carbs || 220} g`;
+
+    const elBaseFat = document.getElementById('booster-base-fat');
+    if (elBaseFat) elBaseFat.textContent = `${base.fat || 55} g`;
+
+    // 3. Masukkan nilai booster saat ini ke form controls
+    const inputProt = document.getElementById('booster-input-protein');
+    if (inputProt) inputProt.value = add.protein || 0;
+
+    const inputCals = document.getElementById('booster-input-calories');
+    if (inputCals) inputCals.value = add.calories || 0;
+
+    const inputCarbs = document.getElementById('booster-input-carbs');
+    if (inputCarbs) inputCarbs.value = add.carbs || 0;
+
+    const inputFat = document.getElementById('booster-input-fat');
+    if (inputFat) inputFat.value = add.fat || 0;
+
+    const inputReason = document.getElementById('booster-reason-input');
+    if (inputReason) inputReason.value = add.reason || '';
+
+    // Checkbox fokus
+    const focusList = Array.isArray(add.focus) ? add.focus : [];
+    document.querySelectorAll('.booster-chips-group input[type="checkbox"]').forEach(cb => {
+      cb.checked = focusList.includes(cb.value);
+    });
+
+    // 4. Deteksi dan sorot preset yang cocok
+    this.detectMatchingBoosterPreset(add.protein || 0, add.calories || 0);
+
+    // 5. Perbarui pratinjau kalkulasi langsung
+    this.updateBoosterLivePreview();
+
+    // 6. Buka modal
+    this.openModal('nutrition-booster-modal');
+  }
+
+  closeNutritionBoosterModal() {
+    this.closeModal('nutrition-booster-modal');
+  }
+
+  selectBoosterPreset(presetKey) {
+    const presets = {
+      'default': { protein: 0, calories: 0, carbs: 0, fat: 0, focus: [] },
+      'rehab': { protein: 15, calories: 200, carbs: 25, fat: 5, focus: ['albumin', 'zinc'] },
+      'wound': { protein: 25, calories: 150, carbs: 15, fat: 5, focus: ['albumin', 'vitc', 'zinc'] },
+      'appetite': { protein: 10, calories: 350, carbs: 45, fat: 10, focus: ['omega3'] }
+    };
+
+    const target = presets[presetKey] || presets['default'];
+
+    const inputProt = document.getElementById('booster-input-protein');
+    if (inputProt) inputProt.value = target.protein;
+
+    const inputCals = document.getElementById('booster-input-calories');
+    if (inputCals) inputCals.value = target.calories;
+
+    const inputCarbs = document.getElementById('booster-input-carbs');
+    if (inputCarbs) inputCarbs.value = target.carbs;
+
+    const inputFat = document.getElementById('booster-input-fat');
+    if (inputFat) inputFat.value = target.fat;
+
+    // Update checkboxes
+    document.querySelectorAll('.booster-chips-group input[type="checkbox"]').forEach(cb => {
+      cb.checked = target.focus.includes(cb.value);
+    });
+
+    // Highlight preset card
+    document.querySelectorAll('.booster-preset-card').forEach(card => {
+      card.classList.toggle('active', card.getAttribute('data-preset') === presetKey);
+    });
+
+    this.updateBoosterLivePreview();
+  }
+
+  stepBoosterValue(field, step) {
+    let input = null;
+    let min = 0;
+    let max = 1000;
+
+    if (field === 'protein') {
+      input = document.getElementById('booster-input-protein');
+      min = 0;
+      max = 60;
+    } else if (field === 'calories') {
+      input = document.getElementById('booster-input-calories');
+      min = 0;
+      max = 800;
+    }
+
+    if (!input) return;
+
+    let cur = parseInt(input.value, 10) || 0;
+    let next = Math.max(min, Math.min(max, cur + step));
+    input.value = next;
+
+    const curProt = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
+    const curCals = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
+    this.detectMatchingBoosterPreset(curProt, curCals);
+    this.updateBoosterLivePreview();
+  }
+
+  onBoosterSliderChange(field, value) {
+    const curProt = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
+    const curCals = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
+    this.detectMatchingBoosterPreset(curProt, curCals);
+    this.updateBoosterLivePreview();
+  }
+
+  detectMatchingBoosterPreset(prot, cals) {
+    let matched = null;
+    if (prot === 0 && cals === 0) matched = 'default';
+    else if (prot === 15 && cals === 200) matched = 'rehab';
+    else if (prot === 25 && cals === 150) matched = 'wound';
+    else if (prot === 10 && cals === 350) matched = 'appetite';
+
+    document.querySelectorAll('.booster-preset-card').forEach(card => {
+      card.classList.toggle('active', matched ? card.getAttribute('data-preset') === matched : false);
+    });
+  }
+
+  updateBoosterLivePreview() {
+    const protAdd = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
+    const calsAdd = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
+    const carbsAdd = parseInt(document.getElementById('booster-input-carbs')?.value, 10) || 0;
+    const fatAdd = parseInt(document.getElementById('booster-input-fat')?.value, 10) || 0;
+
+    const base = this.userProfile?.baseTargets || { protein: 75, calories: 1850, carbs: 220, fat: 55 };
+
+    // Update Slider Displays
+    const dispProt = document.getElementById('booster-val-prot-display');
+    if (dispProt) dispProt.textContent = `+${protAdd} g`;
+
+    const dispCals = document.getElementById('booster-val-cals-display');
+    if (dispCals) dispCals.textContent = `+${calsAdd} kkal`;
+
+    // Update Input Subtext Totals
+    const subProt = document.getElementById('booster-calc-prot-result');
+    if (subProt) subProt.textContent = `Total target protein: ${base.protein + protAdd} g / hari`;
+
+    const subCals = document.getElementById('booster-calc-cals-result');
+    if (subCals) subCals.textContent = `Total target kalori: ${(base.calories + calsAdd).toLocaleString('id-ID')} kkal / hari`;
+
+    // Comparison Card
+    const sumProt = document.getElementById('booster-summary-protein');
+    if (sumProt) sumProt.textContent = `${base.protein + protAdd} g / hari`;
+
+    const sumProtBreakdown = document.getElementById('booster-summary-protein-breakdown');
+    if (sumProtBreakdown) sumProtBreakdown.textContent = `${base.protein}g dasar + ${protAdd}g booster`;
+
+    const sumCals = document.getElementById('booster-summary-calories');
+    if (sumCals) sumCals.textContent = `${(base.calories + calsAdd).toLocaleString('id-ID')} kkal`;
+
+    const sumCalsBreakdown = document.getElementById('booster-summary-cals-breakdown');
+    if (sumCalsBreakdown) sumCalsBreakdown.textContent = `${(base.calories).toLocaleString('id-ID')} dasar + ${calsAdd} booster`;
+
+    const sumStatus = document.getElementById('booster-summary-status');
+    const selectedFocus = Array.from(document.querySelectorAll('.booster-chips-group input[type="checkbox"]:checked'))
+      .map(cb => cb.value);
+
+    if (sumStatus) {
+      if (protAdd === 0 && calsAdd === 0 && carbsAdd === 0 && fatAdd === 0 && selectedFocus.length === 0) {
+        sumStatus.textContent = 'Standar Klinis';
+        sumStatus.style.color = '#233917';
+      } else {
+        sumStatus.textContent = `+${protAdd}g Prot · +${calsAdd} kkal`;
+        sumStatus.style.color = '#0284C7';
+      }
+    }
+
+    const sumFocusTags = document.getElementById('booster-summary-focus-tags');
+    if (sumFocusTags) {
+      if (selectedFocus.length > 0) {
+        sumFocusTags.textContent = `Fokus: ${selectedFocus.join(', ')}`;
+      } else {
+        sumFocusTags.textContent = 'Semua makro terkalibrasi';
+      }
+    }
+  }
+
+  saveNutritionBooster() {
+    const protAdd = parseInt(document.getElementById('booster-input-protein')?.value, 10) || 0;
+    const calsAdd = parseInt(document.getElementById('booster-input-calories')?.value, 10) || 0;
+    const carbsAdd = parseInt(document.getElementById('booster-input-carbs')?.value, 10) || 0;
+    const fatAdd = parseInt(document.getElementById('booster-input-fat')?.value, 10) || 0;
+    const reason = document.getElementById('booster-reason-input')?.value?.trim() || '';
+    const selectedFocus = Array.from(document.querySelectorAll('.booster-chips-group input[type="checkbox"]:checked'))
+      .map(cb => cb.value);
+
+    const isActive = (protAdd > 0 || calsAdd > 0 || carbsAdd > 0 || fatAdd > 0 || selectedFocus.length > 0);
+
+    if (!this.userProfile.baseTargets) {
+      this.userProfile.baseTargets = this.userProfile.targets || {
+        protein: 75,
+        calories: 1850,
+        carbs: 220,
+        fat: 55
+      };
+    }
+
+    this.userProfile.additionalTargets = {
+      protein: protAdd,
+      calories: calsAdd,
+      carbs: carbsAdd,
+      fat: fatAdd,
+      focus: selectedFocus,
+      reason: reason,
+      active: isActive,
+      updatedAt: new Date().toISOString()
+    };
+
+    const base = this.userProfile.baseTargets;
+    this.userProfile.targets = {
+      protein: base.protein + (isActive ? protAdd : 0),
+      calories: base.calories + (isActive ? calsAdd : 0),
+      carbs: base.carbs + (isActive ? carbsAdd : 0),
+      fat: base.fat + (isActive ? fatAdd : 0)
+    };
+
+    this.saveUserProfile();
+
+    // Perbarui Progress Tracker (Donut & Weekly Target Bars)
+    if (window.progressTracker) {
+      if (typeof window.progressTracker.updateTargets === 'function') {
+        window.progressTracker.updateTargets(this.userProfile.targets);
+      }
+      if (typeof window.progressTracker.renderMacroDonut === 'function') {
+        window.progressTracker.renderMacroDonut(this.userProfile.targets);
+      }
+      if (typeof window.progressTracker.renderWeeklyBarChart === 'function') {
+        window.progressTracker.renderWeeklyBarChart();
+      }
+    }
+
+    this.updateBoosterUI();
+    this.updateProfileUI();
+    this.closeNutritionBoosterModal();
+
+    const lang = window.i18n ? window.i18n.getLanguage() : 'id';
+    if (isActive) {
+      this.showToast(
+        lang === 'id'
+          ? `🎯 Batasan target gizi diperbarui: +${protAdd}g protein, +${calsAdd} kkal`
+          : `🎯 Nutrition booster applied: +${protAdd}g protein, +${calsAdd} kcal`,
+        'success'
+      );
+    } else {
+      this.showToast(
+        lang === 'id'
+          ? '🔄 Target gizi dikembalikan ke batasan klinis dasar'
+          : '🔄 Nutrition targets reset to clinical baseline',
+        'info'
+      );
+    }
+  }
+
+  resetNutritionBooster() {
+    const inputProt = document.getElementById('booster-input-protein');
+    if (inputProt) inputProt.value = 0;
+
+    const inputCals = document.getElementById('booster-input-calories');
+    if (inputCals) inputCals.value = 0;
+
+    const inputCarbs = document.getElementById('booster-input-carbs');
+    if (inputCarbs) inputCarbs.value = 0;
+
+    const inputFat = document.getElementById('booster-input-fat');
+    if (inputFat) inputFat.value = 0;
+
+    const inputReason = document.getElementById('booster-reason-input');
+    if (inputReason) inputReason.value = '';
+
+    document.querySelectorAll('.booster-chips-group input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+    });
+
+    this.selectBoosterPreset('default');
+    this.saveNutritionBooster();
   }
 
   // Switch Tab Navigasi (Router)
@@ -1262,6 +1753,17 @@ class NutriVisionApp {
         hasAcceptedConsent: false,
         bmi: '--',
         bmiCategory: '--',
+        baseTargets: null,
+        additionalTargets: {
+          protein: 0,
+          calories: 0,
+          carbs: 0,
+          fat: 0,
+          focus: [],
+          reason: '',
+          active: false,
+          updatedAt: null
+        },
         targets: null
       };
       this.updateProfileUI();
@@ -2710,11 +3212,32 @@ class NutriVisionApp {
     this.userProfile.hasCompletedQuiz = true;
     this.userProfile.isDemo = false;
 
-    this.userProfile.targets = {
+    const baseTargets = {
       protein: diag.protein,
       carbs: diag.carbs,
       fat: diag.fat,
       calories: diag.tdee
+    };
+    this.userProfile.baseTargets = baseTargets;
+    if (!this.userProfile.additionalTargets) {
+      this.userProfile.additionalTargets = {
+        protein: 0,
+        calories: 0,
+        carbs: 0,
+        fat: 0,
+        focus: [],
+        reason: '',
+        active: false,
+        updatedAt: null
+      };
+    }
+    const add = this.userProfile.additionalTargets;
+    const addActive = Boolean(add && add.active);
+    this.userProfile.targets = {
+      protein: baseTargets.protein + (addActive ? (add.protein || 0) : 0),
+      carbs: baseTargets.carbs + (addActive ? (add.carbs || 0) : 0),
+      fat: baseTargets.fat + (addActive ? (add.fat || 0) : 0),
+      calories: baseTargets.calories + (addActive ? (add.calories || 0) : 0)
     };
 
     // Simpan Wilayah Acuan Pasar Pangan (Bapanas RI)
@@ -5616,6 +6139,8 @@ class NutriVisionApp {
       }
 
       // Patient Flow
+      const baseProt = user.targetProtein || 75;
+      const baseCal = user.targetCalories || 1850;
       this.userProfile = {
         ...this.userProfile,
         ...user,
@@ -5623,11 +6148,27 @@ class NutriVisionApp {
         isDemo: true,
         contact: user.email,
         hasCompletedQuiz: true,
-        targets: {
-          protein: user.targetProtein || 75,
+        baseTargets: {
+          protein: baseProt,
           carbs: 220,
           fat: 55,
-          calories: user.targetCalories || 1850
+          calories: baseCal
+        },
+        additionalTargets: {
+          protein: 0,
+          calories: 0,
+          carbs: 0,
+          fat: 0,
+          focus: [],
+          reason: '',
+          active: false,
+          updatedAt: null
+        },
+        targets: {
+          protein: baseProt,
+          carbs: 220,
+          fat: 55,
+          calories: baseCal
         }
       };
 
@@ -5777,6 +6318,17 @@ class NutriVisionApp {
       hasAcceptedConsent: false,
       bmi: '--',
       bmiCategory: '--',
+      baseTargets: null,
+      additionalTargets: {
+        protein: 0,
+        calories: 0,
+        carbs: 0,
+        fat: 0,
+        focus: [],
+        reason: '',
+        active: false,
+        updatedAt: null
+      },
       targets: null
     };
 

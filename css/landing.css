@@ -68,24 +68,52 @@ body:not(.is-landing-active) #landing-page-view {
 }
 
 .lp-brand-mark {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #9EA76B, #9EA76B);
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  background: transparent;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(158, 167, 107, 0.25);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.lp-brand:hover .lp-brand-mark {
+  transform: scale(1.06);
+}
+
+.lp-brand-mark img,
+.lp-brand-mark .brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(45, 72, 34, 0.22));
+}
+
+.lp-brand-title-wrap {
+  display: flex;
+  flex-direction: column;
 }
 
 .lp-brand-title {
   font-family: var(--font-heading);
-  font-size: 19px;
+  font-size: 18.5px;
   font-weight: 700;
   color: #1C200E;
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.3px;
+}
+
+.lp-brand-tagline {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #556B30;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-top: 1px;
 }
 
 .lp-nav-links {
@@ -1559,6 +1587,10 @@ body:not(.is-landing-active) #landing-page-view {
   color: #687346;
   margin-top: 12px;
   max-width: 300px;
+}
+
+.lp-footer-brand .lp-brand-tagline {
+  color: #C2D4A8;
 }
 
 .lp-footer-col h4 {

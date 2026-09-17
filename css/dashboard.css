@@ -712,6 +712,64 @@
   }
 }
 
+/* Card 2 Target Booster Active Banner */
+.target-booster-active-banner {
+  background: linear-gradient(135deg, #F5F9EC 0%, #EEF6E2 100%);
+  border: 1px solid #C8D7A8;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin: 10px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(35, 57, 23, 0.05);
+}
+
+.booster-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16A34A;
+  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+  animation: boosterPulse 2s infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+@keyframes boosterPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.booster-banner-edit-btn {
+  all: unset;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  color: #233917;
+  background: #FFFFFF;
+  border: 1px solid #CBDAB2;
+  padding: 3px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.booster-banner-edit-btn:hover {
+  background: #233917;
+  color: #FFFFFF;
+  border-color: #233917;
+}
+
+.macro-booster-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #556B30;
+  margin-top: -2px;
+}
+
 /* Card 3 Full Width - Budgeting di Bawahnya */
 .budget-card-full {
   grid-column: 1 / -1;

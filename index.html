@@ -16,6 +16,7 @@
 
   <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon.png">
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
@@ -75,13 +76,12 @@
         <div class="lp-nav-inner">
           <div class="lp-brand" onclick="app.goToLanding()" title="NutriVision AI — Home">
             <div class="lp-brand-mark">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
-                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-                <path d="M2 21c0-3 1.85-5.36 5.08-6" />
-              </svg>
+              <img src="icons/nutrivision-icon.png" alt="NutriVision AI Logo" class="brand-logo-img" />
             </div>
-            <div class="lp-brand-title">NutriVision AI</div>
+            <div class="lp-brand-title-wrap">
+              <div class="lp-brand-title">NutriVision AI</div>
+              <div class="lp-brand-tagline">FROM WHAT YOU EAT TO WHAT YOU NEED</div>
+            </div>
           </div>
 
           <nav class="lp-nav-links" id="lp-nav-menu">
@@ -775,13 +775,12 @@
           <div class="lp-footer-brand">
             <div class="lp-brand" onclick="app.goToLanding()">
               <div class="lp-brand-mark">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"
-                  stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
-                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-                  <path d="M2 21c0-3 1.85-5.36 5.08-6" />
-                </svg>
+                <img src="icons/nutrivision-icon.png" alt="NutriVision AI Logo" class="brand-logo-img" />
               </div>
-              <div class="lp-brand-title" style="color:#FFFFFF;">NutriVision AI</div>
+              <div class="lp-brand-title-wrap">
+                <div class="lp-brand-title" style="color:#FFFFFF;">NutriVision AI</div>
+                <div class="lp-brand-tagline">FROM WHAT YOU EAT TO WHAT YOU NEED</div>
+              </div>
             </div>
             <p data-i18n="footer_desc">
               NutriVision AI is an intelligent computer vision clinical nutrition platform engineered for surgical
@@ -844,14 +843,11 @@
       <div class="brand-container" onclick="app.navigate('overview')" style="cursor:pointer;"
         title="NutriVision AI Dasbor">
         <div class="brand-mark">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"
-            stroke-linecap="round" stroke-linejoin="round" class="brand-leaf-icon" aria-hidden="true">
-            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-            <path d="M2 21c0-3 1.85-5.36 5.08-6" />
-          </svg>
+          <img src="icons/nutrivision-icon.png" alt="NutriVision AI Logo" class="brand-logo-img" />
         </div>
         <div class="brand-text">
           <span class="brand-name">NutriVision AI</span>
+          <span class="brand-tag">FROM WHAT YOU EAT TO WHAT YOU NEED</span>
         </div>
       </div>
 
@@ -1911,6 +1907,13 @@
                     class="user-condition-placeholder">Belum dikonfigurasi (Mulai Diagnostik Gizi)</span></div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
+                <button type="button" class="btn-outline-glass" id="btn-open-target-booster"
+                  style="font-size:12px;padding:6px 13px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid #CBD5E1;background:#FFFFFF;color:#233917;font-weight:700;transition:all 0.15s ease;"
+                  onclick="app.openNutritionBoosterModal()" title="Sesuaikan Keinginan Gizi Tambahan & Batasan Target">
+                  <iconify-icon icon="solar:tuning-square-2-bold-duotone" style="font-size:16px;color:#233917;flex-shrink:0;"></iconify-icon>
+                  <span data-i18n="ov_target_booster_btn">Batasan Target Tambahan</span>
+                  <span class="badge amber" id="ov-card2-booster-badge" style="font-size:10px;padding:1px 6px;font-weight:800;display:none;">+0g</span>
+                </button>
                 <button type="button" class="btn-outline-glass" id="btn-toggle-meal-history"
                   style="font-size:12px;padding:6px 14px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;border:1px solid #CBD5E1;background:#FFFFFF;color:#233917;font-weight:700;transition:all 0.15s ease;"
                   onclick="app.navigate('history')" title="Buka Halaman Riwayat Asupan Makanan"
@@ -1925,6 +1928,19 @@
                   <span id="ov-card2-status-text">Belum Dikonfigurasi</span>
                 </span>
               </div>
+            </div>
+
+            <!-- Active Target Booster Banner (Visible if additional targets are configured) -->
+            <div id="ov-card2-booster-active-banner" class="target-booster-active-banner" style="display:none;">
+              <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                <span class="booster-pulse-dot"></span>
+                <span style="font-size:12px;font-weight:700;color:#1E3A1E;" id="ov-card2-booster-banner-text">
+                  🎯 Batasan Gizi Tambahan Aktif: +15g Protein · +200 kkal
+                </span>
+              </div>
+              <button type="button" class="booster-banner-edit-btn" onclick="app.openNutritionBoosterModal()">
+                Ubah Batasan
+              </button>
             </div>
 
             <div class="macro-ring-container">
@@ -1947,7 +1963,10 @@
                     <span class="macro-name"><span
                         style="width:8px;height:8px;border-radius:2px;background:#9EA76B;"></span><strong
                         data-i18n="factor_protein_title">Protein &amp; Albumin</strong></span>
-                    <span class="macro-num" id="macro-num-protein">0 / -- g</span>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                      <span class="macro-num" id="macro-num-protein">0 / -- g</span>
+                      <span class="macro-booster-sub" id="macro-sub-protein" style="display:none;"></span>
+                    </div>
                   </div>
                   <div class="macro-bar-track">
                     <div class="macro-bar-fill" id="bar-fill-protein" style="width:0%;background:#9EA76B;"></div>
@@ -1986,7 +2005,10 @@
                     <span class="macro-name"><span
                         style="width:8px;height:8px;border-radius:2px;background:#8B968F;"></span><span
                         data-i18n="macro_calories">Kalori Total (Energi Basal)</span></span>
-                    <span class="macro-num" id="macro-num-cals">0 / -- kkal</span>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;">
+                      <span class="macro-num" id="macro-num-cals">0 / -- kkal</span>
+                      <span class="macro-booster-sub" id="macro-sub-cals" style="display:none;"></span>
+                    </div>
                   </div>
                   <div class="macro-bar-track">
                     <div class="macro-bar-fill" id="bar-fill-cals" style="width:0%;background:#8B968F;"></div>
@@ -2881,6 +2903,27 @@
                     style="width:8px;height:8px;border-radius:2px;background:var(--teal-300);"></span> <span
                     data-i18n="profile_target_fat">Healthy Fat Target</span></span>
                 <b style="font-size:var(--font-sm);color:var(--teal-700);" id="profile-target-fat">-- g / day</b>
+              </div>
+
+              <!-- Booster breakdown & action in Profile -->
+              <div id="profile-booster-box" style="margin-top:4px;padding:10px 14px;border-radius:var(--radius-xs);background:#F5F9EC;border:1px solid #C8D7A8;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                  <span style="font-size:12px;font-weight:700;color:#233917;display:flex;align-items:center;gap:6px;">
+                    <iconify-icon icon="solar:tuning-square-2-bold-duotone" style="font-size:15px;color:#233917;"></iconify-icon>
+                    <span>Batasan Tambahan (Booster):</span>
+                  </span>
+                  <span class="badge amber" id="profile-booster-status-badge" style="font-size:10px;font-weight:800;">Standar Klinis (+0g)</span>
+                </div>
+                <div style="font-size:11.5px;color:#556B30;line-height:1.45;" id="profile-booster-details">
+                  Target saat ini mengikuti batas dasar pemulihan klinis ERAS murni.
+                </div>
+                <div style="margin-top:8px;">
+                  <button type="button" class="btn-outline-glass" onclick="app.openNutritionBoosterModal()"
+                    style="font-size:11.5px;padding:4px 10px;border-radius:6px;background:#FFFFFF;border:1px solid #CBDAB2;color:#233917;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+                    <i data-lucide="sliders" style="width:12px;height:12px;"></i>
+                    <span>Sesuaikan Keinginan Gizi Tambahan</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -3848,6 +3891,23 @@
           </div>
         </div>
 
+        <!-- Optional Booster Callout in Step 5 Quiz Modal -->
+        <div style="background:#F7F9EE;border:1px solid #D2DCB4;border-radius:10px;padding:10px 14px;margin:12px 0 6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:14px;">🎯</span>
+              <span style="font-size:12px;font-weight:700;color:#233917;">Ingin menambahkan batasan gizi khusus?</span>
+            </div>
+            <button type="button" class="btn-outline-glass" onclick="app.openNutritionBoosterModal()"
+              style="font-size:11px;padding:4px 10px;border-radius:6px;background:#fff;border:1px solid #CBD5E1;font-weight:700;color:#233917;cursor:pointer;">
+              + Atur Target Tambahan
+            </button>
+          </div>
+          <p style="margin:4px 0 0;font-size:11px;color:#64748B;">
+            Tambahkan kuota protein atau kalori ekstra jika Anda menjalani latihan fisioterapi intensif atau program pemulihan khusus.
+          </p>
+        </div>
+
         <!-- Disclaimer & Consent Checkbox -->
         <div class="disclaimer-consent-box" id="onboard-consent-box" style="margin:12px 0 16px;">
           <label class="consent-checkbox-row">
@@ -3869,6 +3929,243 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: NUTRITION BOOSTER & CUSTOM TARGET BOUNDARIES (KEINGINAN GIZI TAMBAHAN)
+       ========================================================================= -->
+  <div class="modal-overlay" id="nutrition-booster-modal" onclick="app.closeNutritionBoosterModal()">
+    <div class="modal-box booster-modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header" style="border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="booster-header-icon">
+            <iconify-icon icon="solar:tuning-square-2-bold-duotone" style="font-size:24px;color:#233917;"></iconify-icon>
+          </div>
+          <div>
+            <h3 class="modal-title" data-i18n="ov_target_booster_title" style="margin:0;font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-0.3px;">
+              Keinginan Gizi Tambahan &amp; Penyesuaian Batasan
+            </h3>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);" data-i18n="ov_target_booster_sub">
+              Sesuaikan atau tambahkan kuota gizi di atas batas dasar pemulihan klinis untuk fisioterapi lanjutan atau tujuan kebugaran pribadi.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="app.closeNutritionBoosterModal()" aria-label="Tutup modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:18px;">
+        <!-- 1. Baseline Reference Card -->
+        <div class="booster-baseline-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:11.5px;font-weight:800;color:#233917;text-transform:uppercase;letter-spacing:0.6px;display:flex;align-items:center;gap:6px;">
+              <iconify-icon icon="solar:shield-check-bold" style="font-size:15px;color:#233917;"></iconify-icon>
+              <span data-i18n="booster_base_hdr">Kebutuhan Medis Dasar Pemulihan (ERAS / ESPEN)</span>
+            </div>
+            <span class="badge teal" id="booster-condition-badge" style="font-size:10.5px;font-weight:700;">Pasca-Operasi</span>
+          </div>
+          <div class="booster-baseline-grid">
+            <div class="booster-base-pill">
+              <span class="lbl">Protein Dasar</span>
+              <b class="val" id="booster-base-protein">75 g</b>
+              <small class="sub" id="booster-base-protein-perkg">1.5 g/kg</small>
+            </div>
+            <div class="booster-base-pill">
+              <span class="lbl">Energi / Kalori</span>
+              <b class="val" id="booster-base-cals">1.850 kkal</b>
+              <small class="sub">TDEE</small>
+            </div>
+            <div class="booster-base-pill">
+              <span class="lbl">Karbohidrat</span>
+              <b class="val" id="booster-base-carbs">240 g</b>
+              <small class="sub">Energi</small>
+            </div>
+            <div class="booster-base-pill">
+              <span class="lbl">Lemak Sehat</span>
+              <b class="val" id="booster-base-fat">51 g</b>
+              <small class="sub">Lipid</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Quick Booster Presets -->
+        <div>
+          <label style="font-size:12.5px;font-weight:700;color:var(--ink);display:block;margin-bottom:8px;" data-i18n="booster_preset_hdr">
+            Pilihan Cepat Target Booster:
+          </label>
+          <div class="booster-preset-grid">
+            <button type="button" class="booster-preset-card active" id="preset-btn-default" data-preset="default" onclick="app.selectBoosterPreset('default')">
+              <div class="preset-icon">🔄</div>
+              <div class="preset-info">
+                <b>Standar Murni (+0g)</b>
+                <span>Sesuai anjuran medis dasar</span>
+              </div>
+            </button>
+            <button type="button" class="booster-preset-card" id="preset-btn-rehab" data-preset="rehab" onclick="app.selectBoosterPreset('rehab')">
+              <div class="preset-icon">🏋️</div>
+              <div class="preset-info">
+                <b>Fisioterapi &amp; Mobilitas</b>
+                <span>+15g Protein · +200 kkal</span>
+              </div>
+            </button>
+            <button type="button" class="booster-preset-card" id="preset-btn-wound" data-preset="wound" onclick="app.selectBoosterPreset('wound')">
+              <div class="preset-icon">🩹</div>
+              <div class="preset-info">
+                <b>Jaringan &amp; Ekstra Albumin</b>
+                <span>+25g Protein · +150 kkal</span>
+              </div>
+            </button>
+            <button type="button" class="booster-preset-card" id="preset-btn-appetite" data-preset="appetite" onclick="app.selectBoosterPreset('appetite')">
+              <div class="preset-icon">⚡</div>
+              <div class="preset-info">
+                <b>Energi &amp; Nafsu Makan</b>
+                <span>+10g Protein · +350 kkal</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Interactive Adjustment Sliders & Number Controls -->
+        <div class="booster-inputs-container">
+          <!-- Extra Protein -->
+          <div class="booster-field-row">
+            <div class="field-label-group">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="color-dot" style="background:#D92D20;"></span>
+                <strong data-i18n="booster_input_prot">Tambahan Protein (g/hari)</strong>
+              </div>
+              <span class="field-current-value" id="booster-val-prot-display">+0 g</span>
+            </div>
+            <div class="range-with-buttons">
+              <button type="button" class="btn-step" onclick="app.stepBoosterValue('protein', -5)">-5</button>
+              <input type="range" id="booster-input-protein" min="0" max="60" step="5" value="0"
+                oninput="app.onBoosterSliderChange('protein', this.value)" class="booster-range-slider">
+              <button type="button" class="btn-step" onclick="app.stepBoosterValue('protein', 5)">+5</button>
+            </div>
+            <div class="field-subtext" id="booster-calc-prot-result">Total target protein: 75 g / hari</div>
+          </div>
+
+          <!-- Extra Calories -->
+          <div class="booster-field-row">
+            <div class="field-label-group">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="color-dot" style="background:#137333;"></span>
+                <strong data-i18n="booster_input_cals">Tambahan Kalori (kkal/hari)</strong>
+              </div>
+              <span class="field-current-value" id="booster-val-cals-display">+0 kkal</span>
+            </div>
+            <div class="range-with-buttons">
+              <button type="button" class="btn-step" onclick="app.stepBoosterValue('calories', -50)">-50</button>
+              <input type="range" id="booster-input-calories" min="0" max="800" step="50" value="0"
+                oninput="app.onBoosterSliderChange('calories', this.value)" class="booster-range-slider">
+              <button type="button" class="btn-step" onclick="app.stepBoosterValue('calories', 50)">+50</button>
+            </div>
+            <div class="field-subtext" id="booster-calc-cals-result">Total target kalori: 1.850 kkal / hari</div>
+          </div>
+
+          <!-- Advanced: Carbs & Fats Toggle / Expandable -->
+          <details class="booster-advanced-details" style="background:#FAFAF7;border:1px solid #E5E9D8;border-radius:10px;padding:8px 14px;">
+            <summary style="font-size:12px;font-weight:700;color:#233917;cursor:pointer;padding:2px 0;">
+              ⚙️ Penyesuaian Karbohidrat &amp; Lemak Sehat (Opsional)
+            </summary>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px;">
+              <div>
+                <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="booster_input_carbs">Tambahan Karbohidrat (g)</label>
+                <input type="number" id="booster-input-carbs" min="0" max="150" step="5" value="0"
+                  class="input-clean" oninput="app.updateBoosterLivePreview()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #CBD5E1;box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px;" data-i18n="booster_input_fat">Tambahan Lemak Sehat (g)</label>
+                <input type="number" id="booster-input-fat" min="0" max="40" step="5" value="0"
+                  class="input-clean" oninput="app.updateBoosterLivePreview()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #CBD5E1;box-sizing:border-box;">
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- 4. Focused Nutrients Checkchips -->
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:6px;" data-i18n="booster_focus_hdr">
+            Fokus Nutrisi / Mikronutrien Khusus:
+          </label>
+          <div class="booster-chips-group">
+            <label class="booster-chip">
+              <input type="checkbox" id="booster-focus-albumin" value="albumin" onchange="app.updateBoosterLivePreview()">
+              <span>🐟 Ekstra Albumin (Channa striata)</span>
+            </label>
+            <label class="booster-chip">
+              <input type="checkbox" id="booster-focus-zinc" value="zinc" onchange="app.updateBoosterLivePreview()">
+              <span>⚡ Kolagen &amp; Zinc</span>
+            </label>
+            <label class="booster-chip">
+              <input type="checkbox" id="booster-focus-vitc" value="vitc" onchange="app.updateBoosterLivePreview()">
+              <span>🍊 Vitamin C &amp; Imun</span>
+            </label>
+            <label class="booster-chip">
+              <input type="checkbox" id="booster-focus-omega3" value="omega3" onchange="app.updateBoosterLivePreview()">
+              <span>🥑 Omega-3 Anti-inflamasi</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 5. Reason / Clinical Context Note -->
+        <div>
+          <label for="booster-reason-input" style="font-size:12px;font-weight:700;color:var(--ink);display:block;margin-bottom:4px;" data-i18n="booster_reason_label">
+            Konteks / Alasan Tambahan Batasan:
+          </label>
+          <input type="text" id="booster-reason-input" class="input-clean"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #CBD5E1;font-size:13px;box-sizing:border-box;"
+            placeholder="Contoh: Sesi fisioterapi 3x seminggu, nafsu makan bertambah, anjuran dokter...">
+        </div>
+
+        <!-- 6. Total Effective Target Live Comparison -->
+        <div class="booster-comparison-box">
+          <div style="font-size:12px;font-weight:800;color:#1E3A1E;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <iconify-icon icon="solar:chart-2-bold" style="font-size:16px;color:#233917;"></iconify-icon>
+            <span data-i18n="booster_preview_hdr">Ringkasan Total Target Harian Baru</span>
+          </div>
+          <div class="booster-summary-row">
+            <div class="summary-col">
+              <span class="sub">Total Protein</span>
+              <strong class="val" id="booster-summary-protein" style="color:#D92D20;">75 g / hari</strong>
+              <small id="booster-summary-protein-breakdown">75g dasar + 0g ekstra</small>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-col">
+              <span class="sub">Total Kalori</span>
+              <strong class="val" id="booster-summary-calories" style="color:#137333;">1.850 kkal</strong>
+              <small id="booster-summary-cals-breakdown">1.850 kkal dasar + 0 kkal ekstra</small>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-col">
+              <span class="sub">Status Batasan</span>
+              <strong class="val" id="booster-summary-status" style="color:#233917;">Standar Klinis</strong>
+              <small id="booster-summary-focus-tags">Semua makro terkalibrasi</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer Actions -->
+      <div class="modal-footer" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap;">
+        <button type="button" class="btn-outline-glass" onclick="app.resetNutritionBooster()"
+          style="color:#64748B;font-size:12.5px;padding:8px 14px;border-radius:8px;" data-i18n="booster_btn_reset">
+          Reset ke Batas Klinis Dasar
+        </button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn-outline-glass" onclick="app.closeNutritionBoosterModal()"
+            style="font-size:12.5px;padding:8px 14px;border-radius:8px;">
+            Batal
+          </button>
+          <button type="button" class="btn-primary-coral" onclick="app.saveNutritionBooster()"
+            style="font-size:12.5px;padding:8px 18px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;">
+            <i data-lucide="check-circle" class="btn-icon-sm"></i>
+            <span data-i18n="booster_btn_apply">Terapkan Batasan Baru</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -4047,10 +4344,11 @@
           <div class="auth-visual-head">Welcome to</div>
 
           <div class="auth-visual-brand-circle">
-            <i data-lucide="sparkles" style="width:46px;height:46px;stroke-width:2.2;color:#9EA76B;"></i>
+            <img src="icons/nutrivision-icon.png" alt="NutriVision AI Logo" />
           </div>
 
           <div class="auth-visual-brand-name">NutriVision AI</div>
+          <div class="auth-visual-tagline">FROM WHAT YOU EAT TO WHAT YOU NEED</div>
 
           <p class="auth-visual-desc">
             Akses platform segmentasi gizi dan panduan nutrisi pemulihan klinis berbasis AI. Bergabunglah bersama ribuan

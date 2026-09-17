@@ -1,15 +1,10 @@
 <div align="center">
 
-```text
-███╗   ██╗██╗   ██╗████████╗██████╗ ██╗██╗   ██╗██╗███████╗██╗ ██████╗ ███╗   ██╗     █████╗ ██╗
-████╗  ██║██║   ██║╚══██╔══╝██╔══██╗██║██║   ██║██║██╔════╝██║██╔═══██╗████╗  ██║    ██╔══██╗██║
-██╔██╗ ██║██║   ██║   ██║   ██████╔╝██║██║   ██║██║███████╗██║██║   ██║██╔██╗ ██║    ███████║██║
-██║╚██╗██║██║   ██║   ██║   ██╔══██╗██║╚██╗ ██╔╝██║╚════██║██║██║   ██║██║╚██╗██║    ██╔══██║██║
-██║ ╚████║╚██████╔╝   ██║   ██║  ██║██║ ╚████╔╝ ██║███████║██║╚██████╔╝██║ ╚████║    ██║  ██║██║
-╚═╝  ╚═══╝ ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝  ╚═╝╚═╝
-```
+<img src="icons/nutrivision-logo.png" alt="NutriVision AI Logo" width="220" style="max-width:100%;height:auto;margin-bottom:12px;" />
 
-### 🥗 **AI-Powered Precision Clinical Nutrition & Post-Operative Telehealth Platform (ERAS Protocol)**
+### 🥗 **NUTRIVISION AI**
+*From What You Eat to What You Need*
+#### **Precision Clinical Nutrition &amp; Post-Operative Telehealth Platform (ERAS Protocol)**
 
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready%20%26%20Offline%20First-243818?style=for-the-badge&logo=pwa&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
 [![Computer Vision](https://img.shields.io/badge/Computer%20Vision-Multi--Segment%20AI-4C5C2C?style=for-the-badge&logo=opencv&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)

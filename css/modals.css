@@ -111,7 +111,7 @@
 .auth-visual-brand-circle {
   width: 96px;
   height: 96px;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F7F9EC 100%);
+  background: #FFFFFF;
   border-radius: 50%;
   margin: 18px auto 14px;
   display: flex;
@@ -123,6 +123,15 @@
   position: relative;
   z-index: 2;
   transition: transform 0.3s ease;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.auth-visual-brand-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
 }
 
 .auth-visual-brand-circle:hover {
@@ -2788,6 +2797,308 @@
   box-shadow: 0 6px 20px rgba(158, 167, 107, 0.4);
   transform: translateY(-1px);
 }
+
+/* =========================================================================
+   NUTRITION BOOSTER & CUSTOM TARGET BOUNDARIES MODAL
+   ========================================================================= */
+.booster-modal-box {
+  max-width: 660px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 18px;
+  background: #FFFFFF;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(28, 32, 14, 0.22);
+}
+
+.booster-header-icon {
+  width: 44px;
+  height: 44px;
+  background: #F1F6E8;
+  border: 1px solid #D2DCB4;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.booster-baseline-card {
+  background: #F8FAF2;
+  border: 1.5px solid #DDE2B9;
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+
+.booster-baseline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.booster-base-pill {
+  background: #FFFFFF;
+  border: 1px solid #E4EACB;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.booster-base-pill .lbl {
+  font-size: 10.5px;
+  color: #687346;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.booster-base-pill .val {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #1C200E;
+}
+
+.booster-base-pill .sub {
+  font-size: 10px;
+  color: #8C9970;
+}
+
+.booster-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.booster-preset-card {
+  all: unset;
+  cursor: pointer;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.booster-preset-card:hover {
+  border-color: #233917;
+  background: #F8FAF2;
+  transform: translateY(-1px);
+}
+
+.booster-preset-card.active {
+  border-color: #233917;
+  background: #F4F8EE;
+  box-shadow: 0 0 0 2px #233917, 0 4px 12px rgba(35, 57, 23, 0.08);
+}
+
+.booster-preset-card .preset-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.booster-preset-card .preset-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.booster-preset-card .preset-info b {
+  font-size: 12px;
+  color: #1C200E;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.booster-preset-card .preset-info span {
+  font-size: 10.5px;
+  color: #556B30;
+  font-weight: 600;
+}
+
+.booster-inputs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booster-field-row {
+  background: #FAFAF7;
+  border: 1px solid #E5E9D8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booster-field-row .field-label-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.booster-field-row .color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.booster-field-row .field-current-value {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #233917;
+  background: #EAF3DC;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #D2DCB4;
+}
+
+.range-with-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-with-buttons .btn-step {
+  all: unset;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #233917;
+  font-weight: 800;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.range-with-buttons .btn-step:hover {
+  background: #233917;
+  color: #FFFFFF;
+  border-color: #233917;
+}
+
+.booster-range-slider {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  accent-color: #233917;
+  cursor: pointer;
+}
+
+.field-subtext {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.booster-chips-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.booster-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #F8FAF2;
+  border: 1px solid #DDE2B9;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #233917;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.booster-chip:has(input:checked) {
+  background: #233917;
+  color: #FFFFFF;
+  border-color: #233917;
+  box-shadow: 0 2px 6px rgba(35, 57, 23, 0.2);
+}
+
+.booster-comparison-box {
+  background: linear-gradient(135deg, #F3F7EB, #EAF2DE);
+  border: 1.5px solid #C8D7A8;
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+
+.booster-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.booster-summary-row .summary-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.booster-summary-row .summary-col .sub {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #556B30;
+  font-weight: 700;
+}
+
+.booster-summary-row .summary-col .val {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.booster-summary-row .summary-col small {
+  font-size: 10.5px;
+  color: #687346;
+}
+
+.booster-summary-row .summary-divider {
+  width: 1px;
+  height: 36px;
+  background: #CBDAB2;
+}
+
+@media (max-width: 640px) {
+  .booster-baseline-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .booster-preset-grid {
+    grid-template-columns: 1fr;
+  }
+  .booster-summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .booster-summary-row .summary-divider {
+    display: none;
+  }
+}
+
 
 
 
