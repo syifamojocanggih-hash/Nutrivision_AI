@@ -234,9 +234,22 @@
     flex-shrink: 0;
   }
 
-  /* Sembunyikan elemen topbar yang memadati layar mobile */
-  #topbar-profile-chip {
-    display: none !important;
+  /* Sesuaikan elemen topbar profil agar pas di layar mobile */
+  .topbar-profile-btn {
+    padding: 3px 8px 3px 4px;
+    gap: 6px;
+    max-width: 130px;
+  }
+
+  .topbar-avatar-circle {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .topbar-profile-name {
+    max-width: 75px;
+    font-size: 11.5px;
   }
 
   #topbar-ai-tester-btn {
@@ -249,17 +262,6 @@
 
   #topbar-db-btn {
     display: none !important;
-  }
-
-  .topbar-profile-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 0;
   }
 
   /* Hero Scan Card matching Desktop on mobile */

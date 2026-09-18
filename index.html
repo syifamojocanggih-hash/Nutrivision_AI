@@ -1029,22 +1029,15 @@
             </div>
           </div>
 
-          <!-- Topbar Profile Button (Icon samping notifikasi untuk Profil Pasien & Portal Pendamping) -->
-          <button class="topbar-profile-btn" id="topbar-profile-btn" onclick="app.navigate('profile')"
+          <!-- Topbar Profile Button: Avatar Bulat + Nama Pengguna -->
+          <button type="button" class="topbar-profile-btn" id="topbar-profile-btn"
+            onclick="app.isAuthenticated() ? app.navigate('profile') : app.openAuthModal('login')"
             title="Buka Profil Pasien &amp; Portal Pendamping" aria-label="Profil Pasien">
-            <i data-lucide="user" style="width:17px;height:17px;"></i>
+            <span class="topbar-avatar-circle user-avatar-placeholder" id="topbar-avatar-circle">
+              <i data-lucide="user" style="width:15px;height:15px;"></i>
+            </span>
+            <span class="topbar-profile-name user-name-placeholder" id="topbar-profile-name">Profil Pasien</span>
           </button>
-
-          <!-- Topbar Profile Chip (Disembunyikan agar tampilan icon samping notif selalu konsisten & sleek) -->
-          <div id="topbar-profile-chip"
-            style="display:none !important;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);padding:4px 10px 4px 6px;border-radius:var(--radius-pill);cursor:pointer;"
-            onclick="app.navigate('profile')" title="Buka Profil Pasien">
-            <div class="profile-avatar user-avatar-placeholder"
-              style="width:26px;height:26px;font-size:11px;background:linear-gradient(135deg,var(--coral-300),var(--coral-500));color:#fff;font-weight:700;">
-              +</div>
-            <span style="font-size:12.5px;font-weight:600;color:var(--ink);" class="user-name-placeholder">Profil
-              Pasien</span>
-          </div>
         </div>
       </header>
 

@@ -856,26 +856,26 @@ class NutriVisionApp {
       }
     }
 
-    // 2. Update Topbar Buttons Visibility & Sleek Profile Avatar
-    const topbarProfileBtn = document.getElementById('topbar-profile-btn');
-    if (topbarProfileBtn) {
+    // 2. Update Topbar Profile Button (Avatar Bulat + Nama Pengguna)
+    const topbarAvatarCircle = document.getElementById('topbar-avatar-circle');
+    const topbarProfileName = document.getElementById('topbar-profile-name');
+
+    if (topbarAvatarCircle) {
       if (isAuth && initials && initials !== '+') {
-        topbarProfileBtn.innerHTML = `<span style="font-size:11px;font-weight:800;color:#fff;">${initials}</span>`;
-        topbarProfileBtn.style.background = isAdmin
+        topbarAvatarCircle.innerHTML = `<span style="font-size:11px;font-weight:800;color:#fff;">${initials}</span>`;
+        topbarAvatarCircle.style.background = isAdmin
           ? 'linear-gradient(135deg,#9EA76B,#353C1B)'
           : (isCaregiver ? 'linear-gradient(135deg,#10B981,#047857)' : 'linear-gradient(135deg,var(--coral-400),var(--coral-600))');
-        topbarProfileBtn.style.border = 'none';
-        topbarProfileBtn.style.borderRadius = '50%';
       } else {
-        topbarProfileBtn.innerHTML = `<i data-lucide="user" style="width:17px;height:17px;"></i>`;
-        topbarProfileBtn.style.background = '';
-        topbarProfileBtn.style.border = '';
+        topbarAvatarCircle.innerHTML = `<i data-lucide="user" style="width:15px;height:15px;"></i>`;
+        topbarAvatarCircle.style.background = 'linear-gradient(135deg,var(--coral-400),var(--coral-600))';
       }
     }
 
-    const topbarProfileChip = document.getElementById('topbar-profile-chip');
-    if (topbarProfileChip) {
-      topbarProfileChip.style.display = 'none'; // Sembunyikan text chip agar greeting tidak terhimpit "Selama..."
+    if (topbarProfileName) {
+      topbarProfileName.textContent = (isAuth && this.userProfile.name)
+        ? this.userProfile.name
+        : (lang === 'id' ? 'Profil Pasien' : 'Patient Profile');
     }
 
     // Toggle Sidebar Navigation Groups by Role
@@ -2083,7 +2083,7 @@ class NutriVisionApp {
       btn.classList.toggle('active', btn.dataset.sec === sectionId || (sectionId === 'history' && btn.dataset.sec === 'overview'));
     });
 
-    // Update Topbar Profile Button Active State
+    // Update Topbar Profile Active State
     const topbarProfileBtn = document.getElementById('topbar-profile-btn');
     if (topbarProfileBtn) {
       topbarProfileBtn.classList.toggle('active', sectionId === 'profile');
@@ -7534,9 +7534,13 @@ class NutriVisionApp {
     });
 
     // 2. Dashboard Topbar Action Buttons
-    const topbarChip = document.getElementById('topbar-profile-chip');
-    if (topbarChip) {
-      topbarChip.style.display = isLoggedIn ? 'inline-flex' : 'none';
+    const topbarProfileName = document.getElementById('topbar-profile-name');
+    if (topbarProfileName) {
+      if (isLoggedIn && this.userProfile?.name) {
+        topbarProfileName.textContent = this.userProfile.name;
+      } else {
+        topbarProfileName.textContent = lang === 'id' ? 'Masuk / Daftar' : 'Sign In';
+      }
     }
 
     this.updatePreviewBanner();
