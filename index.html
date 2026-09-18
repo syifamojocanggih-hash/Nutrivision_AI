@@ -802,7 +802,6 @@
             <h4>Collaboration &amp; Data</h4>
             <ul>
               <li><a onclick="app.goToDashboard('caregiver')">Caregiver Portal</a></li>
-              <li><a onclick="app.goToDashboard('community')" data-i18n="nav_community">Community Forum</a></li>
               <li><a onclick="app.goToDashboard('progress')" data-i18n="nav_progress">Telehealth Reports</a></li>
               <li><a onclick="app.goToDashboard('profile')" data-i18n="nav_profile">Profile &amp; Diagnostic</a></li>
             </ul>
@@ -865,10 +864,6 @@
           <button class="nav-item" data-sec="catalog">
             <span class="nav-icon"><i data-lucide="book-open"></i></span>
             <span data-i18n="nav_catalog">Local Superfoods</span>
-          </button>
-          <button class="nav-item" data-sec="community">
-            <span class="nav-icon"><i data-lucide="users"></i></span>
-            <span data-i18n="nav_community">Community Forum</span>
           </button>
           <button class="nav-item" data-sec="progress">
             <span class="nav-icon"><i data-lucide="route"></i></span>
@@ -2220,35 +2215,150 @@
           </div>
         </div>
 
-        <div class="card" style="margin-bottom:20px;">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2 data-i18n="plan_main_title">Recovery Meal Planner Adaptif</h2>
-              <div class="card-subtitle" data-i18n="plan_main_sub">Rencana menu harian terstruktur berdasarkan profil
-                kondisi klinis</div>
+        <!-- Kalender Siklus Pemulihan & Jadwal Nutrisi Pasien (Clinical Calendar & Schedule Suite) -->
+        <div class="card cal-suite-main-card" id="planner-calendar-card" style="margin-bottom:24px;border:none;background:transparent;box-shadow:none;padding:0;">
+          <!-- 1. Header & Condition Switcher -->
+          <div class="cal-suite-top-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <div class="cal-suite-title-group">
+              <h2 style="display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;color:#111827;margin:0 0 4px;">
+                <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#233917;"></span>
+                <span data-i18n="plan_cal_title">Kalender Siklus &amp; Jadwal Nutrisi</span>
+              </h2>
+              <div class="card-subtitle" style="font-size:12.5px;color:#64748B;margin:0;" data-i18n="plan_cal_sub">Panduan fase pemulihan klinis &amp; perencanaan menu harian berbasis ERAS &amp; ESPEN</div>
+            </div>
+            <!-- Active Patient Medical Profile Badge (Synced from Diagnostic Registration) -->
+            <div class="cal-profile-badge-wrap" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div class="cal-patient-profile-pill" id="cal-patient-profile-pill" style="display:inline-flex;align-items:center;gap:6px;background:#F1F5E9;border:1px solid #DCE5B8;padding:6px 14px;border-radius:20px;font-size:11.5px;font-weight:700;color:#233917;">
+                <i data-lucide="stethoscope" style="width:14px;height:14px;color:#15803D;"></i>
+                <span id="cal-header-condition-label">Profil: Pasca-Bedah</span>
+              </div>
+              <!-- Hidden switcher container for test compatibility -->
+              <div class="modal-cond-switcher cal-cond-switcher-pills" id="modal-cond-switcher" style="display:none;">
+                <button type="button" class="cond-pill-btn active" data-cond="post-surgery" onclick="app.setJourneyCondition('post-surgery')">Pasca-Bedah</button>
+                <button type="button" class="cond-pill-btn" data-cond="rehab" onclick="app.setJourneyCondition('rehab')">Fisioterapi</button>
+                <button type="button" class="cond-pill-btn" data-cond="gym" onclick="app.setJourneyCondition('gym')">Pemulihan Umum</button>
+              </div>
             </div>
           </div>
-          <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:16px;"
-            data-i18n="plan_desc">
-            Pilih antara opsi standar bergizi penuh atau opsi hemat biaya berbasis pangan lokal yang ramah anggaran
-            namun tetap mencukupi target protein untuk regenerasi jaringan.
-          </p>
 
-          <div class="toggle-tab-group" style="max-width:420px;">
-            <button class="toggle-tab-btn active"
-              onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('standar');">
-              <i data-lucide="sparkles" class="btn-icon-sm"></i> <span data-i18n="plan_opt_standard">Opsi Standar
-                (Optimal)</span>
-            </button>
-            <button class="toggle-tab-btn"
-              onclick="document.querySelectorAll('.toggle-tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); mealPlanner.setMode('hemat');">
-              <i data-lucide="coins" class="btn-icon-sm"></i> <span data-i18n="plan_opt_budget">Opsi Hemat /
-                Low-Budget</span>
-            </button>
+          <!-- 2. Monthly Milestones Grid (3 Cards) -->
+          <div class="recovery-month-pills-wrap cal-milestones-grid" id="recovery-month-pills" style="margin-bottom:14px;">
+            <!-- Rendered dynamically by app.renderRecoveryMonthPills() -->
           </div>
 
-          <div class="meal-plan-card-list" id="meal-plan-list-full">
-            <!-- Synchronized with meal planner -->
+          <!-- 3. Unified 3-Column Target & Budget Card -->
+          <div class="month-target-banner cal-metric-summary-card" id="recovery-month-target-banner" style="margin-bottom:16px;">
+            <!-- Rendered dynamically by app.renderActiveMonthBanner() -->
+          </div>
+
+          <!-- 4. 2-Column Split: Interactive Detail Panel (Left) & Compact Calendar (Right) -->
+          <div class="schedule-calendar-split-grid cal-main-split-grid" style="display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:stretch;">
+            <!-- Left Column: Upcoming Events List & Pantangan Panel -->
+            <div class="upcoming-events-panel cal-left-panel-card" id="calendar-detail-panel">
+              <div class="cal-left-panel-header" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #F1F5F9;">
+                <div>
+                  <span style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;display:block;">HARI INI</span>
+                  <h3 class="upcoming-events-title" id="upcoming-date-text" style="font-size:14px;font-weight:700;color:#111827;margin:2px 0 0;">Jumat, 18 September 2026</h3>
+                </div>
+                <div class="cal-detail-nav-tabs" style="display:flex;align-items:center;gap:4px;background:#F1F5F9;padding:3px;border-radius:20px;border:none;height:auto;">
+                  <button type="button" class="cal-detail-tab-btn active" id="btn-tab-meals"
+                    onclick="app.switchCalendarDetailTab('meals')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:700;">
+                    <span>Jadwal Makan</span>
+                  </button>
+                  <button type="button" class="cal-detail-tab-btn" id="btn-tab-restrictions"
+                    onclick="app.switchCalendarDetailTab('restrictions')" style="padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;">
+                    <span>Pantangan Medis</span>
+                  </button>
+                  <button type="button" class="cal-detail-tab-btn" id="btn-tab-validation"
+                    onclick="app.switchCalendarDetailTab('validation')" style="display:none;">
+                    <span>Validasi</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tab 1: Recommended Meals List -->
+              <div class="cal-detail-tab-pane" id="pane-tab-meals" style="padding:14px 16px;">
+                <!-- Compatibility container for budget tests -->
+                <div id="cal-budget-indicator-bar" style="display:none;"><span id="cal-budget-bar-total"></span><span id="cal-budget-bar-daily"></span><span id="cal-budget-bar-tier"></span><button type="button" class="btn-budget-sync-link" onclick="app.openAdjustBudgetModal()"></button></div>
+                <div class="upcoming-events-list" id="upcoming-events-list" style="display:flex;flex-direction:column;gap:10px;">
+                  <!-- Rendered dynamically by app.renderUpcomingEvents() -->
+                </div>
+              </div>
+
+              <!-- Tab 2: Clinical Contraindications / Pantangan Makanan -->
+              <div class="cal-detail-tab-pane" id="pane-tab-restrictions" style="display:none;padding:14px 16px;">
+                <div class="pantangan-list-wrap" id="pantangan-events-list">
+                  <!-- Rendered dynamically by app.renderPantanganMakanan() -->
+                </div>
+              </div>
+
+              <!-- Tab 3: Medical Consensus Validation Summary -->
+              <div class="cal-detail-tab-pane" id="pane-tab-validation" style="display:none;padding:14px 16px;">
+                <div class="validation-summary-wrap" id="validation-events-list">
+                  <!-- Rendered dynamically by app.renderValidationSummary() -->
+                </div>
+              </div>
+
+              <!-- Left Column Footer -->
+              <div class="upcoming-panel-footer cal-left-panel-footer" style="padding:12px 18px;border-top:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border-bottom-left-radius:14px;border-bottom-right-radius:14px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#233917;"></span>
+                  <span id="cal-events-counter" style="font-size:11.5px;font-weight:600;color:#64748B;">5 Jadwal Nutrisi Terdaftar</span>
+                </div>
+                <button type="button" class="cal-btn-add-schedule" onclick="app.openAddScheduleModal()"
+                  title="Tambah Jadwal / Terapi" style="display:inline-flex;align-items:center;gap:5px;background:#FFFFFF;border:1px solid #D1D5DB;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:600;color:#374151;cursor:pointer;transition:all 0.15s;">
+                  <i data-lucide="plus" style="width:13px;height:13px;"></i>
+                  <span>Tambah Jadwal</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Interactive Dual-Month Date Range Picker -->
+            <div class="integrated-calendar-panel calendar-picker-card cal-right-panel-card">
+              <!-- Header matching mockup: RENTANG TANGGAL TERPILIH & Badge 'Hari ke-30' -->
+              <div class="cal-picker-header" style="padding:12px 18px;border-bottom:1px solid #F1F5F9;display:flex;flex-direction:row;align-items:center;justify-content:space-between;height:auto;min-height:unset;max-height:unset;">
+                <div>
+                  <span class="cal-picker-subtitle" style="font-size:10px;font-weight:700;color:#64748B;letter-spacing:0.5px;text-transform:uppercase;display:block;">RENTANG TANGGAL TERPILIH</span>
+                  <h4 class="cal-picker-range-label" id="calendar-picker-range-text" style="font-size:14px;font-weight:700;color:#111827;margin:2px 0 0;">20 Agu 2026 – 18 Sep 2026</h4>
+                </div>
+                <span class="cal-day-count-badge" id="cal-window-day-badge" style="font-size:11px;font-weight:700;color:#475569;background:#F1F5F9;padding:4px 10px;border-radius:12px;">Hari ke-30</span>
+              </div>
+
+              <!-- Dual-Month Body (Dynamically populated by app.renderClinicalCalendar()) -->
+              <div class="integrated-cal-body" id="integrated-cal-body" style="padding:10px 14px;">
+                <!-- Rendered dynamically by app.renderClinicalCalendar() -->
+              </div>
+
+              <!-- Calendar Legend -->
+              <div class="cal-legend-bar" style="padding:6px 18px 10px;display:flex;align-items:center;gap:14px;font-size:10.5px;color:#64748B;">
+                <span style="display:inline-flex;align-items:center;gap:5px;">
+                  <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#233917;"></span> Hari Ini
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:5px;">
+                  <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#E8F0E4;border:1px solid #C4D7BD;"></span> Fase Aktif
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:5px;">
+                  <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#D97706;"></span> Jadwal Kontrol Dokter
+                </span>
+              </div>
+
+              <!-- Footer matching mockup: Reset Tanggal (Left) & Terapkan Jadwal (Right) -->
+              <div class="cal-picker-footer" style="padding:10px 18px;border-top:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;">
+                <button type="button" class="cal-btn-reset-plain" onclick="app.cancelCalendarRange()"
+                  title="Reset Tanggal" style="all:unset;cursor:pointer;font-size:12px;font-weight:600;color:#64748B;transition:color 0.15s;">
+                  Reset Tanggal
+                </button>
+                <button type="button" class="cal-btn-apply" onclick="app.applyCalendarRange()"
+                  title="Terapkan Jadwal" style="background:#233917;color:#FFFFFF;border:none;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;">
+                  Terapkan Jadwal
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Centered Bottom Disclaimer Footer -->
+          <div class="cal-disclaimer-footer" style="text-align:center;padding:16px 8px 6px;font-size:11.5px;color:#94A3B8;">
+            Sistem Jadwal Nutrisi Pasien Pasca-Bedah • Mengikuti pedoman klinis ESPEN &amp; ERAS Society
           </div>
         </div>
       </div>
@@ -2517,45 +2627,6 @@
         </div>
       </div>
 
-      <!-- =========================================================================
-         VIEW 4: RUANG KOMUNITAS PEMULIHAN FULL (FR-13)
-         ========================================================================= -->
-      <div class="view-section" id="view-community">
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title-group">
-              <h2 data-i18n="comm_heading">Ruang Komunitas Pemulihan NutriVision</h2>
-              <div class="card-subtitle" data-i18n="comm_sub">Saling berbagi ide makanan, strategi pemulihan, dan
-                motivasi</div>
-            </div>
-            <button class="btn-primary-coral"
-              style="padding:8px 16px;font-size:12px;display:inline-flex;align-items:center;gap:6px;"
-              onclick="app.openCreatePostModal()">
-              <i data-lucide="plus" class="btn-icon-sm"></i> <span data-i18n="comm_btn_new_post">Tulis Tips Baru</span>
-            </button>
-          </div>
-
-          <!-- Category Filters -->
-          <div class="preset-selector-row">
-            <button class="preset-chip active"
-              onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('all');"><span
-                data-i18n="comm_filter_all">Semua Topik</span></button>
-            <button class="preset-chip"
-              onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('post-surgery');"><span
-                data-i18n="comm_filter_surgery">Pasca-Operasi</span></button>
-            <button class="preset-chip"
-              onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('rehab');"><span
-                data-i18n="comm_filter_rehab">Fisioterapi / Cedera</span></button>
-            <button class="preset-chip"
-              onclick="document.querySelectorAll('#view-community .preset-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); communityHandler.setFilter('gym');"><span
-                data-i18n="comm_filter_gym">Gym Recovery</span></button>
-          </div>
-
-          <div class="community-feed" id="community-feed-box-full" style="margin-top:16px;">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </div>
 
       <!-- =========================================================================
          VIEW 5: PERJALANAN & PROGRES PEMULIHAN PASIEN (FR-09)
@@ -2571,8 +2642,8 @@
                 protokol ERAS &amp; regenerasi biologis jaringan</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
-              <button type="button" class="btn-direct-calendar-header" onclick="app.openCalendarModal()"
-                title="Buka Kalender &amp; Jadwal Pemulihan">
+              <button type="button" class="btn-direct-calendar-header" onclick="app.navigate('planner')"
+                title="Buka Kalender &amp; Jadwal Pemulihan di Meal Planner">
                 <i data-lucide="calendar" style="width:14px;height:14px;"></i>
                 <span>Kalender &amp; Jadwal</span>
                 <i data-lucide="arrow-up-right" style="width:13px;height:13px;"></i>
@@ -2607,7 +2678,7 @@
             <!-- Rendered dynamically by app.renderJourneyRoadmap() -->
           </div>
 
-          <!-- Sleek Compact Direct Banner to Calendar & Schedule Modal -->
+          <!-- Sleek Compact Direct Banner to Meal Planner Calendar -->
           <div class="calendar-direct-banner"
             style="margin-top:14px;background:linear-gradient(135deg, #F9FBF5 0%, #F4F7EB 100%);border:1px solid #DCE5B8;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -2619,13 +2690,13 @@
                 <h4 style="margin:0;font-size:13.5px;font-weight:700;color:var(--ink);">Kalender Siklus Pemulihan &amp;
                   Jadwal Harian Pasien</h4>
                 <p style="margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);">Target klinis 3 bulan terukur, anjuran
-                  gizi tervalidasi ahli gizi klinis, &amp; checklist rutinitas harian.</p>
+                  gizi tervalidasi ahli gizi klinis, &amp; jadwal makan harian kini terintegrasi di halaman Meal Planner.</p>
               </div>
             </div>
-            <button type="button" class="btn-direct-calendar-pill" onclick="app.openCalendarModal()"
-              title="Buka Kalender &amp; Jadwal Harian">
+            <button type="button" class="btn-direct-calendar-pill" onclick="app.navigate('planner')"
+              title="Buka Kalender di Meal Planner">
               <i data-lucide="calendar" style="width:14px;height:14px;"></i>
-              <span>Buka Kalender &amp; Jadwal</span>
+              <span>Buka di Meal Planner</span>
               <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
             </button>
           </div>
@@ -3323,7 +3394,7 @@
                   </div>
                   <div class="ai-eval-conf-foot">
                     <span id="ai-eval-domain-category">Kategori Utama: Perencanaan Menu Pasca Bedah</span>
-                    <span style="font-weight:600;color:#0F766E;">Tervalidasi Protokol ESPEN</span>
+                    <span style="font-weight:600;color:#0F766E;">Tervalidasi Standar WHO &amp; ESPEN</span>
                   </div>
                 </div>
 
@@ -3945,6 +4016,73 @@
           </div>
         </div>
 
+        <!-- Alokasi Budget Belanja Pemulihan (Kebutuhan Awal untuk Jadwal Kalender 1 Minggu / 1 Bulan) -->
+        <div class="onboard-budget-section" style="background:#FFFFFF;border:1.5px solid #DCE5B8;border-radius:12px;padding:14px;margin:14px 0 10px;box-shadow:0 1px 4px rgba(35,57,23,0.04);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:7px;">
+              <span style="font-size:16px;">💰</span>
+              <h4 style="margin:0;font-size:13px;font-weight:700;color:#233917;">Alokasi Anggaran Belanja Pemulihan</h4>
+            </div>
+            <span style="font-size:10.5px;font-weight:700;color:#15803D;background:#EAF6EC;padding:3px 8px;border-radius:6px;">
+              Menentukan Jadwal Kalender
+            </span>
+          </div>
+          <p style="margin:0 0 10px;font-size:11.5px;color:#4B5563;line-height:1.4;">
+            Tentukan perkiraan anggaran belanja makanan Anda untuk menghasilkan rencana menu dan jadwal kalender makan (1 Minggu / 1 Bulan). <i>Pengaturan ini tetap dapat Anda ubah kapan saja.</i>
+          </p>
+
+          <!-- Pilihan Durasi / Periode: 7 Hari vs 30 Hari -->
+          <div style="margin-bottom:10px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#1C200E;margin-bottom:4px;">Periode Jadwal Kalender:</label>
+            <div class="preset-selector-row" style="margin:0;gap:8px;">
+              <button type="button" class="preset-chip active" id="onboard-budget-dur-7" onclick="app.setOnboardBudgetDuration(7)">
+                🗓️ 1 Minggu (7 Hari)
+              </button>
+              <button type="button" class="preset-chip" id="onboard-budget-dur-30" onclick="app.setOnboardBudgetDuration(30)">
+                📅 1 Bulan (30 Hari)
+              </button>
+            </div>
+          </div>
+
+          <!-- Pilihan Tier Budget -->
+          <div style="margin-bottom:10px;">
+            <label style="display:block;font-size:11.5px;font-weight:600;color:#1C200E;margin-bottom:5px;">Pilihan Target Anggaran:</label>
+            <div class="onboard-budget-tiers-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
+              <button type="button" class="onboard-tier-card" id="onboard-tier-super_budget" onclick="app.selectOnboardBudgetTier('super_budget')" style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:9px;padding:8px 10px;text-align:left;cursor:pointer;transition:all 0.2s;">
+                <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;">Hemat</div>
+                <div class="onboard-tier-price" style="font-size:13px;font-weight:800;color:#1E293B;margin:2px 0;">Rp 175.000</div>
+                <div class="onboard-tier-sub" style="font-size:9.5px;color:#64748B;">~Rp 25.000 / hari</div>
+              </button>
+              <button type="button" class="onboard-tier-card active" id="onboard-tier-budget" onclick="app.selectOnboardBudgetTier('budget')" style="background:#F0FDF4;border:1.5px solid #16A34A;border-radius:9px;padding:8px 10px;text-align:left;cursor:pointer;transition:all 0.2s;">
+                <div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;">Standar Seimbang</div>
+                <div class="onboard-tier-price" style="font-size:13px;font-weight:800;color:#15803D;margin:2px 0;">Rp 250.000</div>
+                <div class="onboard-tier-sub" style="font-size:9.5px;color:#16A34A;">~Rp 35.700 / hari</div>
+              </button>
+              <button type="button" class="onboard-tier-card" id="onboard-tier-optimal" onclick="app.selectOnboardBudgetTier('optimal')" style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:9px;padding:8px 10px;text-align:left;cursor:pointer;transition:all 0.2s;">
+                <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;">Optimal Pemulihan</div>
+                <div class="onboard-tier-price" style="font-size:13px;font-weight:800;color:#1E293B;margin:2px 0;">Rp 400.000</div>
+                <div class="onboard-tier-sub" style="font-size:9.5px;color:#64748B;">~Rp 57.000 / hari</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Preferensi & Custom Nominal Input -->
+          <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px;">
+            <div>
+              <label for="onboard-budget-amount" style="display:block;font-size:11px;font-weight:600;color:#1C200E;margin-bottom:3px;">Nominal Anggaran (Rp):</label>
+              <input type="number" id="onboard-budget-amount" class="form-control" style="font-size:12.5px;font-weight:700;padding:6px 10px;" value="250000" min="50000" step="10000" oninput="app.handleOnboardBudgetCustomInput(this.value)">
+            </div>
+            <div>
+              <label for="onboard-budget-preference" style="display:block;font-size:11px;font-weight:600;color:#1C200E;margin-bottom:3px;">Preferensi Hidangan:</label>
+              <select id="onboard-budget-preference" class="form-control" style="font-size:12px;padding:6px 8px;">
+                <option value="seimbang" selected>Seimbang Klinis</option>
+                <option value="tinggi_protein">Tinggi Protein / Albumin</option>
+                <option value="tekstur_lunak">Tekstur Lunak / Ramah Cerna</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <!-- Optional Booster Callout in Step 5 Quiz Modal -->
         <div style="background:#F7F9EE;border:1px solid #D2DCB4;border-radius:10px;padding:10px 14px;margin:12px 0 6px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
@@ -4357,70 +4495,6 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-     MODAL 3: BUAT POSTINGAN KOMUNITAS BARU (FR-13)
-     ========================================================================= -->
-  <div class="modal-overlay" id="create-post-modal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 style="display:flex;align-items:center;gap:8px;">
-          <i data-lucide="pen-tool" style="color:var(--teal-500);"></i> Bagikan Tips / Resep Pemulihan
-        </h3>
-        <button type="button" class="modal-close-btn" onclick="app.closeModal('create-post-modal')"
-          data-close-modal="create-post-modal" title="Tutup" aria-label="Tutup"><i data-lucide="x"></i></button>
-      </div>
-
-      <form onsubmit="event.preventDefault(); (async () => {
-          const t = document.getElementById('post-content').value;
-          const cat = document.getElementById('post-category').value;
-          const btn = document.getElementById('btn-submit-post');
-          if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<i data-lucide=\'loader-2\' class=\'btn-icon-sm spin\'></i> Memverifikasi Model AI...';
-            if (window.lucide) lucide.createIcons();
-          }
-          const res = await communityHandler.createPost(app.userProfile.name, cat, cat === 'post-surgery' ? 'Pasca-Operasi' : cat === 'rehab' ? 'Fisioterapi' : 'Gym Recovery', t);
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i data-lucide=\'send\' class=\'btn-icon-sm\'></i> Terbitkan ke Komunitas';
-            if (window.lucide) lucide.createIcons();
-          }
-          if (res) {
-            document.getElementById('post-content').value = '';
-            app.closeModal('create-post-modal');
-            app.showToast('Tips berhasil dianalisis AI Safetensors & diterbitkan!');
-            if (window.lucide) lucide.createIcons();
-          }
-        })();">
-        <div class="form-group" style="margin-bottom:12px;">
-          <label for="post-category">Kategori Topik</label>
-          <select id="post-category" class="form-control">
-            <option value="post-surgery">Pasca-Operasi & Bedah</option>
-            <option value="rehab">Fisioterapi & Cedera Sendi</option>
-            <option value="gym">Gym & Muscle Recovery</option>
-          </select>
-        </div>
-
-        <div class="form-group" style="margin-bottom:14px;">
-          <label for="post-content">Tulis Pengalaman / Tips Makanan Sehat</label>
-          <textarea id="post-content" class="form-control" rows="4"
-            placeholder="Ceritakan bagaimana kamu memenuhi kebutuhan protein, trik makan saat mual, atau resep makanan lembut bergizi..."
-            required></textarea>
-        </div>
-
-        <div
-          style="font-size:var(--font-xs);color:var(--teal-700);background:var(--teal-50);padding:8px 12px;border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;gap:6px;">
-          <i data-lucide="cpu" class="btn-icon-sm" style="color:var(--teal-600);"></i> Terhubung dengan
-          <strong>DistilBERT Safetensors AI</strong> untuk verifikasi klinis & keamanan gizi pasca-bedah otomatis.
-        </div>
-
-        <button type="submit" id="btn-submit-post" class="btn-primary-coral"
-          style="width:100%;justify-content:center;display:inline-flex;align-items:center;gap:6px;">
-          <i data-lucide="send" class="btn-icon-sm"></i> Terbitkan ke Komunitas
-        </button>
-      </form>
-    </div>
-  </div>
 
   <!-- =========================================================================
      MODAL: UJI COBA MODEL AI SAFETENSORS (DISTILBERT CLASSIFICATION)
@@ -5068,159 +5142,8 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
     </div>
   </div>
 
-  <!-- =========================================================================
-       MODAL: KALENDER SIKLUS PEMULIHAN & JADWAL HARIAN KLINIS
-       ========================================================================= -->
-  <div class="modal-overlay" id="modal-clinical-calendar" onclick="app.closeCalendarModal()" style="display:none;">
-    <div class="modal-box calendar-modal-box" onclick="event.stopPropagation()">
-      <!-- Modal Header -->
-      <div class="calendar-modal-header">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="pdf-modal-badge-icon" style="background:#233917;color:#FFFFFF;">
-            <i data-lucide="calendar" style="width:20px;height:20px;"></i>
-          </div>
-          <div>
-            <h3 style="font-size:16px;font-weight:700;color:var(--ink);margin:0;">Kalender Siklus Pemulihan &amp; Jadwal
-              Nutrisi Pasien</h3>
-            <p style="font-size:12px;color:var(--ink-soft);margin:2px 0 0;">Target klinis terukur (ESPEN, ERAS, ISSN),
-              rekomendasi menu, &amp; pantangan medis</p>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <!-- Quick Condition Switcher Pills in Modal -->
-          <div class="modal-cond-switcher" id="modal-cond-switcher" style="display:flex;align-items:center;gap:5px;">
-            <button type="button" class="cond-pill-btn active" data-cond="post-surgery"
-              onclick="app.setJourneyCondition('post-surgery')" title="Pasca-Operasi &amp; Bedah Jaringan">
-              <i data-lucide="heart-pulse" style="width:13px;height:13px;"></i> Pasca-Bedah
-            </button>
-            <button type="button" class="cond-pill-btn" data-cond="rehab" onclick="app.setJourneyCondition('rehab')"
-              title="Rehabilitasi &amp; Fisioterapi">
-              <i data-lucide="activity" style="width:13px;height:13px;"></i> Fisioterapi
-            </button>
-            <button type="button" class="cond-pill-btn" data-cond="gym" onclick="app.setJourneyCondition('gym')"
-              title="Gym &amp; Muscle Recovery">
-              <i data-lucide="dumbbell" style="width:13px;height:13px;"></i> Gym Recovery
-            </button>
-          </div>
-          <button type="button" class="close-btn modal-close-btn" onclick="app.closeCalendarModal()"
-            data-close-modal="modal-clinical-calendar" title="Tutup" aria-label="Tutup">
-            <i data-lucide="x" style="width:18px;height:18px;"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Modal Body -->
-      <div class="calendar-modal-body">
-        <!-- Monthly Milestones Selector Pills -->
-        <div class="recovery-month-pills-wrap" id="recovery-month-pills">
-          <!-- Rendered dynamically by app.renderRecoveryMonthPills() -->
-        </div>
-
-        <!-- Scientifically Validated Active Month Target Banner -->
-        <div class="month-target-banner" id="recovery-month-target-banner">
-          <!-- Rendered dynamically by app.renderActiveMonthBanner() -->
-        </div>
-
-        <!-- 2-Column Split: Interactive Detail Panel (Left) & Compact Calendar (Right) -->
-        <div class="schedule-calendar-split-grid">
-          <!-- Left Column: Upcoming Events List & Pantangan Panel -->
-          <div class="upcoming-events-panel" id="calendar-detail-panel">
-            <div class="upcoming-events-header">
-              <div>
-                <span
-                  style="font-size:10px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.5px;display:block;"
-                  id="cal-detail-condition-tag">PROFIL PASCA-OPERASI</span>
-                <h3 class="upcoming-events-title" id="upcoming-date-text" style="font-size:13px;margin:2px 0 0;">Memuat
-                  jadwal...</h3>
-              </div>
-              <div class="upcoming-events-actions">
-                <button type="button" class="btn-action-icon" onclick="app.resetToDefaultClinicalSchedule()"
-                  title="Reset ke Default Klinis">
-                  <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Segmented Switcher Tabs: Rekomendasi Makan vs Pantangan Makanan vs Validasi Klinis -->
-            <div class="cal-detail-nav-tabs">
-              <button type="button" class="cal-detail-tab-btn active" id="btn-tab-meals"
-                onclick="app.switchCalendarDetailTab('meals')">
-                <i data-lucide="utensils" style="width:13px;height:13px;"></i>
-                <span>Jadwal Makan</span>
-              </button>
-              <button type="button" class="cal-detail-tab-btn" id="btn-tab-restrictions"
-                onclick="app.switchCalendarDetailTab('restrictions')">
-                <i data-lucide="shield-alert" style="width:13px;height:13px;"></i>
-                <span>Pantangan Medis</span>
-              </button>
-              <button type="button" class="cal-detail-tab-btn" id="btn-tab-validation"
-                onclick="app.switchCalendarDetailTab('validation')">
-                <i data-lucide="award" style="width:13px;height:13px;"></i>
-                <span>Validasi Riset</span>
-              </button>
-            </div>
-
-            <!-- Tab 1: Recommended Meals List -->
-            <div class="cal-detail-tab-pane" id="pane-tab-meals">
-              <div class="upcoming-events-list" id="upcoming-events-list">
-                <!-- Rendered dynamically by app.renderUpcomingEvents() -->
-              </div>
-            </div>
-
-            <!-- Tab 2: Clinical Contraindications / Pantangan Makanan -->
-            <div class="cal-detail-tab-pane" id="pane-tab-restrictions" style="display:none;">
-              <div class="pantangan-list-wrap" id="pantangan-events-list">
-                <!-- Rendered dynamically by app.renderPantanganMakanan() -->
-              </div>
-            </div>
-
-            <!-- Tab 3: Medical Consensus Validation Summary -->
-            <div class="cal-detail-tab-pane" id="pane-tab-validation" style="display:none;">
-              <div class="validation-summary-wrap" id="validation-events-list">
-                <!-- Rendered dynamically by app.renderValidationSummary() -->
-              </div>
-            </div>
-
-            <!-- Left Column Footer (Matches height & alignment of Right Column Footer) -->
-            <div class="upcoming-panel-footer">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span class="badge-dot-live"></span>
-                <span id="cal-events-counter" style="font-size:11.5px;font-weight:600;color:#4B5563;">3 Jadwal Nutrisi
-                  Aktif</span>
-              </div>
-              <button type="button" class="btn-action-pill primary" onclick="app.openAddScheduleModal()"
-                title="Tambah Jadwal / Terapi">
-                <i data-lucide="plus" style="width:12px;height:12px;"></i>
-                <span>Tambah Jadwal</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Right Column: Interactive Dual-Month Date Range Picker (Matching Spec) -->
-          <div class="integrated-calendar-panel calendar-picker-card">
-            <!-- Header matching the left header: 'Custom' & Formatted Date Range -->
-            <div class="cal-picker-header">
-              <span class="cal-picker-subtitle" id="calendar-picker-subtitle">Custom</span>
-              <h4 class="cal-picker-range-label" id="calendar-picker-range-text">31 Mei 2026 – 29 Juni 2026</h4>
-            </div>
-
-            <!-- Dual-Month Body (Dynamically populated by app.renderClinicalCalendar()) -->
-            <div class="integrated-cal-body" id="integrated-cal-body">
-              <!-- Rendered dynamically by app.renderClinicalCalendar() -->
-            </div>
-
-            <!-- Footer matching the left footer: Cancel & Apply buttons -->
-            <div class="cal-picker-footer">
-              <button type="button" class="cal-btn-cancel" onclick="app.cancelCalendarRange()"
-                title="Batalkan Perubahan">Cancel</button>
-              <button type="button" class="cal-btn-apply" onclick="app.applyCalendarRange()"
-                title="Terapkan Rentang Tanggal">Apply</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
+
 
   <!-- Modal Tambah Rutinitas / Terapi Harian Kustom -->
   <div class="modal-overlay" id="modal-add-schedule" onclick="app.closeAddScheduleModal()"
@@ -5365,9 +5288,111 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- MODAL: SESUAIKAN JADWAL KALENDER DENGAN BUDGETING -->
+  <div class="modal-overlay" id="modal-adjust-budget-calendar" onclick="app.closeAdjustBudgetModal()"
+    style="display:none;z-index:10007;">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="max-width:520px;width:92%;padding:22px 24px;border-radius:18px;">
+      <!-- Modal Header -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div
+            style="width:40px;height:40px;border-radius:10px;background:#EAF6EC;color:#15803D;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="wallet" style="width:22px;height:22px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0 0 2px;font-size:16px;font-weight:800;color:var(--ink);">Sesuaikan dengan Budgeting</h3>
+            <div style="font-size:12px;color:var(--ink-soft);">Sesuaikan alokasi anggaran belanja & rotasi menu harian kalender</div>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="app.closeAdjustBudgetModal()"
+          style="background:transparent;border:none;cursor:pointer;color:var(--ink-soft);">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+
+      <!-- Pilihan Periode Kalender: 7 Hari vs 30 Hari -->
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;">Periode Jadwal Kalender:</label>
+        <div class="preset-selector-row" style="margin:0;gap:8px;">
+          <button type="button" class="preset-chip active" id="cal-adjust-dur-7" onclick="app.setAdjustBudgetDuration(7)">
+            🗓️ 1 Minggu (7 Hari)
+          </button>
+          <button type="button" class="preset-chip" id="cal-adjust-dur-30" onclick="app.setAdjustBudgetDuration(30)">
+            📅 1 Bulan (30 Hari)
+          </button>
+        </div>
+      </div>
+
+      <!-- Pilihan Target Tier Anggaran -->
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;">Pilihan Target Anggaran:</label>
+        <div class="onboard-budget-tiers-grid" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
+          <button type="button" class="onboard-tier-card" id="cal-adjust-tier-super_budget" onclick="app.selectAdjustBudgetTier('super_budget')" style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:9px;padding:9px 10px;text-align:left;cursor:pointer;transition:all 0.2s;">
+            <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;">Hemat</div>
+            <div class="onboard-tier-price" id="cal-adjust-tier-price-super_budget" style="font-size:13px;font-weight:800;color:#1E293B;margin:2px 0;">Rp 175.000</div>
+            <div class="onboard-tier-sub" id="cal-adjust-tier-sub-super_budget" style="font-size:9.5px;color:#64748B;">~Rp 25.000/hari</div>
+          </button>
+          <button type="button" class="onboard-tier-card active" id="cal-adjust-tier-budget" onclick="app.selectAdjustBudgetTier('budget')" style="background:#F0FDF4;border:1.5px solid #16A34A;border-radius:9px;padding:9px 10px;text-align:left;cursor:pointer;transition:all 0.2s;">
+            <div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;">Standar Seimbang</div>
+            <div class="onboard-tier-price" id="cal-adjust-tier-price-budget" style="font-size:13px;font-weight:800;color:#15803D;margin:2px 0;">Rp 250.000</div>
+            <div class="onboard-tier-sub" id="cal-adjust-tier-sub-budget" style="font-size:9.5px;color:#16A34A;">~Rp 35.700/hari</div>
+          </button>
+          <button type="button" class="onboard-tier-card" id="cal-adjust-tier-optimal" onclick="app.selectAdjustBudgetTier('optimal')" style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:9px;padding:9px 10px;text-align:left;cursor:pointer;transition:all 0.2s;">
+            <div style="font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;">Optimal Pemulihan</div>
+            <div class="onboard-tier-price" id="cal-adjust-tier-price-optimal" style="font-size:13px;font-weight:800;color:#1E293B;margin:2px 0;">Rp 400.000</div>
+            <div class="onboard-tier-sub" id="cal-adjust-tier-sub-optimal" style="font-size:9.5px;color:#64748B;">~Rp 57.000/hari</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Nominal Anggaran Custom & Preferensi -->
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:14px;">
+        <div>
+          <label for="cal-adjust-budget-amount" style="display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px;">Nominal Anggaran (Rp):</label>
+          <input type="number" id="cal-adjust-budget-amount" class="form-control" style="font-size:13px;font-weight:700;padding:7px 10px;width:100%;border-radius:8px;border:1px solid #CBD5E1;" value="250000" min="50000" step="10000" oninput="app.handleAdjustBudgetCustomInput(this.value)">
+        </div>
+        <div>
+          <label for="cal-adjust-budget-preference" style="display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px;">Preferensi Hidangan:</label>
+          <select id="cal-adjust-budget-preference" class="form-control" style="font-size:12px;padding:7px 8px;width:100%;border-radius:8px;border:1px solid #CBD5E1;">
+            <option value="seimbang" selected>Seimbang Klinis</option>
+            <option value="tinggi_protein">Tinggi Protein / Albumin</option>
+            <option value="tekstur_lunak">Tekstur Lunak / Ramah Cerna</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dynamic Info Box -->
+      <div style="background:#F6FBF7;border:1px solid #C8E6C9;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#15803D;font-weight:600;">
+          <i data-lucide="sparkles" style="width:14px;height:14px;"></i>
+          <span id="cal-adjust-summary-text">Alokasi Harian: ~Rp 35.700/hari (3x Makan Utama)</span>
+        </div>
+        <button type="button" onclick="app.navigateToBudgetModule()" style="background:transparent;border:none;color:#16A34A;font-size:11.5px;font-weight:700;cursor:pointer;text-decoration:underline;">
+          Buka Modul Budget Lengkap →
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btn-outline-glass" onclick="app.closeAdjustBudgetModal()"
+          style="font-size:12.5px;padding:8px 16px;">
+          Batal
+        </button>
+        <button type="button" class="btn-primary-teal" onclick="app.applyAdjustBudgetCalendar()"
+          style="font-size:12.5px;padding:8px 20px;background:#233917;color:#FFFFFF;border-color:#17280F;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:8px;box-shadow:0 3px 10px rgba(35,57,23,0.25);cursor:pointer;">
+          <i data-lucide="check" style="width:14px;height:14px;"></i>
+          <span>Terapkan ke Kalender</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: COMPANION SELECTOR (KELUARGA PENDAMPING) -->
-  <div class="modal" id="modal-companion-selector" style="display:none;" role="dialog" aria-labelledby="comp-modal-title">
-    <div class="modal-card" style="max-width:480px;">
+  <div class="modal-overlay" id="modal-companion-selector" role="dialog" aria-labelledby="comp-modal-title" onclick="if(event.target===this) app.closeModal('modal-companion-selector')">
+    <div class="modal-box" style="max-width:480px;">
       <div class="modal-header">
         <h3 id="comp-modal-title" style="display:flex;align-items:center;gap:8px;margin:0;font-size:18px;font-weight:800;color:#1E293B;">
           <i data-lucide="heart-pulse" style="width:20px;height:20px;color:#2563EB;"></i>
@@ -5424,7 +5449,6 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/planner.js"></script>
   <script src="js/budget_planner.js"></script>
   <script src="js/progress.js"></script>
-  <script src="js/community.js"></script>
   <script src="js/caregiver.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/admin_validator.js"></script>

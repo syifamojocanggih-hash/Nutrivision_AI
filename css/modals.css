@@ -4,33 +4,46 @@
 /* ==========================================================================
    CAMERA & MODAL
    ========================================================================== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(4, 20, 16, 0.65);
-  backdrop-filter: blur(6px);
+.modal-overlay,
+.modal {
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(4, 20, 16, 0.72) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 16px;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
 }
 
-.modal-overlay.open {
-  display: flex;
+.modal-overlay.open,
+.modal.open {
+  display: flex !important;
 }
 
-.modal-box {
-  background: var(--card);
-  border-radius: var(--radius-lg);
+.modal-box,
+.modal-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg, 20px);
   max-width: 560px;
   width: 100%;
-  padding: 22px;
+  padding: 24px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-float);
-  border: 1px solid var(--line);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line, #E2E8F0);
   animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1000000;
 }
 
 /* ==========================================================================

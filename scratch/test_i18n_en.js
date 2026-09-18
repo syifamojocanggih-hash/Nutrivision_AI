@@ -295,7 +295,6 @@ const resBoxHtml = document.getElementById('symptom-result-box').innerHTML;
 console.log('\nSymptom Result Box HTML Sample:\n', resBoxHtml.substring(0, 400) + '...');
 
 assert(resBoxHtml.includes('IDDSI Level 4 Safety Standard'), 'Must contain English IDDSI Level 4 Safety Standard');
-assert(resBoxHtml.includes('Automatic Restrictions'), 'Must contain English Automatic Restrictions');
 assert(resBoxHtml.includes('Smooth Ripe Papaya Puree'), 'Must contain English meal title Smooth Ripe Papaya Puree');
 assert(resBoxHtml.includes('Strained Snakehead Fish Porridge'), 'Must contain English meal title Strained Snakehead Fish Porridge');
 assert(resBoxHtml.includes('kcal'), 'Must contain kcal');

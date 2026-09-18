@@ -130,7 +130,7 @@
       calc_activity_moderate: 'Active Rehabilitation / Physiotherapy',
       calc_calories_label: 'Estimated Daily Calories',
       calc_protein_label: 'Daily Protein Target',
-      calc_formula_note: 'Calculated using Harris-Benedict & ASPEN/ESPEN clinical surgical recovery formulas (1.5 - 2.0g protein/kg body weight).',
+      calc_formula_note: 'Calculated based on WHO/FAO/UNU energy equations & ESPEN clinical surgical recovery guidelines (1.2 - 2.0g protein/kg, Fat <30%, Sodium <2000mg).',
 
       // Footer
       footer_desc: 'NutriVision AI is an intelligent computer vision clinical nutrition platform engineered for surgical recovery, medical rehabilitation, and eldercare convalescence.',
@@ -505,7 +505,7 @@
       calc_activity_moderate: 'Rehabilitasi Aktif / Fisioterapi',
       calc_calories_label: 'Estimasi Kalori Harian',
       calc_protein_label: 'Target Protein Harian',
-      calc_formula_note: 'Dihitung berdasarkan formula Harris-Benedict & pedoman protein bedah ASPEN / ESPEN (1.5 - 2.0g/kg).',
+      calc_formula_note: 'Dihitung berdasarkan formula WHO/FAO/UNU & pedoman klinis ESPEN (1.2 - 2.0g protein/kg, Lemak <30%, Natrium <2000mg).',
 
       // Footer
       footer_desc: 'NutriVision AI adalah platform cerdas pemandu gizi berbasis computer vision untuk percepatan pemulihan bedah, rehabilitasi fisik, dan rawat lansia.',

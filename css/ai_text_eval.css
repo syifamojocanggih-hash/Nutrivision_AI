@@ -406,6 +406,31 @@
   border: 1px solid #E2E8F0;
 }
 
+.ai-chip-acc {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  margin-left: 4px;
+  letter-spacing: 0.2px;
+}
+
+.ai-eval-chip.safe .ai-chip-acc {
+  background: rgba(6, 95, 70, 0.12);
+  color: #047857;
+}
+
+.ai-eval-chip.warning .ai-chip-acc {
+  background: rgba(153, 27, 27, 0.14);
+  color: #B91C1C;
+}
+
+.ai-eval-chip.neutral .ai-chip-acc {
+  background: rgba(71, 85, 105, 0.12);
+  color: #334155;
+}
+
 /* 5. Right Panel: Assessment Output */
 .ai-eval-output-card {
   background: #FFFFFF;

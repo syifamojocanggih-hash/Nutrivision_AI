@@ -413,7 +413,11 @@ class NutriVisionPlanner {
         title: rec.name,
         desc: `${rec.texture_category ? `[${rec.texture_category}] ` : ''}${rec.reason || ''}${rec.nutrients ? ` (${rec.nutrients})` : ''}`,
         category: 'nutrition',
-        dotColor: '#15803D',
+        dotColor: '#7C3AED',
+        badge: isId ? 'Rekomendasi Gejala' : 'Symptom-Aware',
+        source: 'symptom_filter',
+        isSymptomAdaptive: true,
+        textureCategory: rec.texture_category || 'Lunak',
         scientificRationale: isId ? 'Rekomendasi Adaptif Gejala (Symptom-Aware IDDSI)' : 'Symptom-Aware Clinical IDDSI',
         isCustom: true,
         conditionId: cond,
@@ -1338,22 +1342,7 @@ class NutriVisionPlanner {
       ? 'Homogen, aman risiko aspirasi, disajikan pada suhu ruang nyaman.' 
       : 'Homogeneous, safe from aspiration risk, served at comfortable room temperature.');
 
-    // Summary Card 2: Pantangan Otomatis
-    const restrictedTitle = isId ? 'Pantangan Otomatis' : 'Automatic Restrictions';
-    let restrictedSub = isId ? aiOutput.restricted_summary : (aiOutput.restricted_summary_en || aiOutput.restricted_summary);
-    if (!restrictedSub && aiOutput.restricted_ingredients && aiOutput.restricted_ingredients.length > 0) {
-      restrictedSub = (isId ? 'Hindari ' : 'Avoid ') + aiOutput.restricted_ingredients.slice(0, 4).join(', ') + '...';
-    } else if (!restrictedSub) {
-      restrictedSub = isId 
-        ? 'Hindari serat liat kasar, rempah biji utuh, santan pekat & suhu pan...' 
-        : 'Avoid coarse fibrous foods, whole seed spices, thick coconut milk & high temp...';
-    }
-    if (customList.length > 0) {
-      const customLabel = isId ? ' • Pantangan Pasien: ' : ' • Patient Restrictions: ';
-      restrictedSub += customLabel + customList.join(', ');
-    }
-
-    // Dual summary grid HTML
+    // Summary Card: IDDSI Safety Standard
     const dualSummaryHtml = `
       <div class="symptom-dual-summary-grid">
         <div class="symptom-summary-card">
@@ -1366,23 +1355,6 @@ class NutriVisionPlanner {
           <div class="symptom-summary-text">
             <div class="symptom-summary-title">${textureTitle}</div>
             <div class="symptom-summary-sub" title="${textureSub}">${textureSub}</div>
-          </div>
-        </div>
-
-        <div class="symptom-summary-card interactive-nav-card" onclick="mealPlanner.openRestrictionsRecommendationModal()" role="button" tabindex="0" title="${isId ? 'Klik untuk melihat rincian pantangan & solusi alternatif' : 'Click to view restrictions breakdown & recommended swaps'}" onkeydown="if(event.key==='Enter'||event.key===' ') mealPlanner.openRestrictionsRecommendationModal()">
-          <div class="symptom-summary-icon slate">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-          </div>
-          <div class="symptom-summary-text" style="flex:1; min-width:0;">
-            <div class="symptom-summary-title">${restrictedTitle}</div>
-            <div class="symptom-summary-sub" title="${restrictedSub}">${restrictedSub}</div>
-          </div>
-          <div class="symptom-summary-nav-btn">
-            <span class="symptom-nav-label">${isId ? 'Lihat Solusi' : 'View Swaps'}</span>
-            <span class="symptom-nav-arrow-icon">&gt;</span>
           </div>
         </div>
       </div>

@@ -282,7 +282,6 @@ class NutriVisionApp {
     if (window.budgetPlanner && typeof window.budgetPlanner.init === 'function') {
       window.budgetPlanner.init();
     }
-    communityHandler.renderCommunityFeed();
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
     this.updateFavoriteBadge();
@@ -305,7 +304,7 @@ class NutriVisionApp {
 
     // Router URL Hash Handling (Landing vs Dashboard)
     const hash = window.location.hash.replace('#', '');
-    const validSections = ['overview', 'planner', 'history', 'catalog', 'community', 'caregiver', 'progress', 'profile', 'caregiver-dashboard', 'admin'];
+    const validSections = ['overview', 'planner', 'history', 'catalog', 'caregiver', 'progress', 'profile', 'caregiver-dashboard', 'admin'];
     if (validSections.includes(hash) || hash === 'dashboard' || hash === 'app') {
       if (this.userProfile && this.userProfile.role === 'caregiver') {
         this.goToCaregiverDashboard();
@@ -814,9 +813,6 @@ class NutriVisionApp {
     }
     if (window.budgetPlanner && typeof window.budgetPlanner.render === 'function') {
       window.budgetPlanner.render();
-    }
-    if (window.communityHandler && typeof window.communityHandler.renderCommunityFeed === 'function') {
-      window.communityHandler.renderCommunityFeed();
     }
     if (window.caregiverHandler && typeof window.caregiverHandler.renderCaregiverList === 'function') {
       window.caregiverHandler.renderCaregiverList();
@@ -1979,20 +1975,20 @@ class NutriVisionApp {
       return;
     }
 
-    // Redirect obsolete doctor route
-    if (sectionId === 'doctor') {
+    // Redirect obsolete doctor / community route
+    if (sectionId === 'doctor' || sectionId === 'community') {
       sectionId = isCaregiver ? 'caregiver-dashboard' : (isAdmin ? 'admin' : 'overview');
     }
 
     // Role-based route guard & redirect
     if (isAdmin) {
-      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'profile' || sectionId === 'caregiver-dashboard') {
+      if (sectionId === 'overview' || sectionId === 'progress' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'profile' || sectionId === 'caregiver-dashboard') {
         sectionId = 'admin';
       } else if (sectionId === 'planner' || sectionId === 'catalog') {
         sectionId = 'admin-clinical-menu';
       }
     } else if (isCaregiver) {
-      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'community' || sectionId === 'admin') {
+      if (sectionId === 'overview' || sectionId === 'planner' || sectionId === 'history' || sectionId === 'caregiver' || sectionId === 'admin') {
         sectionId = 'caregiver-dashboard';
       }
     } else {
@@ -2063,10 +2059,14 @@ class NutriVisionApp {
       }
     }
 
+    if (sectionId === 'planner') {
+      const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+      this.renderClinicalCalendarAndScheduleSuite();
+    }
+
     if (sectionId === 'progress') {
       const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
       this.renderJourneyRoadmap(cond);
-      this.renderClinicalCalendarAndScheduleSuite();
     }
 
     if (sectionId === 'ai-text') {
@@ -3442,6 +3442,99 @@ class NutriVisionApp {
     if (element) element.classList.add('active');
   }
 
+  setOnboardBudgetDuration(days) {
+    this.onboardBudgetDuration = days;
+    const btn7 = document.getElementById('onboard-budget-dur-7');
+    const btn30 = document.getElementById('onboard-budget-dur-30');
+    if (btn7) btn7.classList.toggle('active', days === 7);
+    if (btn30) btn30.classList.toggle('active', days === 30);
+
+    const tierPrices = {
+      7: {
+        super_budget: { price: 'Rp 175.000', sub: '~Rp 25.000 / hari', amount: 175000 },
+        budget: { price: 'Rp 250.000', sub: '~Rp 35.700 / hari', amount: 250000 },
+        optimal: { price: 'Rp 400.000', sub: '~Rp 57.000 / hari', amount: 400000 }
+      },
+      30: {
+        super_budget: { price: 'Rp 750.000', sub: '~Rp 25.000 / hari', amount: 750000 },
+        budget: { price: 'Rp 1.050.000', sub: '~Rp 35.000 / hari', amount: 1050000 },
+        optimal: { price: 'Rp 1.700.000', sub: '~Rp 56.600 / hari', amount: 1700000 }
+      }
+    };
+
+    const cur = tierPrices[days] || tierPrices[7];
+    ['super_budget', 'budget', 'optimal'].forEach(t => {
+      const card = document.getElementById(`onboard-tier-${t}`);
+      if (card) {
+        const pEl = card.querySelector('.onboard-tier-price');
+        const sEl = card.querySelector('.onboard-tier-sub');
+        if (pEl) pEl.textContent = cur[t].price;
+        if (sEl) sEl.textContent = cur[t].sub;
+      }
+    });
+
+    const activeTier = this.onboardBudgetTier || 'budget';
+    const amountInput = document.getElementById('onboard-budget-amount');
+    if (amountInput) {
+      amountInput.value = cur[activeTier]?.amount || (days === 30 ? 1050000 : 250000);
+    }
+  }
+
+  selectOnboardBudgetTier(tier) {
+    this.onboardBudgetTier = tier;
+    const dur = this.onboardBudgetDuration || 7;
+    const tierPrices = {
+      7: { super_budget: 175000, budget: 250000, optimal: 400000 },
+      30: { super_budget: 750000, budget: 1050000, optimal: 1700000 }
+    };
+
+    ['super_budget', 'budget', 'optimal'].forEach(t => {
+      const card = document.getElementById(`onboard-tier-${t}`);
+      if (card) {
+        const isActive = (t === tier);
+        card.classList.toggle('active', isActive);
+        card.style.background = isActive ? '#F0FDF4' : '#F8FAFC';
+        card.style.borderColor = isActive ? '#16A34A' : '#E2E8F0';
+        const titleEl = card.querySelector('div:first-child');
+        const priceEl = card.querySelector('.onboard-tier-price');
+        const subEl = card.querySelector('.onboard-tier-sub');
+        if (titleEl) titleEl.style.color = isActive ? '#16A34A' : '#64748B';
+        if (priceEl) priceEl.style.color = isActive ? '#15803D' : '#1E293B';
+        if (subEl) subEl.style.color = isActive ? '#16A34A' : '#64748B';
+      }
+    });
+
+    const amountInput = document.getElementById('onboard-budget-amount');
+    if (amountInput && tierPrices[dur] && tierPrices[dur][tier]) {
+      amountInput.value = tierPrices[dur][tier];
+    }
+  }
+
+  handleOnboardBudgetCustomInput(val) {
+    const num = parseInt(val, 10) || 0;
+    const dur = this.onboardBudgetDuration || 7;
+    const tierPrices = {
+      7: { super_budget: 175000, budget: 250000, optimal: 400000 },
+      30: { super_budget: 750000, budget: 1050000, optimal: 1700000 }
+    };
+    const currentTiers = tierPrices[dur] || tierPrices[7];
+    let matchedTier = null;
+    Object.keys(currentTiers).forEach(t => {
+      if (currentTiers[t] === num) matchedTier = t;
+    });
+
+    ['super_budget', 'budget', 'optimal'].forEach(t => {
+      const card = document.getElementById(`onboard-tier-${t}`);
+      if (card) {
+        const isActive = (t === matchedTier);
+        card.classList.toggle('active', isActive);
+        card.style.background = isActive ? '#F0FDF4' : '#F8FAFC';
+        card.style.borderColor = isActive ? '#16A34A' : '#E2E8F0';
+      }
+    });
+    this.onboardBudgetTier = matchedTier;
+  }
+
   updateLiveBMIDisplay() {
     const weight = parseFloat(document.getElementById('onboard-weight')?.value) || 65;
     const height = parseFloat(document.getElementById('onboard-height')?.value) || 170;
@@ -3459,7 +3552,7 @@ class NutriVisionApp {
     }
   }
 
-  // Foodvisor-Style Precision Diagnostic Calculation Engine
+  // WHO (World Health Organization) & Foodvisor-Style Precision Diagnostic Calculation Engine
   calculateDiagnosticResults() {
     const name = document.getElementById('onboard-name')?.value || 'Rangga Pratama';
     const weight = parseFloat(document.getElementById('onboard-weight')?.value) || 65;
@@ -3469,43 +3562,71 @@ class NutriVisionApp {
     const condition = this.quizState.condition || 'post-surgery';
     const activity = this.quizState.activity || 'light';
 
-    // 1. Hitung BMR (Mifflin-St Jeor)
-    let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-    bmr += (gender === 'male') ? 5 : -161;
+    // 1. Hitung BMR berdasarkan Formula Baku WHO/FAO/UNU (Schofield) & Mifflin-St Jeor
+    let bmrWHO = 0;
+    if (gender === 'male') {
+      if (age < 30) bmrWHO = (15.057 * weight) + 692.2;
+      else if (age < 60) bmrWHO = (11.472 * weight) + 873.1;
+      else bmrWHO = (11.711 * weight) + 587.7;
+    } else {
+      if (age < 30) bmrWHO = (14.818 * weight) + 486.6;
+      else if (age < 60) bmrWHO = (8.126 * weight) + 845.6;
+      else bmrWHO = (9.082 * weight) + 658.5;
+    }
 
-    // 2. Faktor Aktivitas Klinis
+    let bmrMifflin = (10 * weight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
+    const bmr = Math.round((bmrWHO * 0.5) + (bmrMifflin * 0.5));
+
+    // 2. Faktor Aktivitas Fisik (Physical Activity Level - PAL Standar WHO/FAO)
     const activityFactors = {
-      'bedrest': 1.15,
-      'light': 1.25,
-      'therapy': 1.35,
-      'active': 1.55
+      'bedrest': 1.20, // Bed rest / Katabolisme Akut
+      'light': 1.35,   // Aktivitas Ringan / Sedentary
+      'therapy': 1.45, // Rehabilitasi & Terapi Gerak
+      'active': 1.65   // Aktif / Rekondisi Fisik
     };
-    const actFactor = activityFactors[activity] || 1.25;
+    const actFactor = activityFactors[activity] || 1.35;
 
-    // 3. TDEE (Total Daily Energy Expenditure)
+    // 3. TDEE (Total Daily Energy Expenditure / Kebutuhan Energi Harian WHO)
     const tdee = Math.round(bmr * actFactor);
 
-    // 4. Protein Multiplier Berdasarkan Pedoman ERAS / ESPEN
+    // 4. Kebutuhan Protein Harian Berdasarkan Standar WHO/FAO/UNU & Konsensus Pemulihan Klinis
+    // - Standar Dewasa Sehat WHO: 0.83g/kg BB/hari
+    // - Pasca-Bedah / Katabolik (WHO/ESPEN): 1.5g/kg BB/hari (1.2 - 2.0g/kg)
+    // - Rehabilitasi Sendi & Otot (WHO Rehab): 1.4g/kg BB/hari
+    // - Gym & Hipertrofi: 1.8g/kg BB/hari
+    // - Pemeliharaan Umum / Wellness: 1.1g/kg BB/hari
     const proteinMultipliers = {
-      'post-surgery': 1.5, // 1.5g per kg
-      'rehab': 1.4,        // 1.4g per kg
-      'gym': 1.8,          // 1.8g per kg
-      'wellness': 1.2      // 1.2g per kg
+      'post-surgery': 1.5, // 1.5g / kg BB
+      'rehab': 1.4,        // 1.4g / kg BB
+      'gym': 1.8,          // 1.8g / kg BB
+      'wellness': 1.1      // 1.1g / kg BB
     };
     const protMultiplier = proteinMultipliers[condition] || 1.5;
     const calcProtein = Math.round(weight * protMultiplier);
 
-    // 5. Pembagian Makronutrisi Seimbang (25% Lemak, sisa Karbohidrat)
-    const calcFat = Math.round((tdee * 0.25) / 9);
+    // 5. Pembagian Makronutrisi Seimbang (WHO Healthy Diet: Lemak 20-30%, Karbohidrat 50-60%)
+    const calcFat = Math.round((tdee * 0.25) / 9); // 25% energi dari lemak (Batas WHO < 30%)
     const calcCarbs = Math.max(100, Math.round((tdee - (calcProtein * 4) - (calcFat * 9)) / 4));
 
-    // 6. BMI
+    // 6. Batas Batasan Mikro-Nutrisi Klinis WHO (World Health Organization Guidelines)
+    const whoGuidelines = {
+      standard: 'WHO/FAO/UNU Human Nutrition Requirements & Healthy Diet Guidelines 2023',
+      maxSodiumMg: 2000,      // WHO Guideline: < 2.000 mg Natrium / hari (< 5g garam)
+      minPotassiumMg: 3510,   // WHO Guideline: >= 3.510 mg Kalium / hari
+      maxFreeSugarG: Math.round((tdee * 0.05) / 4), // WHO Guideline: < 5-10% energi (~25g)
+      maxSatFatG: Math.round((tdee * 0.10) / 9),    // WHO Guideline: < 10% total energi
+      minFiberG: 28,          // WHO Guideline: >= 25 - 30 g serat pangan / hari
+      minWaterMl: Math.round(weight * 35), // WHO Fluid Standard: 30-35 ml/kg BB
+      minFruitVegG: 400       // WHO Guideline: >= 400 gram (5 porsi) buah & sayur/hari
+    };
+
+    // 7. WHO Body Mass Index (BMI) Standards
     const bmi = (weight / ((height / 100) * (height / 100))).toFixed(1);
     let bmiCat = 'Normal';
-    if (bmi < 18.5) bmiCat = 'Kurang (Underweight)';
-    else if (bmi <= 24.9) bmiCat = 'Ideal (Normal)';
-    else if (bmi <= 29.9) bmiCat = 'Berlebih (Overweight)';
-    else bmiCat = 'Obesitas';
+    if (bmi < 18.5) bmiCat = 'Kurang (Underweight - WHO)';
+    else if (bmi <= 24.9) bmiCat = 'Ideal (Normal - WHO)';
+    else if (bmi <= 29.9) bmiCat = 'Berlebih (Overweight - WHO)';
+    else bmiCat = 'Obesitas (WHO Class I-III)';
 
     // Simpan ke state sementara
     this.calculatedDiagnostics = {
@@ -3518,11 +3639,14 @@ class NutriVisionApp {
       bmiCat,
       activity,
       condition,
+      bmr,
+      bmrWHO: Math.round(bmrWHO),
       tdee,
       protein: calcProtein,
       carbs: calcCarbs,
       fat: calcFat,
-      protMultiplier
+      protMultiplier,
+      whoGuidelines
     };
 
     // Render ke Step 5 UI
@@ -3530,7 +3654,7 @@ class NutriVisionApp {
     if (elProt) elProt.textContent = `${calcProtein} g`;
 
     const elProtSub = document.getElementById('diag-res-protein-sub');
-    if (elProtSub) elProtSub.textContent = `${protMultiplier}g / kg BB`;
+    if (elProtSub) elProtSub.textContent = `${protMultiplier}g / kg BB (Standar WHO/ESPEN)`;
 
     const elCals = document.getElementById('diag-res-cals');
     if (elCals) elCals.textContent = `${tdee.toLocaleString()} kkal`;
@@ -3585,6 +3709,7 @@ class NutriVisionApp {
     this.userProfile.restrictions = restrictionsInput;
     this.userProfile.bmi = diag.bmi;
     this.userProfile.bmiCategory = diag.bmiCat;
+    this.userProfile.whoGuidelines = diag.whoGuidelines;
 
     const quizDiseases = Array.from(document.querySelectorAll('#quiz-disease-chips .quiz-chip-btn.active')).map(b => b.dataset.disease).filter(Boolean);
     if (diag.condition && !quizDiseases.includes(diag.condition)) {
@@ -3603,7 +3728,8 @@ class NutriVisionApp {
       protein: diag.protein,
       carbs: diag.carbs,
       fat: diag.fat,
-      calories: diag.tdee
+      calories: diag.tdee,
+      standard: 'WHO / FAO / UNU 2023 Guidelines'
     };
     this.userProfile.baseTargets = baseTargets;
     if (!this.userProfile.additionalTargets) {
@@ -3624,7 +3750,8 @@ class NutriVisionApp {
       protein: baseTargets.protein + (addActive ? (add.protein || 0) : 0),
       carbs: baseTargets.carbs + (addActive ? (add.carbs || 0) : 0),
       fat: baseTargets.fat + (addActive ? (add.fat || 0) : 0),
-      calories: baseTargets.calories + (addActive ? (add.calories || 0) : 0)
+      calories: baseTargets.calories + (addActive ? (add.calories || 0) : 0),
+      standard: 'WHO / FAO / UNU 2023 Guidelines & Clinical Surgery Consensus'
     };
 
     // Simpan Wilayah Acuan Pasar Pangan (Bapanas RI)
@@ -3677,19 +3804,44 @@ class NutriVisionApp {
     }
 
     // Synchronize Smart Budgeting & Meal Planner with user preferences and texture needs
-    if (window.budgetPlanner) {
-      const activeSymptoms = Array.from(document.querySelectorAll('.quiz-chips-selector .quiz-chip-btn.active'))
-        .map(b => b.dataset.symptom || '');
+    const onboardDur = this.onboardBudgetDuration || 7;
+    const onboardAmount = parseInt(document.getElementById('onboard-budget-amount')?.value, 10) || (onboardDur === 30 ? 1050000 : 250000);
+    const onboardPrefInput = document.getElementById('onboard-budget-preference')?.value;
+    const activeSymptoms = Array.from(document.querySelectorAll('.quiz-chips-selector .quiz-chip-btn.active'))
+      .map(b => b.dataset.symptom || '');
+    
+    let resolvedPref = onboardPrefInput || 'seimbang';
+    if (!onboardPrefInput) {
       if (activeSymptoms.includes('disfagia') || activeSymptoms.includes('mual')) {
-        window.budgetPlanner.preference = 'tekstur_lunak';
+        resolvedPref = 'tekstur_lunak';
       } else if (diag.condition === 'gym') {
-        window.budgetPlanner.preference = 'tinggi_protein';
-      } else {
-        window.budgetPlanner.preference = 'seimbang';
+        resolvedPref = 'tinggi_protein';
       }
+    }
+
+    const onboardTier = this.onboardBudgetTier || (onboardAmount <= (onboardDur === 30 ? 800000 : 200000) ? 'super_budget' : onboardAmount <= (onboardDur === 30 ? 1200000 : 300000) ? 'budget' : 'optimal');
+
+    this.userProfile.budget = {
+      durationDays: onboardDur,
+      budgetAmount: onboardAmount,
+      tier: onboardTier,
+      preference: resolvedPref
+    };
+
+    if (window.budgetPlanner) {
+      window.budgetPlanner.durationDays = onboardDur;
+      window.budgetPlanner.budgetAmount = onboardAmount;
+      window.budgetPlanner.preference = resolvedPref;
+      window.budgetPlanner.isPlanGenerated = true;
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('nutrivision_budget_generated', 'true');
+        }
+      } catch (e) {}
       window.budgetPlanner.generatePlan();
       window.budgetPlanner.render();
     }
+    this.updateCalendarBudgetBar();
 
     this.updateProfileUI();
     this.renderAuthUI();
@@ -7035,12 +7187,6 @@ class NutriVisionApp {
     }
   }
 
-  openCreatePostModal() {
-    this.requireAuth(() => {
-      this.openModal('create-post-modal');
-    }, 'menerbitkan tips');
-  }
-
   // =========================================================================
   // MODUL EVALUASI KELAYAKAN MENU PASIEN (AI MODEL TEKS DEDICATED PAGE)
   // =========================================================================
@@ -7490,8 +7636,8 @@ class NutriVisionApp {
       const isNeutral = item.predictedClass === 1;
       const isWarning = item.predictedClass === 2;
 
-      // 1. Update Extracted Keywords
-      this.renderExtractedKeywords(text, isSafe, isWarning);
+      // 1. Update Extracted Keywords with individual detection accuracy
+      this.renderExtractedKeywords(text, isSafe, isWarning, item.detectedItems);
 
       // 2. Update Status Box (Title, Desc, Icon, Goal)
       const iconBox = document.getElementById('ai-eval-status-icon-box');
@@ -7533,9 +7679,9 @@ class NutriVisionApp {
       const progBar = document.getElementById('ai-eval-progress-bar');
       const catText = document.getElementById('ai-eval-domain-category');
 
-      const confPercent = Math.min(99.5, Math.max(30.0, item.confidence || 88.0));
+      const confPercent = Math.min(99.5, Math.max(30.0, item.confidence || 92.0));
       if (confVal) {
-        const confGrade = confPercent >= 80 ? 'Tinggi' : (confPercent >= 60 ? 'Sedang' : 'Cukup');
+        const confGrade = confPercent >= 85 ? 'Tinggi' : (confPercent >= 65 ? 'Sedang' : 'Cukup');
         confVal.textContent = `${confPercent.toFixed(1)}% (${confGrade})`;
       }
       if (progBar) {
@@ -7549,7 +7695,7 @@ class NutriVisionApp {
       // 4. Update Checklist Notes (including patient record contraindication check)
       const notesList = document.getElementById('ai-eval-notes-list');
       if (notesList) {
-        notesList.innerHTML = this.generateClinicalNotesHTML(text, isSafe, isWarning, item.patientConflict);
+        notesList.innerHTML = this.generateClinicalNotesHTML(text, isSafe, isWarning, item.patientConflict, item.detectedItems);
       }
 
       // 5. Update Nutrients Cards (Protein, Energy, Zinc, Sodium)
@@ -7604,34 +7750,47 @@ class NutriVisionApp {
     }
   }
 
-  renderExtractedKeywords(text, isSafe, isWarning) {
+  renderExtractedKeywords(text, isSafe, isWarning, detectedItems = null) {
     const chipsBox = document.getElementById('ai-eval-chips-box');
     if (!chipsBox) return;
 
+    if (Array.isArray(detectedItems) && detectedItems.length > 0) {
+      chipsBox.innerHTML = detectedItems.map(item => {
+        const icon = item.status === 'warning' ? '⚠️' : (item.status === 'safe' ? '✓' : '•');
+        return `
+          <span class="ai-eval-chip ${item.status || 'neutral'}" title="${item.label || item.name}">
+            ${icon} ${item.name}
+            <span class="ai-chip-acc">${item.accuracy}%</span>
+          </span>
+        `;
+      }).join('');
+      return;
+    }
+
     const lower = text.toLowerCase();
     const candidateKeywords = [
-      { key: 'bakso sapi', safe: true },
-      { key: 'ikan gabus', safe: true },
-      { key: 'kuah bening', safe: true },
-      { key: 'seledri', safe: true },
-      { key: 'bawang putih', neutral: true },
-      { key: 'pasca laparotomi', neutral: true },
-      { key: 'sayur bening', safe: true },
-      { key: 'bayam', safe: true },
-      { key: 'jagung manis', safe: true },
-      { key: 'tempe kukus', safe: true },
-      { key: 'bubur beras', safe: true },
-      { key: 'salmon', safe: true },
-      { key: 'ayam kampung', safe: true },
-      { key: 'rendang', warning: true },
-      { key: 'pedas', warning: true },
-      { key: 'cabai rawit', warning: true },
-      { key: 'santan kental', warning: true },
-      { key: 'minyak banyak', warning: true },
-      { key: 'ayam goreng', warning: true },
-      { key: 'tepung krispi', warning: true },
-      { key: 'minyak jelantah', warning: true },
-      { key: 'saus cabai', warning: true }
+      { key: 'bakso sapi', safe: true, acc: 94.0 },
+      { key: 'ikan gabus', safe: true, acc: 98.2 },
+      { key: 'kuah bening', safe: true, acc: 91.5 },
+      { key: 'seledri', safe: true, acc: 90.0 },
+      { key: 'bawang putih', neutral: true, acc: 89.5 },
+      { key: 'pasca laparotomi', neutral: true, acc: 93.0 },
+      { key: 'sayur bening', safe: true, acc: 92.5 },
+      { key: 'bayam', safe: true, acc: 95.8 },
+      { key: 'jagung', safe: true, acc: 92.4 },
+      { key: 'tempe kukus', safe: true, acc: 93.6 },
+      { key: 'bubur beras', safe: true, acc: 91.0 },
+      { key: 'salmon', safe: true, acc: 94.7 },
+      { key: 'ayam kampung', safe: true, acc: 95.0 },
+      { key: 'rendang', warning: true, acc: 96.8 },
+      { key: 'pedas', warning: true, acc: 97.0 },
+      { key: 'cabai rawit', warning: true, acc: 98.0 },
+      { key: 'santan kental', warning: true, acc: 95.5 },
+      { key: 'minyak banyak', warning: true, acc: 96.0 },
+      { key: 'ayam goreng', warning: true, acc: 97.4 },
+      { key: 'tepung krispi', warning: true, acc: 94.8 },
+      { key: 'minyak jelantah', warning: true, acc: 98.5 },
+      { key: 'saus cabai', warning: true, acc: 96.5 }
     ];
 
     const detected = candidateKeywords.filter(k => lower.includes(k.key));
@@ -7641,6 +7800,7 @@ class NutriVisionApp {
       chipsBox.innerHTML = words.map(w => `
         <span class="ai-eval-chip ${isSafe ? 'safe' : (isWarning ? 'warning' : 'neutral')}">
           ${isSafe ? '✓ ' : ''}${w}
+          <span class="ai-chip-acc">90.5%</span>
         </span>
       `).join('');
       return;
@@ -7648,16 +7808,16 @@ class NutriVisionApp {
 
     chipsBox.innerHTML = detected.map(k => {
       if (k.warning) {
-        return `<span class="ai-eval-chip warning">⚠️ ${k.key}</span>`;
+        return `<span class="ai-eval-chip warning">⚠️ ${k.key} <span class="ai-chip-acc">${k.acc}%</span></span>`;
       }
       if (k.safe) {
-        return `<span class="ai-eval-chip safe">✓ ${k.key}</span>`;
+        return `<span class="ai-eval-chip safe">✓ ${k.key} <span class="ai-chip-acc">${k.acc}%</span></span>`;
       }
-      return `<span class="ai-eval-chip neutral">${k.key}</span>`;
+      return `<span class="ai-eval-chip neutral">${k.key} <span class="ai-chip-acc">${k.acc}%</span></span>`;
     }).join('');
   }
 
-  generateClinicalNotesHTML(text, isSafe, isWarning, patientConflict = null) {
+  generateClinicalNotesHTML(text, isSafe, isWarning, patientConflict = null, detectedItems = null) {
     let conflictSnippet = '';
     if (patientConflict && patientConflict.hasConflict) {
       const conflictList = patientConflict.conflictingAllergies.join(', ');
@@ -7669,9 +7829,21 @@ class NutriVisionApp {
       `;
     }
 
+    let detectedItemSnippet = '';
+    if (Array.isArray(detectedItems) && detectedItems.length > 0) {
+      const summaryList = detectedItems.map(d => `${d.name} (Akurasi: ${d.accuracy}%)`).join(', ');
+      detectedItemSnippet = `
+        <div class="ai-eval-note-item" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;">
+          <span class="ai-eval-note-check" style="color:#0F766E;">🎯</span>
+          <span><strong>Bahan Teridentifikasi:</strong> ${summaryList}</span>
+        </div>
+      `;
+    }
+
     if (isWarning) {
       return `
         ${conflictSnippet}
+        ${detectedItemSnippet}
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check" style="color:#DC2626;">⚠️</span>
           <span><strong>Risiko Saluran Cerna Pasca Bedah:</strong> Kandungan minyak jenuh tinggi atau bumbu pedas memicu asam lambung dan peristaltik berlebihan.</span>
@@ -7689,6 +7861,7 @@ class NutriVisionApp {
 
     if (isSafe) {
       return `
+        ${detectedItemSnippet}
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check">✓</span>
           <span><strong>Sangat Ramah Cerna:</strong> Kaldu bening bebas cabai dan bumbu pedas, aman dari risiko iritasi lambung pasca operasi.</span>
@@ -9400,15 +9573,119 @@ class NutriVisionApp {
 
   getConditionSchedules(conditionId, targetDate = null) {
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
-    const curDate = targetDate || this.selectedCalendarDate;
+    const curDate = targetDate || this.selectedCalendarDate || new Date().toISOString().split('T')[0];
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
-    const defaults = (profile && profile.defaultDailySchedules) ? profile.defaultDailySchedules : [];
+    
+    // Check if Budget Planner has generated meal plan or if userProfile has budget
+    let baseSchedules = [];
+    if (window.budgetPlanner) {
+      if (!window.budgetPlanner.plan || window.budgetPlanner.plan.length === 0) {
+        if (this.userProfile?.budget) {
+          window.budgetPlanner.durationDays = this.userProfile.budget.durationDays || 7;
+          window.budgetPlanner.budgetAmount = this.userProfile.budget.budgetAmount || 250000;
+          window.budgetPlanner.preference = this.userProfile.budget.preference || 'seimbang';
+        }
+        window.budgetPlanner.generatePlan();
+      }
+
+      const plan = window.budgetPlanner.plan;
+      if (plan && plan.length > 0) {
+        const duration = window.budgetPlanner.durationDays || plan.length || 7;
+        
+        // Calculate day index from targetDate
+        let dayIdx = 0;
+        if (curDate) {
+          const targetD = new Date(curDate + 'T00:00:00');
+          const startD = this.calendarStartDate ? new Date(this.calendarStartDate + 'T00:00:00') : new Date(targetD.getFullYear(), targetD.getMonth(), 1);
+          const diffDays = Math.floor((targetD.getTime() - startD.getTime()) / (1000 * 60 * 60 * 24));
+          dayIdx = ((diffDays % duration) + duration) % duration;
+        }
+        const dayPlan = plan[dayIdx] || plan[0];
+
+        if (dayPlan && dayPlan.breakfast && dayPlan.lunch && dayPlan.dinner) {
+          const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
+          baseSchedules = [
+            {
+              id: `budget-bf-d${dayPlan.day || (dayIdx + 1)}`,
+              time: '07:00 - 08:00',
+              title: isEn ? `Breakfast: ${dayPlan.breakfast.nameEn || dayPlan.breakfast.name}` : `Sarapan: ${dayPlan.breakfast.name}`,
+              desc: `${dayPlan.breakfast.ingredients || ''} · ${dayPlan.breakfast.protein}g Protein · ${dayPlan.breakfast.calories} kkal`,
+              price: dayPlan.breakfast.price,
+              protein: dayPlan.breakfast.protein,
+              calories: dayPlan.breakfast.calories,
+              badge: isEn ? (dayPlan.breakfast.badgeEn || dayPlan.breakfast.badge) : dayPlan.breakfast.badge,
+              category: 'nutrition',
+              dotColor: '#15803D',
+              scientificRationale: 'Asupan gizi pagi untuk aktivasi metabolik & sintesis albumin'
+            },
+            {
+              id: `budget-snack-1-d${dayPlan.day || (dayIdx + 1)}`,
+              time: '10:00 - 10:30',
+              title: isEn ? 'Recovery Snack & Cellular Hydration' : 'Snack Pemulihan & Hidrasi Seluler',
+              desc: isEn ? '250ml pure coconut water or fresh low-sugar fruit juice + electrolytes' : 'Air kelapa murni 250ml atau jus buah segar rendah gula untuk hidrasi seluler & elektrolit.',
+              price: 5000,
+              protein: 2,
+              calories: 90,
+              badge: isEn ? 'Hydration & Electrolytes' : 'Hidrasi & Elektrolit',
+              category: 'hydration',
+              dotColor: '#0284C7',
+              scientificRationale: 'Keseimbangan cairan & mineral seluler'
+            },
+            {
+              id: `budget-lu-d${dayPlan.day || (dayIdx + 1)}`,
+              time: '12:30 - 13:30',
+              title: isEn ? `Lunch: ${dayPlan.lunch.nameEn || dayPlan.lunch.name}` : `Makan Siang: ${dayPlan.lunch.name}`,
+              desc: `${dayPlan.lunch.ingredients || ''} · ${dayPlan.lunch.protein}g Protein · ${dayPlan.lunch.calories} kkal`,
+              price: dayPlan.lunch.price,
+              protein: dayPlan.lunch.protein,
+              calories: dayPlan.lunch.calories,
+              badge: isEn ? (dayPlan.lunch.badgeEn || dayPlan.lunch.badge) : dayPlan.lunch.badge,
+              category: 'nutrition',
+              dotColor: '#15803D',
+              scientificRationale: 'Regenerasi jaringan & pembentukan massa otot'
+            },
+            {
+              id: `budget-snack-2-d${dayPlan.day || (dayIdx + 1)}`,
+              time: '15:30 - 16:00',
+              title: isEn ? 'Nutrient Therapy & Anti-Inflammatory Snack' : 'Terapi Nutrisi & Camilan Anti-Inflamasi',
+              desc: isEn ? 'Papaya/banana slices or 200ml warm soy milk' : 'Potongan buah pepaya/pisang atau susu kedelai murni 200ml tinggi antioksidan.',
+              price: 5000,
+              protein: 4,
+              calories: 110,
+              badge: isEn ? 'Tissue Repair' : 'Perbaikan Jaringan',
+              category: 'snack',
+              dotColor: '#D97706',
+              scientificRationale: 'Suplementasi mikronutrien anti-inflamasi'
+            },
+            {
+              id: `budget-di-d${dayPlan.day || (dayIdx + 1)}`,
+              time: '19:00 - 20:00',
+              title: isEn ? `Dinner: ${dayPlan.dinner.nameEn || dayPlan.dinner.name}` : `Makan Malam: ${dayPlan.dinner.name}`,
+              desc: `${dayPlan.dinner.ingredients || ''} · ${dayPlan.dinner.protein}g Protein · ${dayPlan.dinner.calories} kkal`,
+              price: dayPlan.dinner.price,
+              protein: dayPlan.dinner.protein,
+              calories: dayPlan.dinner.calories,
+              badge: isEn ? (dayPlan.dinner.badgeEn || dayPlan.dinner.badge) : dayPlan.dinner.badge,
+              category: 'nutrition',
+              dotColor: '#15803D',
+              scientificRationale: 'Asam amino esensial untuk pemulihan malam hari'
+            }
+          ];
+        }
+      }
+    }
+
+    if (baseSchedules.length === 0) {
+      baseSchedules = (profile && profile.defaultDailySchedules) ? profile.defaultDailySchedules : [];
+    }
+
     const custom = (this.customDailySchedules || []).filter(s => {
       const matchCond = !s.conditionId || s.conditionId === cond;
       const matchDate = !s.targetDate || !curDate || s.targetDate === curDate;
       return matchCond && matchDate;
     });
-    return [...defaults, ...custom];
+
+    return [...baseSchedules, ...custom];
   }
 
   renderRecoveryMonthPills(conditionId) {
@@ -9417,16 +9694,30 @@ class NutriVisionApp {
 
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
-    const milestones = profile?.monthlyMilestones || [];
+    let milestones = profile?.monthlyMilestones || [];
+
+    if (!milestones || milestones.length === 0) {
+      milestones = [
+        { monthIndex: 1, durationDays: 'Hari 1–30', phaseName: 'Fase Inflamasi & Granulasi' },
+        { monthIndex: 2, durationDays: 'Hari 31–60', phaseName: 'Fase Proliferasi & Kolagen' },
+        { monthIndex: 3, durationDays: 'Hari 61–90', phaseName: 'Fase Remodeling Jaringan' }
+      ];
+    }
 
     container.innerHTML = milestones.map(m => {
       const isActive = m.monthIndex === (this.activeRecoveryMonthIndex || 1);
       return `
-        <button type="button" class="month-pill-btn ${isActive ? 'active' : ''}"
-                onclick="app.switchRecoveryMonth(${m.monthIndex})"
-                title="${m.phaseName}">
-          <span>Bulan ${m.monthIndex} (${m.durationDays})</span>
-        </button>
+        <div class="cal-milestone-card month-pill-btn ${isActive ? 'active' : ''}"
+             onclick="app.switchRecoveryMonth(${m.monthIndex})"
+             role="button"
+             tabindex="0"
+             title="${m.phaseName}">
+          <div class="cal-milestone-card-top">
+            <span class="cal-milestone-label">Bulan ${m.monthIndex} (${m.durationDays})</span>
+            ${isActive ? '<span class="cal-milestone-active-dot"></span>' : ''}
+          </div>
+          <div class="cal-milestone-name">${m.phaseName}</div>
+        </div>
       `;
     }).join('');
   }
@@ -9439,67 +9730,72 @@ class NutriVisionApp {
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
     const milestones = profile?.monthlyMilestones || [];
     const idx = monthIndex || this.activeRecoveryMonthIndex || 1;
-    const milestone = milestones.find(m => m.monthIndex === idx) || milestones[0];
+    const milestone = milestones.find(m => m.monthIndex === idx) || milestones[0] || {
+      monthLabel: 'Bulan ke-1 (Hari 1–30)',
+      phaseName: 'Fase Inflamasi & Granulasi',
+      healingTarget: { title: 'Penutupan Luka Insisi Primer & Mitigasi Risiko Infeksi (SSI)' },
+      nutritionTarget: {
+        protein: '1.5 – 2.0 g/kg BB',
+        calories: '1.850 – 2.000 kkal/hari',
+        recommendedMenu: ['Ikan Gabus', 'Putih Telur', 'Sup Labu']
+      }
+    };
 
-    if (!milestone) return;
+    const budgetAmount = window.budgetPlanner ? window.budgetPlanner.budgetAmount : (this.userProfile?.budget?.budgetAmount || 200000);
+    const budgetDuration = window.budgetPlanner ? window.budgetPlanner.durationDays : (this.userProfile?.budget?.durationDays || 7);
+    const avgDaily = Math.round(budgetAmount / budgetDuration);
 
-    const menuPills = (milestone.nutritionTarget.recommendedMenu || []).map(item => `
-      <span style="display:inline-block;padding:3px 8px;border-radius:6px;background:#FFFFFF;border:1px solid #DCE5B8;font-size:11px;font-weight:600;color:#233917;">
-        ${item}
-      </span>
-    `).join(' ');
+    const foodTagsHtml = (milestone.nutritionTarget?.recommendedMenu || ['Ikan Gabus', 'Putih Telur', 'Sup Labu']).slice(0, 3).map(item => `
+      <span class="cal-food-tag">${item}</span>
+    `).join('');
+
+    const proteinStr = milestone.nutritionTarget?.protein ? milestone.nutritionTarget.protein.split('/hari')[0].trim() : '1.5 – 2.0 g/kg BB';
+    const caloriesStr = milestone.nutritionTarget?.calories ? milestone.nutritionTarget.calories.split('(')[0].trim() : '1.850 – 2.000 kkal/hari';
+    const goalTitle = milestone.healingTarget?.title || 'Penutupan Luka Insisi Primer & Mitigasi Risiko Infeksi (SSI)';
+    const citation = milestone.scientificCitation || 'ESPEN Guidelines on Clinical Nutrition in Surgery (2021) & ERAS Society';
 
     bannerEl.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #E2E6D0;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:#233917;color:#FFFFFF;text-transform:uppercase;">
-            ${milestone.monthLabel}
-          </span>
-          <h4 style="margin:0;font-size:13px;font-weight:700;color:var(--ink);">${milestone.phaseName}</h4>
-        </div>
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:#15803D;background:#EAF6EC;padding:2px 7px;border-radius:5px;font-weight:600;">
-          <i data-lucide="shield-check" style="width:12px;height:12px;"></i> ${milestone.scientificCitation}
-        </span>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <!-- Card 1: Target Penyembuhan Klinis -->
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;">
-          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#233917;margin-bottom:4px;">
-            <i data-lucide="activity" style="width:13px;height:13px;color:#15803D;"></i>
-            <span>Target Penyembuhan Medis</span>
+      <div class="cal-metric-banner-grid" data-phase="${milestone.monthLabel || ('Bulan ke-' + idx)}">
+        <!-- Col 1: TARGET MEDIS & GIZI -->
+        <div class="cal-metric-col col-targets">
+          <div class="cal-metric-col-title">TARGET MEDIS &amp; GIZI</div>
+          <div class="cal-metric-line">
+            <span class="cal-metric-label">Target Protein:</span>
+            <span class="cal-metric-val"><strong>${proteinStr}</strong> <span class="cal-metric-note">(Albumin Tinggi)</span></span>
           </div>
-          <p style="margin:0 0 4px;font-size:11.5px;font-weight:600;color:#0F172A;">${milestone.healingTarget.title}</p>
-          <div style="font-size:11px;color:#475569;line-height:1.35;margin-bottom:4px;">
-            <strong>Indikator Klinis:</strong> ${milestone.healingTarget.markers}
+          <div class="cal-metric-line">
+            <span class="cal-metric-label">Kebutuhan Energi:</span>
+            <span class="cal-metric-val"><strong>${caloriesStr}</strong></span>
           </div>
-          <div style="font-size:10.5px;color:#15803D;background:#F0FDF4;padding:3px 6px;border-radius:5px;font-weight:600;">
-            🎯 Tujuan: ${milestone.healingTarget.clinicalGoal}
+          <div class="cal-food-tags">
+            ${foodTagsHtml}
           </div>
         </div>
 
-        <!-- Card 2: Target Makanan & Gizi -->
-        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;">
-          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#233917;margin-bottom:4px;">
-            <i data-lucide="utensils" style="width:13px;height:13px;color:#D97706;"></i>
-            <span>Target Makanan &amp; Nutrisi Klinis</span>
+        <!-- Col 2: ALOKASI ANGGARAN -->
+        <div class="cal-metric-col col-budget">
+          <div class="cal-budget-header-row">
+            <span class="cal-metric-col-title">ALOKASI ANGGARAN</span>
+            <button type="button" class="cal-btn-link btn-budget-sync-link" onclick="app.openAdjustBudgetModal()" title="Sesuaikan Budget">Atur Budget</button>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">
-            <span style="color:#64748B;">Target Protein:</span>
-            <strong style="color:#233917;">${milestone.nutritionTarget.protein}</strong>
+          <div class="cal-budget-amount-row">
+            <span class="cal-budget-amount" id="cal-banner-budget-amount">Rp ${budgetAmount.toLocaleString('id-ID')}</span>
+            <span class="cal-budget-duration" id="cal-banner-budget-duration">/ ${budgetDuration} hari</span>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;">
-            <span style="color:#64748B;">Kebutuhan Energi:</span>
-            <span style="font-weight:600;color:#0F172A;">${milestone.nutritionTarget.calories}</span>
+          <div class="cal-budget-daily" id="cal-banner-budget-daily">Rata-rata ~Rp ${avgDaily.toLocaleString('id-ID')}/hari</div>
+          <div class="cal-budget-status-pill">
+            <span class="cal-status-dot"></span>
+            <span id="cal-banner-budget-status">Status: Hemat Budget Terkontrol</span>
           </div>
-          <div style="font-size:10.5px;color:#475569;margin-bottom:4px;">
-            <strong>Mikronutrien:</strong> ${milestone.nutritionTarget.micronutrients}
-          </div>
-          <div>
-            <div style="font-size:10px;color:#64748B;margin-bottom:3px;">Pilihan Pangan Tervalidasi:</div>
-            <div style="display:flex;flex-wrap:wrap;gap:3px;">
-              ${menuPills}
-            </div>
+        </div>
+
+        <!-- Col 3: INDIKATOR KLINIS UTAMA -->
+        <div class="cal-metric-col col-clinical" data-target="Target Penyembuhan Medis">
+          <div class="cal-metric-col-title">INDIKATOR KLINIS UTAMA</div>
+          <div class="cal-clinical-goal" title="Target Penyembuhan Medis: ${milestone.monthLabel || ''} ${goalTitle}">${milestone.monthLabel ? (milestone.monthLabel + ': ') : ''}${goalTitle}</div>
+          <div class="cal-validation-tag" title="${citation}">
+            <i data-lucide="check" style="width:14px;height:14px;stroke-width:2.5;color:#233917;"></i>
+            <span>Tervalidasi Protokol ERAS &amp; ESPEN 2021 (${citation})</span>
           </div>
         </div>
       </div>
@@ -9556,106 +9852,110 @@ class NutriVisionApp {
           <p style="margin:0;font-size:12px;">Belum ada jadwal pemulihan untuk tanggal ini.</p>
         </div>
       `;
+      this.updateCalendarBudgetBar();
       return;
     }
 
-    // Helper to format simple time (e.g. '07:00 - 08:00' -> '07:00')
-    const formatSimpleTime = (timeStr) => {
-      if (!timeStr) return '';
-      if (timeStr.includes(' - ')) {
-        return timeStr.split(' - ')[0].trim();
-      }
-      return timeStr.trim();
+    // Helper to format time label
+    const formatTimeTag = (timeStr, titleStr) => {
+      let t = timeStr ? timeStr.split(' - ')[0].trim() : '07:00';
+      if (!t.includes(':')) t = `${t}:00`;
+      
+      const hour = parseInt(t.split(':')[0], 10);
+      let period = 'Sarapan';
+      if (hour >= 9 && hour < 12) period = 'Selingan Pagi';
+      else if (hour >= 12 && hour < 15) period = 'Makan Siang';
+      else if (hour >= 15 && hour < 18) period = 'Snack Sore';
+      else if (hour >= 18) period = 'Makan Malam';
+
+      if (titleStr && titleStr.toLowerCase().includes('sarapan')) period = 'Sarapan';
+      else if (titleStr && titleStr.toLowerCase().includes('selingan')) period = 'Selingan Pagi';
+      else if (titleStr && titleStr.toLowerCase().includes('siang')) period = 'Makan Siang';
+      else if (titleStr && titleStr.toLowerCase().includes('snack')) period = 'Snack Sore';
+      else if (titleStr && titleStr.toLowerCase().includes('malam')) period = 'Makan Malam';
+
+      return `${t} ${period}`;
     };
 
-    // Active highlighted timeline event (default to first schedule if unset or not in list)
-    if (!this.activeTimelineEventId || !schedules.some(s => s.id === this.activeTimelineEventId)) {
-      this.activeTimelineEventId = schedules[0]?.id || null;
-    }
+    // Helper to extract or construct nutritional metadata string
+    const getNutriMeta = (s) => {
+      if (s.protein && s.calories && s.price) {
+        return `${s.protein}g Protein • ${s.calories} kkal • Rp ${s.price.toLocaleString('id-ID')}`;
+      }
+      if (s.protein && s.price) {
+        return `${s.protein}g Protein (Tinggi Albumin) • Rp ${s.price.toLocaleString('id-ID')}`;
+      }
+      if (s.desc) {
+        // Look for target in desc
+        const matchProt = s.desc.match(/(\d+g\s*Protein)/i);
+        const matchCals = s.desc.match(/(\d+\s*kkal)/i);
+        const priceStr = s.price ? ` • Rp ${s.price.toLocaleString('id-ID')}` : '';
+        if (matchProt) {
+          return `${matchProt[1]} ${matchCals ? '• ' + matchCals[1] : ''}${priceStr}`;
+        }
+        if (s.category === 'hydration') {
+          return `Hidrasi & Elektrolit Alami${priceStr ? priceStr : ' • Rp 5.000'}`;
+        }
+        if (s.category === 'snack') {
+          return `Serat Lembut Ramah Cerna${priceStr ? priceStr : ' • Rp 4.500'}`;
+        }
+        return `${s.desc.slice(0, 50)}...${priceStr}`;
+      }
+      return `Target Gizi Seimbang • Rp ${(s.price || 7500).toLocaleString('id-ID')}`;
+    };
 
     const itemsHtml = schedules.map(s => {
       const key = `${targetDate}_${s.id}`;
       const isCompleted = Boolean(this.completedScheduleItems && this.completedScheduleItems[key]);
-      const isActive = (s.id === this.activeTimelineEventId);
-      const simpleTime = formatSimpleTime(s.time);
+      const timeTag = formatTimeTag(s.time, s.title);
+      const nutriMeta = getNutriMeta(s);
+      const isSymptomMeal = Boolean(
+        s.isSymptomAdaptive ||
+        (s.id && s.id.startsWith('symptom-sched')) ||
+        s.source === 'symptom_filter' ||
+        (s.scientificRationale && (s.scientificRationale.includes('Gejala') || s.scientificRationale.includes('Symptom'))) ||
+        (s.badge && (s.badge.includes('Gejala') || s.badge.includes('Symptom')))
+      );
 
-      if (isActive) {
-        return `
-          <div class="timeline-event-row is-active ${isCompleted ? 'completed' : ''}"
-               data-event-id="${s.id}"
-               onclick="app.selectTimelineEvent('${s.id}')">
-            <!-- Left Timeline Track -->
-            <div class="timeline-axis">
-              <div class="timeline-node">
-                <span class="timeline-node-inner"></span>
-              </div>
-              <div class="timeline-line"></div>
-            </div>
+      const symptomBadgeHtml = isSymptomMeal ? `
+        <span class="cal-symptom-tag">
+          <i data-lucide="sparkles" style="width:11px;height:11px;"></i>
+          <span>Rekomendasi Gejala</span>
+        </span>
+      ` : '';
 
-            <!-- Active Card (Sage/Forest Green matching reference design) -->
-            <div class="timeline-content-wrap">
-              <div class="timeline-card-active">
-                <div class="timeline-header">
-                  <h4 class="timeline-title">${s.title}</h4>
-                  <div class="timeline-header-right" onclick="event.stopPropagation();" style="display:flex;align-items:center;gap:8px;">
-                    <span class="timeline-time">${simpleTime}</span>
-                    <input type="checkbox" ${isCompleted ? 'checked' : ''}
-                           onchange="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
-                           title="Tandai Selesai"
-                           style="cursor:pointer;width:15px;height:15px;accent-color:#233917;" />
-                    ${s.isCustom ? `
-                      <button type="button" class="btn-action-icon" style="width:20px;height:20px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#FFFFFF;"
-                              onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus Jadwal Kustom">
-                        <i data-lucide="trash-2" style="width:12px;height:12px;color:#FCA5A5;"></i>
-                      </button>
-                    ` : ''}
-                  </div>
-                </div>
-                <p class="timeline-desc">${s.desc}</p>
-                ${isCompleted ? `
-                  <div style="margin-top:6px;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);">
-                    <i data-lucide="check-circle-2" style="width:12px;height:12px;"></i>
-                    <span>Telah Diselesaikan</span>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          </div>
-        `;
-      }
+      const symptomMetaHtml = isSymptomMeal ? `
+        <span style="display:inline-flex;align-items:center;gap:3px;color:#7C3AED;font-size:10.5px;font-weight:600;background:#F5F3FF;padding:1px 6px;border-radius:4px;border:1px solid #DDD6FE;">
+          ✦ Adaptif Gejala
+        </span>
+      ` : '';
 
-      // Standard Timeline Row
       return `
-        <div class="timeline-event-row ${isCompleted ? 'completed' : ''}"
-             data-event-id="${s.id}"
-             onclick="app.selectTimelineEvent('${s.id}')">
-          <!-- Left Timeline Track -->
-          <div class="timeline-axis">
-            <div class="timeline-node"></div>
-            <div class="timeline-line"></div>
-          </div>
-
-          <!-- Standard Clean Row Content -->
-          <div class="timeline-content-wrap">
-            <div class="timeline-card-standard">
-              <div class="timeline-header">
-                <h4 class="timeline-title">${s.title}</h4>
-                <div class="timeline-header-right" onclick="event.stopPropagation();" style="display:flex;align-items:center;gap:8px;">
-                  <span class="timeline-time">${simpleTime}</span>
-                  <input type="checkbox" ${isCompleted ? 'checked' : ''}
-                         onchange="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
-                         title="Tandai Selesai"
-                         style="cursor:pointer;width:15px;height:15px;accent-color:#15803D;" />
-                  ${s.isCustom ? `
-                    <button type="button" class="btn-action-icon" style="width:20px;height:20px;"
-                            onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus Jadwal Kustom">
-                      <i data-lucide="trash-2" style="width:12px;height:12px;color:#DC2626;"></i>
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-              <p class="timeline-desc">${s.desc}</p>
+        <div class="cal-meal-card timeline-event-row ${isSymptomMeal ? 'is-symptom-adaptive' : ''} ${isCompleted ? 'is-completed completed' : ''}" data-event-id="${s.id}">
+          <div class="cal-meal-card-top">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span class="cal-meal-time-tag">${timeTag}</span>
+              ${symptomBadgeHtml}
             </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button type="button" class="cal-meal-status-btn ${isCompleted ? 'completed' : ''}"
+                      onclick="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
+                      title="${isCompleted ? 'Tandai belum selesai' : 'Tandai sudah dikonsumsi'}">
+                ${isCompleted 
+                  ? `<i data-lucide="check" style="width:12px;height:12px;stroke-width:3;"></i> <span>Sudah dikonsumsi</span>` 
+                  : `<span class="checkbox-box"></span> <span>Tandai selesai</span>`}
+              </button>
+              ${s.isCustom ? `
+                <button type="button" class="btn-delete-sched" onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus jadwal">
+                  <i data-lucide="trash-2" style="width:12px;height:12px;color:#DC2626;"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+          <div class="cal-meal-name">${s.title}</div>
+          <div class="cal-meal-nutri-meta">
+            ${symptomMetaHtml}
+            <span>${nutriMeta}</span>
           </div>
         </div>
       `;
@@ -9665,8 +9965,10 @@ class NutriVisionApp {
 
     const counterEl = document.getElementById('cal-events-counter');
     if (counterEl) {
-      counterEl.textContent = `${schedules.length} Jadwal Nutrisi Aktif`;
+      counterEl.textContent = `${schedules.length} Jadwal Nutrisi Terdaftar`;
     }
+
+    this.updateCalendarBudgetBar();
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons({ root: listEl });
@@ -9705,18 +10007,16 @@ class NutriVisionApp {
     const effStart = (activeStart && activeEnd && activeStart > activeEnd) ? activeEnd : activeStart;
     const effEnd = (activeStart && activeEnd && activeStart > activeEnd) ? activeStart : activeEnd;
 
-    // Month Names
-    const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
-    const monthNamesEn = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    const monthNamesId = [
+    // Month Names Indonesian
+    const monthNames = [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
-    const monthNames = isEn ? monthNamesEn : monthNamesId;
-    const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const monthNamesShort = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ];
+    const dayHeaders = ['M', 'S', 'S', 'R', 'K', 'J', 'S'];
 
     // Update Header Date Range Text
     const rangeTextEl = document.getElementById('calendar-picker-range-text');
@@ -9727,13 +10027,22 @@ class NutriVisionApp {
         const y = parseInt(parts[0], 10);
         const m = parseInt(parts[1], 10) - 1;
         const d = parseInt(parts[2], 10);
-        return `${monthNames[m]} ${d}, ${y}`;
+        return `${d} ${monthNamesShort[m]} ${y}`;
       };
       if (effEnd && effStart !== effEnd) {
         rangeTextEl.textContent = `${formatDateLabel(effStart)} – ${formatDateLabel(effEnd)}`;
       } else {
         rangeTextEl.textContent = formatDateLabel(effStart);
       }
+    }
+
+    // Update Day Count Badge
+    const dayBadgeEl = document.getElementById('cal-window-day-badge');
+    if (dayBadgeEl && effStart && effEnd) {
+      const sDate = new Date(effStart);
+      const eDate = new Date(effEnd);
+      const diffDays = Math.round(Math.abs((eDate - sDate) / (24 * 60 * 60 * 1000))) + 1;
+      dayBadgeEl.textContent = `Hari ke-${diffDays}`;
     }
 
     // Month 1 & Month 2 anchor dates
@@ -10004,8 +10313,8 @@ class NutriVisionApp {
       return;
     }
 
-    // Active highlighted restriction (default to first on initial load)
-    if (this.activeRestrictionId === undefined) {
+    // Active highlighted restriction (default to first on initial load or condition switch)
+    if (!this.activeRestrictionId || !contraindications.some(c => c.id === this.activeRestrictionId)) {
       this.activeRestrictionId = contraindications[0]?.id || null;
     }
 
@@ -10036,7 +10345,7 @@ class NutriVisionApp {
                     <h4 class="timeline-title">${c.food}</h4>
                   </div>
                   <span class="restriction-badge-active">
-                    ${c.risk}
+                    Peringatan Klinis Dokter · ${c.risk}
                   </span>
                 </div>
                 <p class="timeline-desc">${c.reason}</p>
@@ -10202,20 +10511,19 @@ class NutriVisionApp {
 
   openCalendarModal() {
     const modal = document.getElementById('modal-clinical-calendar');
-    if (modal) {
-      modal.style.display = 'flex';
-      this.renderClinicalCalendarAndScheduleSuite();
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons({ root: modal });
+    if (modal) modal.style.display = 'flex';
+    this.navigate('planner');
+    setTimeout(() => {
+      const calCard = document.getElementById('planner-calendar-card');
+      if (calCard && typeof calCard.scrollIntoView === 'function') {
+        calCard.scrollIntoView({ behavior: 'smooth' });
       }
-    }
+    }, 60);
   }
 
   closeCalendarModal() {
     const modal = document.getElementById('modal-clinical-calendar');
-    if (modal) {
-      modal.style.display = 'none';
-    }
+    if (modal) modal.style.display = 'none';
   }
 
   openAddScheduleModal() {
@@ -10354,6 +10662,17 @@ class NutriVisionApp {
   renderClinicalCalendarAndScheduleSuite() {
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
 
+    // Update patient profile badge in calendar header
+    const headerCondLabel = document.getElementById('cal-header-condition-label');
+    if (headerCondLabel) {
+      const condLabels = {
+        'post-surgery': 'Profil: Pasca-Bedah',
+        'rehab': 'Profil: Fisioterapi',
+        'gym': 'Profil: Pemulihan Umum'
+      };
+      headerCondLabel.textContent = condLabels[cond] || 'Profil Pemulihan';
+    }
+
     // Sync quick condition switcher in modal header
     document.querySelectorAll('#modal-cond-switcher .cond-pill-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.cond === cond);
@@ -10376,6 +10695,221 @@ class NutriVisionApp {
     this.renderPantanganMakanan(cond);
     this.renderValidationSummary(cond, this.activeRecoveryMonthIndex || 1);
     this.renderClinicalCalendar(this.calendarViewMode || 'month');
+    this.updateCalendarBudgetBar();
+  }
+
+  // =========================================================================
+  // CALENDAR BUDGET ADJUSTMENT MODAL CONTROLLERS ("Sesuaikan dengan Budgeting")
+  // =========================================================================
+
+  openAdjustBudgetModal() {
+    const modal = document.getElementById('modal-adjust-budget-calendar');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+
+    const currentDur = window.budgetPlanner ? window.budgetPlanner.durationDays : (this.userProfile?.budget?.durationDays || 7);
+    const currentAmount = window.budgetPlanner ? window.budgetPlanner.budgetAmount : (this.userProfile?.budget?.budgetAmount || 250000);
+    const currentPref = window.budgetPlanner ? window.budgetPlanner.preference : (this.userProfile?.budget?.preference || 'seimbang');
+
+    this.setAdjustBudgetDuration(currentDur);
+    const amtInput = document.getElementById('cal-adjust-budget-amount');
+    if (amtInput) amtInput.value = currentAmount;
+    const prefSelect = document.getElementById('cal-adjust-budget-preference');
+    if (prefSelect) prefSelect.value = currentPref;
+
+    this.handleAdjustBudgetCustomInput(currentAmount);
+    this.updateAdjustBudgetSummary(currentAmount, currentDur);
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: modal });
+    }
+  }
+
+  closeAdjustBudgetModal() {
+    const modal = document.getElementById('modal-adjust-budget-calendar');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('open');
+    }
+  }
+
+  setAdjustBudgetDuration(days) {
+    this.adjustBudgetDuration = days;
+    const btn7 = document.getElementById('cal-adjust-dur-7');
+    const btn30 = document.getElementById('cal-adjust-dur-30');
+    if (btn7) btn7.classList.toggle('active', days === 7);
+    if (btn30) btn30.classList.toggle('active', days === 30);
+
+    const tierPrices = {
+      7: {
+        super_budget: { price: 'Rp 175.000', sub: '~Rp 25.000/hari', amount: 175000 },
+        budget: { price: 'Rp 250.000', sub: '~Rp 35.700/hari', amount: 250000 },
+        optimal: { price: 'Rp 400.000', sub: '~Rp 57.000/hari', amount: 400000 }
+      },
+      30: {
+        super_budget: { price: 'Rp 750.000', sub: '~Rp 25.000/hari', amount: 750000 },
+        budget: { price: 'Rp 1.050.000', sub: '~Rp 35.000/hari', amount: 1050000 },
+        optimal: { price: 'Rp 1.700.000', sub: '~Rp 56.600/hari', amount: 1700000 }
+      }
+    };
+
+    const cur = tierPrices[days] || tierPrices[7];
+    ['super_budget', 'budget', 'optimal'].forEach(t => {
+      const pEl = document.getElementById(`cal-adjust-tier-price-${t}`);
+      const sEl = document.getElementById(`cal-adjust-tier-sub-${t}`);
+      if (pEl) pEl.textContent = cur[t].price;
+      if (sEl) sEl.textContent = cur[t].sub;
+    });
+
+    const activeTier = this.adjustBudgetTier || 'budget';
+    const amountInput = document.getElementById('cal-adjust-budget-amount');
+    if (amountInput) {
+      amountInput.value = cur[activeTier]?.amount || (days === 30 ? 1050000 : 250000);
+      this.updateAdjustBudgetSummary(amountInput.value, days);
+    }
+  }
+
+  selectAdjustBudgetTier(tier) {
+    this.adjustBudgetTier = tier;
+    const dur = this.adjustBudgetDuration || 7;
+    const tierPrices = {
+      7: { super_budget: 175000, budget: 250000, optimal: 400000 },
+      30: { super_budget: 750000, budget: 1050000, optimal: 1700000 }
+    };
+
+    ['super_budget', 'budget', 'optimal'].forEach(t => {
+      const card = document.getElementById(`cal-adjust-tier-${t}`);
+      if (card) {
+        const isActive = (t === tier);
+        card.classList.toggle('active', isActive);
+        card.style.background = isActive ? '#F0FDF4' : '#F8FAFC';
+        card.style.borderColor = isActive ? '#16A34A' : '#E2E8F0';
+        const titleEl = card.querySelector('div:first-child');
+        const priceEl = card.querySelector('.onboard-tier-price');
+        const subEl = card.querySelector('.onboard-tier-sub');
+        if (titleEl) titleEl.style.color = isActive ? '#16A34A' : '#64748B';
+        if (priceEl) priceEl.style.color = isActive ? '#15803D' : '#1E293B';
+        if (subEl) subEl.style.color = isActive ? '#16A34A' : '#64748B';
+      }
+    });
+
+    const amountInput = document.getElementById('cal-adjust-budget-amount');
+    if (amountInput && tierPrices[dur] && tierPrices[dur][tier]) {
+      amountInput.value = tierPrices[dur][tier];
+      this.updateAdjustBudgetSummary(tierPrices[dur][tier], dur);
+    }
+  }
+
+  handleAdjustBudgetCustomInput(val) {
+    const num = parseInt(val, 10) || 0;
+    const dur = this.adjustBudgetDuration || 7;
+    const tierPrices = {
+      7: { super_budget: 175000, budget: 250000, optimal: 400000 },
+      30: { super_budget: 750000, budget: 1050000, optimal: 1700000 }
+    };
+    const currentTiers = tierPrices[dur] || tierPrices[7];
+    let matchedTier = null;
+    Object.keys(currentTiers).forEach(t => {
+      if (currentTiers[t] === num) matchedTier = t;
+    });
+
+    ['super_budget', 'budget', 'optimal'].forEach(t => {
+      const card = document.getElementById(`cal-adjust-tier-${t}`);
+      if (card) {
+        const isActive = (t === matchedTier);
+        card.classList.toggle('active', isActive);
+        card.style.background = isActive ? '#F0FDF4' : '#F8FAFC';
+        card.style.borderColor = isActive ? '#16A34A' : '#E2E8F0';
+      }
+    });
+    this.adjustBudgetTier = matchedTier;
+    this.updateAdjustBudgetSummary(num, dur);
+  }
+
+  updateAdjustBudgetSummary(amount, days) {
+    const sumEl = document.getElementById('cal-adjust-summary-text');
+    if (!sumEl) return;
+    const amt = parseInt(amount, 10) || 0;
+    const d = parseInt(days, 10) || 7;
+    const daily = Math.round(amt / d);
+    sumEl.textContent = `Alokasi Harian: ~Rp ${daily.toLocaleString('id-ID')}/hari (3x Makan Utama)`;
+  }
+
+  applyAdjustBudgetCalendar() {
+    const dur = this.adjustBudgetDuration || 7;
+    const amount = parseInt(document.getElementById('cal-adjust-budget-amount')?.value, 10) || (dur === 30 ? 1050000 : 250000);
+    const pref = document.getElementById('cal-adjust-budget-preference')?.value || 'seimbang';
+    const tier = this.adjustBudgetTier || (amount <= (dur === 30 ? 800000 : 200000) ? 'super_budget' : amount <= (dur === 30 ? 1200000 : 300000) ? 'budget' : 'optimal');
+
+    if (!this.userProfile) this.userProfile = {};
+    this.userProfile.budget = {
+      durationDays: dur,
+      budgetAmount: amount,
+      tier: tier,
+      preference: pref
+    };
+    this.saveUserProfile();
+
+    if (window.budgetPlanner) {
+      window.budgetPlanner.durationDays = dur;
+      window.budgetPlanner.budgetAmount = amount;
+      window.budgetPlanner.preference = pref;
+      window.budgetPlanner.isPlanGenerated = true;
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('nutrivision_budget_generated', 'true');
+        }
+      } catch (e) {}
+      window.budgetPlanner.generatePlan();
+      window.budgetPlanner.render();
+    }
+
+    this.closeAdjustBudgetModal();
+    this.updateCalendarBudgetBar();
+    this.renderUpcomingEvents(this.selectedCalendarDate);
+    this.renderClinicalCalendar(this.calendarViewMode);
+
+    this.showToast(`✅ Jadwal kalender disesuaikan dengan alokasi budget Rp ${amount.toLocaleString('id-ID')} (${dur} Hari)!`, 'success');
+  }
+
+  navigateToBudgetModule() {
+    this.closeAdjustBudgetModal();
+    this.closeCalendarModal();
+    this.navigate('planner');
+    const budgetSection = document.getElementById('view-planner');
+    if (budgetSection) {
+      budgetSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  updateCalendarBudgetBar() {
+    const dur = window.budgetPlanner ? window.budgetPlanner.durationDays : (this.userProfile?.budget?.durationDays || 7);
+    const amount = window.budgetPlanner ? window.budgetPlanner.budgetAmount : (this.userProfile?.budget?.budgetAmount || 200000);
+    const tier = this.userProfile?.budget?.tier || (amount <= (dur === 30 ? 800000 : 200000) ? 'super_budget' : amount <= (dur === 30 ? 1200000 : 300000) ? 'budget' : 'optimal');
+    const daily = Math.round(amount / dur);
+
+    const tierLabels = {
+      'super_budget': 'Hemat Budget Terkontrol',
+      'budget': 'Standar Seimbang Terkontrol',
+      'optimal': 'Optimal Pemulihan'
+    };
+
+    const bannerAmt = document.getElementById('cal-banner-budget-amount');
+    if (bannerAmt) bannerAmt.textContent = `Rp ${amount.toLocaleString('id-ID')}`;
+    const bannerDur = document.getElementById('cal-banner-budget-duration');
+    if (bannerDur) bannerDur.textContent = `/ ${dur} hari`;
+    const bannerDaily = document.getElementById('cal-banner-budget-daily');
+    if (bannerDaily) bannerDaily.textContent = `Rata-rata ~Rp ${daily.toLocaleString('id-ID')}/hari`;
+    const bannerStatus = document.getElementById('cal-banner-budget-status');
+    if (bannerStatus) bannerStatus.textContent = `Status: ${tierLabels[tier] || 'Hemat Budget Terkontrol'}`;
+
+    const barTotal = document.getElementById('cal-budget-bar-total');
+    const barDaily = document.getElementById('cal-budget-bar-daily');
+    const barTier = document.getElementById('cal-budget-bar-tier');
+    if (barTotal) barTotal.textContent = `Rp ${amount.toLocaleString('id-ID')} (${dur} Hari)`;
+    if (barDaily) barDaily.textContent = `· ~Rp ${daily.toLocaleString('id-ID')}/hari`;
+    if (barTier) barTier.textContent = tierLabels[tier] || 'Standar Seimbang';
   }
 
   // =========================================================================

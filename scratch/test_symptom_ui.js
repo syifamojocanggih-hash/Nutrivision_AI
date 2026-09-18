@@ -125,7 +125,7 @@ const html = resultContainer.innerHTML;
 
 assert(html.includes('symptom-dual-summary-grid'), 'Dual summary grid rendered');
 assert(html.includes('Standar Keamanan IDDSI Level 4 (Puree / Soft Mash)'), 'Contains IDDSI Level 4 title');
-assert(html.includes('Pantangan Otomatis'), 'Contains Pantangan Otomatis title');
+assert(!html.includes('Pantangan Otomatis'), 'Pantangan Otomatis card should be removed');
 assert(html.includes('Rekomendasi Menu Terverifikasi'), 'Contains verified recommendation header');
 assert(html.includes('4 pilihan menu sesuai toleransi'), 'Shows 4 pilihan menu sesuai toleransi');
 
