@@ -147,19 +147,28 @@
      */
     getProteinBudget(anthro, diseases = [], conditionId = 'post-surgery') {
       const isCKD = diseases.includes('ckd') || diseases.includes('ginjal');
-      const isSurgery = conditionId === 'post-surgery' || diseases.includes('post-surgery') || diseases.includes('bedah');
-      const isRehab = conditionId === 'rehab' || diseases.includes('rehab') || diseases.includes('fraktur');
-      const isGym = conditionId === 'gym' || diseases.includes('gym');
+      const isSurgery = conditionId === 'post-surgery' || conditionId.startsWith('post_op') || diseases.includes('post-surgery') || diseases.includes('bedah');
+      const isRehab = conditionId === 'rehab' || conditionId === 'post_op_orthopedic' || diseases.includes('rehab') || diseases.includes('fraktur');
+      const isGym = conditionId === 'gym' || conditionId.startsWith('gym') || diseases.includes('gym');
 
       let dailyMultiplierMin = 1.0;
       let dailyMultiplierMax = 1.2;
       let clinicalNote = 'Kebutuhan protein pemeliharaan normal.';
+
+      const recProfile = (typeof NUTRIVISION_DATA !== 'undefined' && NUTRIVISION_DATA.recoveryProfiles) 
+        ? NUTRIVISION_DATA.recoveryProfiles[conditionId] 
+        : null;
 
       if (isCKD) {
         // Konsensus KDIGO: Restriksi protein ketat non-dialisis (0.6 - 0.8 g/kg BB)
         dailyMultiplierMin = 0.6;
         dailyMultiplierMax = 0.8;
         clinicalNote = 'Batasan ketat KDIGO Penyakit Ginjal Kronis (0.6-0.8g/kg BB) untuk mencegah uremia.';
+      } else if (recProfile && recProfile.targetMacronutrients && recProfile.targetMacronutrients.proteinGPerKg) {
+        const baseTarget = recProfile.targetMacronutrients.proteinGPerKg;
+        dailyMultiplierMin = Math.max(1.2, +(baseTarget - 0.2).toFixed(1));
+        dailyMultiplierMax = +(baseTarget + 0.2).toFixed(1);
+        clinicalNote = `Target protokol ${recProfile.title} (${dailyMultiplierMin}-${dailyMultiplierMax}g/kg BB): ${recProfile.protocol}`;
       } else if (isSurgery) {
         // Konsensus ESPEN / ERAS: 1.5 - 2.0 g/kg BB
         dailyMultiplierMin = 1.5;

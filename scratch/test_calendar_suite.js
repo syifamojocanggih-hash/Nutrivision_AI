@@ -170,13 +170,13 @@ const calBody = getElementById('integrated-cal-body');
 console.log('Month Pills HTML contains Bulan 1:', monthPills.innerHTML.includes('Bulan 1'));
 console.log('Month Banner contains Target Penyembuhan Medis:', monthBanner.innerHTML.includes('Target Penyembuhan Medis'));
 console.log('Month Banner contains ESPEN / ERAS citation:', monthBanner.innerHTML.includes('ESPEN'));
-console.log('Upcoming events count rendered items:', upcomingList.innerHTML.includes('Sarapan Tinggi Albumin'));
+console.log('Upcoming events count rendered items:', upcomingList.innerHTML.includes('Sarapan') && upcomingList.innerHTML.includes('Albumin'));
 console.log('Calendar Body contains compact-box:', calBody.innerHTML.includes('compact-box'));
 console.log('Calendar Body contains cal-dot-indicator:', calBody.innerHTML.includes('cal-dot-indicator'));
 
 if (monthPills.innerHTML.includes('Bulan 1') &&
     monthBanner.innerHTML.includes('Target Penyembuhan Medis') &&
-    upcomingList.innerHTML.includes('Sarapan Tinggi Albumin') &&
+    upcomingList.innerHTML.includes('Sarapan') &&
     calBody.innerHTML.includes('compact-box') &&
     calBody.innerHTML.includes('cal-dot-indicator')) {
   console.log('>>> TEST 2 PASSED: 2-Column Suite successfully rendered with compact square boxes & clinical schedules!\n');

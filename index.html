@@ -2653,23 +2653,57 @@
             </div>
           </div>
 
-          <!-- Interactive Condition Selector Tabs -->
-          <div class="journey-condition-tabs" id="journey-condition-tabs">
-            <button type="button" class="journey-cond-btn active" data-condition="post-surgery"
-              onclick="app.setJourneyCondition('post-surgery')">
-              <i data-lucide="heart-pulse" style="width:14px;height:14px;"></i>
-              <span>Pasca-Operasi &amp; Bedah</span>
-            </button>
-            <button type="button" class="journey-cond-btn" data-condition="rehab"
-              onclick="app.setJourneyCondition('rehab')">
-              <i data-lucide="activity" style="width:14px;height:14px;"></i>
-              <span>Rehabilitasi &amp; Fisioterapi</span>
-            </button>
-            <button type="button" class="journey-cond-btn" data-condition="gym"
-              onclick="app.setJourneyCondition('gym')">
-              <i data-lucide="dumbbell" style="width:14px;height:14px;"></i>
-              <span>Gym &amp; Muscle Recovery</span>
-            </button>
+          <!-- Interactive 12-Taxonomy Target Selector (Group Tabs + Categorical Dropdown) -->
+          <div class="journey-taxonomy-selector-wrapper" style="margin-top:12px;margin-bottom:14px;background:#FAFDF5;border:1px solid #DCE5B8;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+              <!-- Step 1: Main Group Segmented Toggle -->
+              <div class="journey-condition-tabs" id="journey-condition-tabs" style="margin:0;padding:0;border:none;">
+                <button type="button" class="journey-cond-btn active" id="journey-btn-group-med" data-group="medical"
+                  onclick="app.handleJourneyGroupSelect('medical')">
+                  <i data-lucide="heart-pulse" style="width:14px;height:14px;"></i>
+                  <span>🩺 Pasca-Operasi (Medis)</span>
+                </button>
+                <button type="button" class="journey-cond-btn" id="journey-btn-group-fit" data-group="fitness"
+                  onclick="app.handleJourneyGroupSelect('fitness')">
+                  <i data-lucide="dumbbell" style="width:14px;height:14px;"></i>
+                  <span>🏋️ Gym &amp; Fitness</span>
+                </button>
+              </div>
+
+              <!-- Step 2: Specific Taxonomy Dropdown (12 Categories) -->
+              <div style="display:flex;align-items:center;gap:8px;flex-grow:1;max-width:420px;min-width:240px;">
+                <label for="journey-category-dropdown" style="font-size:11.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;">
+                  Fokus Kategori:
+                </label>
+                <div style="position:relative;flex-grow:1;">
+                  <select id="journey-category-dropdown" class="journey-category-select" onchange="app.handleJourneyCategorySelect(this.value)"
+                    style="width:100%;padding:7px 32px 7px 12px;border:1.5px solid #C8D4A8;border-radius:8px;background:#FFFFFF;font-size:12.5px;font-weight:700;color:#233917;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;transition:border-color 0.2s;">
+                    <optgroup label="🩺 Pasca-Operasi (Medis) — 7 Kategori">
+                      <option value="post_op_digestive" selected>1. Saluran Cerna (Bedah Digestif)</option>
+                      <option value="post_op_oncology">2. Kanker (Onkologi &amp; Imunonutrisi)</option>
+                      <option value="post_op_burns">3. Luka Bakar &amp; Bedah Rekonstruksi</option>
+                      <option value="post_op_bariatric">4. Bedah Bariatrik &amp; Metabolik</option>
+                      <option value="post_op_orthopedic">5. Ortopedi, Tulang &amp; Trauma</option>
+                      <option value="post_op_cardio">6. Kardiovaskular &amp; Sternotomi</option>
+                      <option value="post_op_geriatric">7. Geriatri Pasca-Operasi</option>
+                    </optgroup>
+                    <optgroup label="🏋️ Gym &amp; Fitness — 5 Kategori">
+                      <option value="gym_hypertrophy">8. Bulking &amp; Hipertrofi Myofibril</option>
+                      <option value="gym_powerlifting">9. Powerlifting &amp; Maximum Strength</option>
+                      <option value="gym_endurance">10. CrossFit / Endurance</option>
+                      <option value="gym_recomp">11. Body Recomposition</option>
+                      <option value="gym_high_volume">12. Atlet High-Volume &amp; Anti-DOMS</option>
+                    </optgroup>
+                  </select>
+                  <i data-lucide="chevron-down" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:#4A5623;pointer-events:none;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Taxonomy Info Banner (Nutrisi Kunci, Target Makro, Sumber API, Konsensus Medis) -->
+            <div id="journey-taxonomy-info-banner" style="background:#FFFFFF;border:1px solid #E4EBD2;border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:11px;">
+              <!-- Populated dynamically by app.renderJourneyTaxonomyInfoBanner() -->
+            </div>
           </div>
 
           <!-- Dynamic 3-Phase Roadmap Grid -->
@@ -3812,45 +3846,42 @@
         <p class="quiz-subtitle">NutriVision AI akan menyesuaikan rasio asam amino dan target protein harian berdasarkan
           pedoman ERAS/ESPEN.</p>
 
-        <!-- Jalur Pemulihan -->
-        <div class="form-group" style="margin-bottom:12px;">
-          <label style="font-weight:600;font-size:12.5px;color:#1C200E;display:block;margin-bottom:6px;">Pilih Fokus
-            Jalur Pemulihan Saat Ini:</label>
-          <div class="quiz-options-list">
-            <button type="button" class="quiz-choice-card active" data-condition="post-surgery"
-              onclick="app.selectCondition('post-surgery', this)">
-              <div class="quiz-choice-icon" style="background:#E6F4EA;color:#137333;"><i data-lucide="activity"></i>
-              </div>
-              <div class="quiz-choice-text">
-                <b>Pasca-Operasi &amp; Pembedahan</b>
-                <span>Sintesis kolagen, percepatan penutupan luka jaringan, dan pencegahan infeksi</span>
-              </div>
-            </button>
-            <button type="button" class="quiz-choice-card" data-condition="rehab"
-              onclick="app.selectCondition('rehab', this)">
-              <div class="quiz-choice-icon" style="background:#FEF3F2;color:#D92D20;"><i data-lucide="crosshair"></i>
-              </div>
-              <div class="quiz-choice-text">
-                <b>Fisioterapi &amp; Rehabilitasi Cedera</b>
-                <span>Pemulihan fraktur, ligamen, sendi, dan pencegahan atrofi otot skeletal</span>
-              </div>
-            </button>
-            <button type="button" class="quiz-choice-card" data-condition="gym"
-              onclick="app.selectCondition('gym', this)">
-              <div class="quiz-choice-icon" style="background:#FEF7E0;color:#B06000;"><i data-lucide="zap"></i></div>
-              <div class="quiz-choice-text">
-                <b>Gym &amp; Muscle Recovery</b>
-                <span>Perbaikan mikrorobekan serat otot, hipertrofi, dan pengisian glikogen</span>
-              </div>
-            </button>
-            <button type="button" class="quiz-choice-card" data-condition="wellness"
-              onclick="app.selectCondition('wellness', this)">
-              <div class="quiz-choice-icon" style="background:#F0FDF4;color:#16A34A;"><i data-lucide="heart"></i></div>
-              <div class="quiz-choice-text">
-                <b>Pemeliharaan Gizi Medis Umum</b>
-                <span>Pola makan terukur seimbang untuk stabilitas vitalitas dan metabolisme</span>
-              </div>
-            </button>
+        <!-- Jalur Pemulihan (12 Taksonomi Target Gizi Medis & Fitness) -->
+        <div class="form-group" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <label for="onboard-condition-select" style="font-weight:700;font-size:12.5px;color:#1C200E;margin:0;">
+              Pilih Fokus Jalur Pemulihan / Target Kebugaran:
+            </label>
+            <span style="font-size:11px;color:#556B2F;font-weight:600;background:#F1F5E9;padding:2px 8px;border-radius:12px;border:1px solid #DCE5B8;">
+              12 Kategori Terintegrasi
+            </span>
+          </div>
+
+          <!-- Dropdown 12 Taksonomi Terbagi 2 Kelompok Utama -->
+          <div style="position:relative;margin-bottom:10px;">
+            <select id="onboard-condition-select" class="form-control quiz-condition-dropdown" onchange="app.onConditionSelectChange(this)" style="font-size:13px;font-weight:600;padding:10px 14px;border-radius:12px;border:1.5px solid #9EA76B;background:#FFFFFF;color:#1C200E;cursor:pointer;width:100%;box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+              <optgroup label="🏥 Pasca-Operasi (Medis) — 7 Kategori Klinis">
+                <option value="post_op_digestive" selected>1. Bedah Saluran Cerna (Digestif) — Protein Cair/Isolat & Rendah Residu</option>
+                <option value="post_op_oncology">2. Kanker (Onkologi) — Immunonutrition, EPA/DHA & Anti-Cachexia</option>
+                <option value="post_op_burns">3. Luka Bakar & Rekonstruksi — Hypermetabolic, Zinc & Vit C Tinggi</option>
+                <option value="post_op_bariatric">4. Bedah Bariatrik & Metabolik — Porsi Mikro, B12 & Pencegahan Dumping</option>
+                <option value="post_op_orthopedic">5. Ortopedi & Trauma — Matriks Kolagen, Kalsium & Osteogenesis</option>
+                <option value="post_op_cardio">6. Kardiovaskular & Jantung — Restriksi Natrium & Pemulihan Sternum</option>
+                <option value="post_op_geriatric">7. Geriatri Pasca-Operasi — Anti-Sarkopenia, HMB & Suplemen ONS</option>
+              </optgroup>
+              <optgroup label="⚡ Gym & Fitness — 5 Kategori Kebugaran">
+                <option value="gym_hypertrophy">8. Bulking & Hipertrofi — Surplus Kalori & Pengisian Glikogen Otot</option>
+                <option value="gym_powerlifting">9. Powerlifting & Strength — Proteksi Sendi, Creatine & CNS Recovery</option>
+                <option value="gym_endurance">10. CrossFit / Endurance — Pembakaran Tinggi & Penggantian Elektrolit</option>
+                <option value="gym_recomp">11. Body Recomposition — Preservasi Otot, High Protein & Defisit Tipis</option>
+                <option value="gym_high_volume">12. Atlet High-Volume — Kalori Ekstrem (3000-5000 kkal) & Anti-DOMS</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Live Interactive Preview Card for Selected Taxonomy -->
+          <div id="onboard-taxonomy-preview-card" class="quiz-taxonomy-preview-card">
+            <!-- Dynamically populated by app.renderTaxonomyPreview() -->
           </div>
         </div>
 

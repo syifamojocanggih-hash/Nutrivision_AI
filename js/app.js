@@ -3097,6 +3097,216 @@ class NutriVisionApp {
   }
 
   // =========================================================================
+  // 12 RECOVERY & FITNESS TAXONOMIES REGISTRY (ESPEN, ISBI, ASMBS, ISSN, WHO)
+  // =========================================================================
+  static TAXONOMY_REGISTRY = {
+    'post_op_digestive': {
+      id: 'post_op_digestive',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Bedah Saluran Cerna',
+      title: 'Pasca-Bedah Saluran Cerna (Digestif)',
+      icon: 'utensils',
+      accentColor: '#15803D',
+      bgSoft: '#E6F4EA',
+      protocol: 'Konsensus ESPEN Surgery & IDDSI Protocol',
+      focusText: 'Tinggi protein, pembatasan serat awal, transisi tekstur gradual (Cair -> Saring -> Lunak -> Padat).',
+      keyNutrients: ['L-Glutamin', 'Albumin Ikan Gabus', 'Zinc Organik', 'Kalium Elektrolit', 'Rendah Residu'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Maintenance to Moderate Surplus (~1850 - 2000 kkal)',
+      proteinMultiplier: 1.5,
+      proteinTargetLabel: '1.5 g/kg BB'
+    },
+    'post_op_oncology': {
+      id: 'post_op_oncology',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Kanker (Onkologi)',
+      title: 'Pasca-Bedah Kanker & Onkologi',
+      icon: 'shield-alert',
+      accentColor: '#B91C1C',
+      bgSoft: '#FEF2F2',
+      protocol: 'ESPEN Oncology & Immunonutrition Consensus',
+      focusText: 'Immunonutrition perioperatif, penanganan cancer cachexia, dan modulasi respon inflamasi sistemik.',
+      keyNutrients: ['L-Arginin', 'Asam Lemak Omega-3 (EPA/DHA)', 'Nukleotida', 'Selenium Antioksidan', 'Zinc'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Tinggi Kalori & Protein (2000 - 2400 kkal / Anti-Cachexia)',
+      proteinMultiplier: 1.8,
+      proteinTargetLabel: '1.8 g/kg BB'
+    },
+    'post_op_burns': {
+      id: 'post_op_burns',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Luka Bakar & Rekonstruksi',
+      title: 'Luka Bakar & Bedah Rekonstruksi',
+      icon: 'flame',
+      accentColor: '#EA580C',
+      bgSoft: '#FFF7ED',
+      protocol: 'ISBI Practice Guidelines & ESPEN Burns Protocol',
+      focusText: 'Kondisi hypermetabolic, penggantian eksudat nitrogen masif, dan biosintesis kolagen kulit baru.',
+      keyNutrients: ['Zinc Organik (25-50mg)', 'Vitamin C (1000mg)', 'Vitamin A', 'Protein Isolat Ultra-Tinggi'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Hypermetabolic High Energy (2400 - 3200 kkal)',
+      proteinMultiplier: 2.0,
+      proteinTargetLabel: '2.0 g/kg BB'
+    },
+    'post_op_bariatric': {
+      id: 'post_op_bariatric',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Bedah Bariatrik',
+      title: 'Pasca-Bedah Bariatrik & Metabolik',
+      icon: 'scale',
+      accentColor: '#0284C7',
+      bgSoft: '#F0F9FF',
+      protocol: 'ASMBS / IFSO Integrated Nutrition Guidelines',
+      focusText: 'Porsi mikro kantung lambung, pencegahan dumping syndrome, target 60-80g protein murni, & suplementasi seumur hidup.',
+      keyNutrients: ['Vitamin B12 Sublingual', 'Zat Besi Fumarat', 'Kalsium Sitrat', 'Vitamin D3', 'Whey Isolate'],
+      apis: ['Open Food Facts API', 'FatSecret Platform API', 'USDA FoodData Central'],
+      caloricNeedType: 'Hipokalorik Padat Nutrisi / Porsi Mikro (800 - 1200 kkal)',
+      proteinMultiplier: 1.4,
+      proteinTargetLabel: '1.4 g/kg BB (Min 70-80g/hari)'
+    },
+    'post_op_orthopedic': {
+      id: 'post_op_orthopedic',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Ortopedi & Trauma',
+      title: 'Ortopedi & Rekonstruksi Trauma',
+      icon: 'bone',
+      accentColor: '#D97706',
+      bgSoft: '#FFFBEB',
+      protocol: 'AAOS Orthopedic & ESPEN Musculoskeletal Consensus',
+      focusText: 'Matriks kolagen, penyambungan tulang (osteogenesis), dan regenerasi jaringan tendon/ligamen.',
+      keyNutrients: ['Kalsium Organik', 'Fosfor', 'Magnesium Sitrat', 'Vitamin D3 (2000 IU)', 'Gelatin & Kolagen'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Optimal Healing Balance (1900 - 2200 kkal)',
+      proteinMultiplier: 1.5,
+      proteinTargetLabel: '1.5 g/kg BB'
+    },
+    'post_op_cardio': {
+      id: 'post_op_cardio',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Kardiovaskular',
+      title: 'Kardiovaskular & Bedah Jantung',
+      icon: 'activity',
+      accentColor: '#DC2626',
+      bgSoft: '#FEF2F2',
+      protocol: 'AHA Heart Recovery & ESPEN Cardio Consensus',
+      focusText: 'Pembatasan ketat natrium & cairan, pemulihan insisi sternum, kontrol glikemik, dan perlindungan endotel.',
+      keyNutrients: ['Rendah Garam (Na < 1500mg)', 'MUFA/PUFA Sehat', 'Kalium & Magnesium', 'Serat Larut Air'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Eukalorik Terkendali Kardiovaskular (1800 - 2000 kkal)',
+      proteinMultiplier: 1.3,
+      proteinTargetLabel: '1.3 g/kg BB'
+    },
+    'post_op_geriatric': {
+      id: 'post_op_geriatric',
+      group: 'Pasca-Operasi (Medis)',
+      groupKey: 'medical',
+      category: 'Geriatri Pasca-Operasi',
+      title: 'Geriatri Pasca-Operasi',
+      icon: 'user-check',
+      accentColor: '#4F46E5',
+      bgSoft: '#EEF2FF',
+      protocol: 'ESPEN Geriatric Nutrition Guidelines',
+      focusText: 'Mencegah sarkopenia akut & pemecahan otot saat bedridden, stimulasi nafsu makan, dan vitalitas kognitif.',
+      keyNutrients: ['Protein Cepat Serap (1.2-1.5g/kg)', 'HMB (3g/hari)', 'Leusin Tinggi', 'Suplemen ONS', 'Vitamin D3'],
+      apis: ['Open Food Facts API', 'FatSecret Platform API'],
+      caloricNeedType: 'Kecukupan Padat Energi Geriatri (1750 - 1950 kkal)',
+      proteinMultiplier: 1.4,
+      proteinTargetLabel: '1.4 g/kg BB'
+    },
+    'gym_hypertrophy': {
+      id: 'gym_hypertrophy',
+      group: 'Gym & Fitness',
+      groupKey: 'fitness',
+      category: 'Bulking & Hipertrofi',
+      title: 'Bulking & Hipertrofi Otot',
+      icon: 'dumbbell',
+      accentColor: '#16A34A',
+      bgSoft: '#F0FDF4',
+      protocol: 'ISSN Hypertrophy & Protein Distribution Consensus',
+      focusText: 'Surplus kalori terukur (300-500 kcal), pengisian glikogen otot maksimal, dan sintesis protein myofibril.',
+      keyNutrients: ['Karbohidrat Kompleks', 'Protein Utuh (1.6-2.2 g/kg)', 'BCAA / Leusin', 'Creatine'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Anabolic Caloric Surplus (+300 - 500 kkal)',
+      proteinMultiplier: 1.8,
+      proteinTargetLabel: '1.8 g/kg BB'
+    },
+    'gym_powerlifting': {
+      id: 'gym_powerlifting',
+      group: 'Gym & Fitness',
+      groupKey: 'fitness',
+      category: 'Powerlifting & Strength',
+      title: 'Powerlifting & Maximum Strength',
+      icon: 'shield',
+      accentColor: '#7C3AED',
+      bgSoft: '#F5F3FF',
+      protocol: 'NSCA Strength & High Force Nutrition Guidelines',
+      focusText: 'Pemulihan sistem saraf pusat (CNS), proteksi sendi beban tinggi, dan penguatan densitas tulang.',
+      keyNutrients: ['Creatine Monohydrate (5g)', 'Kalsium Sitrat', 'Zinc & Magnesium (ZMA)', 'Natrium Elektrolit'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API'],
+      caloricNeedType: 'Maintenance to Moderate Surplus (2400 - 3000 kkal)',
+      proteinMultiplier: 1.8,
+      proteinTargetLabel: '1.8 g/kg BB'
+    },
+    'gym_endurance': {
+      id: 'gym_endurance',
+      group: 'Gym & Fitness',
+      groupKey: 'fitness',
+      category: 'CrossFit / Endurance',
+      title: 'CrossFit & High Endurance',
+      icon: 'zap',
+      accentColor: '#D97706',
+      bgSoft: '#FFFBEB',
+      protocol: 'ACSM Endurance & Glycogen Replenishment Consensus',
+      focusText: 'Pembakaran kalori sangat tinggi, penggantian cairan osmotik & elektrolit cepat pasca-metcon.',
+      keyNutrients: ['Karbohidrat Cepat & Lambat Cerna', 'Natrium (Na)', 'Kalium (K)', 'Magnesium (Mg)', 'Antioksidan'],
+      apis: ['Edamam / Nutritionix API', 'FatSecret Platform API', 'USDA FoodData Central'],
+      caloricNeedType: 'High Carb Athletic Recovery (2600 - 3400 kkal)',
+      proteinMultiplier: 1.5,
+      proteinTargetLabel: '1.5 g/kg BB'
+    },
+    'gym_recomp': {
+      id: 'gym_recomp',
+      group: 'Gym & Fitness',
+      groupKey: 'fitness',
+      category: 'Body Recomposition',
+      title: 'Body Recomposition (Fat Loss + Muscle Gain)',
+      icon: 'target',
+      accentColor: '#059669',
+      bgSoft: '#ECFDF5',
+      protocol: 'ISSN Body Composition & Leucine-Trigger Protocol',
+      focusText: 'Preservasi massa otot saat pembakaran lemak aktif (slight deficit), termogenesis protein tinggi.',
+      keyNutrients: ['Protein Maksimal (2.0-2.4 g/kg)', 'Tinggi Serat Pangan', 'Air Hidrasi Optimal', 'Omega-3'],
+      apis: ['FatSecret Platform API', 'Open Food Facts API'],
+      caloricNeedType: 'Slight Caloric Deficit / Iso-Kalorik (1700 - 2100 kkal)',
+      proteinMultiplier: 2.2,
+      proteinTargetLabel: '2.2 g/kg BB'
+    },
+    'gym_high_volume': {
+      id: 'gym_high_volume',
+      group: 'Gym & Fitness',
+      groupKey: 'fitness',
+      category: 'Atlet High-Volume',
+      title: 'Atlet High-Volume (Elite Training)',
+      icon: 'activity',
+      accentColor: '#E11D48',
+      bgSoft: '#FFF1F2',
+      protocol: 'IOC Sports Nutrition Consensus & Anti-DOMS',
+      focusText: 'Kebutuhan kalori ekstrem (3000-5000+ kcal), peredaman inflamasi mikro-otot (DOMS), dan mitigasi RED-S.',
+      keyNutrients: ['Antioksidan (Vit C & E)', 'Kurkumin Temulawak', 'Asam Lemak Omega-3', 'Kasein Nokturnal'],
+      apis: ['USDA FoodData Central', 'FatSecret Platform API', 'Edamam / Nutritionix API'],
+      caloricNeedType: 'Ultra-High Energy Output (3000 - 5000+ kkal)',
+      proteinMultiplier: 2.0,
+      proteinTargetLabel: '2.0 g/kg BB'
+    }
+  };
+
+  // =========================================================================
   // FOODVISOR-STYLE DIAGNOSTIC QUIZ METHODS (3 STEPS WITH BULLET PAGINATION)
   // =========================================================================
   openQuizModal(step = 1) {
@@ -3131,6 +3341,21 @@ class NutriVisionApp {
     if (this.userProfile?.restrictions && document.getElementById('onboard-restrictions')) {
       document.getElementById('onboard-restrictions').value = this.userProfile.restrictions;
     }
+
+    // Inisialisasi Dropdown 12 Taksonomi & Live Preview Card
+    const condSelect = document.getElementById('onboard-condition-select');
+    let currentCond = this.quizState?.condition || this.userProfile?.conditionId || 'post_op_digestive';
+    if (currentCond === 'post-surgery') currentCond = 'post_op_digestive';
+    else if (currentCond === 'rehab') currentCond = 'post_op_orthopedic';
+    else if (currentCond === 'gym') currentCond = 'gym_hypertrophy';
+    else if (currentCond === 'wellness') currentCond = 'post_op_digestive';
+
+    if (condSelect) {
+      condSelect.value = currentCond;
+    }
+    this.quizState.condition = currentCond;
+    this.renderTaxonomyPreview(currentCond);
+
     if (consentCheck) {
       consentCheck.checked = Boolean(this.userProfile?.hasCompletedQuiz);
     }
@@ -3428,10 +3653,96 @@ class NutriVisionApp {
 
   selectCondition(conditionId, element) {
     this.quizState.condition = conditionId;
+    const selectEl = document.getElementById('onboard-condition-select');
+    if (selectEl) {
+      let mappedId = conditionId;
+      if (conditionId === 'post-surgery') mappedId = 'post_op_digestive';
+      else if (conditionId === 'rehab') mappedId = 'post_op_orthopedic';
+      else if (conditionId === 'gym') mappedId = 'gym_hypertrophy';
+      else if (conditionId === 'wellness') mappedId = 'post_op_digestive';
+
+      const matched = Array.from(selectEl.options).find(opt => opt.value === mappedId || opt.value === conditionId);
+      if (matched) {
+        selectEl.value = matched.value;
+      }
+    }
     document.querySelectorAll('#quiz-step-2 .quiz-choice-card').forEach(card => {
       card.classList.remove('active');
     });
     if (element) element.classList.add('active');
+    this.renderTaxonomyPreview(conditionId);
+  }
+
+  onConditionSelectChange(selectEl) {
+    if (!selectEl) return;
+    const condId = selectEl.value;
+    this.quizState.condition = condId;
+    this.renderTaxonomyPreview(condId);
+    if (this.currentQuizStep === 3) {
+      this.calculateDiagnosticResults();
+    }
+  }
+
+  renderTaxonomyPreview(conditionId) {
+    const cardEl = document.getElementById('onboard-taxonomy-preview-card');
+    if (!cardEl) return;
+
+    let targetId = conditionId || this.quizState.condition || 'post_op_digestive';
+    if (targetId === 'post-surgery') targetId = 'post_op_digestive';
+    else if (targetId === 'rehab') targetId = 'post_op_orthopedic';
+    else if (targetId === 'gym') targetId = 'gym_hypertrophy';
+    else if (targetId === 'wellness') targetId = 'post_op_digestive';
+
+    const registry = NutriVisionApp.TAXONOMY_REGISTRY || {};
+    const item = registry[targetId] || registry['post_op_digestive'];
+    if (!item) return;
+
+    const isMedical = item.groupKey === 'medical';
+    const groupPillBg = isMedical ? '#E6F4EA' : '#FEF7E0';
+    const groupPillColor = isMedical ? '#137333' : '#B06000';
+    const groupPillBorder = isMedical ? '#C2E7C7' : '#FEEFC3';
+
+    cardEl.innerHTML = `
+      <div class="quiz-tax-header">
+        <div class="quiz-tax-title-wrap">
+          <div class="quiz-tax-icon-box" style="background:${item.bgSoft};color:${item.accentColor};">
+            <i data-lucide="${item.icon}"></i>
+          </div>
+          <div>
+            <div class="quiz-tax-title-text">${item.title}</div>
+            <div style="font-size:11px;color:#687346;font-weight:500;">${item.protocol}</div>
+          </div>
+        </div>
+        <div class="quiz-tax-badge-group">
+          <span class="quiz-tax-pill" style="background:${groupPillBg};color:${groupPillColor};border:1px solid ${groupPillBorder};">
+            ${item.group}
+          </span>
+        </div>
+      </div>
+
+      <p class="quiz-tax-desc">
+        <b>Fokus Kebutuhan Gizi:</b> ${item.focusText}
+      </p>
+
+      <div class="quiz-tax-chips-row">
+        <span class="quiz-tax-chip-label">Nutrisi / Senyawa Kunci:</span>
+        ${item.keyNutrients.map(n => `<span class="quiz-tax-chip"><i data-lucide="sparkles" style="width:11px;height:11px;color:#556B2F;"></i> ${n}</span>`).join('')}
+      </div>
+
+      <div class="quiz-tax-chips-row" style="margin-top:2px;">
+        <span class="quiz-tax-chip-label">Integrasi API Data Pangan:</span>
+        ${item.apis.map(api => `<span class="quiz-tax-chip api-chip"><i data-lucide="database" style="width:11px;height:11px;"></i> ${api}</span>`).join('')}
+      </div>
+
+      <div class="quiz-tax-metric-bar">
+        <span><b>Target Protein:</b> ~${item.proteinTargetLabel}</span>
+        <span><b>Kalori:</b> ${item.caloricNeedType}</span>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   selectActivity(activityId, element) {
@@ -3595,11 +3906,29 @@ class NutriVisionApp {
     // - Rehabilitasi Sendi & Otot (WHO Rehab): 1.4g/kg BB/hari
     // - Gym & Hipertrofi: 1.8g/kg BB/hari
     // - Pemeliharaan Umum / Wellness: 1.1g/kg BB/hari
+    // 4. Kebutuhan Protein Harian Berdasarkan Konsensus 12 Taksonomi Klinis & Kebugaran (ESPEN/ISBI/ASMBS/ISSN/WHO)
     const proteinMultipliers = {
-      'post-surgery': 1.5, // 1.5g / kg BB
-      'rehab': 1.4,        // 1.4g / kg BB
-      'gym': 1.8,          // 1.8g / kg BB
-      'wellness': 1.1      // 1.1g / kg BB
+      // 7 Kategori Pasca-Operasi (Medis)
+      'post_op_digestive': 1.5,   // Bedah Saluran Cerna (1.5 g/kg)
+      'post_op_oncology': 1.8,    // Kanker & Onkologi (1.8 g/kg)
+      'post_op_burns': 2.0,       // Luka Bakar & Rekonstruksi (2.0 g/kg)
+      'post_op_bariatric': 1.4,   // Bedah Bariatrik (1.4 g/kg, min 70-80g)
+      'post_op_orthopedic': 1.5,  // Ortopedi & Trauma (1.5 g/kg)
+      'post_op_cardio': 1.3,      // Kardiovaskular (1.3 g/kg)
+      'post_op_geriatric': 1.4,   // Geriatri Pasca-Operasi (1.4 g/kg)
+
+      // 5 Kategori Gym & Fitness
+      'gym_hypertrophy': 1.8,     // Bulking & Hipertrofi (1.8 g/kg)
+      'gym_powerlifting': 1.8,    // Powerlifting & Strength (1.8 g/kg)
+      'gym_endurance': 1.5,       // CrossFit / Endurance (1.5 g/kg)
+      'gym_recomp': 2.2,          // Body Recomposition (2.2 g/kg)
+      'gym_high_volume': 2.0,     // Atlet High-Volume (2.0 g/kg)
+
+      // Backward Compatibility Legacy Aliases
+      'post-surgery': 1.5,
+      'rehab': 1.5,
+      'gym': 1.8,
+      'wellness': 1.1
     };
     const protMultiplier = proteinMultipliers[condition] || 1.5;
     const calcProtein = Math.round(weight * protMultiplier);
@@ -3690,6 +4019,23 @@ class NutriVisionApp {
     const restrictionsInput = document.getElementById('onboard-restrictions')?.value || '';
 
     const conditionTitles = {
+      // 7 Kategori Pasca-Operasi (Medis)
+      'post_op_digestive': 'Pasca-Bedah Saluran Cerna (Digestif)',
+      'post_op_oncology': 'Pasca-Bedah Kanker & Onkologi',
+      'post_op_burns': 'Luka Bakar & Bedah Rekonstruksi',
+      'post_op_bariatric': 'Pasca-Bedah Bariatrik & Metabolik',
+      'post_op_orthopedic': 'Pasca-Bedah Ortopedi & Trauma',
+      'post_op_cardio': 'Pasca-Bedah Kardiovaskular & Jantung',
+      'post_op_geriatric': 'Geriatri Pasca-Operasi',
+
+      // 5 Kategori Gym & Fitness
+      'gym_hypertrophy': 'Bulking & Hipertrofi Otot',
+      'gym_powerlifting': 'Powerlifting & Strength',
+      'gym_endurance': 'CrossFit & High Endurance',
+      'gym_recomp': 'Body Recomposition',
+      'gym_high_volume': 'Atlet High-Volume',
+
+      // Backward Compatibility Legacy Aliases
       'post-surgery': 'Pasca-Operasi & Bedah',
       'rehab': 'Fisioterapi & Cedera Sendi',
       'gym': 'Gym & Muscle Recovery',
@@ -9388,20 +9734,104 @@ class NutriVisionApp {
   }
 
   // =========================================================================
-  // RECOVERY JOURNEY ROADMAP & DUAL CALENDAR CONTROLLERS (FR-09)
+  // RECOVERY JOURNEY ROADMAP & 12-TAXONOMY SELECTOR CONTROLLERS (FR-09)
   // =========================================================================
+  handleJourneyGroupSelect(groupKey) {
+    // Switch to first default category of the chosen group
+    const targetCondition = groupKey === 'fitness' ? 'gym_hypertrophy' : 'post_op_digestive';
+    this.setJourneyCondition(targetCondition);
+  }
+
+  handleJourneyCategorySelect(categoryValue) {
+    if (!categoryValue) return;
+    this.setJourneyCondition(categoryValue);
+  }
+
+  renderJourneyTaxonomyInfoBanner(conditionId) {
+    const bannerEl = document.getElementById('journey-taxonomy-info-banner');
+    if (!bannerEl) return;
+
+    let cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post_op_digestive';
+    if (cond === 'post-surgery') cond = 'post_op_digestive';
+    else if (cond === 'rehab') cond = 'post_op_orthopedic';
+    else if (cond === 'gym') cond = 'gym_hypertrophy';
+
+    const prof = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post_op_digestive'];
+    if (!prof) return;
+
+    const protMulti = prof.targetMacronutrients?.proteinGPerKg || prof.proteinMultiplier || 1.5;
+    const cals = prof.caloricNeedType || '2000 kkal';
+    const keyNutrients = (prof.keyMicronutrients || ['Albumin', 'Zinc', 'Glutamin']).join(', ');
+    const apiSources = (prof.recommendedApiSources || ['USDA FoodData Central', 'FatSecret Indonesia']).join(' • ');
+    const isMedical = prof.groupKey === 'medical' || (prof.group && prof.group.includes('Medis'));
+
+    bannerEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:${isMedical ? '#F0FDF4' : '#FEF3C7'};color:${isMedical ? '#15803D' : '#B45309'};font-weight:700;border:1px solid ${isMedical ? '#BBF7D0' : '#FDE68A'};">
+          <i data-lucide="${prof.icon || 'target'}" style="width:12px;height:12px;"></i>
+          <span>${prof.group || (isMedical ? 'Pasca-Operasi' : 'Gym & Fitness')}</span>
+        </span>
+        <span style="color:var(--ink);font-weight:700;font-size:11.5px;">${prof.category || prof.title}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:4px;color:var(--ink-soft);">
+          <i data-lucide="zap" style="width:12px;height:12px;color:#D97706;"></i>
+          <span><strong>Target:</strong> ${protMulti} g/kg BB (${cals})</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;color:var(--ink-soft);">
+          <i data-lucide="shield-check" style="width:12px;height:12px;color:#15803D;"></i>
+          <span><strong>Nutrisi Kunci:</strong> ${keyNutrients}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;color:var(--ink-soft);">
+          <i data-lucide="database" style="width:12px;height:12px;color:#0284C7;"></i>
+          <span><strong>Sumber API:</strong> ${apiSources}</span>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons({ root: bannerEl });
+    }
+  }
+
   setJourneyCondition(conditionId) {
+    // Alias mapper
+    if (conditionId === 'post-surgery') conditionId = 'post_op_digestive';
+    else if (conditionId === 'rehab') conditionId = 'post_op_orthopedic';
+    else if (conditionId === 'gym') conditionId = 'gym_hypertrophy';
+
     if (!NUTRIVISION_DATA.recoveryProfiles[conditionId]) {
-      conditionId = 'post-surgery';
+      conditionId = 'post_op_digestive';
     }
     this.journeyCondition = conditionId;
 
-    // Update state tombol tab
+    const prof = NUTRIVISION_DATA.recoveryProfiles[conditionId];
+    const isFitness = prof && (prof.groupKey === 'fitness' || conditionId.startsWith('gym'));
+
+    // Update group buttons
+    const medBtn = document.getElementById('journey-btn-group-med');
+    const fitBtn = document.getElementById('journey-btn-group-fit');
+    if (medBtn) medBtn.classList.toggle('active', !isFitness);
+    if (fitBtn) fitBtn.classList.toggle('active', isFitness);
+
+    // Update dropdown selection
+    const dropdownEl = document.getElementById('journey-category-dropdown');
+    if (dropdownEl && dropdownEl.value !== conditionId) {
+      dropdownEl.value = conditionId;
+    }
+
+    // Legacy tab support if elements exist
     document.querySelectorAll('#journey-condition-tabs .journey-cond-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.condition === conditionId);
+      const bCond = btn.dataset.condition;
+      const bGroup = btn.dataset.group;
+      if (bGroup) {
+        btn.classList.toggle('active', (bGroup === 'fitness' && isFitness) || (bGroup === 'medical' && !isFitness));
+      } else if (bCond) {
+        btn.classList.toggle('active', bCond === conditionId);
+      }
     });
 
-    const prof = NUTRIVISION_DATA.recoveryProfiles[conditionId];
     if (prof) {
       const subEl = document.getElementById('journey-roadmap-sub');
       if (subEl) subEl.textContent = prof.protocol;
@@ -9410,6 +9840,7 @@ class NutriVisionApp {
     }
 
     this.renderJourneyRoadmap(conditionId);
+    this.renderJourneyTaxonomyInfoBanner(conditionId);
     this.renderClinicalCalendarAndScheduleSuite();
 
     const isId = (window.i18n ? window.i18n.getLanguage() : 'id') === 'id';
@@ -9423,14 +9854,26 @@ class NutriVisionApp {
     const gridEl = document.getElementById('journey-timeline-grid');
     if (!gridEl) return;
 
-    const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
-    const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
+    let cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post_op_digestive';
+    if (cond === 'post-surgery') cond = 'post_op_digestive';
+    else if (cond === 'rehab') cond = 'post_op_orthopedic';
+    else if (cond === 'gym') cond = 'gym_hypertrophy';
+
+    const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post_op_digestive'];
     if (!profile || !profile.phases) return;
 
-    // Sinkronkan tab aktif jika belum aktif
-    document.querySelectorAll('#journey-condition-tabs .journey-cond-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.condition === cond);
-    });
+    const isFitness = profile.groupKey === 'fitness' || cond.startsWith('gym');
+
+    // Sinkronkan UI tombol & dropdown
+    const medBtn = document.getElementById('journey-btn-group-med');
+    const fitBtn = document.getElementById('journey-btn-group-fit');
+    if (medBtn) medBtn.classList.toggle('active', !isFitness);
+    if (fitBtn) fitBtn.classList.toggle('active', isFitness);
+
+    const dropdownEl = document.getElementById('journey-category-dropdown');
+    if (dropdownEl && dropdownEl.value !== cond) {
+      dropdownEl.value = cond;
+    }
 
     const subEl = document.getElementById('journey-roadmap-sub');
     if (subEl) subEl.textContent = profile.protocol;
