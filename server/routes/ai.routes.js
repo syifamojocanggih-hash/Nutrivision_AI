@@ -432,5 +432,26 @@ router.post('/nutrition-advisor', optionalAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/ai/symptom-filter
+ * Symptom-aware nutrition texture and food filter
+ */
+router.post('/symptom-filter', async (req, res) => {
+  try {
+    const { symptoms = [] } = req.body;
+    const foods = await db.query('SELECT * FROM foods');
+    let filtered = foods;
+    if (Array.isArray(symptoms) && symptoms.length > 0) {
+      filtered = foods.filter(f => {
+        const tags = typeof f.symptom_tags === 'string' ? JSON.parse(f.symptom_tags || '[]') : (f.symptom_tags || []);
+        return symptoms.some(s => tags.includes(s) || tags.includes(`${s}_friendly`));
+      });
+    }
+    return res.json({ success: true, count: filtered.length, foods: filtered });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
 

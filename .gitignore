@@ -1,7 +1,120 @@
-node_modules/
-.env
-.next/
-build/
-dist/
+# ==============================================================================
+# NutriVision AI — Production .gitignore
+# Stack: Node.js (Express), Python (AI / Safetensors), Vanilla Web & MySQL
+# ==============================================================================
 
+# ── Environment & Secrets ──
+.env
+.env.local
+.env.*.local
+*.env
+server/.env
+*.pem
+*.key
+*.cert
+
+# ── Node.js & Dependencies ──
+node_modules/
+server/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Python Virtual Environments & Packages ──
+venv/
+server/venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ── Python Bytecode & Cache ──
+__pycache__/
+*/__pycache__/
+**/*.py[cod]
+*$py.class
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ── Large AI Models & Binary Weights ──
+# Note: Keep lightweight configs (*.json, *.txt), ignore large binary weights
 model.safetensors
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+*.h5
+*.tflite
+*.pkl
+
+# ── Web Builds & Cache ──
+.next/
+out/
+.cache/
+.parcel-cache/
+dist/
+build/
+
+# ── Databases, Local Storage & Sockets ──
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sock
+*.sock.lock
+*.pid
+*.seed
+
+# ── Logs & Temporary Files ──
+logs/
+*.log
+*.tmp
+*.temp
+scratch/*.tmp
+
+# ── macOS System Files ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon?
+
+# ── Windows System Files ──
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# ── IDEs & Code Editors ──
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace

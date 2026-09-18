@@ -5,11 +5,13 @@
  * Run: node server/verify_system.js
  */
 
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const http = require('http');
 
-const NODE_PORT = 5000;
+const NODE_PORT = parseInt(process.env.PORT) || 5001;
 const PYTHON_PORT = 5050;
-const MYSQL_PORT = 3306;
+const MYSQL_PORT = parseInt(process.env.DB_PORT) || 3306;
 
 function httpRequest(urlStr, method = 'GET', body = null, customHeaders = {}) {
   return new Promise((resolve, reject) => {
@@ -126,7 +128,7 @@ async function verifyAllSystems() {
   }
 
   // 3. Audit Node.js Express REST API Core Server
-  process.stdout.write('3. Memeriksa REST API Backend Server (Port 5000)... ');
+  process.stdout.write(`3. Memeriksa REST API Backend Server (Port ${NODE_PORT})... `);
   try {
     const apiHealth = await httpRequest(`http://localhost:${NODE_PORT}/api/health`);
     if (apiHealth.status === 200) {

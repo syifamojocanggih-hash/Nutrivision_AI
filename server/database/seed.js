@@ -9,12 +9,10 @@ const bcrypt = require('bcryptjs');
 
 async function seedDatabase(db) {
   try {
-    // Always ensure smart notifications are seeded if table is empty
-    await seedNotifications(db);
-
     const userCountResult = await db.get('SELECT COUNT(*) as count FROM users');
     if (userCountResult && userCountResult.count > 0) {
-      console.log('ℹ️ MySQL database already contains data. Skipping initial user seeding.');
+      console.log('ℹ️ MySQL database already contains data. Checking smart notifications...');
+      await seedNotifications(db);
       return;
     }
 

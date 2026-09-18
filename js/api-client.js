@@ -7,9 +7,10 @@
 
 class NutriVisionAPIClient {
   constructor() {
-    // Check if hosted on same port or default local backend port 5000
-    const isSameOriginBackend = window.location.port === '5000';
-    this.baseUrl = localStorage.getItem('nv_api_base_url') || (isSameOriginBackend ? '' : 'http://localhost:5000');
+    // Check if hosted on same origin backend or default local backend port
+    const isSameOriginBackend = window.location.protocol.startsWith('http') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const defaultPort = window.location.port || '5000';
+    this.baseUrl = localStorage.getItem('nv_api_base_url') || (isSameOriginBackend ? '' : `http://localhost:${defaultPort}`);
     this.tokenKey = 'nv_auth_token';
     this.isServerOnline = false;
     this.lastHealthCheck = null;

@@ -6998,7 +6998,21 @@ class NutriVisionApp {
 
       const userRole = user.role || 'patient';
       const isNonPatient = userRole === 'admin' || userRole === 'caregiver';
-      const hasQuiz = isNonPatient ? true : Boolean(user.hasCompletedQuiz && (user.targetProtein || user.weight));
+
+      // Normalisasi field profil dari Backend REST/MySQL (snake_case) maupun DB Lokal (camelCase)
+      const condKey = user.clinical_condition || user.condition || 'post-surgery';
+      const condLabel = user.conditionLabel || conditionTitles[condKey] || 'Pasca-Operasi & Bedah';
+      const weightVal = parseFloat(user.weight_kg || user.weight) || 65;
+      const heightVal = parseFloat(user.height_cm || user.height) || 170;
+      const protVal = parseFloat(user.target_protein || user.targetProtein || (user.targets && user.targets.protein)) || null;
+      const carbsVal = parseFloat(user.target_carbs || user.targetCarbs || (user.targets && user.targets.carbs)) || null;
+      const fatVal = parseFloat(user.target_fat || user.targetFat || (user.targets && user.targets.fat)) || null;
+      const calVal = parseInt(user.daily_calories || user.targetCalories || user.calories || (user.targets && user.targets.calories)) || null;
+
+      const hasQuiz = isNonPatient ? true : Boolean(
+        user.hasCompletedQuiz === true ||
+        (user.hasCompletedQuiz !== false && (protVal || calVal || user.clinical_condition || user.condition))
+      );
 
       this.userProfile = {
         ...this.userProfile,
@@ -7007,22 +7021,22 @@ class NutriVisionApp {
         name: user.name || this.userProfile.name,
         contact: user.email,
         gender: user.gender || 'male',
-        age: user.age || 28,
-        heightCm: user.height || 170,
-        weightKg: user.weight || 65,
-        activityLevel: user.activity || user.activityLevel || 'light',
-        conditionId: user.condition || 'post-surgery',
-        conditionTitle: user.conditionLabel || conditionTitles[user.condition] || 'Pasca-Operasi & Bedah',
-        phase: user.recoveryPhase || user.phase || 'Minggu ke-2 (Fase Proliferasi)',
-        restrictions: user.allergies || user.restrictions || 'Bebas pantangan khusus',
+        age: parseInt(user.age) || 28,
+        heightCm: heightVal,
+        weightKg: weightVal,
+        activityLevel: user.activity_level || user.activity || user.activityLevel || 'light',
+        conditionId: condKey,
+        conditionTitle: condLabel,
+        phase: user.recovery_phase || user.recoveryPhase || user.phase || 'Minggu ke-2 (Fase Proliferasi)',
+        restrictions: (Array.isArray(user.allergies) ? user.allergies.join(', ') : user.allergies) || (Array.isArray(user.restrictions) ? user.restrictions.join(', ') : user.restrictions) || 'Bebas pantangan khusus',
         hasAcceptedConsent: true,
         hasCompletedQuiz: hasQuiz,
-        targets: (hasQuiz && (user.targetProtein || user.targets)) ? {
-          protein: user.targetProtein || (user.targets && user.targets.protein) || 75,
-          carbs: user.targetCarbs || (user.targets && user.targets.carbs) || 220,
-          fat: user.targetFat || (user.targets && user.targets.fat) || 55,
-          calories: user.targetCalories || (user.targets && user.targets.calories) || 1850
-        } : null
+        targets: (protVal || calVal || user.targets) ? {
+          protein: protVal || (user.targets && user.targets.protein) || 75,
+          carbs: carbsVal || (user.targets && user.targets.carbs) || 220,
+          fat: fatVal || (user.targets && user.targets.fat) || 55,
+          calories: calVal || (user.targets && user.targets.calories) || 1850
+        } : (hasQuiz ? { protein: 75, carbs: 220, fat: 55, calories: 1850 } : null)
       };
 
       this.saveUserProfile();
@@ -7056,14 +7070,15 @@ class NutriVisionApp {
       // Default: Patient Flow
       this.goToDashboard('overview');
 
-      if (!hasQuiz || !this.userProfile.targets) {
+      if (!this.userProfile.targets) {
         cvEngine.currentScan = null;
         this.renderOverviewPlate();
         progressTracker.setEmptyState();
         progressTracker.renderMacroDonut(null);
         progressTracker.renderWeeklyBarChart();
-        this.showToast(`✅ Login Berhasil! Silakan lengkapi data profil & diagnostik nutrisi untuk mengaktifkan dasbor Anda.`);
-        this.openQuizModal(1);
+        this.showToast(`✅ Login Berhasil! Selamat datang kembali, ${this.userProfile.name}`);
+        // PENTING: Wizard onboarding/kuis diagnostik TIDAK dibuka saat login.
+        // Wizard hanya dibuka saat registrasi akun baru (handleRegister).
       } else {
         if (this.userProfile.isDemo) {
           cvEngine.loadScanData(NUTRIVISION_DATA.presetScans[0]);
@@ -7208,13 +7223,11 @@ class NutriVisionApp {
     this.updateProfileUI();
     this.renderAuthUI();
     this.goToDashboard('overview');
-    this.showToast(`✅ Berhasil masuk dengan akun ${provider}! Silakan lengkapi data diagnostik Anda.`);
+    this.showToast(`✅ Berhasil masuk dengan akun ${provider}!`);
     if (typeof this.pendingAuthCallback === 'function') {
       const cb = this.pendingAuthCallback;
       this.pendingAuthCallback = null;
       cb();
-    } else {
-      this.openQuizModal(1);
     }
   }
 
