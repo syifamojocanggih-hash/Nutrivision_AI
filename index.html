@@ -126,6 +126,16 @@
                 <span class="db-status-dot" id="lp-db-dot"></span>
                 <span data-i18n="nav_database">Database</span>
               </button>
+
+              <!-- ✅ PWA INSTALL BUTTON (Navbar) — tampil setelah event beforeinstallprompt -->
+              <button id="pwa-install-nav-btn"
+                onclick="window.nutrivisionPWA && window.nutrivisionPWA.triggerInstall()"
+                title="Install NutriVision AI sebagai aplikasi di perangkat ini"
+                style="all:unset;cursor:pointer;display:none;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,#9EA76B,#6B8C3E);border:none;box-shadow:0 2px 8px rgba(110,140,62,0.35);transition:all 0.22s ease;letter-spacing:0.3px;">
+                <i data-lucide="download" style="width:14px;height:14px;"></i>
+                <span>Install App</span>
+              </button>
+
               <button class="lp-btn-nav-primary" id="lp-nav-login-btn" onclick="app.openAuthModal('login')"
                 title="Sign in to NutriVision AI">
                 <i data-lucide="log-in" class="btn-icon-sm" style="width:15px;height:15px;"></i>
@@ -176,11 +186,51 @@
             <div class="lp-hero-actions">
               <button class="lp-btn-hero-primary" onclick="app.openAuthModal('login')">
                 <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
-                <span data-i18n="hero_cta_primary">Sign In & Calibrate Dashboard</span>
+                <span data-i18n="hero_cta_primary">Sign In &amp; Calibrate Dashboard</span>
               </button>
               <button class="lp-btn-hero-secondary" onclick="app.goToDashboard('overview')">
                 <span data-i18n="hero_cta_secondary">View Dashboard Preview</span>
                 <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+              </button>
+
+              <!-- ✅ TOMBOL DOWNLOAD APP — Selalu Tampil di Landing Page -->
+              <button id="pwa-hero-install-btn"
+                onclick="window.nutrivisionPWA ? window.nutrivisionPWA.triggerInstall() : alert('Buka di Chrome/Edge untuk install aplikasi ini.')"
+                title="Download & Install NutriVision AI sebagai aplikasi di perangkat ini"
+                style="
+                  display:inline-flex;
+                  align-items:center;
+                  gap:9px;
+                  padding:13px 24px;
+                  border-radius:50px;
+                  font-family:'Plus Jakarta Sans',Inter,sans-serif;
+                  font-size:13px;
+                  font-weight:700;
+                  color:#fff;
+                  background:linear-gradient(135deg, #5a7d2c 0%, #9EA76B 60%, #c8d87a 100%);
+                  border:none;
+                  cursor:pointer;
+                  box-shadow:0 4px 18px rgba(94,140,40,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
+                  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+                  letter-spacing:0.3px;
+                  position:relative;
+                  overflow:hidden;
+                "
+                onmouseenter="this.style.transform='scale(1.04) translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(94,140,40,0.55), inset 0 1px 0 rgba(255,255,255,0.18)'"
+                onmouseleave="this.style.transform='scale(1) translateY(0)';this.style.boxShadow='0 4px 18px rgba(94,140,40,0.45), inset 0 1px 0 rgba(255,255,255,0.18)'">
+                <!-- Shimmer effect -->
+                <span style="
+                  position:absolute;top:0;left:-60%;width:40%;height:100%;
+                  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
+                  animation:pwa-shimmer 2.5s infinite;
+                  border-radius:50px;
+                "></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span id="pwa-hero-btn-label">Download App</span>
               </button>
             </div>
           </div>
@@ -5598,6 +5648,499 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/admin_validator.js"></script>
   <script src="js/food_clinical_validator.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- ============================================================
+       PWA INSTALL — Banner Toast + Floating Button + Logic
+       ============================================================ -->
+
+  <!-- PWA Install Banner (muncul dari bawah) -->
+  <div id="pwa-install-banner" style="
+    display:none;
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    z-index:99999;
+    width:min(480px, calc(100vw - 32px));
+    background:linear-gradient(135deg, #1a2e0d 0%, #2d4a1a 100%);
+    border:1px solid rgba(158,167,107,0.4);
+    border-radius:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(110,140,62,0.25);
+    padding:20px 22px;
+    opacity:0;
+    transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    font-family:'Plus Jakarta Sans', Inter, sans-serif;
+  ">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <!-- App Icon -->
+      <div style="flex-shrink:0;width:52px;height:52px;border-radius:14px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <img src="icons/icon-192.png" alt="NutriVision AI" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+
+      <!-- Text -->
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:3px;">Install NutriVision AI</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4;">Tambahkan ke layar utama untuk akses cepat tanpa browser</div>
+      </div>
+
+      <!-- Close -->
+      <button onclick="window.nutrivisionPWA && window.nutrivisionPWA.dismissBanner()" style="
+        all:unset;cursor:pointer;flex-shrink:0;
+        width:28px;height:28px;border-radius:50%;
+        background:rgba(255,255,255,0.1);
+        display:flex;align-items:center;justify-content:center;
+        color:rgba(255,255,255,0.6);transition:all 0.15s;
+        font-size:16px;line-height:1;
+      " title="Tutup" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">&times;</button>
+    </div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button id="pwa-banner-install-btn"
+        onclick="window.nutrivisionPWA && window.nutrivisionPWA.triggerInstall()"
+        style="
+          all:unset;cursor:pointer;flex:1;
+          padding:11px 20px;border-radius:12px;
+          background:linear-gradient(135deg,#9EA76B,#7a9e40);
+          color:#fff;font-size:13px;font-weight:700;
+          text-align:center;letter-spacing:0.3px;
+          box-shadow:0 4px 14px rgba(110,140,62,0.5);
+          transition:all 0.18s ease;
+          display:flex;align-items:center;justify-content:center;gap:7px;
+        "
+        onmouseenter="this.style.transform='scale(1.02)'" onmouseleave="this.style.transform='scale(1)'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Install Sekarang
+      </button>
+      <button onclick="window.nutrivisionPWA && window.nutrivisionPWA.dismissBanner()" style="
+        all:unset;cursor:pointer;
+        padding:11px 18px;border-radius:12px;
+        border:1px solid rgba(255,255,255,0.2);
+        color:rgba(255,255,255,0.7);font-size:13px;font-weight:500;
+        text-align:center;transition:all 0.18s;
+      " onmouseenter="this.style.background='rgba(255,255,255,0.08)'" onmouseleave="this.style.background='transparent'">
+        Nanti Saja
+      </button>
+    </div>
+
+    <!-- iOS Hint (hanya muncul di Safari iOS) -->
+    <div id="pwa-ios-hint" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(255,255,255,0.06);border-radius:10px;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5;text-align:center;">
+        Di Safari iOS: Ketuk <strong style="color:rgba(255,255,255,0.8);">🔗 Share</strong> lalu pilih
+        <strong style="color:rgba(255,255,255,0.8);">&ldquo;Add to Home Screen&rdquo;</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Download Button (selalu visible, pojok kanan bawah) -->
+  <button id="pwa-fab-btn"
+    onclick="window.nutrivisionPWA && window.nutrivisionPWA.fabClick()"
+    title="Download / Install NutriVision AI"
+    style="
+      position:fixed;
+      bottom:28px;
+      right:24px;
+      z-index:99998;
+      display:none;
+      align-items:center;
+      gap:8px;
+      padding:13px 20px;
+      border-radius:50px;
+      background:linear-gradient(135deg,#9EA76B 0%,#6B8C3E 100%);
+      color:#fff;
+      font-family:'Plus Jakarta Sans',Inter,sans-serif;
+      font-size:13px;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      box-shadow:0 6px 24px rgba(110,140,62,0.5),0 2px 8px rgba(0,0,0,0.2);
+      transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      letter-spacing:0.3px;
+      white-space:nowrap;
+    "
+    onmouseenter="this.style.transform='scale(1.05) translateY(-2px)';this.style.boxShadow='0 10px 32px rgba(110,140,62,0.6),0 4px 12px rgba(0,0,0,0.25)'"
+    onmouseleave="this.style.transform='scale(1) translateY(0)';this.style.boxShadow='0 6px 24px rgba(110,140,62,0.5),0 2px 8px rgba(0,0,0,0.2)'">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span id="pwa-fab-label">Download App</span>
+  </button>
+
+  <!-- Already Installed Toast -->
+  <div id="pwa-installed-toast" style="
+    display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    z-index:100000;background:#1a2e0d;border:1px solid rgba(158,167,107,0.4);
+    border-radius:14px;padding:14px 22px;
+    color:#fff;font-size:13px;font-weight:600;
+    box-shadow:0 12px 40px rgba(0,0,0,0.35);
+    display:none;align-items:center;gap:10px;
+    font-family:'Plus Jakarta Sans',Inter,sans-serif;
+    transition:all 0.35s ease;
+    white-space:nowrap;
+  ">
+    <span style="font-size:18px;">✅</span>
+    NutriVision AI berhasil diinstall!
+  </div>
+
+  <!-- PWA Install Logic -->
+  <script>
+  (function () {
+    'use strict';
+
+    let deferredPrompt = null;
+    let isBannerDismissed = false;
+    let isInstalled = false;
+    let bannerShownOnce = false;
+    const DISMISS_KEY = 'nv_pwa_dismiss';
+    const INSTALL_KEY = 'nv_pwa_installed';
+
+    // Check if already running as installed PWA
+    const isRunningStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+
+    if (isRunningStandalone || localStorage.getItem(INSTALL_KEY)) {
+      isInstalled = true;
+    }
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    const isEdge = /Edg\//.test(navigator.userAgent);
+
+    // ── DOM refs ──────────────────────────────────────────────────
+    function el(id) { return document.getElementById(id); }
+
+    // ── Modal panduan install untuk browser yang tidak support prompt ──
+    function showInstallGuideModal() {
+      // Buat modal jika belum ada
+      if (el('pwa-guide-modal')) {
+        el('pwa-guide-modal').style.display = 'flex';
+        return;
+      }
+
+      const modal = document.createElement('div');
+      modal.id = 'pwa-guide-modal';
+      modal.style.cssText = `
+        position:fixed;inset:0;z-index:999999;
+        display:flex;align-items:center;justify-content:center;
+        background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+        font-family:'Plus Jakarta Sans',Inter,sans-serif;
+        padding:20px;
+      `;
+
+      const ua = navigator.userAgent;
+      let browserGuide = '';
+      if (isIOS && isSafari) {
+        browserGuide = `
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:rgba(158,167,107,0.15);border-radius:12px;margin-bottom:12px;border:1px solid rgba(158,167,107,0.3);">
+            <span style="font-size:28px;">📱</span>
+            <div>
+              <div style="font-weight:700;color:#fff;margin-bottom:4px;">Safari iOS (iPhone/iPad)</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">
+                1. Ketuk ikon <strong style="color:#9EA76B;">🔗 Share</strong> di toolbar bawah Safari<br>
+                2. Scroll ke bawah, pilih <strong style="color:#9EA76B;">"Add to Home Screen"</strong><br>
+                3. Ketuk <strong style="color:#9EA76B;">"Add"</strong> di pojok kanan atas
+              </div>
+            </div>
+          </div>`;
+      } else if (/Firefox/.test(ua)) {
+        browserGuide = `
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:rgba(158,167,107,0.15);border-radius:12px;margin-bottom:12px;border:1px solid rgba(158,167,107,0.3);">
+            <span style="font-size:28px;">🦊</span>
+            <div>
+              <div style="font-weight:700;color:#fff;margin-bottom:4px;">Firefox</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">
+                Firefox belum mendukung install PWA langsung.<br>
+                <strong style="color:#9EA76B;">Buka di Chrome atau Edge</strong> untuk menginstall sebagai app.
+              </div>
+            </div>
+          </div>`;
+      } else {
+        browserGuide = `
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:rgba(158,167,107,0.15);border-radius:12px;margin-bottom:12px;border:1px solid rgba(158,167,107,0.3);">
+            <span style="font-size:28px;">🌐</span>
+            <div>
+              <div style="font-weight:700;color:#fff;margin-bottom:4px;">Chrome / Edge (Desktop)</div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">
+                1. Klik ikon <strong style="color:#9EA76B;">⊕</strong> atau <strong style="color:#9EA76B;">⬇</strong> di address bar (kanan atas)<br>
+                2. Pilih <strong style="color:#9EA76B;">"Install NutriVision AI"</strong><br>
+                3. Konfirmasi dengan klik <strong style="color:#9EA76B;">"Install"</strong>
+              </div>
+            </div>
+          </div>
+          <div style="padding:12px;background:rgba(255,200,50,0.08);border-radius:10px;border:1px solid rgba(255,200,50,0.2);">
+            <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">
+              💡 <strong style="color:rgba(255,255,255,0.75);">Catatan:</strong> Tombol install hanya muncul otomatis saat diakses via <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:4px;">https://</code> atau <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:4px;">localhost</code>.
+            </div>
+          </div>`;
+      }
+
+      modal.innerHTML = `
+        <div style="
+          background:linear-gradient(145deg,#1a2e0d,#2d4a1a);
+          border:1px solid rgba(158,167,107,0.35);
+          border-radius:24px;
+          padding:28px;
+          width:min(460px,100%);
+          box-shadow:0 24px 80px rgba(0,0,0,0.5);
+          position:relative;
+        ">
+          <!-- Header -->
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;">
+            <div style="width:48px;height:48px;border-radius:14px;overflow:hidden;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+              <img src="icons/icon-192.png" style="width:100%;height:100%;object-fit:cover;" alt="NutriVision AI">
+            </div>
+            <div>
+              <div style="font-size:16px;font-weight:800;color:#fff;line-height:1.2;">Download NutriVision AI</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px;">Panduan install sebagai aplikasi</div>
+            </div>
+            <button onclick="document.getElementById('pwa-guide-modal').style.display='none'" style="
+              all:unset;cursor:pointer;margin-left:auto;
+              width:32px;height:32px;border-radius:50%;
+              background:rgba(255,255,255,0.1);
+              display:flex;align-items:center;justify-content:center;
+              color:rgba(255,255,255,0.6);font-size:18px;line-height:1;
+              transition:all 0.15s;flex-shrink:0;
+            " onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">&times;</button>
+          </div>
+
+          <!-- Guide content -->
+          ${browserGuide}
+
+          <!-- Close button -->
+          <button onclick="document.getElementById('pwa-guide-modal').style.display='none'" style="
+            all:unset;cursor:pointer;display:block;width:100%;
+            margin-top:18px;padding:13px;
+            text-align:center;border-radius:12px;
+            background:linear-gradient(135deg,#9EA76B,#7a9e40);
+            color:#fff;font-size:14px;font-weight:700;
+            box-shadow:0 4px 14px rgba(110,140,62,0.4);
+            transition:all 0.15s;
+          " onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'">
+            Mengerti
+          </button>
+        </div>
+      `;
+
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+
+      document.body.appendChild(modal);
+    }
+
+    function showBanner() {
+      if (bannerShownOnce || isInstalled) return;
+      bannerShownOnce = true;
+
+      const banner = el('pwa-install-banner');
+      if (!banner) return;
+
+      if (isIOS && isSafari) {
+        const iosHint = el('pwa-ios-hint');
+        if (iosHint) iosHint.style.display = 'block';
+        const installBtn = el('pwa-banner-install-btn');
+        if (installBtn) installBtn.style.display = 'none';
+      }
+
+      banner.style.display = 'block';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          banner.style.opacity = '1';
+          banner.style.transform = 'translateX(-50%) translateY(0)';
+        });
+      });
+    }
+
+    function hideBanner() {
+      const banner = el('pwa-install-banner');
+      if (!banner) return;
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateX(-50%) translateY(20px)';
+      setTimeout(() => { banner.style.display = 'none'; }, 400);
+    }
+
+    // Selalu tampilkan FAB di landing (kecuali sudah install)
+    function initAlwaysVisibleUI() {
+      if (isInstalled) {
+        // Ubah label tombol hero jadi "Terpasang ✓"
+        const heroLabel = el('pwa-hero-btn-label');
+        if (heroLabel) {
+          heroLabel.textContent = 'Terpasang ✓';
+          const heroBtn = el('pwa-hero-install-btn');
+          if (heroBtn) {
+            heroBtn.style.background = 'rgba(158,167,107,0.25)';
+            heroBtn.style.border = '1.5px solid rgba(158,167,107,0.5)';
+            heroBtn.style.color = '#9EA76B';
+            heroBtn.style.boxShadow = 'none';
+            heroBtn.style.cursor = 'default';
+            heroBtn.onclick = null;
+          }
+        }
+        return;
+      }
+
+      // Tampilkan FAB button
+      const fab = el('pwa-fab-btn');
+      if (fab) {
+        fab.style.display = 'flex';
+      }
+    }
+
+    function showNavBtn() {
+      if (isInstalled) return;
+      const btn = el('pwa-install-nav-btn');
+      if (!btn) return;
+      btn.style.display = 'inline-flex';
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    function showInstalledToast() {
+      const toast = el('pwa-installed-toast');
+      if (!toast) return;
+      toast.style.display = 'flex';
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+      }, 3500);
+    }
+
+    // ── Public API ─────────────────────────────────────────────────
+    window.nutrivisionPWA = {
+      triggerInstall: async function () {
+        // iOS Safari → panduan manual
+        if (isIOS && isSafari) {
+          showInstallGuideModal();
+          return;
+        }
+        // Ada prompt native (Chrome/Edge) → langsung install
+        if (deferredPrompt) {
+          try {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              isInstalled = true;
+              localStorage.setItem(INSTALL_KEY, '1');
+              hideBanner();
+              hideAllInstallUI();
+              showInstalledToast();
+            }
+            deferredPrompt = null;
+          } catch (e) {
+            console.warn('[PWA] Install prompt error:', e);
+          }
+          return;
+        }
+        // Tidak ada prompt (Firefox, Safari desktop, file://) → panduan manual
+        showInstallGuideModal();
+      },
+
+      dismissBanner: function () {
+        hideBanner();
+        isBannerDismissed = true;
+        localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      },
+
+      fabClick: function () {
+        if (deferredPrompt) {
+          this.triggerInstall();
+        } else {
+          showBanner();
+        }
+      }
+    };
+
+    function hideAllInstallUI() {
+      const fab = el('pwa-fab-btn');
+      const navBtn = el('pwa-install-nav-btn');
+      const heroBtn = el('pwa-hero-install-btn');
+      if (fab) fab.style.display = 'none';
+      if (navBtn) navBtn.style.display = 'none';
+      if (heroBtn) {
+        const lbl = el('pwa-hero-btn-label');
+        if (lbl) lbl.textContent = 'Terpasang ✓';
+        heroBtn.style.background = 'rgba(158,167,107,0.2)';
+        heroBtn.style.color = '#9EA76B';
+        heroBtn.style.boxShadow = 'none';
+        heroBtn.onclick = null;
+      }
+      hideBanner();
+    }
+
+    // ── CSS shimmer animation ──────────────────────────────────────
+    const shimmerStyle = document.createElement('style');
+    shimmerStyle.textContent = `
+      @keyframes pwa-shimmer {
+        0% { left: -60%; }
+        60% { left: 120%; }
+        100% { left: 120%; }
+      }
+    `;
+    document.head.appendChild(shimmerStyle);
+
+    // ── Event Listeners ────────────────────────────────────────────
+
+    // Capture install prompt dari browser (Chrome/Edge/Samsung)
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Upgrade tombol hero jadi "siap install native"
+      const heroBtn = el('pwa-hero-install-btn');
+      if (heroBtn && !isInstalled) {
+        const lbl = el('pwa-hero-btn-label');
+        if (lbl) lbl.textContent = 'Install App';
+      }
+
+      showNavBtn();
+
+      // Auto-show banner setelah 4 detik (jika belum pernah dismiss hari ini)
+      const lastDismiss = parseInt(localStorage.getItem(DISMISS_KEY) || '0');
+      const dayMs = 24 * 60 * 60 * 1000;
+      if ((Date.now() - lastDismiss) > dayMs && !isBannerDismissed) {
+        setTimeout(() => { if (!isInstalled) showBanner(); }, 4000);
+      }
+    });
+
+    // App berhasil terinstall
+    window.addEventListener('appinstalled', () => {
+      isInstalled = true;
+      localStorage.setItem(INSTALL_KEY, '1');
+      deferredPrompt = null;
+      hideAllInstallUI();
+      showInstalledToast();
+      console.log('[PWA] NutriVision AI berhasil diinstall!');
+    });
+
+    // ── Inisialisasi awal setelah DOM siap ────────────────────────
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAlwaysVisibleUI);
+    } else {
+      initAlwaysVisibleUI();
+    }
+
+    // iOS Safari → tampilkan panduan jika belum dismiss hari ini
+    if (isIOS && isSafari && !isRunningStandalone && !isInstalled) {
+      const lastDismiss = parseInt(localStorage.getItem(DISMISS_KEY) || '0');
+      const dayMs = 24 * 60 * 60 * 1000;
+      if ((Date.now() - lastDismiss) > dayMs) {
+        setTimeout(() => { showBanner(); }, 5000);
+      }
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+          .catch(err => console.warn('[SW] Registration failed:', err));
+      });
+    }
+  })();
+  </script>
 
 </body>
 
