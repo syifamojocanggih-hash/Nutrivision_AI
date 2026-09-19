@@ -150,7 +150,7 @@ const CLINICAL_FOOD_SWAPS = [
 class NutriVisionPlanner {
   constructor() {
     this.currentMode = 'standar'; // 'standar' atau 'hemat'
-    this.activeSymptoms = new Set(['dysphagia', 'sulit-menelan', 'nausea', 'mual', 'constipation', 'konstipasi']); // Default demo matching mockup (3 aktif)
+    this.activeSymptoms = new Set(); // Akan disinkronisasi dinamis dari profil pengguna
     this.selectedMealNames = new Set();
     this.customRestrictions = new Set();
     this.quickSuggestionList = [
@@ -211,19 +211,33 @@ class NutriVisionPlanner {
     this._doToggleSymptom(keys, isCurrentlyActive);
   }
 
+  syncWithApp() {
+    if (window.app && window.app.userProfile && Array.isArray(window.app.userProfile.symptoms)) {
+      this.activeSymptoms = new Set(window.app.userProfile.symptoms);
+    }
+  }
+
   _doToggleSymptom(keys, isCurrentlyActive) {
-    keys.forEach(k => {
-      if (isCurrentlyActive) {
-        this.activeSymptoms.delete(k);
-      } else {
-        this.activeSymptoms.add(k);
-      }
-    });
+    if (window.app && typeof window.app.toggleUserSymptom === 'function') {
+      keys.forEach(k => {
+        window.app.toggleUserSymptom(k);
+      });
+      this.syncWithApp();
+    } else {
+      keys.forEach(k => {
+        if (isCurrentlyActive) {
+          this.activeSymptoms.delete(k);
+        } else {
+          this.activeSymptoms.add(k);
+        }
+      });
+    }
     this.syncChipUI();
     this.renderSymptomFilter();
   }
 
   syncChipUI() {
+    this.syncWithApp();
     const chips = document.querySelectorAll('#planner-symptom-chips .symptom-chip');
     let activeCount = 0;
     const countedCategories = new Set();
@@ -1106,6 +1120,8 @@ class NutriVisionPlanner {
     const container2 = document.getElementById('meal-plan-list-full');
     if (!container1 && !container2) return;
 
+    this.syncWithApp();
+
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const plans = NUTRIVISION_DATA.mealPlans[this.currentMode] || [];
     const isSoftTextureRequired = this.activeSymptoms.has('sulit-menelan');
@@ -1278,7 +1294,7 @@ class NutriVisionPlanner {
       if (protMatch) prot = parseInt(protMatch[1], 10);
       if (calsMatch) cals = parseInt(calsMatch[1], 10);
 
-      const userKey = app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name;
+      const userKey = app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name;
       progressTracker.addLoggedMeal({
         protein: [prot, prot],
         carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
@@ -1296,6 +1312,8 @@ class NutriVisionPlanner {
   renderSymptomFilter(resultContainerId = 'symptom-result-box') {
     const container = document.getElementById(resultContainerId);
     if (!container) return;
+
+    this.syncWithApp();
 
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const activeList = Array.from(this.activeSymptoms);

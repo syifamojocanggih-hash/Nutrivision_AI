@@ -3,13 +3,21 @@
 
 class NutriVisionCommunity {
   constructor() {
+    this.activeFilter = 'all';
+    this.loadPosts();
+  }
+
+  loadPosts() {
+    const initPosts = (typeof NUTRIVISION_DATA !== 'undefined' && NUTRIVISION_DATA.initialCommunityPosts && NUTRIVISION_DATA.initialCommunityPosts.length > 0) 
+      ? NUTRIVISION_DATA.initialCommunityPosts 
+      : [];
+      
     const saved = localStorage.getItem('nutrivision_community_posts');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Merge missing English properties for initial posts if loaded from older localStorage
         this.posts = parsed.map(p => {
-          const init = NUTRIVISION_DATA.initialCommunityPosts.find(i => i.id === p.id);
+          const init = initPosts.find(i => i.id === p.id);
           if (init) {
             return {
               ...init,
@@ -21,12 +29,11 @@ class NutriVisionCommunity {
           return p;
         });
       } catch (e) {
-        this.posts = NUTRIVISION_DATA.initialCommunityPosts;
+        this.posts = [...initPosts];
       }
     } else {
-      this.posts = NUTRIVISION_DATA.initialCommunityPosts;
+      this.posts = [...initPosts];
     }
-    this.activeFilter = 'all';
   }
 
   setFilter(category) {

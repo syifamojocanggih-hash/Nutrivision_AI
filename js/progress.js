@@ -270,6 +270,7 @@ class NutriVisionProgress {
     // Sinkronisasi ke backend MySQL secara async (fire-and-forget)
     if (typeof window !== 'undefined' && window.nutriAPI) {
       const userProfile = (typeof app !== 'undefined' ? app.userProfile : null) || {};
+      const userId = userProfile?.id || userProfile?.contact || userProfile?.email || 'usr_patient_siti';
       const mealPayload = {
         title: mealEntry.name,
         mealType: (mealMeta?.mealType) || (mealEntry.source?.toLowerCase().includes('malam') ? 'dinner' :
@@ -283,17 +284,33 @@ class NutriVisionProgress {
         confidence: mealMeta?.confidence || 92,
         clinicalAdvice: mealMeta?.clinicalAdvice || '',
         segments: mealMeta?.segments || [],
-        userId: userProfile?.contact || userProfile?.email || 'usr_patient_siti'
+        userId: userId
       };
-      // Simpan server_id ke mealEntry agar bisa dihapus dari server nanti
-      window.nutriAPI.logMeal(mealPayload).then(res => {
-        if (res?.meal?.id) {
-          mealEntry._serverId = res.meal.id;
-          this.saveUserProgress(userKey);
-        }
-      }).catch(err => {
-        console.warn('[NutriVision] Sync meal to backend gagal (mode offline):', err.message);
-      });
+
+      // Cek server online terlebih dahulu, jika tidak online coba health check dulu
+      const doSync = () => {
+        window.nutriAPI.logMeal(mealPayload).then(res => {
+          if (res?.meal?.id) {
+            mealEntry._serverId = res.meal.id;
+            window.nutriAPI.isServerOnline = true;
+            this.saveUserProgress(userKey);
+            console.log('[NutriVision] ✅ Meal synced to MySQL DB:', res.meal.id, '| User:', userId);
+          }
+        }).catch(err => {
+          console.warn('[NutriVision] ⚠️ Sync meal to backend gagal (mode offline):', err.message);
+          console.warn('[NutriVision] Payload was:', JSON.stringify(mealPayload, null, 2));
+        });
+      };
+
+      if (window.nutriAPI.isServerOnline) {
+        doSync();
+      } else {
+        // Coba health check dulu, lalu sync jika berhasil
+        window.nutriAPI.checkHealth().then(online => {
+          if (online) doSync();
+          else console.warn('[NutriVision] Backend offline, data disimpan lokal saja.');
+        });
+      }
     }
   }
 
@@ -795,6 +812,18 @@ class NutriVisionProgress {
           </div>
         `;
       } else {
+        const formatSourceBadge = (rawSource, isId) => {
+          const s = (rawSource || '').toLowerCase();
+          if (s.includes('sarapan') || s.includes('breakfast')) return isId ? 'Sarapan' : 'Breakfast';
+          if (s.includes('siang') || s.includes('lunch')) return isId ? 'Makan Siang' : 'Lunch';
+          if (s.includes('malam') || s.includes('dinner')) return isId ? 'Makan Malam' : 'Dinner';
+          if (s.includes('camilan') || s.includes('snack')) return isId ? 'Camilan' : 'Snack';
+          if (s.includes('pindai') || s.includes('scan') || s.includes('kamera') || s.includes('camera')) return isId ? 'Pindai Kamera AI' : 'AI Camera Scan';
+          if (s.includes('rencana') || s.includes('planner') || s.includes('menu')) return isId ? 'Rencana Menu' : 'Meal Planner';
+          if (s.includes('katalog') || s.includes('catalog')) return isId ? 'Katalog Pangan' : 'Food Catalog';
+          return rawSource || (isId ? 'Manual' : 'Manual');
+        };
+
         const itemsHtml = filtered.map(meal => {
           const src = (meal.source || '').toLowerCase();
           let sourceBadgeClass = 'badge gray';
@@ -805,6 +834,8 @@ class NutriVisionProgress {
           } else if (src.includes('katalog') || src.includes('catalog')) {
             sourceBadgeClass = 'badge orange';
           }
+
+          const displaySource = formatSourceBadge(meal.source, isId);
 
           return `
             <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:8px;background:#FAFBF7;border:1px solid #E2E8CE;border-radius:10px;gap:12px;flex-wrap:wrap;transition:all 0.15s ease;"
@@ -819,11 +850,11 @@ class NutriVisionProgress {
                   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                     <b style="font-size:14px;color:#1C200E;">${meal.name}</b>
                     <span class="${sourceBadgeClass}" style="font-size:10.5px;padding:2px 8px;font-weight:600;">
-                      ${meal.source || (isId ? 'Manual' : 'Manual')}
+                      ${displaySource}
                     </span>
                   </div>
                   <div style="font-size:11.5px;color:#687346;margin-top:3px;">
-                    ${isId ? 'Komposisi Nutrisi:' : 'Nutrient breakdown:'} Karbohidrat <b>${meal.carbs || 0}g</b> · Lemak <b>${meal.fat || 0}g</b>
+                    ${isId ? 'Komposisi Nutrisi:' : 'Nutrient breakdown:'} ${isId ? 'Karbohidrat' : 'Carbs'} <b>${meal.carbs || 0}g</b> · ${isId ? 'Lemak' : 'Fat'} <b>${meal.fat || 0}g</b>
                   </div>
                 </div>
               </div>

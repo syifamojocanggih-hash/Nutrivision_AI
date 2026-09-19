@@ -27,6 +27,8 @@ const telemetryRoutes = require('./routes/telemetry.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 const aiRoutes = require('./routes/ai.routes');
 const foodPricesRoutes = require('./routes/food_prices.routes');
+const portioningRoutes = require('./routes/portioning.routes');
+const catalogRoutes = require('./routes/catalog.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -87,7 +89,9 @@ app.use('/api/community', communityRoutes);
 app.use('/api/telemetry', telemetryRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/prices', foodPricesRoutes);
+app.use('/api/food-prices', foodPricesRoutes);
+app.use('/api/portioning', portioningRoutes);
+app.use('/api/catalog', catalogRoutes);
 
 // Smart Notification Background Cron (Evaluates every 15 minutes)
 setInterval(async () => {

@@ -1078,7 +1078,7 @@ class NutriVisionBudgetPlanner {
 
   executeLogActiveDay(dayPlan) {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    const userKey = window.app?.userProfile?.contact || window.app?.userProfile?.email || window.app?.userProfile?.name;
+    const userKey = window.app?.userProfile?.id || window.app?.userProfile?.contact || window.app?.userProfile?.email || window.app?.userProfile?.name;
     
     const tracker = window.progressTracker || window.app?.progressTracker;
     if (tracker) {

@@ -7,10 +7,18 @@
 
 class NutriVisionAPIClient {
   constructor() {
-    // Check if hosted on same origin backend or default local backend port
-    const isSameOriginBackend = window.location.protocol.startsWith('http') && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const defaultPort = window.location.port || '5000';
-    this.baseUrl = localStorage.getItem('nv_api_base_url') || (isSameOriginBackend ? '' : `http://localhost:${defaultPort}`);
+    // Backend Express API selalu berjalan di port 5001 (terpisah dari port frontend).
+    // Jika ada override dari localStorage gunakan itu, jika tidak paksa ke port 5001.
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const frontendPort = parseInt(window.location.port || '80', 10);
+    // Jika frontend port sama dengan backend (5001), gunakan relative URL (same origin)
+    // Jika frontend di port berbeda (8080, 5000, dll), arahkan eksplisit ke port 5001
+    const BACKEND_PORT = 5000;
+    const isSamePort = frontendPort === BACKEND_PORT;
+    const autoBaseUrl = isLocalhost
+      ? (isSamePort ? '' : `http://localhost:${BACKEND_PORT}`)
+      : '';
+    this.baseUrl = localStorage.getItem('nv_api_base_url') || autoBaseUrl;
     this.tokenKey = 'nv_auth_token';
     this.isServerOnline = false;
     this.lastHealthCheck = null;

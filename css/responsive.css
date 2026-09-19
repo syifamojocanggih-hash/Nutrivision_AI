@@ -198,9 +198,40 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
-    padding-bottom: 10px;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--line);
     min-height: 44px;
+    top: 0;
+  }
+
+  .topbar-left-cluster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topbar-scroll-brand.visible {
+    max-width: 135px;
+    padding-right: 6px;
+    gap: 6px;
+  }
+
+  .topbar-scroll-logo {
+    width: 24px;
+    height: 24px;
+  }
+
+  .topbar-scroll-title {
+    font-size: 11px;
+    max-width: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-scroll-section {
+    font-size: 8.5px;
   }
 
   .topbar-greeting {

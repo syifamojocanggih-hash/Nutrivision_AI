@@ -39,12 +39,16 @@ fi
 # Track child PIDs for cleanup on exit
 AI_PID=""
 NODE_PID=""
+VISION_PID=""
 
 cleanup() {
     echo ""
     echo -e "${YELLOW}Menutup layanan backend...${NC}"
     if [ -n "$AI_PID" ] && kill -0 "$AI_PID" 2>/dev/null; then
         kill "$AI_PID" 2>/dev/null || true
+    fi
+    if [ -n "$VISION_PID" ] && kill -0 "$VISION_PID" 2>/dev/null; then
+        kill "$VISION_PID" 2>/dev/null || true
     fi
     if [ -n "$NODE_PID" ] && kill -0 "$NODE_PID" 2>/dev/null; then
         kill "$NODE_PID" 2>/dev/null || true
@@ -55,7 +59,7 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 2. Start Python AI Inference Service
 echo ""
-echo -e "${YELLOW}[2/3] Mengaktifkan Python AI Inference Engine (.safetensors)...${NC}"
+echo -e "${YELLOW}[2/4] Mengaktifkan Python AI Inference Engine (.safetensors)...${NC}"
 if lsof -Pi :5050 -sTCP:LISTEN -t >/dev/null ; then
     echo -e "${GREEN}[OK] Python AI Service sudah aktif di port 5050.${NC}"
 else
@@ -66,6 +70,24 @@ else
         echo -e "${GREEN}[OK] Python AI Service berhasil berjalan (PID: $AI_PID, Port: 5050).${NC}"
     else
         echo -e "${RED}[!] Gagal memulai Python AI Service. Periksa dependensi python.${NC}"
+    fi
+fi
+
+# 3. Start YOLO Vision Service
+echo ""
+echo -e "${YELLOW}[3/4] Mengaktifkan Python YOLO Vision Service (Port 8000)...${NC}"
+if lsof -Pi :8000 -sTCP:LISTEN -t >/dev/null ; then
+    echo -e "${GREEN}[OK] YOLO Vision Service sudah aktif di port 8000.${NC}"
+else
+    cd "$SCRIPT_DIR/vision"
+    python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+    VISION_PID=$!
+    cd "$SCRIPT_DIR"
+    sleep 2
+    if kill -0 "$VISION_PID" 2>/dev/null; then
+        echo -e "${GREEN}[OK] YOLO Vision Service berhasil berjalan (PID: $VISION_PID, Port: 8000).${NC}"
+    else
+        echo -e "${RED}[!] Gagal memulai YOLO Vision Service.${NC}"
     fi
 fi
 

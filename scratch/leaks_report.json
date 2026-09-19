@@ -1,0 +1,1448 @@
+[
+  {
+    "line": 109,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Change Language / Ubah Bahasa"
+  },
+  {
+    "line": 118,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Evaluasi Kelayakan Menu Pasien (AI Model Teks)"
+  },
+  {
+    "line": 901,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Pemantauan Pasien Keluarga"
+  },
+  {
+    "line": 903,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pantau Pasien Keluarga"
+  },
+  {
+    "line": 906,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Katalog Pangan Pemulihan"
+  },
+  {
+    "line": 934,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "NutriVision AI \u2014 Kembali ke Atas"
+  },
+  {
+    "line": 966,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Evaluasi Kelayakan Menu Pasien (AI Model Teks)"
+  },
+  {
+    "line": 974,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Notifikasi Gizi & Klinis Pintar (Smart AI)"
+  },
+  {
+    "line": 984,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 992,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Semua"
+  },
+  {
+    "line": 998,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Semua"
+  },
+  {
+    "line": 1014,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tandai semua notifikasi sudah dibaca"
+  },
+  {
+    "line": 1016,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tandai Semua Dibaca"
+  },
+  {
+    "line": 1047,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Buka Profil Pasien &amp; Portal Pendamping"
+  },
+  {
+    "line": 1051,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Profil Pasien"
+  },
+  {
+    "line": 1064,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Anda sedang menjelajahi Dasbor dalam Mode Pratinjau (Tamu)."
+  },
+  {
+    "line": 1072,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masuk / Daftar"
+  },
+  {
+    "line": 1075,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Kembali ke Beranda (Landing Page)"
+  },
+  {
+    "line": 1093,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Sistem mendengarkan perubahan data pengguna secara real-time"
+  },
+  {
+    "line": 1100,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Upload &amp; Salin Seluruh Data dari Chrome ke Supabase"
+  },
+  {
+    "line": 1103,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\ud83d\udce4 Sync Chrome ke Supabase"
+  },
+  {
+    "line": 1111,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Ekspor Log Audit &amp; Telemetri ke file JSON"
+  },
+  {
+    "line": 1113,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Ekspor Telemetri JSON"
+  },
+  {
+    "line": 1116,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Keluar dari sesi Administrator"
+  },
+  {
+    "line": 1118,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Keluar (Logout)"
+  },
+  {
+    "line": 1150,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Data Pemindaian Masuk"
+  },
+  {
+    "line": 1194,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Data Pemindaian Masuk"
+  },
+  {
+    "line": 1215,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tabel Pasien &amp; Pengguna Terdaftar"
+  },
+  {
+    "line": 1221,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Semua Peran &amp; Kondisi"
+  },
+  {
+    "line": 1222,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pasien Saja"
+  },
+  {
+    "line": 1239,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pasien / Pengguna"
+  },
+  {
+    "line": 1262,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Log Pemindaian Piring Citra AI Masuk"
+  },
+  {
+    "line": 1279,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Komponen Makanan"
+  },
+  {
+    "line": 1280,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Estimasi Gizi"
+  },
+  {
+    "line": 1304,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Unduh Log JSON"
+  },
+  {
+    "line": 1387,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\u26a1 Simulasi: Pasien Tambah Target (+15g Prot)"
+  },
+  {
+    "line": 1392,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\u26a1 Simulasi: Pasien Catat Piring Makan Baru"
+  },
+  {
+    "line": 1421,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pemantauan Prevalensi Pasien &amp; Tren Menu Pangan"
+  },
+  {
+    "line": 1437,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sebaran Kondisi Medis / Penyakit Pasien"
+  },
+  {
+    "line": 1439,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "-- Pasien"
+  },
+  {
+    "line": 1475,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Data Pemindaian &amp; Favorit Pasien"
+  },
+  {
+    "line": 1486,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kategori Gizi Klinis"
+  },
+  {
+    "line": 1506,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Riwayat Pasien yang Mengakses Perencanaan Menu (*Meal Planner*)"
+  },
+  {
+    "line": 1517,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pasien"
+  },
+  {
+    "line": 1519,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Menu yang Direncanakan"
+  },
+  {
+    "line": 1551,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Ekspor Log Audit &amp; Telemetri ke file JSON"
+  },
+  {
+    "line": 1553,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Ekspor Telemetri JSON"
+  },
+  {
+    "line": 1574,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Unduh Log JSON"
+  },
+  {
+    "line": 1596,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "NutriVision AI \u00b7 Portal Pendamping Pasien (Caregiver &amp; Keluarga)"
+  },
+  {
+    "line": 1598,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pemantauan Pemulihan Keluarga Tercinta"
+  },
+  {
+    "line": 1604,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Lihat &amp; Cetak Berkas Rekam Medis PDF Pasien"
+  },
+  {
+    "line": 1606,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\ud83d\udcc4 Unduh Laporan Gizi Pasien"
+  },
+  {
+    "line": 1609,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Lihat Menu Bahan Pangan Lunak Pasien"
+  },
+  {
+    "line": 1611,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\ud83e\udd57 Panduan Menu Pemulihan"
+  },
+  {
+    "line": 1621,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Status Pemenuhan Nutrisi Pasien Hari Ini"
+  },
+  {
+    "line": 1629,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Riwayat Makan Pasien Hari Ini"
+  },
+  {
+    "line": 1671,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Isi Data Kebutuhan Makanan Sekarang"
+  },
+  {
+    "line": 1694,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Lihat pop-up rincian makanan & estimasi harga sesuai piring ini"
+  },
+  {
+    "line": 1706,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Pindai Makanan untuk Mengisi Piring"
+  },
+  {
+    "line": 1714,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Piring Belum Terisi"
+  },
+  {
+    "line": 1744,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tambahkan hasil scan ke target gizi harian"
+  },
+  {
+    "line": 1771,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Belum dikonfigurasi (Mulai Diagnostik Gizi)"
+  },
+  {
+    "line": 1776,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Sesuaikan Keinginan Gizi Tambahan & Batasan Target"
+  },
+  {
+    "line": 1783,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Buka Halaman Riwayat Asupan Makanan"
+  },
+  {
+    "line": 1792,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Belum Dikonfigurasi"
+  },
+  {
+    "line": 1811,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Klik untuk mengatur target protein kesembuhan total"
+  },
+  {
+    "line": 1984,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Perbarui Rencana Anggaran &amp; Menu Makanan"
+  },
+  {
+    "line": 2000,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pagu Anggaran Pasien"
+  },
+  {
+    "line": 2000,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "di atas, lalu klik tombol"
+  },
+  {
+    "line": 2035,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Dari total pagu Rp 200.000"
+  },
+  {
+    "line": 2088,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Daftar Belanja Bahan (7 Hari)"
+  },
+  {
+    "line": 2111,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "80% lebih terjangkau"
+  },
+  {
+    "line": 2119,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Belum ada data"
+  },
+  {
+    "line": 2122,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Disesuaikan dengan disparitas logistik &amp; pasokan pasar regional"
+  },
+  {
+    "line": 2230,
+    "type": "MISSING_EN_KEY",
+    "key": "plan_cal_title",
+    "text": "<span data-i18n=\"plan_cal_title\">Kalender Siklus &amp; Jadwal Nutrisi</span>"
+  },
+  {
+    "line": 2232,
+    "type": "MISSING_EN_KEY",
+    "key": "plan_cal_sub",
+    "text": "<div class=\"card-subtitle\" style=\"font-size:12.5px;color:#64748B;margin:0;\" data-i18n=\"plan_cal_sub\">Panduan fase pemulihan klinis &amp; perencanaan menu harian berbasis ERAS &amp; ESPEN</div>"
+  },
+  {
+    "line": 2244,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pemulihan Umum"
+  },
+  {
+    "line": 2265,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "HARI INI"
+  },
+  {
+    "line": 2314,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tambah Jadwal / Terapi"
+  },
+  {
+    "line": 2316,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tambah Jadwal"
+  },
+  {
+    "line": 2329,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Hari ke-30"
+  },
+  {
+    "line": 2382,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Riwayat Asupan &amp; Jurnal Makanan"
+  },
+  {
+    "line": 2396,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Reset seluruh catatan makanan hari ini"
+  },
+  {
+    "line": 2416,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tercatat dalam jurnal harian"
+  },
+  {
+    "line": 2437,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kebutuhan energi pemulihan"
+  },
+  {
+    "line": 2444,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Belum Ada Asupan"
+  },
+  {
+    "line": 2469,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pindai Kamera AI"
+  },
+  {
+    "line": 2482,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Cari hidangan yang dicatat..."
+  },
+  {
+    "line": 2496,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Jurnal Makanan Hari Ini"
+  },
+  {
+    "line": 2498,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Daftar asupan yang dikonsumsi dan diverifikasi nutrisinya"
+  },
+  {
+    "line": 2515,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Riwayat konsistensi pemenuhan target nutrisi regenerasi sel mingguan"
+  },
+  {
+    "line": 2520,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Ekspor PDF Medis"
+  },
+  {
+    "line": 2564,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Semua Pangan Lokal"
+  },
+  {
+    "line": 2651,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Buka Kalender &amp; Jadwal Pemulihan di Meal Planner"
+  },
+  {
+    "line": 2736,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Buka Kalender di Meal Planner"
+  },
+  {
+    "line": 2738,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Buka di Meal Planner"
+  },
+  {
+    "line": 2955,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sesuaikan Keinginan Gizi Tambahan"
+  },
+  {
+    "line": 2968,
+    "type": "MISSING_EN_KEY",
+    "key": "profile_diseases_title",
+    "text": "<span data-i18n=\"profile_diseases_title\">Penyakit Penyerta &amp; Kondisi Medis Aktif</span>"
+  },
+  {
+    "line": 2970,
+    "type": "MISSING_EN_KEY",
+    "key": "profile_diseases_sub",
+    "text": "<div class=\"card-subtitle\" data-i18n=\"profile_diseases_sub\">"
+  },
+  {
+    "line": 2986,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Target Protein Tinggi 1.5\u20132.0g/kg"
+  },
+  {
+    "line": 2992,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Hipertensi (Darah Tinggi)"
+  },
+  {
+    "line": 3027,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kolesterol Tinggi"
+  },
+  {
+    "line": 3035,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tinggi Kalsium &amp; Kolagen"
+  },
+  {
+    "line": 3287,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Kembali ke Dashboard NutriVision"
+  },
+  {
+    "line": 3289,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kembali ke Dashboard"
+  },
+  {
+    "line": 3300,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Evaluasi Kelayakan Menu Pasien"
+  },
+  {
+    "line": 3328,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masukan Menu Pasien"
+  },
+  {
+    "line": 3330,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pasien #NV-4029"
+  },
+  {
+    "line": 3333,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pilih Contoh Menu Cepat:"
+  },
+  {
+    "line": 3355,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Deskripsi Menu atau Resep:"
+  },
+  {
+    "line": 3358,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Ketik nama menu, bahan masakan, atau deskripsi resep pasien..."
+  },
+  {
+    "line": 3359,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "bakso sapi kuah bening dengan taburan seledri &amp; bawang putih goreng untuk pasien pasca laparotomi"
+  },
+  {
+    "line": 3369,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Analisis Rekomendasi Menu"
+  },
+  {
+    "line": 3371,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Bersihkan dan reset formulir evaluasi"
+  },
+  {
+    "line": 3382,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kata Kunci yang Dianalisis"
+  },
+  {
+    "line": 3411,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Aman &amp; Sangat Direkomendasikan"
+  },
+  {
+    "line": 3427,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tingkat Keyakinan Rekomendasi AI"
+  },
+  {
+    "line": 3429,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "89.4% (Tinggi)"
+  },
+  {
+    "line": 3442,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Catatan Evaluasi Gizi:"
+  },
+  {
+    "line": 3446,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sangat ramah cerna:"
+  },
+  {
+    "line": 3446,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kaldu bening bebas cabai dan bumbu pedas, aman dari risiko iritasi lambung."
+  },
+  {
+    "line": 3450,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kandungan protein hewani mudah diserap untuk perbaikan luka bedah."
+  },
+  {
+    "line": 3454,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tidak terdeteksi bahan yang bertentangan dengan rekam medis pasien."
+  },
+  {
+    "line": 3479,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Optimal Pemulihan"
+  },
+  {
+    "line": 3507,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kesesuaian Menu Pasien Disetujui"
+  },
+  {
+    "line": 3508,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Diverifikasi untuk Ruang Rawat Pasca Operasi Cempaka 3B"
+  },
+  {
+    "line": 3513,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kirim ke Dapur Gizi Pasien"
+  },
+  {
+    "line": 3538,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Pindai Makanan"
+  },
+  {
+    "line": 3540,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pindai"
+  },
+  {
+    "line": 3553,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Buka Kamera Scan Makanan"
+  },
+  {
+    "line": 3613,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 3648,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 3652,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pilih contoh piring makanan siap uji:"
+  },
+  {
+    "line": 3712,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Foto makanan ini belum otomatis tercatat ke target gizi harian Anda. Klik"
+  },
+  {
+    "line": 3712,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tambahkan ke Gizi Harian"
+  },
+  {
+    "line": 3719,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Batal"
+  },
+  {
+    "line": 3742,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Identitas Pasien"
+  },
+  {
+    "line": 3764,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 3772,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Langkah 1: Identitas &amp; Akun Pasien"
+  },
+  {
+    "line": 3781,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Contoh: Dimas Anggara / Nama Pasien"
+  },
+  {
+    "line": 3789,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "email@domain.com atau 0812xxxx"
+  },
+  {
+    "line": 3798,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pilih Provinsi..."
+  },
+  {
+    "line": 3806,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pilih Kota / Kab..."
+  },
+  {
+    "line": 3828,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Usia (Tahun)"
+  },
+  {
+    "line": 3839,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Lanjut ke Langkah 2"
+  },
+  {
+    "line": 3849,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Langkah 2: Fokus Pemulihan &amp; Pantangan Medis"
+  },
+  {
+    "line": 3870,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "3. Luka Bakar & Rekonstruksi \u2014 Hypermetabolic, Zinc & Vit C Tinggi"
+  },
+  {
+    "line": 3873,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "6. Kardiovaskular & Jantung \u2014 Restriksi Natrium & Pemulihan Sternum"
+  },
+  {
+    "line": 3879,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "10. CrossFit / Endurance \u2014 Pembakaran Tinggi & Penggantian Elektrolit"
+  },
+  {
+    "line": 3899,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Minggu 1 (Inflamasi Akut)"
+  },
+  {
+    "line": 3900,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Minggu 2 (Proliferasi)"
+  },
+  {
+    "line": 3901,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Minggu 3-4 (Remodeling)"
+  },
+  {
+    "line": 3902,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Bulan 2+ (Penguatan)"
+  },
+  {
+    "line": 3910,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Misal: Alergi udang, telur, susu, atau ketik 'Tidak ada'"
+  },
+  {
+    "line": 3916,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Penyakit Penyerta / Riwayat Kronis (Bisa pilih lebih dari satu):"
+  },
+  {
+    "line": 3963,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Lanjut ke Langkah 3"
+  },
+  {
+    "line": 3973,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Langkah 3: Biometrik Tubuh &amp; Target Gizi Harian"
+  },
+  {
+    "line": 4010,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Aktivitas minimal dalam masa pemulihan awal (Faktor 1.15)"
+  },
+  {
+    "line": 4015,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Bergerak mandiri di rumah atau dengan alat bantu (Faktor 1.25)"
+  },
+  {
+    "line": 4020,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sesi fisioterapi 2-3 kali per minggu (Faktor 1.35)"
+  },
+  {
+    "line": 4025,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Olahraga teratur pasca-fase pemulihan akut (Faktor 1.55)"
+  },
+  {
+    "line": 4059,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Alokasi Anggaran Belanja Pemulihan"
+  },
+  {
+    "line": 4066,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pengaturan ini tetap dapat Anda ubah kapan saja."
+  },
+  {
+    "line": 4097,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Optimal Pemulihan"
+  },
+  {
+    "line": 4114,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tinggi Protein / Albumin"
+  },
+  {
+    "line": 4126,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Ingin menambahkan batasan gizi khusus?"
+  },
+  {
+    "line": 4154,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Selesai &amp; Masuk ke Dasbor"
+  },
+  {
+    "line": 4250,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pilih rekomendasi otomatis sesuai agenda hari ini"
+  },
+  {
+    "line": 4261,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kembali ke baseline klinik"
+  },
+  {
+    "line": 4277,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pemulihan Luka Bedah"
+  },
+  {
+    "line": 4301,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Target Protein untuk Kesembuhan Total"
+  },
+  {
+    "line": 4302,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Akumulasi kuota protein jangka panjang untuk penutupan luka &amp; regenerasi jaringan tuntas"
+  },
+  {
+    "line": 4323,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tambah dari Jumlah Keseluruhan:"
+  },
+  {
+    "line": 4336,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Estimasi berdasarkan pencatatan menu harian Anda"
+  },
+  {
+    "line": 4352,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Target Protein Harian"
+  },
+  {
+    "line": 4356,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Dukungan sintesis jaringan harian. Anda dapat menambah langsung dari jumlah keseluruhan target harian."
+  },
+  {
+    "line": 4388,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Total Target Harian"
+  },
+  {
+    "line": 4398,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Target Kalori Harian"
+  },
+  {
+    "line": 4402,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Kompensasi pengeluaran energi harian. Tambah langsung dari jumlah kalori total."
+  },
+  {
+    "line": 4434,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Total Target Harian"
+  },
+  {
+    "line": 4450,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pilihan senyawa bioaktif yang akan diprioritaskan oleh AI ke dalam penyusunan bahan dapur klinis."
+  },
+  {
+    "line": 4478,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Catatan Tambahan atau Arahan Klinis"
+  },
+  {
+    "line": 4479,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Berikan konteks aktivitas atau anjuran spesialis agar sistem mencatat audit trail secara presisi."
+  },
+  {
+    "line": 4483,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Contoh: Saran akselerasi mobilisasi pemulihan jaringan pasca-operasi"
+  },
+  {
+    "line": 4512,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Reset ke Medis Dasar"
+  },
+  {
+    "line": 4593,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Ketik nama makanan atau bahan masakan di sini..."
+  },
+  {
+    "line": 4620,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 4669,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masuk (Sign In)"
+  },
+  {
+    "line": 4674,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Daftar (Sign Up)"
+  },
+  {
+    "line": 4681,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masuk ke akun untuk melanjutkan pemantauan nutrisi harian."
+  },
+  {
+    "line": 4687,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "contoh: pasien@nutrivision.id"
+  },
+  {
+    "line": 4704,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Ingat sesi saya di perangkat ini (IndexedDB)"
+  },
+  {
+    "line": 4708,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masuk ke Dasbor"
+  },
+  {
+    "line": 4713,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "atau masuk cepat dengan"
+  },
+  {
+    "line": 4717,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Masuk via Google"
+  },
+  {
+    "line": 4721,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Masuk via Apple ID"
+  },
+  {
+    "line": 4725,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "1-Click Demo Akun Pasien"
+  },
+  {
+    "line": 4732,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Daftar Sekarang (Sign Up)"
+  },
+  {
+    "line": 4739,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Daftarkan akun pasien baru untuk kalibrasi target nutrisi."
+  },
+  {
+    "line": 4752,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "nama@email.com atau 0812xxxx"
+  },
+  {
+    "line": 4769,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Daftar &amp; Mulai Diagnostik"
+  },
+  {
+    "line": 4774,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "atau daftar cepat dengan"
+  },
+  {
+    "line": 4778,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Daftar via Google"
+  },
+  {
+    "line": 4782,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Daftar via Apple ID"
+  },
+  {
+    "line": 4786,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Gunakan Akun Pasien Demo"
+  },
+  {
+    "line": 4792,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masuk ke Akun (Sign In)"
+  },
+  {
+    "line": 4816,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Hubungkan, sinkronkan, dan pantau data PostgreSQL cloud Anda"
+  },
+  {
+    "line": 4819,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 4870,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Koneksi Supabase Gagal"
+  },
+  {
+    "line": 4871,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Pesan error detail di sini..."
+  },
+  {
+    "line": 4875,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Salin SQL Schema &amp; Jalankan di Supabase"
+  },
+  {
+    "line": 4879,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 4892,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Salin dari"
+  },
+  {
+    "line": 4927,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Simpan &amp; Hubungkan"
+  },
+  {
+    "line": 4960,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\u26a1 Unggah Semua Data Chrome ke Supabase Sekarang"
+  },
+  {
+    "line": 4976,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Upload ke Cloud"
+  },
+  {
+    "line": 4977,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sync semua akun &amp; log makan"
+  },
+  {
+    "line": 4990,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Lihat &amp; edit baris database"
+  },
+  {
+    "line": 5002,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "SQL Schema \u2014 Jalankan 1x di Supabase SQL Editor"
+  },
+  {
+    "line": 5051,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Salin SQL di atas \u2192 Paste di"
+  },
+  {
+    "line": 5057,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Masukkan Kredensial di Sini"
+  },
+  {
+    "line": 5058,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Copy URL &amp; Anon Key dari"
+  },
+  {
+    "line": 5080,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tambah Jadwal Harian"
+  },
+  {
+    "line": 5085,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 5095,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Contoh: 08:00 - 08:30 atau 15:00"
+  },
+  {
+    "line": 5119,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\ud83d\udfe2 Nutrisi / Makanan Utama"
+  },
+  {
+    "line": 5121,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "\ud83d\udfe0 Snack Pemulihan / Protein"
+  },
+  {
+    "line": 5128,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Batal"
+  },
+  {
+    "line": 5165,
+    "type": "UNTRANSLATED_TITLE",
+    "key": "",
+    "text": "Tutup"
+  },
+  {
+    "line": 5194,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tambah Rutinitas Harian"
+  },
+  {
+    "line": 5208,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Contoh: 08:30 atau 14:00"
+  },
+  {
+    "line": 5224,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Snack Pemulihan (Kuning)"
+  },
+  {
+    "line": 5233,
+    "type": "UNTRANSLATED_PLACEHOLDER",
+    "key": "",
+    "text": "Catatan bahan atau instruksi perawat..."
+  },
+  {
+    "line": 5239,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Batal"
+  },
+  {
+    "line": 5341,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sesuaikan dengan Budgeting"
+  },
+  {
+    "line": 5342,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Sesuaikan alokasi anggaran belanja & rotasi menu harian kalender"
+  },
+  {
+    "line": 5379,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Optimal Pemulihan"
+  },
+  {
+    "line": 5396,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Tinggi Protein / Albumin"
+  },
+  {
+    "line": 5406,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Alokasi Harian: ~Rp 35.700/hari (3x Makan Utama)"
+  },
+  {
+    "line": 5422,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Terapkan ke Kalender"
+  },
+  {
+    "line": 5462,
+    "type": "UNTRANSLATED_TEXT",
+    "key": "",
+    "text": "Validasi &amp; Audit Data Klinis Pasien"
+  }
+]

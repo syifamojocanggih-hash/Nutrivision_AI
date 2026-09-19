@@ -93,10 +93,36 @@ class NutriVisionCVEngine {
       basinGrad = grad;
     }
 
+    // 2. Lingkaran Dasar Piring
     ctx.beginPath();
     ctx.arc(cx, cy, plateRadius, 0, Math.PI * 2);
     ctx.fillStyle = basinGrad;
     ctx.fill();
+
+    // Gambar Foto Nyata jika tersedia meskipun tidak terdeteksi makanan
+    if (this.currentScan && this.currentScan.imageUrl) {
+      if (!this._imgCache) this._imgCache = {};
+      let img = this._imgCache[this.currentScan.imageUrl];
+      if (!img) {
+        img = new Image();
+        img.src = this.currentScan.imageUrl;
+        img.onload = () => {
+          this.renderEmptyPlate(canvasElement, width, height);
+        };
+        this._imgCache[this.currentScan.imageUrl] = img;
+      }
+      if (img.complete && img.naturalWidth > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, plateRadius, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, cx - plateRadius, cy - plateRadius, plateRadius * 2, plateRadius * 2);
+        // Tambahkan overlay gelap agar teks tetap terbaca
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+        ctx.fill();
+        ctx.restore();
+      }
+    }
 
     // 3. Garis Panduan Melingkar Putus-putus (Dashed Guide Circle)
     ctx.beginPath();
@@ -159,8 +185,13 @@ class NutriVisionCVEngine {
 
     // 5. Teks: "Piring Belum Terisi" & "Belum ada makanan terdeteksi"
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    const textTitle = isId ? 'Piring Belum Terisi' : 'Empty Plate';
-    const textSub = isId ? 'Belum ada makanan terdeteksi' : 'No food detected yet';
+    const hasImage = this.currentScan && this.currentScan.imageUrl;
+    const textTitle = isId 
+        ? (hasImage ? 'Tidak Ada Makanan' : 'Piring Belum Terisi') 
+        : (hasImage ? 'No Food Found' : 'Empty Plate');
+    const textSub = isId 
+        ? (hasImage ? 'AI gagal mendeteksi objek' : 'Belum ada makanan terdeteksi') 
+        : (hasImage ? 'AI failed to detect objects' : 'No food detected yet');
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -242,92 +273,81 @@ class NutriVisionCVEngine {
     }
     ctx.restore();
 
-    // 3. Gambar Potongan Piring Sesuai Persentase Gizi (Model Pizza / Pie Penuh)
+    // 3. Gambar Poligon Segmentasi AI
     const segments = this.currentScan.segments || [];
     if (segments.length === 0) return;
 
-    const totalGrams = segments.reduce((sum, s) => sum + (s.portionGrams || 100), 0) || 1;
+    // Radius pembatas untuk memotong poligon agar tidak keluar piring (opsional)
+    const renderW = plateRadius * 2;
+    const renderH = plateRadius * 2;
+    const offsetX = cx - plateRadius;
+    const offsetY = cy - plateRadius;
 
-    // Mulai dari arah jam 12 (-90 derajat)
-    let currentAngle = -Math.PI / 2;
-    const sliceData = [];
-
-    segments.forEach((seg) => {
-      const portionGrams = seg.portionGrams || 100;
-      const pct = portionGrams / totalGrams;
-      const sliceAngle = pct * Math.PI * 2;
-      const startAngle = currentAngle;
-      const endAngle = currentAngle + sliceAngle;
-      const midAngle = startAngle + (sliceAngle / 2);
+    segments.forEach((seg, index) => {
       const isHovered = (this.activeHoverSegmentId === seg.id);
+      const baseColor = seg.color || '#9EA76B';
+      const fillOverlay = this.hexToRgba(baseColor, isHovered ? 0.6 : 0.4);
+      const strokeColor = isHovered ? '#FFFFFF' : baseColor;
 
-      sliceData.push({
-        seg,
-        pct,
-        startAngle,
-        endAngle,
-        midAngle,
-        isHovered
-      });
-
-      currentAngle = endAngle;
-    });
-
-    // Gambar masing-masing potongan pizza
-    sliceData.forEach((slice) => {
-      const { seg, pct, startAngle, endAngle, midAngle, isHovered } = slice;
+      const poly = seg.polygon || this.generateFallbackPolygon(index);
+      if (!poly || poly.length === 0) return;
 
       ctx.save();
-
-      // Efek sedikit mekar/terangkat keluar saat hover (Pop-out slice)
-      const explodeOffset = isHovered ? Math.max(4, plateRadius * 0.055) : 0;
-      const ox = Math.cos(midAngle) * explodeOffset;
-      const oy = Math.sin(midAngle) * explodeOffset;
-
-      ctx.translate(ox, oy);
-
-      // Gambar juring pizza penuh dari pusat ke tepi piring
+      // Clip agar poligon tidak tumpah keluar dari piring keramik
       ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, plateRadius - 1, startAngle, endAngle);
-      ctx.closePath();
+      ctx.arc(cx, cy, plateRadius, 0, Math.PI * 2);
+      ctx.clip();
 
-      // Warna juring pizza (transparan jika ada foto asli di belakangnya)
-      const baseColor = seg.color || '#9EA76B';
-      const sliceAlpha = this.currentScan.imageUrl ? (isHovered ? 0.65 : 0.40) : (isHovered ? 0.96 : 0.82);
-      ctx.fillStyle = this.hexToRgba(baseColor, sliceAlpha);
-      ctx.fill();
-
-      // Garis potong pizza (crisp slice divider)
-      ctx.lineWidth = isHovered ? 3.5 : 2;
-      ctx.strokeStyle = isHovered ? '#FFFFFF' : 'rgba(255, 255, 255, 0.85)';
-      ctx.stroke();
-
-      // Label Persentase Porsi di Setiap Irisan Pizza
-      if (pct >= 0.05) {
-        const labelDist = centerRadius + (plateRadius - centerRadius) * 0.55;
-        const lx = cx + Math.cos(midAngle) * labelDist;
-        const ly = cy + Math.sin(midAngle) * labelDist;
-
-        const pctText = `${Math.round(pct * 100)}%`;
-
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-        ctx.shadowBlur = 4;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = `bold ${Math.max(10, Math.round(plateRadius * 0.16))}px Plus Jakarta Sans, Inter, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pctText, lx, ly);
-
-        // Jika kanvas berukuran cukup besar dan irisan cukup lebar, tampilkan nama/gram
-        if (width >= 210 && pct >= 0.14) {
-          ctx.font = `600 ${Math.max(9, Math.round(plateRadius * 0.10))}px Plus Jakarta Sans, Inter, sans-serif`;
-          ctx.fillStyle = '#F3F4F6';
-          ctx.fillText(`${seg.portionGrams}g`, lx, ly + 13);
+      ctx.beginPath();
+      poly.forEach((pt, i) => {
+        let mappedX, mappedY;
+        // Jika koordinat dalam format xyn (Normalized 0.0 - 1.0) dari YOLO
+        if (pt[0] <= 1.0 && pt[1] <= 1.0) {
+            mappedX = offsetX + (pt[0] * renderW);
+            mappedY = offsetY + (pt[1] * renderH);
+        } else {
+            // Skema fallback relatif 0-150
+            mappedX = offsetX + (pt[0] / 150) * renderW;
+            mappedY = offsetY + (pt[1] / 150) * renderH;
         }
 
-        ctx.shadowBlur = 0;
+        if (i === 0) ctx.moveTo(mappedX, mappedY);
+        else ctx.lineTo(mappedX, mappedY);
+      });
+      ctx.closePath();
+
+      ctx.fillStyle = fillOverlay;
+      ctx.fill();
+      ctx.lineWidth = isHovered ? 3 : 2;
+      ctx.strokeStyle = strokeColor;
+      ctx.stroke();
+
+      // Hitung Titik Pusat untuk Label Gramasi
+      let centerX, centerY;
+      if (poly[0][0] <= 1.0) {
+          const sumX = poly.reduce((sum, p) => sum + p[0], 0);
+          const sumY = poly.reduce((sum, p) => sum + p[1], 0);
+          centerX = offsetX + ((sumX / poly.length) * renderW);
+          centerY = offsetY + ((sumY / poly.length) * renderH);
+      } else {
+          const center = this.getPolygonCenter(poly);
+          centerX = offsetX + (center[0] / 150) * renderW;
+          centerY = offsetY + (center[1] / 150) * renderH;
       }
+
+      // Gambar Label
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+      const textW = ctx.measureText(seg.portionGrams + 'g').width;
+      const boxW = Math.max(30, textW + 10);
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(centerX - boxW/2, centerY - 10, boxW, 20, 4) : ctx.rect(centerX - boxW/2, centerY - 10, boxW, 20);
+      ctx.fill();
+
+      ctx.font = '700 11px "Inter", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(seg.portionGrams + 'g', centerX, centerY);
 
       ctx.restore();
     });
@@ -366,9 +386,46 @@ class NutriVisionCVEngine {
 
     ctx.restore();
 
-    // 5. Pasang Event Listener Interaksi Mouse/Touch Hover pada Canvas
+    // 5. Pasang Event Listener Interaksi Mouse/Touch Hover & Click pada Canvas
     if (isInteractive && !canvasElement._pizzaInteractivityBound) {
       canvasElement._pizzaInteractivityBound = true;
+
+      const getTargetSegment = (mx, my) => {
+          let targetSeg = null;
+          const renderW = plateRadius * 2;
+          const renderH = plateRadius * 2;
+          const offX = cx - plateRadius;
+          const offY = cy - plateRadius;
+
+          // Check intersection from top to bottom (last rendered is on top, but we render in order so whatever)
+          for (let i = segments.length - 1; i >= 0; i--) {
+              const seg = segments[i];
+              const poly = seg.polygon || this.generateFallbackPolygon(i);
+              if (!poly || poly.length === 0) continue;
+
+              // Recreate path for hit testing
+              ctx.beginPath();
+              poly.forEach((pt, j) => {
+                  let mappedX, mappedY;
+                  if (pt[0] <= 1.0 && pt[1] <= 1.0) {
+                      mappedX = offX + (pt[0] * renderW);
+                      mappedY = offY + (pt[1] * renderH);
+                  } else {
+                      mappedX = offX + (pt[0] / 150) * renderW;
+                      mappedY = offY + (pt[1] / 150) * renderH;
+                  }
+                  if (j === 0) ctx.moveTo(mappedX, mappedY);
+                  else ctx.lineTo(mappedX, mappedY);
+              });
+              ctx.closePath();
+
+              if (ctx.isPointInPath(mx, my)) {
+                  targetSeg = seg;
+                  break;
+              }
+          }
+          return targetSeg;
+      };
 
       const handlePointer = (e) => {
         const rect = canvasElement.getBoundingClientRect();
@@ -377,32 +434,12 @@ class NutriVisionCVEngine {
         const mx = clientX - rect.left;
         const my = clientY - rect.top;
 
-        const dx = mx - (width / 2);
-        const dy = my - (height / 2);
-        const dist = Math.hypot(dx, dy);
+        const targetSeg = getTargetSegment(mx, my);
 
-        if (dist >= centerRadius && dist <= plateRadius) {
-          let angle = Math.atan2(dy, dx);
-          // Normalisasi ke [0, 2PI] dimulai dari -PI/2 (jam 12)
-          let normAngle = angle - (-Math.PI / 2);
-          if (normAngle < 0) normAngle += Math.PI * 2;
-
-          let targetSeg = null;
-          let cumulativeAngle = 0;
-
-          for (let i = 0; i < segments.length; i++) {
-            const seg = segments[i];
-            const pct = (seg.portionGrams || 100) / totalGrams;
-            const sliceAngle = pct * Math.PI * 2;
-            if (normAngle >= cumulativeAngle && normAngle <= cumulativeAngle + sliceAngle) {
-              targetSeg = seg;
-              break;
-            }
-            cumulativeAngle += sliceAngle;
-          }
-
-          if (targetSeg && this.activeHoverSegmentId !== targetSeg.id) {
+        if (targetSeg) {
+          if (this.activeHoverSegmentId !== targetSeg.id) {
             this.activeHoverSegmentId = targetSeg.id;
+            canvasElement.style.cursor = 'pointer';
             this.renderCanvas(canvasElement, width, height, false);
             if (window.app && typeof window.app.renderOverviewPlateLegendHover === 'function') {
               window.app.renderOverviewPlateLegendHover(targetSeg.id);
@@ -411,6 +448,7 @@ class NutriVisionCVEngine {
         } else {
           if (this.activeHoverSegmentId) {
             this.activeHoverSegmentId = null;
+            canvasElement.style.cursor = 'default';
             this.renderCanvas(canvasElement, width, height, false);
             if (window.app && typeof window.app.renderOverviewPlateLegendHover === 'function') {
               window.app.renderOverviewPlateLegendHover(null);
@@ -419,15 +457,45 @@ class NutriVisionCVEngine {
         }
       };
 
+      const handleClick = (e) => {
+        const rect = canvasElement.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const targetSeg = getTargetSegment(mx, my);
+
+        if (targetSeg) {
+            // Jika diklik, gulir ke bawah dan fokus pada item edit
+            if (window.app && window.app.showToast) {
+               window.app.showToast(`Memilih ${targetSeg.name}... Silakan ubah dari katalog di bawah.`);
+            }
+            const editList = document.getElementById('modal-segment-edit-list');
+            if (editList) {
+               editList.scrollIntoView({ behavior: 'smooth', block: 'center' });
+               // Tambahkan highlight efek sebentar
+               const items = editList.querySelectorAll('.segment-edit-item');
+               items.forEach(el => {
+                   if (el.innerHTML.includes(targetSeg.name)) {
+                       el.style.transition = 'background 0.3s';
+                       el.style.background = 'rgba(217, 119, 6, 0.15)'; // highlight orange muda
+                       setTimeout(() => el.style.background = '', 1500);
+                   }
+               });
+            }
+        }
+      };
+
       canvasElement.addEventListener('mousemove', handlePointer);
+      canvasElement.addEventListener('click', handleClick);
       canvasElement.addEventListener('mouseleave', () => {
         if (this.activeHoverSegmentId) {
           this.activeHoverSegmentId = null;
+          canvasElement.style.cursor = 'default';
           this.renderCanvas(canvasElement, width, height, false);
           if (window.app && typeof window.app.renderOverviewPlateLegendHover === 'function') {
             window.app.renderOverviewPlateLegendHover(null);
           }
         }
+
       });
     }
   }
@@ -448,7 +516,7 @@ class NutriVisionCVEngine {
       protein: [Math.round(foodItem.proteinRange[0] * ratio * 10) / 10, Math.round(foodItem.proteinRange[1] * ratio * 10) / 10],
       carbs: [Math.round(foodItem.carbsRange[0] * ratio * 10) / 10, Math.round(foodItem.carbsRange[1] * ratio * 10) / 10],
       fat: [Math.round(foodItem.fatRange[0] * ratio * 10) / 10, Math.round(foodItem.fatRange[1] * ratio * 10) / 10],
-      polygon: this.generateFallbackPolygon(this.currentScan.segments.length)
+      polygon: foodItem.polygon_xyn || foodItem.polygon || this.generateFallbackPolygon(this.currentScan.segments.length)
     };
 
     this.currentScan.segments.push(newSegment);
@@ -475,78 +543,106 @@ class NutriVisionCVEngine {
     seg.carbs = [Math.round(seg.carbs[0] * multiplier * 10) / 10, Math.round(seg.carbs[1] * multiplier * 10) / 10];
     seg.fat = [Math.round(seg.fat[0] * multiplier * 10) / 10, Math.round(seg.fat[1] * multiplier * 10) / 10];
   }
+  async processCustomImageScan(imageSrc, callback) {
+    try {
+      // 1. Ambil input plate diameter dari UI
+      const plateSelect = document.getElementById('plate-diameter-select');
+      const plateDiameterCm = plateSelect ? parseFloat(plateSelect.value) : 22;
 
-  // Simulasi segmentasi dari unggahan foto kustom
-  processCustomImageScan(imageSrc, callback) {
-    // Mensimulasikan pemrosesan deep learning (2.5 detik)
-    setTimeout(() => {
-      // Menghasilkan segmentasi otomatis berbasis citra piring standar
-      const simulatedScan = {
-        id: 'custom-scan-' + Date.now(),
-        title: '📸 Hasil Foto Kamera / Unggahan Baru',
-        plateColor: '#052A22',
-        confidenceOverall: 84,
-        imageSrc: imageSrc,
-        segments: [
-          {
-            id: 'seg-custom-1',
-            name: 'Nasi Putih',
-            foodId: 'nasi-putih',
-            portionGrams: 160,
-            confidence: 92,
-            color: '#9EA76B',
-            cals: [200, 230],
-            protein: [3.8, 4.6],
-            carbs: [44, 50],
-            fat: [0.4, 0.7],
-            polygon: [[25, 25], [75, 20], [75, 75], [20, 75]]
-          },
-          {
-            id: 'seg-custom-2',
-            name: 'Dada Ayam Suwir / Kukus',
-            foodId: 'ayam-suwir-kukus',
-            portionGrams: 110,
-            confidence: 88,
-            color: '#D85A30',
-            cals: [160, 190],
-            protein: [26, 30],
-            carbs: [0, 1.0],
-            fat: [3.2, 4.8],
-            polygon: [[75, 20], [130, 30], [130, 85], [75, 75]]
-          },
-          {
-            id: 'seg-custom-3',
-            name: 'Sayur Bening Bayam',
-            foodId: 'sup-bayam-jagung',
-            portionGrams: 90,
-            confidence: 80,
-            color: '#EF9F27',
-            cals: [28, 38],
-            protein: [1.6, 2.4],
-            carbs: [4.5, 6.5],
-            fat: [0.2, 0.4],
-            polygon: [[75, 75], [130, 85], [120, 135], [60, 135]]
-          },
-          {
-            id: 'seg-custom-4',
-            name: 'Bahan Belum Teridentifikasi (Saus/Pelengkap)',
-            foodId: null,
-            portionGrams: 40,
-            confidence: 54, // Rendah, menandakan perlu koreksi manual sesuai FR-07
-            color: '#FAEEDA',
-            unrecognized: true,
-            cals: [40, 70],
-            protein: [1.0, 2.5],
-            carbs: [4.0, 8.0],
-            fat: [2.0, 4.0],
-            polygon: [[20, 75], [75, 75], [60, 135], [20, 120]]
-          }
-        ]
+      // 2. Konversi imageSrc (base64) menjadi Blob
+      const response = await fetch(imageSrc);
+      const blob = await response.blob();
+      const formData = new FormData();
+      formData.append('file', blob, 'scan.jpg');
+
+      // 3. Panggil API YOLO Vision (Bisa dikonfigurasi lewat window.VISION_API_URL)
+      if (window.app) app.showToast('Menganalisis citra dengan YOLO Vision...');
+      const visionApiUrl = (window.VISION_API_URL || 'http://localhost:8000') + '/predict-pixels';
+      const yoloRes = await fetch(visionApiUrl, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!yoloRes.ok) throw new Error('Gagal menghubungi Vision Service YOLO');
+      const detectedFoods = await yoloRes.json();
+
+      if (!detectedFoods || detectedFoods.length === 0) {
+         throw new Error('Tidak ada makanan yang terdeteksi di piring.');
+      }
+
+      // 4. Panggil API Portioning (Port otomatis sama dengan frontend)
+      if (window.app) app.showToast('Menghitung estimasi nutrisi...');
+      const portionRes = await fetch('/api/portioning/calculate-nutrition', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+           plate_type: 'custom',
+           plate_diameter_cm: plateDiameterCm,
+           detected_foods: detectedFoods
+        })
+      });
+
+      if (!portionRes.ok) throw new Error('Gagal menghitung nutrisi porsi');
+      const portionData = await portionRes.json();
+
+      if (!portionData.success) {
+         throw new Error(portionData.message || 'Gagal menghitung nutrisi porsi');
+      }
+
+      // 5. Mapping data backend ke format UI (segments)
+      const segments = portionData.foods.map((food, index) => {
+         const hasNutrition = food.nutrition && !food.error;
+         const estimated_grams = food.estimated_grams || 100;
+         const cals = hasNutrition ? food.nutrition.calories : (estimated_grams * 1.5);
+         const protein = hasNutrition ? food.nutrition.protein : (estimated_grams * 0.1);
+         const fat = hasNutrition ? food.nutrition.fat : (estimated_grams * 0.05);
+         const displayName = food.food_name + (food.error ? ' (Estimasi)' : '');
+
+         return {
+            id: 'seg-custom-' + Date.now() + '-' + index,
+            name: displayName,
+            foodId: food.food_name.toLowerCase().replace(/\s+/g, '-'),
+            portionGrams: Math.round(estimated_grams),
+            confidence: Math.round((food.confidence || 0.90) * 100), // convert 0.9 to 90
+            color: '#4ade80', // default green color
+            cals: [Math.round(cals), Math.round(cals * 1.1)],
+            protein: [Math.round(protein), Math.round(protein * 1.1)],
+            carbs: [0, 5], // Optional field in UI
+            fat: [Math.round(fat), Math.round(fat * 1.1)],
+            polygon: food.polygon_xyn && food.polygon_xyn.length > 0 
+                ? food.polygon_xyn 
+                : [[25, 25 + index * 5], [75, 20 + index * 5], [75, 75 + index * 5], [20, 75 + index * 5]]
+         };
+      });
+
+      const finalScan = {
+         id: 'custom-scan-' + Date.now(),
+         title: '📸 Hasil Scan Makanan AI (Fixed Ref)',
+         plateColor: '#052A22',
+         confidenceOverall: 90,
+         imageUrl: imageSrc,
+         segments: segments
       };
 
-      this.loadScanData(simulatedScan);
-      if (callback) callback(simulatedScan);
-    }, 1800);
+      this.loadScanData(finalScan);
+      if (window.app) app.showToast('Analisis selesai!');
+      if (callback) callback(finalScan);
+
+    } catch (error) {
+      console.error('Scan error:', error);
+      if (window.app) app.showToast('Error: ' + error.message);
+      
+      // Fallback UI rendering so it doesn't get stuck loading
+      const fallbackScan = {
+         id: 'error-scan',
+         title: 'Peringatan: Gagal Menganalisis',
+         confidenceOverall: 0,
+         imageUrl: imageSrc,
+         segments: []
+      };
+      this.loadScanData(fallbackScan);
+      if (callback) callback(fallbackScan);
+    }
   }
 
   // Utilities

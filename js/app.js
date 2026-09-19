@@ -2089,6 +2089,25 @@ class NutriVisionApp {
       topbarProfileBtn.classList.toggle('active', sectionId === 'profile');
     }
 
+    // Update Topbar Dynamic Scroll Section Label
+    const sectionTitleMap = {
+      'overview': 'Overview',
+      'planner': 'Meal Planner',
+      'history': 'Meal History',
+      'catalog': 'Superfoods',
+      'progress': 'Telehealth',
+      'profile': 'Profile & Diag',
+      'caregiver-dashboard': 'Caregiver',
+      'admin': 'Admin Telemetry',
+      'admin-clinical-menu': 'Clinical Menu',
+      'admin-audit': 'Audit Trail',
+      'ai-text': 'AI Text Tester'
+    };
+    const scrollSecLabel = document.getElementById('topbar-scroll-section-label');
+    if (scrollSecLabel && sectionTitleMap[sectionId]) {
+      scrollSecLabel.textContent = sectionTitleMap[sectionId];
+    }
+
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -4493,6 +4512,61 @@ class NutriVisionApp {
 
     const safetyBadgeClass = validation.safetyLevel.toLowerCase();
 
+    // Khusus untuk Scan Modal: output diringkas padat & informatif agar tidak terlalu banyak teks (FR-02, UX Polish)
+    if (targetContainerId === 'modal-clinical-validation-box') {
+      const criticalFindings = [];
+      if (validation.pillars) {
+        validation.pillars.forEach(p => {
+          if (p.items) {
+            p.items.forEach(it => {
+              if (it.type === 'danger' || it.type === 'warning' || it.type === 'caution') {
+                criticalFindings.push(it);
+              }
+            });
+          }
+        });
+      }
+      const topAlerts = criticalFindings.slice(0, 2);
+
+      container.innerHTML = `
+        <div class="modal-clinical-compact-card ${safetyBadgeClass}">
+          <div class="modal-clinical-compact-header">
+            <div class="modal-clinical-compact-title">
+              <iconify-icon icon="solar:shield-check-bold-duotone" style="font-size:16px;color:var(--teal-600);"></iconify-icon>
+              <span>${isId ? 'Validasi Klinis CDSS' : 'Clinical CDSS Validation'}</span>
+            </div>
+            <div class="modal-clinical-compact-badges">
+              <span class="clinical-safety-pill ${safetyBadgeClass}" style="padding:2px 8px;font-size:11px;">
+                <iconify-icon icon="${validation.safetyLevel === 'SAFE' ? 'solar:check-circle-bold' : (validation.safetyLevel === 'CAUTION' ? 'solar:danger-triangle-bold' : 'solar:shield-warning-bold')}"></iconify-icon>
+                <span>${validation.safetyBadgeText}</span>
+              </span>
+              <span class="clinical-score-badge" style="padding:2px 8px;font-size:11px;" title="${isId ? 'Skor Kesesuaian Klinis' : 'Clinical Suitability Score'}">
+                <span>${validation.score} / 100</span>
+              </span>
+            </div>
+          </div>
+          <div class="modal-clinical-compact-verdict">
+            <strong>${isId ? 'Hasil Analisis:' : 'Assessment:'}</strong> ${validation.clinicalVerdict}
+          </div>
+          ${topAlerts.length > 0 ? `
+            <div class="modal-clinical-compact-alerts">
+              ${topAlerts.map(a => `
+                <div class="modal-clinical-alert-pill ${a.type}">
+                  <span>${a.type === 'danger' ? '⛔' : '⚠️'}</span>
+                  <span><b>${a.title}:</b> ${a.detail}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      return;
+    }
+
     container.innerHTML = `
       <div class="clinical-scorecard-card">
         <div class="clinical-scorecard-hdr">
@@ -4763,10 +4837,13 @@ class NutriVisionApp {
       }).join('');
     }
 
-    // Render Canvas Modal
+    // Render Canvas Modal with widened portrait dimensions
     const modalCanvas = document.getElementById('modal-scan-canvas');
     if (modalCanvas) {
-      cvEngine.renderCanvas(modalCanvas, 320, 220, true);
+      const containerBox = document.getElementById('scan-canvas-view-box');
+      const renderW = (containerBox && containerBox.clientWidth) ? Math.min(650, Math.max(340, containerBox.clientWidth)) : 620;
+      const renderH = 330;
+      cvEngine.renderCanvas(modalCanvas, renderW, renderH, true);
     }
 
     // Render Editable Segment List (FR-07)
@@ -4786,9 +4863,9 @@ class NutriVisionApp {
             <div class="segment-edit-info">
               <div class="name">
                 ${segName} 
-                ${seg.unrecognized ? `<span style="font-size:11px;color:var(--amber-600);display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-circle" class="btn-icon-sm"></i> ${uncertainLabel}</span>` : ''}
+                ${(seg.unrecognized || seg.confidence < 50) ? `<span style="font-size:11px;color:#d97706;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:danger-triangle-bold-duotone"></iconify-icon> ${uncertainLabel}</span>` : ''}
               </div>
-              <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} ${calsUnit} · ${confLabel}: ${seg.confidence}%</div>
+              <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} ${calsUnit} · ${confLabel}: <span style="font-weight:600;color:${seg.confidence < 50 ? '#d97706' : 'inherit'};">${seg.confidence}%</span></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
               <input type="number" value="${seg.portionGrams}" min="10" max="800" step="10" 
@@ -4803,19 +4880,34 @@ class NutriVisionApp {
       }).join('');
     }
 
-    // Update Aggregated Nutrients Display
+    // Update Aggregated Nutrients Display (Clean 3-Card Summary)
     const agg = cvEngine.calculateAggregatedNutrients();
     const aggDisplay = document.getElementById('modal-aggregated-nutrients');
     if (aggDisplay) {
-      const portionLabel = isId ? 'Total Porsi:' : 'Total Portion:';
-      const calsLabel = isId ? 'Kalori:' : 'Calories:';
+      const portionLabel = isId ? 'Total Porsi' : 'Total Portion';
+      const calsLabel = isId ? 'Estimasi Kalori' : 'Est. Calories';
       const calsUnit = isId ? 'kkal' : 'kcal';
 
       aggDisplay.innerHTML = `
-        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--line);font-size:var(--font-sm);">
-          <div><b>${portionLabel}</b> ${agg.totalGrams}g</div>
-          <div><b>Protein:</b> <span style="color:var(--teal-700);font-weight:700;">${agg.protein[0]} - ${agg.protein[1]} g</span></div>
-          <div><b>${calsLabel}</b> <span style="font-weight:600;">${agg.cals[0]} - ${agg.cals[1]} ${calsUnit}</span></div>
+        <div class="scan-nutri-cards-grid">
+          <div class="scan-nutri-stat-card highlight">
+            <div class="scan-nutri-stat-label">
+              <i data-lucide="dumbbell" style="width:12px;height:12px;"></i> Protein
+            </div>
+            <div class="scan-nutri-stat-val">${agg.protein[0]} - ${agg.protein[1]} g</div>
+          </div>
+          <div class="scan-nutri-stat-card">
+            <div class="scan-nutri-stat-label">
+              <i data-lucide="flame" style="width:12px;height:12px;"></i> ${calsLabel}
+            </div>
+            <div class="scan-nutri-stat-val">${agg.cals[0]} - ${agg.cals[1]} <span style="font-size:11px;font-weight:500;">${calsUnit}</span></div>
+          </div>
+          <div class="scan-nutri-stat-card">
+            <div class="scan-nutri-stat-label">
+              <i data-lucide="pie-chart" style="width:12px;height:12px;"></i> ${portionLabel}
+            </div>
+            <div class="scan-nutri-stat-val">${agg.totalGrams} <span style="font-size:11px;font-weight:500;">g</span></div>
+          </div>
         </div>
       `;
     }
@@ -4855,10 +4947,13 @@ class NutriVisionApp {
     const videoEl = document.getElementById('live-camera-feed');
     const cameraBox = document.getElementById('camera-viewport-box');
     const canvasBox = document.getElementById('scan-canvas-view-box');
+    const snapBtn = document.getElementById('btn-snap-photo');
 
     if (cameraBox && canvasBox && videoEl) {
       cameraBox.style.display = 'flex';
       canvasBox.style.display = 'none';
+      if (snapBtn) snapBtn.style.display = 'inline-flex';
+      
       const success = await cameraHandler.startCamera(videoEl);
       if (!success) {
         alert('Tidak dapat mengaktifkan kamera langsung. Menggunakan mode unggah foto atau simulator foto.');
@@ -4874,10 +4969,13 @@ class NutriVisionApp {
 
     const cameraBox = document.getElementById('camera-viewport-box');
     const canvasBox = document.getElementById('scan-canvas-view-box');
+    const snapBtn = document.getElementById('btn-snap-photo');
+    
     if (cameraBox && canvasBox) {
       cameraBox.style.display = 'none';
       canvasBox.style.display = 'flex';
     }
+    if (snapBtn) snapBtn.style.display = 'none';
 
     this.showToast('Memproses citra makanan dengan Computer Vision...');
     cvEngine.processCustomImageScan(snapshot || '', (res) => {
@@ -4945,8 +5043,22 @@ class NutriVisionApp {
         notes: options.notes || ''
       };
 
+      // Render konten konfirmasi lebih dulu (sebelum modal dibuka)
       this.renderDailyConfirmContent();
-      this.openModal('modal-confirm-daily-intake');
+
+      // Tutup scan-modal HANYA jika memang sedang terbuka (hindari memanggil deactivateLiveCamera tidak perlu)
+      const scanModalEl = document.getElementById('scan-modal');
+      const scanModalIsOpen = scanModalEl && scanModalEl.classList.contains('open');
+      if (scanModalIsOpen) {
+        // Hapus class open manual tanpa trigger deactivateLiveCamera agar tidak ada DOM reset
+        scanModalEl.classList.remove('open');
+        scanModalEl.style.display = '';
+      }
+
+      // Buka modal konfirmasi di frame berikutnya agar DOM sudah siap
+      requestAnimationFrame(() => {
+        this.openModal('modal-confirm-daily-intake');
+      });
     }, 'mencatat ke gizi harian');
   }
 
@@ -5053,7 +5165,7 @@ class NutriVisionApp {
           <div style="flex:1;min-width:0;">
             <div class="daily-confirm-plate-title">${titleStr}</div>
             <div class="daily-confirm-plate-sub">
-              <span><b>${currentGrams}g</b> Total Porsi</span>
+              <span><b>${currentGrams}g</b> ${isId ? 'Total Porsi' : 'Total Portion'}</span>
               <span>·</span>
               <span style="color:#059669;font-weight:700;"><iconify-icon icon="solar:shield-check-bold" style="font-size:13px;vertical-align:-1px;"></iconify-icon> ${overallConf}% AI Match</span>
               <span>·</span>
@@ -5128,9 +5240,9 @@ class NutriVisionApp {
         <div>
           <label class="daily-confirm-form-label">${isId ? 'Pengganda Porsi:' : 'Portion Multiplier:'}</label>
           <div class="daily-stepper-row">
-            <button type="button" class="daily-stepper-btn" onclick="app.changeDailyMealServings(-1)" title="Kurangi Porsi">-</button>
+            <button type="button" class="daily-stepper-btn" onclick="app.changeDailyMealServings(-1)" title="${isId ? 'Kurangi Porsi' : 'Reduce Portion'}">-</button>
             <span class="daily-stepper-val">${servings}x (${currentGrams}g)</span>
-            <button type="button" class="daily-stepper-btn" onclick="app.changeDailyMealServings(1)" title="Tambah Porsi">+</button>
+            <button type="button" class="daily-stepper-btn" onclick="app.changeDailyMealServings(1)" title="${isId ? 'Tambah Porsi' : 'Increase Portion'}">+</button>
           </div>
         </div>
         <div>
@@ -5152,7 +5264,7 @@ class NutriVisionApp {
         <button type="button" class="daily-confirm-cancel-btn" onclick="app.closeModal('modal-confirm-daily-intake')">
           ${isId ? 'Batal' : 'Cancel'}
         </button>
-        <button type="button" class="daily-confirm-correct-btn" onclick="app.closeModal('modal-confirm-daily-intake'); app.openScanModal();" title="Koreksi gramatur atau bahan piring">
+        <button type="button" class="daily-confirm-correct-btn" onclick="app.closeModal('modal-confirm-daily-intake'); app.openScanModal();" title="${isId ? 'Koreksi gramatur atau bahan piring' : 'Edit grams or plate ingredients'}">
           <i data-lucide="edit-3" style="width:14px;height:14px;"></i>
           <span>${isId ? 'Koreksi Bahan' : 'Edit Ingredients'}</span>
         </button>
@@ -5174,7 +5286,7 @@ class NutriVisionApp {
       if (!state || !cvEngine.currentScan) return;
 
       const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-      const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+      const userKey = this.userProfile?.id || this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
       const agg = cvEngine.calculateAggregatedNutrients();
       const servings = state.servings || 1.0;
 
@@ -6043,7 +6155,7 @@ class NutriVisionApp {
       this.saveUserDailyMealPlans();
 
       // 2. Log nutrients to progressTracker
-      const userKey = this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+      const userKey = this.userProfile?.id || this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
       if (window.progressTracker && typeof window.progressTracker.addLoggedMeal === 'function') {
         window.progressTracker.addLoggedMeal({
           protein: [totalProtein, totalProtein],
@@ -7982,15 +8094,19 @@ class NutriVisionApp {
       const res = await window.nutriAPI.classifyNutritionText(text, this.userProfile?.id);
       const elapsed = Math.max(14, Math.round(performance.now() - startTime));
 
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
       // Update status pill latency
       const statusVal = document.getElementById('ai-eval-status-val');
       if (statusVal) {
-        statusVal.innerHTML = `Aktif &amp; Respon Cepat (~${elapsed}ms)`;
+        statusVal.innerHTML = isId
+          ? `Aktif &amp; Respon Cepat (~${elapsed}ms)`
+          : `Active &amp; Fast Response (~${elapsed}ms)`;
       }
 
       const item = (res && res.success && res.result) ? res.result : {
         predictedClass: 0,
-        intentName: 'Perencana Menu Pemulihan',
+        intentName: isId ? 'Perencana Menu Pemulihan' : 'Recovery Menu Planner',
         confidence: 89.4,
         nutrients: { protein: 28.5, albumin: 5.8, calories: 340, zinc: 4.2, sodium: 380 }
       };
@@ -8014,24 +8130,44 @@ class NutriVisionApp {
       }
 
       if (resultTitle) {
-        resultTitle.textContent = isSafe
-          ? 'Aman & Sangat Direkomendasikan'
-          : (isWarning ? 'Peringatan Pantangan / Tidak Direkomendasikan' : 'Netral (Konsumsi Terukur)');
+        if (isId) {
+          resultTitle.textContent = isSafe
+            ? 'Aman & Sangat Direkomendasikan'
+            : (isWarning ? 'Peringatan Pantangan / Tidak Direkomendasikan' : 'Netral (Konsumsi Terukur)');
+        } else {
+          resultTitle.textContent = isSafe
+            ? 'Safe & Highly Recommended'
+            : (isWarning ? 'Contraindication Warning / Not Recommended' : 'Neutral (Measured Intake)');
+        }
         resultTitle.style.color = isSafe ? '#065F46' : (isWarning ? '#991B1B' : '#92400E');
       }
 
       if (resultDesc) {
-        resultDesc.textContent = isSafe
-          ? 'Menu kaya albumin alami yang mempercepat penyembuhan luka pasca operasi.'
-          : (isWarning
-            ? 'Mengandung bahan pemicu inflamasi, asam lambung tinggi, atau minyak berlebih.'
-            : 'Kandungan nutrisi seimbang, disarankan membatasi porsi garam dan lemak jenuh.');
+        if (isId) {
+          resultDesc.textContent = isSafe
+            ? 'Menu kaya albumin alami yang mempercepat penyembuhan luka pasca operasi.'
+            : (isWarning
+              ? 'Mengandung bahan pemicu inflamasi, asam lambung tinggi, atau minyak berlebih.'
+              : 'Kandungan nutrisi seimbang, disarankan membatasi porsi garam dan lemak jenuh.');
+        } else {
+          resultDesc.textContent = isSafe
+            ? 'Natural albumin-rich dish that accelerates post-surgical wound healing.'
+            : (isWarning
+              ? 'Contains ingredients triggering inflammation, excessive acidity, or high fat.'
+              : 'Balanced nutrition profile, recommended to monitor sodium and saturated fats.');
+        }
       }
 
       if (goalPill) {
-        goalPill.textContent = isSafe
-          ? 'Tujuan: Pemulihan Jaringan'
-          : (isWarning ? 'Tujuan: Kontrol Inflamasi & Nyeri' : 'Tujuan: Pemeliharaan Energi');
+        if (isId) {
+          goalPill.textContent = isSafe
+            ? 'Tujuan: Pemulihan Jaringan'
+            : (isWarning ? 'Tujuan: Kontrol Inflamasi & Nyeri' : 'Tujuan: Pemeliharaan Energi');
+        } else {
+          goalPill.textContent = isSafe
+            ? 'Goal: Tissue Repair'
+            : (isWarning ? 'Goal: Manage Inflammation & Pain' : 'Goal: Energy Maintenance');
+        }
         goalPill.style.background = isSafe ? '#ECFDF5' : (isWarning ? '#FEF2F2' : '#FFFBEB');
         goalPill.style.color = isSafe ? '#047857' : (isWarning ? '#B91C1C' : '#B45309');
         goalPill.style.borderColor = isSafe ? '#A7F3D0' : (isWarning ? '#FECACA' : '#FDE68A');
@@ -8044,7 +8180,9 @@ class NutriVisionApp {
 
       const confPercent = Math.min(99.5, Math.max(30.0, item.confidence || 92.0));
       if (confVal) {
-        const confGrade = confPercent >= 85 ? 'Tinggi' : (confPercent >= 65 ? 'Sedang' : 'Cukup');
+        const confGrade = isId
+          ? (confPercent >= 85 ? 'Tinggi' : (confPercent >= 65 ? 'Sedang' : 'Cukup'))
+          : (confPercent >= 85 ? 'High' : (confPercent >= 65 ? 'Moderate' : 'Fair'));
         confVal.textContent = `${confPercent.toFixed(1)}% (${confGrade})`;
       }
       if (progBar) {
@@ -8052,7 +8190,8 @@ class NutriVisionApp {
         progBar.style.background = isSafe ? '#064E3B' : (isWarning ? '#DC2626' : '#D97706');
       }
       if (catText) {
-        catText.textContent = `Kategori Utama: ${item.intentName || 'Perencanaan Menu Pasca Bedah'}`;
+        const catLabel = item.intentName || (isId ? 'Perencanaan Menu Pasca Bedah' : 'Post-Op Nutrition Planning');
+        catText.textContent = isId ? `Kategori Utama: ${catLabel}` : `Primary Category: ${catLabel}`;
       }
 
       // 4. Update Checklist Notes (including patient record contraindication check)
@@ -8072,10 +8211,14 @@ class NutriVisionApp {
       const protEl = document.getElementById('ai-eval-nutri-protein');
       if (protEl) protEl.textContent = `${prot} g`;
       const protSub = document.getElementById('ai-eval-nutri-protein-sub');
-      if (protSub) protSub.textContent = `${Math.round((prot / targetProt) * 100)}% Kebutuhan (${targetProt}g/hari)`;
+      if (protSub) {
+        protSub.textContent = isId
+          ? `${Math.round((prot / targetProt) * 100)}% Kebutuhan (${targetProt}g/hari)`
+          : `${Math.round((prot / targetProt) * 100)}% of Goal (${targetProt}g/day)`;
+      }
 
       const calsEl = document.getElementById('ai-eval-nutri-cals');
-      if (calsEl) calsEl.textContent = `${cals} kkal`;
+      if (calsEl) calsEl.textContent = `${cals} ${isId ? 'kkal' : 'kcal'}`;
 
       const zincEl = document.getElementById('ai-eval-nutri-zinc');
       if (zincEl) zincEl.textContent = `${zinc} mg`;
@@ -8088,14 +8231,26 @@ class NutriVisionApp {
       const orderDesc = document.getElementById('ai-eval-order-desc');
       if (orderTitle && orderDesc) {
         if (isSafe) {
-          orderTitle.textContent = 'Kesesuaian Menu Pasien Disetujui';
-          orderDesc.textContent = 'Diverifikasi untuk Ruang Rawat Pasca Operasi Cempaka 3B';
+          orderTitle.textContent = isId
+            ? 'Kesesuaian Menu Pasien Disetujui'
+            : 'Patient Menu Compatibility Approved';
+          orderDesc.textContent = isId
+            ? 'Diverifikasi untuk Ruang Rawat Pasca Operasi Cempaka 3B'
+            : 'Verified for Post-Op Inpatient Ward Cempaka 3B';
         } else if (isWarning) {
-          orderTitle.textContent = 'Perhatian: Menu Memerlukan Verifikasi Klinis';
-          orderDesc.textContent = 'Terdeteksi bahan pantangan pasca operasi, butuh persetujuan ahli gizi / nakes penanggung jawab';
+          orderTitle.textContent = isId
+            ? 'Perhatian: Menu Memerlukan Verifikasi Klinis'
+            : 'Attention: Menu Requires Clinical Verification';
+          orderDesc.textContent = isId
+            ? 'Terdeteksi bahan pantangan pasca operasi, butuh persetujuan ahli gizi / nakes penanggung jawab'
+            : 'Detected contraindicated ingredients; requires clinical nutritionist or lead nurse approval';
         } else {
-          orderTitle.textContent = 'Menu Dalam Batas Toleransi Nutrisi';
-          orderDesc.textContent = 'Disarankan untuk diawasi porsi konsumsi oleh perawat ruang rawat';
+          orderTitle.textContent = isId
+            ? 'Menu Dalam Batas Toleransi Nutrisi'
+            : 'Menu Within Nutritional Tolerance Limits';
+          orderDesc.textContent = isId
+            ? 'Disarankan untuk diawasi porsi konsumsi oleh perawat ruang rawat'
+            : 'Portion monitoring recommended under supervising inpatient nurse';
         }
       }
 
@@ -8181,24 +8336,26 @@ class NutriVisionApp {
   }
 
   generateClinicalNotesHTML(text, isSafe, isWarning, patientConflict = null, detectedItems = null) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
     let conflictSnippet = '';
     if (patientConflict && patientConflict.hasConflict) {
       const conflictList = patientConflict.conflictingAllergies.join(', ');
       conflictSnippet = `
         <div class="ai-eval-note-item" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:8px 10px;">
           <span class="ai-eval-note-check" style="color:#DC2626;">🚨</span>
-          <span style="color:#991B1B;"><strong>Konflik Rekam Medis Pasien:</strong> Terdeteksi bahan: <em>${conflictList}</em> yang bertentangan dengan rekam medis pasien pasca operasi!</span>
+          <span style="color:#991B1B;"><strong>${isId ? 'Konflik Rekam Medis Pasien:' : 'Patient Medical Record Conflict:'}</strong> ${isId ? `Terdeteksi bahan: <em>${conflictList}</em> yang bertentangan dengan rekam medis pasien pasca operasi!` : `Detected ingredients: <em>${conflictList}</em> conflicting with post-surgical patient medical record!`}</span>
         </div>
       `;
     }
 
     let detectedItemSnippet = '';
     if (Array.isArray(detectedItems) && detectedItems.length > 0) {
-      const summaryList = detectedItems.map(d => `${d.name} (Akurasi: ${d.accuracy}%)`).join(', ');
+      const summaryList = detectedItems.map(d => `${d.name} (${isId ? 'Akurasi' : 'Accuracy'}: ${d.accuracy}%)`).join(', ');
       detectedItemSnippet = `
-        <div class="ai-eval-note-item" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;">
+        <div class="ai-eval-note-item" style="background:#F8FAFC;border:1px solid #E2E8CH;border-radius:8px;padding:8px 10px;">
           <span class="ai-eval-note-check" style="color:#0F766E;">🎯</span>
-          <span><strong>Bahan Teridentifikasi:</strong> ${summaryList}</span>
+          <span><strong>${isId ? 'Bahan Teridentifikasi:' : 'Identified Ingredients:'}</strong> ${summaryList}</span>
         </div>
       `;
     }
@@ -8209,15 +8366,15 @@ class NutriVisionApp {
         ${detectedItemSnippet}
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check" style="color:#DC2626;">⚠️</span>
-          <span><strong>Risiko Saluran Cerna Pasca Bedah:</strong> Kandungan minyak jenuh tinggi atau bumbu pedas memicu asam lambung dan peristaltik berlebihan.</span>
+          <span><strong>${isId ? 'Risiko Saluran Cerna Pasca Bedah:' : 'Post-Surgical Gastrointestinal Risk:'}</strong> ${isId ? 'Kandungan minyak jenuh tinggi atau bumbu pedas memicu asam lambung dan peristaltik berlebihan.' : 'High saturated fat or spicy seasoning may trigger acid reflux and hyper-peristalsis.'}</span>
         </div>
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check" style="color:#DC2626;">⚠️</span>
-          <span><strong>Hambatan Pemulihan Luka:</strong> Lemak jenuh &amp; iritan memperlambat sintesis fibroblast dan penyatuan jaringan luka operasi.</span>
+          <span><strong>${isId ? 'Hambatan Pemulihan Luka:' : 'Wound Healing Obstacle:'}</strong> ${isId ? 'Lemak jenuh & iritan memperlambat sintesis fibroblast dan penyatuan jaringan luka operasi.' : 'Saturated fats & irritants delay fibroblast synthesis and tissue incision healing.'}</span>
         </div>
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check" style="color:#10B981;">✓</span>
-          <span><strong>Alternatif Menu:</strong> Disarankan beralih ke varian kukus/rebus kaya albumin seperti sup ikan gabus atau bening bayam tempe.</span>
+          <span><strong>${isId ? 'Alternatif Menu:' : 'Meal Alternatives:'}</strong> ${isId ? 'Disarankan beralih ke varian kukus/rebus kaya albumin seperti sup ikan gabus atau bening bayam tempe.' : 'Recommended to switch to steamed/boiled albumin-rich dishes such as snakehead fish soup or clear spinach tempeh soup.'}</span>
         </div>
       `;
     }
@@ -8227,15 +8384,15 @@ class NutriVisionApp {
         ${detectedItemSnippet}
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check">✓</span>
-          <span><strong>Sangat Ramah Cerna:</strong> Kaldu bening bebas cabai dan bumbu pedas, aman dari risiko iritasi lambung pasca operasi.</span>
+          <span><strong>${isId ? 'Sangat Ramah Cerna:' : 'Easily Digestible:'}</strong> ${isId ? 'Kaldu bening bebas cabai dan bumbu pedas, aman dari risiko iritasi lambung pasca operasi.' : 'Clear broth free of chili and irritants, safe from post-surgical gastric irritation risks.'}</span>
         </div>
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check">✓</span>
-          <span><strong>Dukungan Pemulihan Jaringan:</strong> Kandungan protein &amp; albumin hewani mudah diserap untuk perbaikan luka bedah.</span>
+          <span><strong>${isId ? 'Dukungan Pemulihan Jaringan:' : 'Tissue Regeneration Support:'}</strong> ${isId ? 'Kandungan protein & albumin hewani mudah diserap untuk perbaikan luka bedah.' : 'Protein and bioavailable animal albumin are readily absorbed for surgical wound repair.'}</span>
         </div>
         <div class="ai-eval-note-item">
           <span class="ai-eval-note-check">✓</span>
-          <span><strong>Pemeriksaan Rekam Medis:</strong> Tidak terdeteksi bahan yang bertentangan dengan pantangan atau alergi pasien.</span>
+          <span><strong>${isId ? 'Pemeriksaan Rekam Medis:' : 'Medical Record Clearance:'}</strong> ${isId ? 'Tidak terdeteksi bahan yang bertentangan dengan pantangan atau alergi pasien.' : 'No contraindications or known patient allergies detected in this meal.'}</span>
         </div>
       `;
     }
@@ -8244,15 +8401,15 @@ class NutriVisionApp {
       ${conflictSnippet}
       <div class="ai-eval-note-item">
         <span class="ai-eval-note-check" style="color:#D97706;">ℹ️</span>
-        <span><strong>Toleransi Moderat:</strong> Menu dapat dikonsumsi namun batasi penambahan bumbu penyedap dan natrium.</span>
+        <span><strong>${isId ? 'Toleransi Moderat:' : 'Moderate Tolerance:'}</strong> ${isId ? 'Menu dapat dikonsumsi namun batasi penambahan bumbu penyedap dan natrium.' : 'Dish is acceptable but limit added sodium, artificial seasonings, and salt.'}</span>
       </div>
       <div class="ai-eval-note-item">
         <span class="ai-eval-note-check">✓</span>
-        <span><strong>Keseimbangan Asupan:</strong> Berikan selingan sayuran hijau atau buah tinggi vitamin C untuk absorpsi optimal.</span>
+        <span><strong>${isId ? 'Keseimbangan Asupan:' : 'Intake Balance:'}</strong> ${isId ? 'Berikan selingan sayuran hijau atau buah tinggi vitamin C untuk absorpsi optimal.' : 'Pair with green vegetables or vitamin-C rich fruit to maximize micronutrient absorption.'}</span>
       </div>
       <div class="ai-eval-note-item">
         <span class="ai-eval-note-check">✓</span>
-        <span><strong>Pemeriksaan Alergi:</strong> Tidak terdeteksi kontraindikasi spesifik pada profil pasien.</span>
+        <span><strong>${isId ? 'Pemeriksaan Alergi:' : 'Allergy Screening:'}</strong> ${isId ? 'Tidak terdeteksi kontraindikasi spesifik pada profil pasien.' : 'No specific contraindications found on current patient profile.'}</span>
       </div>
     `;
   }
@@ -8973,11 +9130,23 @@ class NutriVisionApp {
       this.showToast(`⚠️ Error ${action}: ${msg}`, 'error');
     });
 
-    // Landing Page Navbar Scroll Shadow Effect
+    // Landing Page & Dashboard Topbar Scroll Effects
     window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+
+      // 1. Landing Page Navbar Scroll Shadow Effect
       const navbar = document.getElementById('lp-navbar');
       if (navbar) {
-        navbar.classList.toggle('scrolled', window.scrollY > 20);
+        navbar.classList.toggle('scrolled', scrollY > 20);
+      }
+
+      // 2. Dashboard Topbar Dynamic Scroll Logo
+      const topbar = document.getElementById('dashboard-topbar');
+      const scrollBrand = document.getElementById('topbar-scroll-brand');
+      if (topbar && scrollBrand) {
+        const isScrolled = scrollY > 40;
+        topbar.classList.toggle('scrolled', isScrolled);
+        scrollBrand.classList.toggle('visible', isScrolled);
       }
     });
 
@@ -11586,7 +11755,23 @@ if (typeof window !== 'undefined' && window.MutationObserver) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+      const res = await fetch('/api/catalog');
+      if (res.ok) {
+          const json = await res.json();
+          window.NUTRIVISION_DATA = json.data;
+          
+          if (typeof communityHandler !== 'undefined') {
+              communityHandler.loadPosts();
+              communityHandler.renderCommunityFeed();
+          }
+      } else {
+          console.error("Gagal memuat katalog dari backend");
+      }
+  } catch (err) {
+      console.error("Error fetching catalog:", err);
+  }
   app.init();
   window.refreshIcons();
 });
