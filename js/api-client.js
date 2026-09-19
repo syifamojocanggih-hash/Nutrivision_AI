@@ -13,7 +13,7 @@ class NutriVisionAPIClient {
     const frontendPort = parseInt(window.location.port || '80', 10);
     // Jika frontend port sama dengan backend (5001), gunakan relative URL (same origin)
     // Jika frontend di port berbeda (8080, 5000, dll), arahkan eksplisit ke port 5001
-    const BACKEND_PORT = 5000;
+    const BACKEND_PORT = 5001;
     const isSamePort = frontendPort === BACKEND_PORT;
     const autoBaseUrl = isLocalhost
       ? (isSamePort ? '' : `http://localhost:${BACKEND_PORT}`)

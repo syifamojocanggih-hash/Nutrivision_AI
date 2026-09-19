@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../database/connection');
+const db = require('../database/connection');
 
 // Konstanta ukuran UI di Frontend (Fixed Reference)
 const UI_CIRCLE_DIAMETER_PX = 800;

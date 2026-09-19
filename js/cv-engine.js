@@ -570,9 +570,10 @@ class NutriVisionCVEngine {
          throw new Error('Tidak ada makanan yang terdeteksi di piring.');
       }
 
-      // 4. Panggil API Portioning (Port otomatis sama dengan frontend)
+      // 4. Panggil API Portioning
       if (window.app) app.showToast('Menghitung estimasi nutrisi...');
-      const portionRes = await fetch('/api/portioning/calculate-nutrition', {
+      const apiBaseUrl = window.nutriAPI ? window.nutriAPI.baseUrl : 'http://localhost:5000';
+      const portionRes = await fetch(`${apiBaseUrl}/api/portioning/calculate-nutrition`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

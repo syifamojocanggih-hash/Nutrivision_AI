@@ -156,10 +156,15 @@ NODE_ENV=development
 
 #### 3. Start Backend & AI Services
 ```bash
-# Terminal 1: Python AI Inference Service (Port 5050)
-python server/ai_service.py 5050
+# Terminal 1: Python FastAPI YOLO Vision Service (Port 8000)
+cd vision
+python -m venv venv
+source venv/bin/activate  # (On Windows: venv\Scripts\activate)
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 
 # Terminal 2: Node.js Express REST API (Port 5000)
+cd server
 npm start
 ```
 
