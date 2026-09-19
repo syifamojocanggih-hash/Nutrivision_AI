@@ -130,7 +130,7 @@ window.BappenasFoodAPI = {
   async getProvinces() {
     const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'http://localhost:5001';
     try {
-      const res = await fetch(`${baseUrl}/api/prices/provinces`, { signal: AbortSignal.timeout(3000) });
+      const res = await fetch(`${baseUrl}/api/food-prices/provinces`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.provinces) && data.provinces.length > 0) {
@@ -149,7 +149,7 @@ window.BappenasFoodAPI = {
   async getCities(provinceId) {
     const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'http://localhost:5001';
     try {
-      const res = await fetch(`${baseUrl}/api/prices/cities?provinceId=${provinceId}`, { signal: AbortSignal.timeout(3000) });
+      const res = await fetch(`${baseUrl}/api/food-prices/cities?provinceId=${provinceId}`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.cities)) {
@@ -175,7 +175,7 @@ window.BappenasFoodAPI = {
     if (provinceId) params.append('provinceId', provinceId);
 
     try {
-      const res = await fetch(`${baseUrl}/api/prices/regional?${params.toString()}`, { signal: AbortSignal.timeout(3000) });
+      const res = await fetch(`${baseUrl}/api/food-prices/regional?${params.toString()}`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.region) {

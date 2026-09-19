@@ -56,20 +56,46 @@ const DEFAULT_PROVINCES = [
   { id: 38, name: 'Papua Barat Daya', zone: 'Zona 7 (Papua)', multiplier: 1.55 }
 ];
 
-// Data Kota/Kabupaten Default (Fallback jika jaringan offline)
+// Data Kota/Kabupaten Default (Fallback jika jaringan offline) — Lengkap 38 Provinsi
 const DEFAULT_CITIES = {
+  1:  ['Kota Banda Aceh', 'Kab. Aceh Besar', 'Kota Sabang', 'Kab. Pidie', 'Kab. Bireuen', 'Kab. Aceh Utara', 'Kab. Aceh Timur', 'Kab. Aceh Selatan', 'Kab. Aceh Tengah', 'Kab. Aceh Barat', 'Kab. Simeulue', 'Kota Langsa', 'Kota Lhokseumawe', 'Kab. Nagan Raya', 'Kab. Gayo Lues', 'Kab. Aceh Jaya', 'Kab. Aceh Singkil', 'Kab. Bener Meriah', 'Kab. Pidie Jaya', 'Kab. Aceh Tamiang', 'Kab. Aceh Barat Daya', 'Kab. Aceh Tenggara', 'Kota Subulussalam'],
+  2:  ['Kota Medan', 'Kota Binjai', 'Kota Tebing Tinggi', 'Kota Pematangsiantar', 'Kota Sibolga', 'Kota Tanjungbalai', 'Kota Padangsidimpuan', 'Kota Gunungsitoli', 'Kab. Deli Serdang', 'Kab. Langkat', 'Kab. Karo', 'Kab. Dairi', 'Kab. Tapanuli Utara', 'Kab. Tapanuli Tengah', 'Kab. Tapanuli Selatan', 'Kab. Asahan', 'Kab. Labuhanbatu', 'Kab. Simalungun', 'Kab. Nias', 'Kab. Mandailing Natal', 'Kab. Toba Samosir', 'Kab. Samosir', 'Kab. Pakpak Bharat', 'Kab. Humbang Hasundutan', 'Kab. Serdang Bedagai', 'Kab. Nias Selatan', 'Kab. Padang Lawas', 'Kab. Padang Lawas Utara', 'Kab. Labuhanbatu Utara', 'Kab. Labuhanbatu Selatan', 'Kab. Nias Utara', 'Kab. Nias Barat', 'Kab. Batubara'],
+  3:  ['Kota Padang', 'Kota Bukittinggi', 'Kota Payakumbuh', 'Kota Padang Panjang', 'Kota Solok', 'Kota Sawahlunto', 'Kota Pariaman', 'Kab. Agam', 'Kab. Pasaman', 'Kab. Pesisir Selatan', 'Kab. Solok', 'Kab. Sijunjung', 'Kab. Tanah Datar', 'Kab. Padang Pariaman', 'Kab. Lima Puluh Kota', 'Kab. Kepulauan Mentawai', 'Kab. Dharmasraya', 'Kab. Solok Selatan', 'Kab. Pasaman Barat'],
+  4:  ['Kota Pekanbaru', 'Kota Dumai', 'Kab. Kampar', 'Kab. Rokan Hulu', 'Kab. Bengkalis', 'Kab. Rokan Hilir', 'Kab. Siak', 'Kab. Indragiri Hulu', 'Kab. Indragiri Hilir', 'Kab. Pelalawan', 'Kab. Kuantan Singingi', 'Kab. Kepulauan Meranti'],
+  5:  ['Kota Jambi', 'Kab. Batanghari', 'Kab. Muaro Jambi', 'Kab. Bungo', 'Kab. Tebo', 'Kab. Sarolangun', 'Kab. Merangin', 'Kab. Kerinci', 'Kota Sungai Penuh', 'Kab. Tanjung Jabung Barat', 'Kab. Tanjung Jabung Timur'],
+  6:  ['Kota Palembang', 'Kota Lubuklinggau', 'Kota Prabumulih', 'Kota Pagaralam', 'Kab. Ogan Komering Ulu', 'Kab. Ogan Komering Ilir', 'Kab. Muara Enim', 'Kab. Lahat', 'Kab. Musi Rawas', 'Kab. Musi Banyuasin', 'Kab. Banyuasin', 'Kab. Ogan Ilir', 'Kab. OKU Timur', 'Kab. OKU Selatan', 'Kab. Empat Lawang', 'Kab. PALI', 'Kab. Musi Rawas Utara'],
+  7:  ['Kota Bengkulu', 'Kab. Bengkulu Utara', 'Kab. Bengkulu Selatan', 'Kab. Rejang Lebong', 'Kab. Lebong', 'Kab. Kepahiang', 'Kab. Mukomuko', 'Kab. Seluma', 'Kab. Kaur', 'Kab. Bengkulu Tengah'],
+  8:  ['Kota Bandar Lampung', 'Kota Metro', 'Kab. Lampung Selatan', 'Kab. Lampung Utara', 'Kab. Lampung Tengah', 'Kab. Lampung Timur', 'Kab. Lampung Barat', 'Kab. Tulangbawang', 'Kab. Tanggamus', 'Kab. Pringsewu', 'Kab. Mesuji', 'Kab. Tulangbawang Barat', 'Kab. Pesawaran', 'Kab. Pesisir Barat', 'Kab. Way Kanan'],
+  9:  ['Kota Pangkalpinang', 'Kab. Bangka', 'Kab. Bangka Barat', 'Kab. Bangka Tengah', 'Kab. Bangka Selatan', 'Kab. Belitung', 'Kab. Belitung Timur'],
+  10: ['Kota Tanjungpinang', 'Kota Batam', 'Kab. Bintan', 'Kab. Karimun', 'Kab. Lingga', 'Kab. Natuna', 'Kab. Kepulauan Anambas'],
   11: ['Kota Jakarta Pusat', 'Kota Jakarta Selatan', 'Kota Jakarta Barat', 'Kota Jakarta Timur', 'Kota Jakarta Utara', 'Kab. Kepulauan Seribu'],
-  12: ['Kota Bandung', 'Kota Bogor', 'Kota Bekasi', 'Kota Depok', 'Kab. Bandung', 'Kab. Bogor', 'Kab. Bekasi', 'Kab. Karawang', 'Kota Cimahi'],
-  13: ['Kota Semarang', 'Kota Surakarta (Solo)', 'Kota Magelang', 'Kab. Banyumas', 'Kab. Kudus', 'Kab. Cilacap'],
+  12: ['Kota Bandung', 'Kota Bogor', 'Kota Bekasi', 'Kota Depok', 'Kota Cimahi', 'Kota Sukabumi', 'Kota Tasikmalaya', 'Kota Cirebon', 'Kota Banjar', 'Kab. Bandung', 'Kab. Bandung Barat', 'Kab. Bogor', 'Kab. Bekasi', 'Kab. Karawang', 'Kab. Purwakarta', 'Kab. Subang', 'Kab. Indramayu', 'Kab. Cirebon', 'Kab. Majalengka', 'Kab. Sumedang', 'Kab. Kuningan', 'Kab. Garut', 'Kab. Tasikmalaya', 'Kab. Ciamis', 'Kab. Pangandaran', 'Kab. Sukabumi', 'Kab. Cianjur'],
+  13: ['Kota Semarang', 'Kota Surakarta (Solo)', 'Kota Magelang', 'Kota Salatiga', 'Kota Pekalongan', 'Kota Tegal', 'Kab. Semarang', 'Kab. Kendal', 'Kab. Demak', 'Kab. Grobogan', 'Kab. Pati', 'Kab. Kudus', 'Kab. Jepara', 'Kab. Rembang', 'Kab. Blora', 'Kab. Boyolali', 'Kab. Klaten', 'Kab. Sukoharjo', 'Kab. Karanganyar', 'Kab. Wonogiri', 'Kab. Sragen', 'Kab. Magelang', 'Kab. Purworejo', 'Kab. Kebumen', 'Kab. Wonosobo', 'Kab. Banjarnegara', 'Kab. Temanggung', 'Kab. Batang', 'Kab. Pekalongan', 'Kab. Pemalang', 'Kab. Tegal', 'Kab. Brebes', 'Kab. Banyumas', 'Kab. Cilacap', 'Kab. Purbalingga'],
   14: ['Kota Yogyakarta', 'Kab. Sleman', 'Kab. Bantul', 'Kab. Gunungkidul', 'Kab. Kulon Progo'],
-  15: ['Kota Surabaya', 'Kota Malang', 'Kab. Sidoarjo', 'Kab. Gresik', 'Kab. Jember', 'Kota Kediri'],
-  17: ['Kota Denpasar', 'Kab. Badung', 'Kab. Gianyar', 'Kab. Buleleng', 'Kab. Tabanan'],
-  2: ['Kota Medan', 'Kota Pematangsiantar', 'Kab. Deli Serdang', 'Kab. Karo'],
-  3: ['Kota Padang', 'Kota Bukittinggi', 'Kab. Agam'],
-  23: ['Kota Samarinda', 'Kota Balikpapan', 'Kab. Kutai Kartanegara', 'Kota Bontang'],
-  27: ['Kota Makassar', 'Kota Parepare', 'Kab. Gowa', 'Kab. Maros'],
-  34: ['Kota Jayapura', 'Kab. Jayapura', 'Kab. Keerom', 'Kab. Sarmi'],
-  37: ['Kab. Jayawijaya (Wamena)', 'Kab. Lanny Jaya', 'Kab. Nduga', 'Kab. Tolikara']
+  15: ['Kota Surabaya', 'Kota Malang', 'Kota Kediri', 'Kota Blitar', 'Kota Madiun', 'Kota Mojokerto', 'Kota Pasuruan', 'Kota Probolinggo', 'Kota Batu', 'Kab. Sidoarjo', 'Kab. Gresik', 'Kab. Lamongan', 'Kab. Jombang', 'Kab. Mojokerto', 'Kab. Pasuruan', 'Kab. Malang', 'Kab. Blitar', 'Kab. Kediri', 'Kab. Nganjuk', 'Kab. Madiun', 'Kab. Magetan', 'Kab. Ngawi', 'Kab. Bojonegoro', 'Kab. Tuban', 'Kab. Jember', 'Kab. Bondowoso', 'Kab. Situbondo', 'Kab. Probolinggo', 'Kab. Lumajang', 'Kab. Banyuwangi', 'Kab. Bangkalan', 'Kab. Sampang', 'Kab. Pamekasan', 'Kab. Sumenep', 'Kab. Pacitan', 'Kab. Ponorogo', 'Kab. Trenggalek', 'Kab. Tulungagung'],
+  16: ['Kota Serang', 'Kota Cilegon', 'Kota Tangerang', 'Kota Tangerang Selatan', 'Kab. Serang', 'Kab. Pandeglang', 'Kab. Lebak', 'Kab. Tangerang'],
+  17: ['Kota Denpasar', 'Kab. Badung', 'Kab. Gianyar', 'Kab. Tabanan', 'Kab. Klungkung', 'Kab. Bangli', 'Kab. Karangasem', 'Kab. Buleleng', 'Kab. Jembrana'],
+  18: ['Kota Mataram', 'Kota Bima', 'Kab. Lombok Barat', 'Kab. Lombok Tengah', 'Kab. Lombok Timur', 'Kab. Lombok Utara', 'Kab. Sumbawa', 'Kab. Sumbawa Barat', 'Kab. Dompu', 'Kab. Bima'],
+  19: ['Kota Kupang', 'Kab. Kupang', 'Kab. Timor Tengah Selatan', 'Kab. Timor Tengah Utara', 'Kab. Belu', 'Kab. Malaka', 'Kab. Alor', 'Kab. Flores Timur', 'Kab. Sikka', 'Kab. Ende', 'Kab. Ngada', 'Kab. Nagekeo', 'Kab. Manggarai', 'Kab. Manggarai Barat', 'Kab. Manggarai Timur', 'Kab. Sumba Timur', 'Kab. Sumba Barat', 'Kab. Sumba Tengah', 'Kab. Sumba Barat Daya', 'Kab. Lembata', 'Kab. Rote Ndao', 'Kab. Sabu Raijua'],
+  20: ['Kota Pontianak', 'Kota Singkawang', 'Kab. Pontianak', 'Kab. Kubu Raya', 'Kab. Mempawah', 'Kab. Sambas', 'Kab. Bengkayang', 'Kab. Landak', 'Kab. Sanggau', 'Kab. Sekadau', 'Kab. Sintang', 'Kab. Kapuas Hulu', 'Kab. Melawi', 'Kab. Kayong Utara', 'Kab. Ketapang'],
+  21: ['Kota Palangka Raya', 'Kab. Kotawaringin Barat', 'Kab. Kotawaringin Timur', 'Kab. Kapuas', 'Kab. Barito Selatan', 'Kab. Barito Utara', 'Kab. Sukamara', 'Kab. Lamandau', 'Kab. Seruyan', 'Kab. Katingan', 'Kab. Pulang Pisau', 'Kab. Gunung Mas', 'Kab. Barito Timur', 'Kab. Murung Raya'],
+  22: ['Kota Banjarmasin', 'Kota Banjarbaru', 'Kab. Banjar', 'Kab. Barito Kuala', 'Kab. Tapin', 'Kab. Hulu Sungai Selatan', 'Kab. Hulu Sungai Tengah', 'Kab. Hulu Sungai Utara', 'Kab. Balangan', 'Kab. Tabalong', 'Kab. Kotabaru', 'Kab. Tanah Laut', 'Kab. Tanah Bumbu'],
+  23: ['Kota Samarinda', 'Kota Balikpapan', 'Kota Bontang', 'Kota Tarakan (Kaltara)', 'Kab. Kutai Kartanegara', 'Kab. Kutai Barat', 'Kab. Kutai Timur', 'Kab. Berau', 'Kab. Penajam Paser Utara', 'Kab. Paser', 'Kab. Mahakam Ulu'],
+  24: ['Kota Tarakan', 'Kab. Bulungan', 'Kab. Nunukan', 'Kab. Malinau', 'Kab. Tana Tidung'],
+  25: ['Kota Manado', 'Kota Bitung', 'Kota Tomohon', 'Kota Kotamobagu', 'Kab. Minahasa', 'Kab. Minahasa Utara', 'Kab. Minahasa Selatan', 'Kab. Minahasa Tenggara', 'Kab. Bolaang Mongondow', 'Kab. Bolmong Utara', 'Kab. Bolmong Selatan', 'Kab. Bolmong Timur', 'Kab. Kepulauan Sangihe', 'Kab. Kepulauan Talaud', 'Kab. Kepulauan Sitaro'],
+  26: ['Kota Palu', 'Kab. Donggala', 'Kab. Sigi', 'Kab. Parigi Moutong', 'Kab. Poso', 'Kab. Morowali', 'Kab. Morowali Utara', 'Kab. Banggai', 'Kab. Banggai Kepulauan', 'Kab. Banggai Laut', 'Kab. Tojo Una-Una', 'Kab. Buol', 'Kab. Toli-Toli'],
+  27: ['Kota Makassar', 'Kota Parepare', 'Kota Palopo', 'Kab. Gowa', 'Kab. Maros', 'Kab. Pangkep', 'Kab. Barru', 'Kab. Bone', 'Kab. Soppeng', 'Kab. Wajo', 'Kab. Sidenreng Rappang', 'Kab. Pinrang', 'Kab. Enrekang', 'Kab. Toraja Utara', 'Kab. Tana Toraja', 'Kab. Luwu', 'Kab. Luwu Utara', 'Kab. Luwu Timur', 'Kab. Bulukumba', 'Kab. Bantaeng', 'Kab. Jeneponto', 'Kab. Takalar', 'Kab. Selayar'],
+  28: ['Kota Kendari', 'Kota Bau-Bau', 'Kab. Konawe', 'Kab. Konawe Selatan', 'Kab. Konawe Utara', 'Kab. Konawe Kepulauan', 'Kab. Kolaka', 'Kab. Kolaka Utara', 'Kab. Kolaka Timur', 'Kab. Muna', 'Kab. Muna Barat', 'Kab. Buton', 'Kab. Buton Utara', 'Kab. Buton Selatan', 'Kab. Buton Tengah', 'Kab. Bombana', 'Kab. Wakatobi'],
+  29: ['Kota Gorontalo', 'Kab. Gorontalo', 'Kab. Bone Bolango', 'Kab. Gorontalo Utara', 'Kab. Boalemo', 'Kab. Pohuwato'],
+  30: ['Kab. Mamuju', 'Kab. Mamuju Tengah', 'Kab. Mamuju Utara (Pasangkayu)', 'Kab. Mamasa', 'Kab. Majene', 'Kab. Polewali Mandar'],
+  31: ['Kota Ambon', 'Kota Tual', 'Kab. Maluku Tengah', 'Kab. Maluku Tenggara', 'Kab. Maluku Tenggara Barat', 'Kab. Kepulauan Aru', 'Kab. Seram Bagian Barat', 'Kab. Seram Bagian Timur', 'Kab. Maluku Barat Daya', 'Kab. Buru', 'Kab. Buru Selatan'],
+  32: ['Kota Ternate', 'Kota Tidore Kepulauan', 'Kab. Halmahera Barat', 'Kab. Halmahera Utara', 'Kab. Halmahera Timur', 'Kab. Halmahera Selatan', 'Kab. Halmahera Tengah', 'Kab. Kepulauan Sula', 'Kab. Pulau Taliabu', 'Kab. Pulau Morotai'],
+  33: ['Kota Sorong', 'Kab. Sorong', 'Kab. Sorong Selatan', 'Kab. Raja Ampat', 'Kab. Tambrauw', 'Kab. Maybrat', 'Kab. Manokwari', 'Kab. Manokwari Selatan', 'Kab. Pegunungan Arfak', 'Kab. Teluk Bintuni', 'Kab. Teluk Wondama', 'Kab. Fakfak', 'Kab. Kaimana'],
+  34: ['Kota Jayapura', 'Kab. Jayapura', 'Kab. Keerom', 'Kab. Sarmi', 'Kab. Biak Numfor', 'Kab. Kepulauan Yapen', 'Kab. Supiori', 'Kab. Waropen', 'Kab. Mamberamo Raya', 'Kab. Nabire', 'Kab. Paniai', 'Kab. Mimika', 'Kab. Merauke', 'Kab. Mappi', 'Kab. Asmat', 'Kab. Boven Digoel'],
+  35: ['Kab. Merauke', 'Kab. Boven Digoel', 'Kab. Mappi', 'Kab. Asmat'],
+  36: ['Kab. Nabire', 'Kab. Paniai', 'Kab. Mimika', 'Kab. Dogiyai', 'Kab. Intan Jaya', 'Kab. Deiyai'],
+  37: ['Kab. Jayawijaya (Wamena)', 'Kab. Lanny Jaya', 'Kab. Nduga', 'Kab. Tolikara', 'Kab. Mamberamo Tengah', 'Kab. Puncak Jaya', 'Kab. Puncak', 'Kab. Pegunungan Bintang', 'Kab. Yahukimo', 'Kab. Yalimo'],
+  38: ['Kota Sorong (Barat Daya)', 'Kab. Sorong (Barat Daya)', 'Kab. Raja Ampat (Barat Daya)', 'Kab. Tambraw (Barat Daya)', 'Kab. Maybrat (Barat Daya)']
 };
 
 // Benchmark Harga Pangan Komoditas Dasar (Zona 1 - Jawa Baseline)

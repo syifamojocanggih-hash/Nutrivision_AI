@@ -1025,16 +1025,24 @@ class NutriVisionProgress {
           imageUrl: m.image_url || ''
         }));
 
-        // Server adalah sumber kebenaran utama saat online (Source of Truth)
-        this.todayMeals = serverMeals;
-        if (todayData.summary) {
-          this.todayIntake.protein = todayData.summary.totalProtein || 0;
-          this.todayIntake.calories = todayData.summary.totalCalories || 0;
-          this.todayIntake.carbs = todayData.summary.totalCarbs || 0;
-          this.todayIntake.fat = todayData.summary.totalFat || 0;
-        } else {
-          this.todayIntake = { protein: 0, calories: 0, carbs: 0, fat: 0 };
+        // Server adalah sumber kebenaran utama HANYA jika ada data meal hari ini
+        if (serverMeals.length > 0) {
+          this.todayMeals = serverMeals;
+          if (todayData.summary) {
+            this.todayIntake.protein   = todayData.summary.totalProtein  || 0;
+            this.todayIntake.calories  = todayData.summary.totalCalories || 0;
+            this.todayIntake.carbs     = todayData.summary.totalCarbs    || 0;
+            this.todayIntake.fat       = todayData.summary.totalFat      || 0;
+          } else {
+            // Hitung ulang dari serverMeals langsung
+            this.todayIntake.protein  = serverMeals.reduce((s, m) => s + (m.protein  || 0), 0);
+            this.todayIntake.calories = serverMeals.reduce((s, m) => s + (m.calories || 0), 0);
+            this.todayIntake.carbs    = serverMeals.reduce((s, m) => s + (m.carbs    || 0), 0);
+            this.todayIntake.fat      = serverMeals.reduce((s, m) => s + (m.fat      || 0), 0);
+          }
         }
+        // Jika server tidak punya data hari ini (meals kosong), JANGAN timpa localStorage
+        // — data lokal tetap dipertahankan (offline / belum sync ke MySQL)
 
           // Update today's weeklyLog entry
           const todayLog = this.weeklyLogs.find(l => l.isToday);

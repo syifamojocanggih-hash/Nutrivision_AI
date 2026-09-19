@@ -3829,12 +3829,42 @@
               </select>
             </div>
             <div>
-              <label for="onboard-city" class="quiz-field-label">
+              <label for="onboard-city-input" class="quiz-field-label">
                 <span data-i18n="quiz_city_label">Kota / Kabupaten</span> <span style="color:#DC2626;">*</span>
               </label>
-              <select id="onboard-city" class="form-control quiz-custom-select" onchange="app.handleOnboardCityChange(this.value)" required>
-                <option value="" data-i18n="quiz_city_placeholder">Pilih Kota / Kab...</option>
-              </select>
+              <!-- Searchable City Combobox -->
+              <div id="onboard-city-wrapper" style="position:relative;">
+                <div class="quiz-input-wrapper" style="margin:0;">
+                  <i data-lucide="map-pin" class="quiz-input-icon"></i>
+                  <input
+                    type="text"
+                    id="onboard-city-input"
+                    class="form-control quiz-custom-input"
+                    placeholder="Cari kota / kabupaten..."
+                    autocomplete="off"
+                    oninput="app.filterCityDropdown(this.value)"
+                    onfocus="app.openCityDropdown()"
+                    onblur="setTimeout(()=>app.closeCityDropdown(),180)"
+                    required
+                  />
+                </div>
+                <!-- Hidden actual value sent to the logic -->
+                <input type="hidden" id="onboard-city" />
+                <!-- Dropdown list -->
+                <div id="onboard-city-dropdown" style="
+                  display:none;
+                  position:absolute;
+                  top:calc(100% + 4px);
+                  left:0; right:0;
+                  max-height:200px;
+                  overflow-y:auto;
+                  background:#fff;
+                  border:1.5px solid #C8D4A0;
+                  border-radius:10px;
+                  box-shadow:0 6px 24px rgba(0,0,0,0.10);
+                  z-index:9999;
+                "></div>
+              </div>
             </div>
           </div>
 

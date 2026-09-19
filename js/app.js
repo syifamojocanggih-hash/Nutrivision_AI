@@ -3411,18 +3411,89 @@ class NutriVisionApp {
     }
   }
 
+  // ─── Searchable City Combobox ─────────────────────────────────────────────
+
   async populateOnboardCities(provinceId, selectedCityName = '') {
-    const citySelect = document.getElementById('onboard-city');
-    if (!citySelect || !window.BappenasFoodAPI) return;
+    const hiddenInput = document.getElementById('onboard-city');
+    const textInput   = document.getElementById('onboard-city-input');
+    if (!window.BappenasFoodAPI) return;
 
     try {
       const cities = await window.BappenasFoodAPI.getCities(provinceId);
-      citySelect.innerHTML = `<option value="">-- Pilih Kota / Kabupaten --</option>` + cities.map(c => 
-        `<option value="${c.name}" ${selectedCityName && c.name.toLowerCase() === selectedCityName.toLowerCase() ? 'selected' : ''}>${c.name}</option>`
-      ).join('');
+      this._cityOptions = cities.map(c => c.name);
     } catch (e) {
-      citySelect.innerHTML = `<option value="Semua Wilayah">Semua Wilayah</option>`;
+      this._cityOptions = ['Semua Wilayah'];
     }
+
+    // Reset UI
+    if (textInput) { textInput.value = selectedCityName || ''; textInput.placeholder = 'Cari kota / kabupaten...'; }
+    if (hiddenInput) hiddenInput.value = selectedCityName || '';
+    this._renderCityDropdownItems(this._cityOptions, selectedCityName);
+  }
+
+  _renderCityDropdownItems(list, highlight = '') {
+    const dropdown = document.getElementById('onboard-city-dropdown');
+    if (!dropdown) return;
+    if (!list || list.length === 0) {
+      dropdown.innerHTML = `<div style="padding:10px 14px;font-size:12.5px;color:#94A3B8;">Tidak ada hasil ditemukan.</div>`;
+      return;
+    }
+    dropdown.innerHTML = list.map((name, i) => {
+      const isMatch = highlight && name.toLowerCase() === highlight.toLowerCase();
+      return `<div class="city-dd-item${isMatch ? ' selected' : ''}"
+        style="padding:9px 14px;font-size:13px;cursor:pointer;color:${isMatch ? '#0F766E' : '#1E293B'};background:${isMatch ? '#F0FDF4' : 'transparent'};border-bottom:1px solid #F1F5F9;transition:background 0.15s;"
+        onmousedown="app.selectCity('${name.replace(/'/g, "\\'")}')"
+        onmouseover="this.style.background='#F0FDF4';this.style.color='#0F766E'"
+        onmouseout="this.style.background='${isMatch ? '#F0FDF4' : 'transparent'}';this.style.color='${isMatch ? '#0F766E' : '#1E293B'}'"
+        >${name}</div>`;
+    }).join('');
+  }
+
+  openCityDropdown() {
+    const dropdown = document.getElementById('onboard-city-dropdown');
+    const textInput = document.getElementById('onboard-city-input');
+    if (!dropdown) return;
+    // Show all options when focused
+    const term = textInput ? textInput.value : '';
+    this.filterCityDropdown(term, true);
+    dropdown.style.display = 'block';
+  }
+
+  closeCityDropdown() {
+    const dropdown = document.getElementById('onboard-city-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    // If typed text does not match any option, clear it
+    const textInput = document.getElementById('onboard-city-input');
+    const hiddenInput = document.getElementById('onboard-city');
+    if (textInput && hiddenInput) {
+      const options = this._cityOptions || [];
+      const exact = options.find(o => o.toLowerCase() === textInput.value.toLowerCase());
+      if (!exact) {
+        // Keep free-text as city value to support rare city names
+        hiddenInput.value = textInput.value;
+        this.handleOnboardCityChange(textInput.value);
+      }
+    }
+  }
+
+  filterCityDropdown(term, forceOpen = false) {
+    const dropdown = document.getElementById('onboard-city-dropdown');
+    if (!dropdown) return;
+    const options = this._cityOptions || [];
+    const filtered = term
+      ? options.filter(o => o.toLowerCase().includes(term.toLowerCase()))
+      : options;
+    this._renderCityDropdownItems(filtered, term);
+    dropdown.style.display = 'block';
+  }
+
+  selectCity(cityName) {
+    const textInput  = document.getElementById('onboard-city-input');
+    const hiddenInput = document.getElementById('onboard-city');
+    if (textInput)  textInput.value  = cityName;
+    if (hiddenInput) hiddenInput.value = cityName;
+    this.handleOnboardCityChange(cityName);
+    this.closeCityDropdown();
   }
 
   async handleOnboardProvinceChange(provinceId) {
@@ -3431,7 +3502,7 @@ class NutriVisionApp {
   }
 
   handleOnboardCityChange(cityName) {
-    // City selected in modal
+    // City selected — value is already persisted via hiddenInput
   }
 
   validateQuizStep(step) {
@@ -5710,16 +5781,25 @@ class NutriVisionApp {
   }
 
   loadFavoriteFoods() {
+    let rawSet = new Set(['telur-rebus', 'ikan-gabus-kukus']);
     try {
       const saved = localStorage.getItem('nutrivision_favorite_foods');
       if (saved) {
         const arr = JSON.parse(saved);
-        if (Array.isArray(arr)) return new Set(arr);
+        if (Array.isArray(arr)) rawSet = new Set(arr);
       }
     } catch (e) {
       console.warn('Error loading favorite foods:', e);
     }
-    return new Set(['telur-rebus', 'ikan-gabus-kukus']);
+
+    // Prune IDs that do not exist in the food database to prevent phantom badge counts
+    if (typeof NUTRIVISION_DATA !== 'undefined' && NUTRIVISION_DATA.indonesianFoodDatabase) {
+      const validIds = new Set(NUTRIVISION_DATA.indonesianFoodDatabase.map(f => f.id));
+      const validArr = [...rawSet].filter(id => validIds.has(id));
+      return new Set(validArr);
+    }
+    
+    return rawSet;
   }
 
   saveFavoriteFoods() {
@@ -9991,6 +10071,10 @@ class NutriVisionApp {
       conditionId = 'post_op_digestive';
     }
     this.journeyCondition = conditionId;
+    if (this.userProfile) {
+      this.userProfile.conditionId = conditionId;
+      this.saveUserProfile();
+    }
 
     const prof = NUTRIVISION_DATA.recoveryProfiles[conditionId];
     const isFitness = prof && (prof.groupKey === 'fitness' || conditionId.startsWith('gym'));
