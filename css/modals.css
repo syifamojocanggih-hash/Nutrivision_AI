@@ -502,6 +502,7 @@
   .auth-split-modal {
     grid-template-columns: 1fr !important;
     max-height: 94vh !important;
+    overflow-y: auto !important; /* Benarkan scroll supaya borang tak terpotong */
   }
 
   .auth-split-visual {

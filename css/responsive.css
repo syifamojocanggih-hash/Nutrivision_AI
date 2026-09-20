@@ -298,7 +298,11 @@
   }
 
   #topbar-ai-tester-btn {
-    display: none !important;
+    display: inline-flex !important;
+    padding: 6px !important;
+  }
+  #topbar-ai-tester-btn span {
+    display: none !important; /* Hanya tunjuk ikon di mobile untuk jimat ruang */
   }
 
   .install-pwa-btn {
