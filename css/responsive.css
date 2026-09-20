@@ -170,9 +170,23 @@
 }
 
 @media (max-width: 768px) {
+  /* GLOBAL MOBILE FIX: Prevent horizontal scrolling (right-side overflow) */
   html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: relative;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+    max-width: 100vw !important;
+  }
+
+  img, video, canvas, iframe {
+    max-width: 100% !important;
+    height: auto;
   }
 
   .app-container {
