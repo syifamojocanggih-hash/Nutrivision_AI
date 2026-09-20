@@ -557,7 +557,7 @@ class NutriVisionCVEngine {
 
       // 3. Panggil API YOLO Vision (Bisa dikonfigurasi lewat window.VISION_API_URL)
       if (window.app) app.showToast('Menganalisis citra dengan YOLO Vision...');
-      const visionApiUrl = (window.VISION_API_URL || 'http://localhost:8000') + '/predict-pixels';
+      const visionApiUrl = (window.VISION_API_URL || 'https://visionai-production-f2dc.up.railway.app') + '/predict-pixels';
       const yoloRes = await fetch(visionApiUrl, {
         method: 'POST',
         body: formData
