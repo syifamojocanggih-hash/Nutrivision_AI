@@ -1,12 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-# pyrefly: ignore [missing-import]
-from ultralytics import YOLO
-# pyrefly: ignore [missing-import]
 import numpy as np
 from PIL import Image
 import io
+import os
 
 app = FastAPI(title="NutriVision YOLO Segmentation API")
 
@@ -20,12 +18,23 @@ app.add_middleware(
 )
 
 # Load Model
+model = None
 try:
-    # Letakkan file best.pt Anda di folder vision/ ini
-    model = YOLO("best.pt")
+    # pyrefly: ignore [missing-import]
+    from ultralytics import YOLO
+    model_path = os.path.join(os.path.dirname(__file__), "best.pt")
+    if os.path.exists(model_path):
+        model = YOLO(model_path)
+        print(f"[Vision] Model YOLO loaded: {model_path}")
+    else:
+        print(f"[Vision] Warning: best.pt not found at {model_path}")
 except Exception as e:
-    print(f"Warning: Failed to load best.pt. Make sure the file exists. Error: {e}")
+    print(f"[Vision] Warning: Failed to load YOLO model. Error: {e}")
     model = None
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "model_loaded": model is not None, "service": "NutriVision Vision AI"}
 
 @app.post("/predict-pixels")
 async def predict_pixels(file: UploadFile = File(...)):
@@ -40,7 +49,6 @@ async def predict_pixels(file: UploadFile = File(...)):
         image = Image.open(io.BytesIO(contents)).convert("RGB")
         
         # Jalankan inferensi dengan retina_masks untuk ukuran mask asli
-        # Menurunkan confidence ke 0.05 agar lebih sensitif mendeteksi makanan yang tertutup teks
         results = model.predict(source=image, save=False, retina_masks=True, conf=0.05)
         
         predictions = []
@@ -49,10 +57,7 @@ async def predict_pixels(file: UploadFile = File(...)):
             if result.masks is not None:
                 class_names = result.names
                 boxes = result.boxes
-                masks = result.masks.data.cpu().numpy() # Format: (N, H, W)
-                
-                # Extract normalized polygon coordinates (0.0 - 1.0) for frontend rendering
-                # Ultralytics provides masks.xyn as a list of numpy arrays
+                masks = result.masks.data.cpu().numpy()
                 polygons = result.masks.xyn if hasattr(result.masks, 'xyn') else []
                 
                 print(f"DEBUG: Masks shape: {masks.shape}")
@@ -61,18 +66,13 @@ async def predict_pixels(file: UploadFile = File(...)):
                     class_id = int(boxes[i].cls.item())
                     confidence = float(boxes[i].conf.item())
                     food_name = class_names[class_id]
-                    
-                    # Hitung total piksel di mana mask bernilai 1 (objek makanan)
                     total_pixels = int(np.sum(mask > 0.5))
                     
-                    # Ambil polygon mask untuk objek ini (jika ada)
-                    # Kita batasi jumlah titik (misal skip setiap 3 titik) agar payload JSON tidak terlalu raksasa
                     poly_points = []
                     if i < len(polygons):
                         raw_poly = polygons[i]
                         if len(raw_poly) > 0:
-                            # Subsample point untuk optimasi transfer jaringan (1 dari 3 titik)
-                            step = max(1, len(raw_poly) // 60) # Maksimal ~60 titik per objek untuk UI mulus
+                            step = max(1, len(raw_poly) // 60)
                             sub_poly = raw_poly[::step]
                             poly_points = sub_poly.tolist()
                     
@@ -95,5 +95,7 @@ async def predict_pixels(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    # Jalankan server FastAPI di port 8000
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    # reload=False untuk production (Railway)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+
