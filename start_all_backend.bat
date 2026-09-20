@@ -32,7 +32,7 @@ echo.
 echo [2/3] Mengaktifkan Python AI Inference Engine (.safetensors)...
 netstat -ano -p tcp | findstr /C:":5050 " | findstr /I "LISTENING" >nul 2>&1
 if %errorlevel% neq 0 (
-    start "NutriVision Python AI (Port 5050)" cmd /k "python server/ai_service.py 5050"
+    start "NutriVision Python AI (Port 5050)" cmd /k "cd nlp && python main.py 5050"
     timeout /t 3 /nobreak >nul
 ) else (
     echo [OK] Python AI Service sudah aktif di port 5050.

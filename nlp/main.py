@@ -806,10 +806,10 @@ class AIRequestHandler(http.server.BaseHTTPRequestHandler):
 
 def run_server(port=5050):
     load_ai_model()
-    server_address = ('127.0.0.1', port)
+    server_address = ('0.0.0.0', port)
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(server_address, AIRequestHandler) as httpd:
-        print(f"🚀 Python AI Inference Service (.safetensors) aktif di http://127.0.0.1:{port}", flush=True)
+        print(f"🚀 Python AI Inference Service (.safetensors) aktif di http://0.0.0.0:{port}", flush=True)
         httpd.serve_forever()
 
 if __name__ == '__main__':

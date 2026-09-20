@@ -63,7 +63,8 @@ echo -e "${YELLOW}[2/4] Mengaktifkan Python AI Inference Engine (.safetensors)..
 if lsof -Pi :5050 -sTCP:LISTEN -t >/dev/null ; then
     echo -e "${GREEN}[OK] Python AI Service sudah aktif di port 5050.${NC}"
 else
-    $PY_CMD server/ai_service.py 5050 &
+    cd "$SCRIPT_DIR/nlp" && $PY_CMD main.py 5050 &
+    cd "$SCRIPT_DIR"
     AI_PID=$!
     sleep 2
     if kill -0 "$AI_PID" 2>/dev/null; then
