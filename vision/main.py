@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import io
 import os
+import traceback
 
 app = FastAPI(title="NutriVision YOLO Segmentation API")
 
