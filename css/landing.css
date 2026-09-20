@@ -1684,7 +1684,37 @@ body:not(.is-landing-active) #landing-page-view {
 
 @media (max-width: 768px) {
   .lp-container {
-    padding: 0 16px;
+    padding: 0 14px;
+  }
+
+  /* MOBILE NAVBAR FIX */
+  .lp-nav-inner {
+    gap: 8px;
+  }
+  
+  .lp-brand-title {
+    font-size: 14px !important;
+  }
+  
+  .lp-brand-tagline {
+    display: none; /* Sembunyikan tagline untuk jimat ruang */
+  }
+
+  #lp-lang-switcher {
+    display: none !important; /* Sembunyikan penukar bahasa desktop */
+  }
+
+  .lp-nav-actions-wrapper {
+    gap: 6px;
+  }
+
+  .lp-nav-actions {
+    gap: 6px;
+  }
+
+  .lp-btn-nav-primary {
+    padding: 6px 10px !important;
+    font-size: 11.5px !important;
   }
 
   .lp-nav-links {
