@@ -73,7 +73,7 @@ app.get('/api/health', (req, res) => {
     service: 'NutriVision AI Clinical Telehealth API',
     version: '1.0.0',
     port: PORT,
-    database: 'MySQL (mysql2 connection pool)',
+    database: 'TiDB Cloud Serverless (mysql2 connection pool)',
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.round(process.uptime())
   });
@@ -173,7 +173,7 @@ app.listen(PORT, () => {
   console.log(`🚀 NutriVision AI Backend Server Running!`);
   console.log(`📡 URL: http://localhost:${PORT}`);
   console.log(`🩺 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`📁 Database: MySQL (${process.env.DB_HOST || '127.0.0.1'}:${process.env.DB_PORT || 3306}/${process.env.DB_NAME || 'nutrivision_ai'})`);
+  console.log(`☁️  Database: TiDB Cloud (${process.env.DB_HOST}:${process.env.DB_PORT || 4000}/${process.env.DB_NAME || 'nutrivision_ai'})`);
   console.log('============================================================');
 });
 

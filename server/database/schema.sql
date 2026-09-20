@@ -1,13 +1,7 @@
 -- ============================================================================
--- NutriVision AI — MySQL Database Schema
+-- NutriVision AI — TiDB Cloud Serverless Database Schema
 -- Standard Clinical Telehealth & Nutrition Monitoring
 -- ============================================================================
-
-CREATE DATABASE IF NOT EXISTS nutrivision_ai
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE nutrivision_ai;
 
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(64) PRIMARY KEY,
