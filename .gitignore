@@ -63,8 +63,6 @@ htmlcov/
 model.safetensors
 *.safetensors
 *.bin
-*.pt
-*.pth
 *.onnx
 *.h5
 *.tflite
