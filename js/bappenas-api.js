@@ -128,7 +128,7 @@ window.BappenasFoodAPI = {
    * Ambil daftar 38 Provinsi (dari backend API atau fallback)
    */
   async getProvinces() {
-    const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'http://localhost:5001';
+    const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'https://nutrivisionai-production.up.railway.app';
     try {
       const res = await fetch(`${baseUrl}/api/food-prices/provinces`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) {
@@ -147,7 +147,7 @@ window.BappenasFoodAPI = {
    * Ambil daftar Kota/Kabupaten berdasarkan ID Provinsi
    */
   async getCities(provinceId) {
-    const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'http://localhost:5001';
+    const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'https://nutrivisionai-production.up.railway.app';
     try {
       const res = await fetch(`${baseUrl}/api/food-prices/cities?provinceId=${provinceId}`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) {
@@ -168,7 +168,7 @@ window.BappenasFoodAPI = {
    * Ambil data harga & komoditas regional lengkap
    */
   async getRegionalPrices(province, city = '', provinceId = null) {
-    const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'http://localhost:5001';
+    const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : 'https://nutrivisionai-production.up.railway.app';
     const params = new URLSearchParams();
     if (province) params.append('province', province);
     if (city) params.append('city', city);
