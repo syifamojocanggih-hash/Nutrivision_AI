@@ -22,14 +22,20 @@ model = None
 try:
     # pyrefly: ignore [missing-import]
     from ultralytics import YOLO
+    import traceback
     model_path = os.path.join(os.path.dirname(__file__), "best.pt")
+    print(f"[Vision] Looking for best.pt at: {model_path}")
+    print(f"[Vision] File exists: {os.path.exists(model_path)}")
     if os.path.exists(model_path):
+        print(f"[Vision] File size: {os.path.getsize(model_path)} bytes")
         model = YOLO(model_path)
-        print(f"[Vision] Model YOLO loaded: {model_path}")
+        print(f"[Vision] ✅ Model YOLO loaded successfully: {model_path}")
     else:
-        print(f"[Vision] Warning: best.pt not found at {model_path}")
+        print(f"[Vision] ❌ ERROR: best.pt not found at {model_path}")
+        print(f"[Vision] Files in dir: {os.listdir(os.path.dirname(__file__))}")
 except Exception as e:
-    print(f"[Vision] Warning: Failed to load YOLO model. Error: {e}")
+    print(f"[Vision] ❌ ERROR: Failed to load YOLO model: {e}")
+    print(traceback.format_exc())
     model = None
 
 @app.get("/health")
