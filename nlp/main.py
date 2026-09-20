@@ -370,8 +370,8 @@ def softmax(x):
 def load_ai_model():
     global weights, tokenizer, model_loaded, intent_map, model_config
     try:
-        import safetensors.numpy
-        from tokenizers import Tokenizer
+        import safetensors.numpy  # type: ignore
+        from tokenizers import Tokenizer  # type: ignore
 
         # 1. Load intent_map.json
         if INTENT_MAP_FILE and os.path.exists(INTENT_MAP_FILE):
