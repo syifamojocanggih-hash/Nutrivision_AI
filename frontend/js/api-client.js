@@ -328,7 +328,7 @@ class NutriVisionAPIClient {
   }
 
   // =========================================================================
-  // 9. AI CLINICAL INFERENCE ENGINE (.safetensors DistilBERT)
+  // 9. AI CLINICAL INFERENCE ENGINE (CLAW LLM)
   // =========================================================================
   async checkAIHealth() {
     return await this.request('/api/ai/health');

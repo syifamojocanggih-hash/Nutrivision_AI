@@ -29,7 +29,7 @@ if %errorlevel% neq 0 (
 
 :: 2. Start Python AI Inference Service
 echo.
-echo [2/3] Mengaktifkan Python AI Inference Engine (.safetensors)...
+echo [2/3] Mengaktifkan Python AI Inference Engine (CLAW LLM)...
 netstat -ano -p tcp | findstr /C:":5050 " | findstr /I "LISTENING" >nul 2>&1
 if %errorlevel% neq 0 (
     start "NutriVision Python AI (Port 5050)" cmd /k "cd nlp && python main.py 5050"

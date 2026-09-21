@@ -217,12 +217,12 @@ async function runTests() {
     const readAllRes = await request('PUT', '/api/notifications/read-all', {}, userToken);
     assert(readAllRes.status === 200, 'PUT /api/notifications/read-all returned HTTP 200');
 
-    // 11. Safetensors DistilBERT AI Model Service
-    console.log('\n11. Safetensors AI Model (DistilBERT Sequence Classification):');
+    // 11. NutriVision AI Model Service (CLAW LLM)
+    console.log('\n11. NutriVision AI Model Service (CLAW LLM):');
     const aiHealth = await request('GET', '/api/ai/health');
     assert(aiHealth.status === 200, 'GET /api/ai/health returned HTTP 200');
     assert(aiHealth.data?.success === true, 'AI Health success is true');
-    assert(aiHealth.data?.modelLoaded === true, 'Safetensors weights (104 tensors) successfully loaded in Python runtime');
+    assert(aiHealth.data?.modelLoaded === true, 'NutriVision AI Model (CLAW) successfully initialized');
 
     const aiSafeTest = await request('POST', '/api/ai/classify', {
       text: 'Sup kaldu bening labu siam dengan ikan gabus kukus halus dan telur rebus',

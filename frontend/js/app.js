@@ -8710,7 +8710,7 @@ class NutriVisionApp {
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (model.safetensors)';
+        btn.innerHTML = '<i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (CLAW LLM)';
         if (window.lucide) lucide.createIcons();
       }
     }

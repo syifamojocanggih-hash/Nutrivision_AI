@@ -94,8 +94,8 @@ async function verifyAllSystems() {
     console.log('❌ GAGAL:', err.message);
   }
 
-  // 2. Audit Python AI DistilBERT Inference (.safetensors)
-  process.stdout.write('2. Memeriksa Python AI Inference Service (Port 5050)... ');
+  // 2. Audit AI Clinical Inference Service (CLAW LLM)
+  process.stdout.write('2. Memeriksa AI Clinical Inference Service... ');
   try {
     const aiHealth = await httpRequest(`http://127.0.0.1:${PYTHON_PORT}/health`);
     if (aiHealth.status === 200 && aiHealth.data?.modelLoaded) {
@@ -106,10 +106,10 @@ async function verifyAllSystems() {
       });
       const cls = predict.data?.analysis?.label;
       results.push({
-        subsystem: 'Python AI (.safetensors)',
+        subsystem: 'AI Inference (CLAW LLM)',
         port: PYTHON_PORT,
         status: 'AKTIF (AI ONLINE)',
-        details: `${aiHealth.data.totalTensors} Tensors | Prediksi Uji: ${cls} (${aiHealth.latencyMs}ms)`,
+        details: `Model: ${aiHealth.data.model || 'CLAW'} | Prediksi Uji: ${cls} (${aiHealth.latencyMs}ms)`,
         healthy: true
       });
       console.log('✅ OK');
@@ -118,7 +118,7 @@ async function verifyAllSystems() {
     }
   } catch (err) {
     results.push({
-      subsystem: 'Python AI (.safetensors)',
+      subsystem: 'AI Inference (CLAW LLM)',
       port: PYTHON_PORT,
       status: 'OFFLINE (Fallback Aktif)',
       details: err.message,

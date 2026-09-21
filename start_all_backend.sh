@@ -59,7 +59,7 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 2. Start Python AI Inference Service
 echo ""
-echo -e "${YELLOW}[2/4] Mengaktifkan Python AI Inference Engine (.safetensors)...${NC}"
+echo -e "${YELLOW}[2/4] Mengaktifkan Python AI Inference Engine (CLAW LLM)...${NC}"
 if lsof -Pi :5050 -sTCP:LISTEN -t >/dev/null ; then
     echo -e "${GREEN}[OK] Python AI Service sudah aktif di port 5050.${NC}"
 else
