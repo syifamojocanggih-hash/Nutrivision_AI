@@ -341,6 +341,7 @@
       // Food Catalog View
       cat_heading: 'Bappenas & TKPI Indonesian Food Catalog',
       cat_sub: 'Official Indonesian Food Composition Database (TKPI Bappenas/Ministry of Health) & National Food Agency Price Baselines.',
+      cat_pill_superfood: 'Superfoods',
       cat_pill_all: 'All',
       cat_pill_fav: 'My Favorites',
       cat_pill_animal: 'Animal Protein',
@@ -1020,6 +1021,7 @@
       // Food Catalog View
       cat_heading: 'Katalog Pangan Lokal Bappenas & TKPI',
       cat_sub: 'Data Resmi Komposisi Pangan Indonesia (TKPI Bappenas/Kemenkes RI) & Acuan Harga Pangan Bapanas.',
+      cat_pill_superfood: 'Superfood Lokal',
       cat_pill_all: 'Semua',
       cat_pill_fav: 'Favorit Saya',
       cat_pill_animal: 'Protein Hewani',
