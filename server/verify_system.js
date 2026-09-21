@@ -9,7 +9,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const http = require('http');
 
-const NODE_PORT = parseInt(process.env.PORT) || 5001;
+const NODE_PORT = parseInt(process.env.PORT) || 5000;
 const PYTHON_PORT = 5050;
 const MYSQL_PORT = parseInt(process.env.DB_PORT) || 3306;
 

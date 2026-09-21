@@ -9,9 +9,9 @@ const router = express.Router();
  * POST /api/caregiver/generate-token
  * Generate secure read-only telehealth caregiver link
  */
-router.post('/generate-token', optionalAuth, async (req, res) => {
+router.post('/generate-token', requireAuth, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.body.userId || 'usr_patient_siti');
+    const userId = req.user.id;
     const caregiverName = req.body.caregiverName ? req.body.caregiverName.trim() : 'Pendamping Pasien';
     const role = req.body.role || 'family';
 

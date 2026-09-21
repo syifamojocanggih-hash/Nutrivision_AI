@@ -101,7 +101,8 @@ scratch/*.tmp
 .Trashes
 .AppleDouble
 .LSOverride
-Icon?
+Icon[[:cntrl:]]
+!frontend/icons/
 
 # ── Windows System Files ──
 Thumbs.db

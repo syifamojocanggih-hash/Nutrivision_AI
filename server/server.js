@@ -8,7 +8,6 @@
 
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
@@ -51,8 +50,13 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static(uploadsDir));
 
-// Also optionally serve the frontend client directly from parent folder
-app.use(express.static(path.join(__dirname, '..')));
+// Serve frontend client static assets (check ../frontend, fallback to ..)
+const frontendDir = path.join(__dirname, '../frontend');
+if (fs.existsSync(frontendDir)) {
+  app.use(express.static(frontendDir));
+} else {
+  app.use(express.static(path.join(__dirname, '..')));
+}
 
 // Request logging middleware
 app.use((req, res, next) => {

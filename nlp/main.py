@@ -360,13 +360,6 @@ def evaluate_nutrition_advisor(food_data, user_profile=None, daily_history=None)
         }
     }
 
-def relu(x):
-    return np.maximum(0, x)
-
-def softmax(x):
-    e_x = np.exp(x - np.max(x))
-    return e_x / e_x.sum(axis=-1, keepdims=True)
-
 def load_ai_model():
     global weights, tokenizer, model_loaded, intent_map, model_config
     try:

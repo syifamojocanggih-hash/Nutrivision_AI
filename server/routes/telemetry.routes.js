@@ -7,10 +7,15 @@ const router = express.Router();
 /**
  * GET /api/telemetry/audit-logs
  */
-router.get('/audit-logs', async (req, res) => {
+router.get('/audit-logs', optionalAuth, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 100;
-    const logs = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT ?', [limit]);
+    const rawLogs = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT ?', [limit]);
+    const isAuthenticated = Boolean(req.user);
+    const logs = rawLogs.map(log => ({
+      ...log,
+      ip_address: isAuthenticated ? log.ip_address : (log.ip_address ? log.ip_address.replace(/\.\d+$/, '.***') : 'anonymized')
+    }));
     return res.json({ success: true, count: logs.length, logs });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -75,11 +80,30 @@ router.get('/stats', async (req, res) => {
 /**
  * GET /api/telemetry/export-json
  */
-router.get('/export-json', async (req, res) => {
+router.get('/export-json', optionalAuth, async (req, res) => {
   try {
-    const logs = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 500');
-    const users = await db.query('SELECT id, name, email, role, clinical_condition, recovery_phase, created_at FROM users');
+    const isAuthenticated = Boolean(req.user);
+    const rawLogs = await db.query('SELECT * FROM audit_logs ORDER BY timestamp DESC LIMIT 500');
+    const rawUsers = await db.query('SELECT id, name, email, role, clinical_condition, recovery_phase, created_at FROM users');
     const meals = await db.query('SELECT id, user_id, meal_type, title, timestamp, total_calories, total_protein FROM meals LIMIT 200');
+
+    // Protect patient PII if accessed without authorization
+    const users = rawUsers.map(u => {
+      if (isAuthenticated) return u;
+      return {
+        ...u,
+        name: u.name ? u.name.charAt(0) + '***' : 'Anonymous',
+        email: u.email ? u.email.replace(/(.).*(@.*)/, '$1***$2') : 'anonymized'
+      };
+    });
+
+    const logs = rawLogs.map(l => {
+      if (isAuthenticated) return l;
+      return {
+        ...l,
+        ip_address: l.ip_address ? l.ip_address.replace(/\.\d+$/, '.***') : 'anonymized'
+      };
+    });
 
     const exportData = {
       platform: 'NutriVision AI Telehealth Documentation Platform',

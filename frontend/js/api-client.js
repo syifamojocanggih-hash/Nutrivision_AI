@@ -7,14 +7,12 @@
 
 class NutriVisionAPIClient {
   constructor() {
-    // Backend Express API selalu berjalan di port 5001 (terpisah dari port frontend).
-    // Jika ada override dari localStorage gunakan itu, jika tidak paksa ke port 5001.
+    // Backend Express API berjalan di port 5000 (atau remote Railway di production).
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const frontendPort = parseInt(window.location.port || '80', 10);
-    // Jika frontend port sama dengan backend (5001), gunakan relative URL (same origin)
-    // Jika frontend di port berbeda (8080, 5000, dll), arahkan eksplisit ke port 5001
-    // Railway Production URL
-    const autoBaseUrl = 'https://nutrivisionai-production.up.railway.app';
+    const autoBaseUrl = isLocalhost
+      ? (frontendPort === 5000 ? '' : 'http://localhost:5000')
+      : 'https://nutrivisionai-production.up.railway.app';
     this.baseUrl = localStorage.getItem('nv_api_base_url') || autoBaseUrl;
     this.tokenKey = 'nv_auth_token';
     this.isServerOnline = false;

@@ -5,7 +5,9 @@ const path = require('path');
 // Mengambil data raksasa dari data.js di backend sehingga tidak membebani frontend
 let NUTRIVISION_DATA = null;
 try {
-    NUTRIVISION_DATA = require(path.join(__dirname, '../../js/data.js'));
+    const primaryPath = path.join(__dirname, '../../frontend/js/data.js');
+    const fallbackPath = path.join(__dirname, '../../js/data.js');
+    NUTRIVISION_DATA = require(require('fs').existsSync(primaryPath) ? primaryPath : fallbackPath);
 } catch (err) {
     console.error("Gagal memuat NUTRIVISION_DATA:", err);
 }

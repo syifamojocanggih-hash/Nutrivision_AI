@@ -20,8 +20,9 @@ router.post('/calculate-nutrition', async (req, res) => {
             });
         }
 
-        // 1. Hitung Rasio Matematika
-        const cm_per_pixel = plate_diameter_cm / UI_CIRCLE_DIAMETER_PX;
+        // 1. Hitung Rasio Matematika (Gunakan reference_diameter_px jika dikirim client, default 800px)
+        const referencePx = parseFloat(req.body.reference_diameter_px || req.body.image_width) || UI_CIRCLE_DIAMETER_PX;
+        const cm_per_pixel = plate_diameter_cm / referencePx;
         const cm2_per_pixel = cm_per_pixel * cm_per_pixel;
 
         const results = [];

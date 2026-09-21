@@ -1,9 +1,22 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const db = require('../database/connection');
 const { optionalAuth } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 const PYTHON_AI_URL = process.env.PYTHON_AI_URL || 'http://127.0.0.1:5050';
+
+// Initialize Symptom Filter Agent (isomorphic engine)
+let clinicalFilterAgent = null;
+try {
+  const agentPath = path.join(__dirname, '../../frontend/js/symptom_filter_agent.js');
+  const fallbackPath = path.join(__dirname, '../../js/symptom_filter_agent.js');
+  const agentModule = require(fs.existsSync(agentPath) ? agentPath : fallbackPath);
+  clinicalFilterAgent = agentModule.clinicalNutritionFilterAgent || new agentModule.ClinicalNutritionFilterAgent();
+} catch (e) {
+  console.warn('[AI Routes] Could not load symptom_filter_agent:', e.message);
+}
 
 /**
  * GET /api/ai/health
@@ -438,7 +451,12 @@ router.post('/nutrition-advisor', optionalAuth, async (req, res) => {
  */
 router.post('/symptom-filter', async (req, res) => {
   try {
-    const { symptoms = [] } = req.body;
+    const { symptoms = [], customRestrictions = [] } = req.body;
+    let agentResult = null;
+    if (clinicalFilterAgent) {
+      agentResult = clinicalFilterAgent.process(symptoms, customRestrictions);
+    }
+
     const foods = await db.query('SELECT * FROM foods');
     let filtered = foods;
     if (Array.isArray(symptoms) && symptoms.length > 0) {
@@ -447,7 +465,17 @@ router.post('/symptom-filter', async (req, res) => {
         return symptoms.some(s => tags.includes(s) || tags.includes(`${s}_friendly`));
       });
     }
-    return res.json({ success: true, count: filtered.length, foods: filtered });
+
+    return res.json({
+      success: true,
+      count: filtered.length,
+      foods: filtered,
+      safety_level: agentResult ? agentResult.safety_level : 'Standard',
+      texture_requirement: agentResult ? agentResult.texture_requirement : 'Normal Seimbang',
+      recommended_menu: agentResult ? agentResult.recommended_menu : [],
+      restricted_ingredients: agentResult ? agentResult.restricted_ingredients : [],
+      agent_result: agentResult
+    });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }

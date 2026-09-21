@@ -44,7 +44,7 @@ async def health():
     return {"status": "ok", "model_loaded": model is not None, "service": "NutriVision Vision AI"}
 
 @app.post("/predict-pixels")
-async def predict_pixels(file: UploadFile = File(...)):
+async def predict_pixels(file: UploadFile = File(...), conf: float = 0.20):
     """
     Endpoint untuk mendeteksi makanan dan menghitung total piksel area mask.
     """
@@ -56,7 +56,7 @@ async def predict_pixels(file: UploadFile = File(...)):
         image = Image.open(io.BytesIO(contents)).convert("RGB")
         
         # Jalankan inferensi dengan retina_masks untuk ukuran mask asli
-        results = model.predict(source=image, save=False, retina_masks=True, conf=0.05)
+        results = model.predict(source=image, save=False, retina_masks=True, conf=conf)
         
         predictions = []
         for result in results:
