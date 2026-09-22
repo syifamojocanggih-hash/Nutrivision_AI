@@ -2615,11 +2615,6 @@
                 <span data-i18n="cat_pill_fav">Favorit Saya</span>
                 <span class="fav-count-badge" id="fav-catalog-count-badge" style="display:none;">0</span>
               </button>
-              <button class="cat-pill-btn" data-category="superfood"
-                onclick="app.filterCatalogCategory('superfood', this)" title="Superfood Lokal (Khasiat Tinggi)">
-                <iconify-icon icon="solar:star-fall-bold" style="font-size:16px;color:#D97706;"></iconify-icon>
-                <span data-i18n="cat_pill_superfood">Superfood</span>
-              </button>
               <button class="cat-pill-btn" data-category="protein-animal"
                 onclick="app.filterCatalogCategory('protein-animal', this)" title="Protein Hewani Kaya Albumin/Omega-3">
                 <iconify-icon icon="solar:bone-bold" style="font-size:16px;"></iconify-icon>
@@ -4701,8 +4696,8 @@
           </div>
           <div>
             <h3 style="margin:0;font-size:16px;font-weight:700;color:var(--teal-900);">AI Model Interactive Tester</h3>
-            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);">NutriVision AI (<code
-                style="color:var(--teal-700);font-weight:600;">CLAW LLM</code> · OpenAI-Compatible)</p>
+            <p style="margin:2px 0 0;font-size:12px;color:var(--ink-soft);">DistilBERT Multilingual (<code
+                style="color:var(--teal-700);font-weight:600;">model.safetensors</code> · 516 MB)</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="app.closeModal('ai-tester-modal')"><i data-lucide="x"></i></button>
@@ -4713,10 +4708,10 @@
         style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--line);padding:8px 12px;border-radius:var(--radius-xs);margin-bottom:14px;font-size:12px;">
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;"></span>
-          <span style="color:var(--ink-base);font-weight:600;" data-i18n="ai_tester_status_label">Layanan AI LLM:</span>
-          <span id="ai-status-text" style="color:#059669;font-weight:600;">Online (CLAW)</span>
+          <span style="color:var(--ink-base);font-weight:600;" data-i18n="ai_tester_status_label">Layanan AI Python:</span>
+          <span id="ai-status-text" style="color:#059669;font-weight:600;">Online (Port 5050)</span>
         </div>
-        <div style="color:var(--ink-mute);font-size:11px;" data-i18n="ai_tester_status_desc">CLAW Model · 3 Kelas Klinis</div>
+        <div style="color:var(--ink-mute);font-size:11px;" data-i18n="ai_tester_status_desc">104 Tensors · 3 Kelas Klinis</div>
       </div>
 
       <!-- Presets for fast testing -->
@@ -4753,7 +4748,7 @@
       <button type="button" id="btn-run-ai-test" class="btn-primary-coral"
         style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;padding:10px;"
         onclick="app.executeAITextClassification()">
-        <i data-lucide="play" class="btn-icon-sm"></i> <span data-i18n="ai_tester_btn_run">Jalankan Klasifikasi AI (CLAW LLM)</span>
+        <i data-lucide="play" class="btn-icon-sm"></i> <span data-i18n="ai_tester_btn_run">Jalankan Klasifikasi AI (model.safetensors)</span>
       </button>
 
       <!-- AI Result Box -->
@@ -5627,16 +5622,19 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   </div>
 
   <!-- Core JavaScript Application Scripts -->
+  <script src="js/data.js"></script>
   <script>
     // Placeholder to prevent ReferenceErrors during initial script parsing 
-    // before the async fetch('/api/catalog') populates it.
-    window.NUTRIVISION_DATA = { 
-      initialCommunityPosts: [], 
-      presetScans: [], 
-      indonesianFoodDatabase: [], 
-      recoveryProfiles: {},
-      mealPlans: {}
-    };
+    // before the async fetch('/api/catalog') populates it, if data.js is not present.
+    if (!window.NUTRIVISION_DATA) {
+      window.NUTRIVISION_DATA = { 
+        initialCommunityPosts: [], 
+        presetScans: [], 
+        indonesianFoodDatabase: [], 
+        recoveryProfiles: {},
+        mealPlans: {}
+      };
+    }
   </script>
   <script src="js/supabase-config.js"></script>
   <script src="js/db.js"></script>

@@ -341,7 +341,6 @@
       // Food Catalog View
       cat_heading: 'Bappenas & TKPI Indonesian Food Catalog',
       cat_sub: 'Official Indonesian Food Composition Database (TKPI Bappenas/Ministry of Health) & National Food Agency Price Baselines.',
-      cat_pill_superfood: 'Superfoods',
       cat_pill_all: 'All',
       cat_pill_fav: 'My Favorites',
       cat_pill_animal: 'Animal Protein',
@@ -626,7 +625,7 @@
       ai_tester_preset_lbl: "Select Sample for Quick Test:",
       ai_tester_dish_lbl: "Dish Description / Patient Recipe:",
       ai_tester_placeholder: "Type dish name or recipe ingredients here...",
-      ai_tester_btn_run: "Run AI Classification (CLAW LLM)",
+      ai_tester_btn_run: "Run AI Classification (model.safetensors)",
       auth_field_email: "Email / WhatsApp Number",
       auth_field_password: "Password / Medical PIN",
       auth_forgot_password: "Forgot Password?",
@@ -1021,7 +1020,6 @@
       // Food Catalog View
       cat_heading: 'Katalog Pangan Lokal Bappenas & TKPI',
       cat_sub: 'Data Resmi Komposisi Pangan Indonesia (TKPI Bappenas/Kemenkes RI) & Acuan Harga Pangan Bapanas.',
-      cat_pill_superfood: 'Superfood Lokal',
       cat_pill_all: 'Semua',
       cat_pill_fav: 'Favorit Saya',
       cat_pill_animal: 'Protein Hewani',
@@ -1306,7 +1304,7 @@
       ai_tester_preset_lbl: "Pilih Contoh Uji Cepat:",
       ai_tester_dish_lbl: "Deskripsi Makanan / Resep Pasien:",
       ai_tester_placeholder: "Ketik nama makanan atau bahan masakan di sini...",
-      ai_tester_btn_run: "Jalankan Klasifikasi AI (CLAW LLM)",
+      ai_tester_btn_run: "Jalankan Klasifikasi AI (model.safetensors)",
       auth_field_email: "Email / Nomor WhatsApp",
       auth_field_password: "Password / PIN Medis",
       auth_forgot_password: "Lupa Sandi?",

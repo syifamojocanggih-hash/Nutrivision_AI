@@ -8710,7 +8710,7 @@ class NutriVisionApp {
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (CLAW LLM)';
+        btn.innerHTML = '<i data-lucide="play" class="btn-icon-sm"></i> Jalankan Klasifikasi AI (model.safetensors)';
         if (window.lucide) lucide.createIcons();
       }
     }
@@ -11841,7 +11841,9 @@ if (typeof window !== 'undefined' && window.MutationObserver) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-      const res = await fetch('/api/catalog');
+      const baseUrl = (typeof window.nutriAPI !== 'undefined' && window.nutriAPI.baseUrl) ? window.nutriAPI.baseUrl : '';
+      const fetchUrl = baseUrl ? `${baseUrl}/api/catalog` : '/api/catalog';
+      const res = await fetch(fetchUrl);
       if (res.ok) {
           const json = await res.json();
           window.NUTRIVISION_DATA = json.data;
