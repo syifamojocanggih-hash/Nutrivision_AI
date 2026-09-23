@@ -18,7 +18,11 @@
 <br>
 
 🌐 **Live Application Demo:**  
-👉 **[https://syifamojocanggih-hash.github.io/Nutrivision_AI/](https://syifamojocanggih-hash.github.io/Nutrivision[Overview](#-overview) • [Key Features](#-key-features) • [Architecture](#-system-architecture) • [Demo Credentials](#-evaluator--demo-accounts-rbac) • [Installation Guide](#-installation--setup-guide) • [API Specs](#-rest-api-specification) • [Clinical Evidence](#-clinical-evidence--standards)
+👉 **[https://syifamojocanggih-hash.github.io/Nutrivision_AI/](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)**
+
+<br>
+
+[Overview](#-overview) • [Key Features](#-key-features) • [Architecture](#-system-architecture) • [Demo Credentials](#-evaluator--demo-accounts-rbac) • [Installation Guide](#-installation--setup-guide) • [API Specs](#-rest-api-specification) • [Clinical Evidence](#-clinical-evidence--standards)
 
 ---
 
