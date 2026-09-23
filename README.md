@@ -371,15 +371,6 @@ Nutrivision AI/
     └── requirements.txt        # NLP microservice Python dependencies
 ```
 
----
-
-## 🔬 Clinical Evidence & Standards�── seed.js             # Initial clinical users, foods, and meals seeder
-│   ├── routes/                 # REST API route handlers
-│   └── test/                   # Automated API test suite (49 test cases)
-│       └── api.test.js
-│
-└── images/                     # Graphic assets, local food database imagery
-```
 
 ---
 
