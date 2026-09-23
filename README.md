@@ -18,9 +18,7 @@
 <br>
 
 🌐 **Live Application Demo:**  
-👉 **[https://syifamojocanggih-hash.github.io/Nutrivision_AI/](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)**
-
-[Overview](#-overview) • [Key Features](#-key-features) • [Architecture](#-system-architecture) • [Demo Credentials](#-evaluator--demo-accounts-rbac) • [Quick Start](#-quick-start--local-setup) • [API Specs](#-rest-api-specification) • [Clinical Evidence](#-clinical-evidence--standards)
+👉 **[https://syifamojocanggih-hash.github.io/Nutrivision_AI/](https://syifamojocanggih-hash.github.io/Nutrivision[Overview](#-overview) • [Key Features](#-key-features) • [Architecture](#-system-architecture) • [Demo Credentials](#-evaluator--demo-accounts-rbac) • [Installation Guide](#-installation--setup-guide) • [API Specs](#-rest-api-specification) • [Clinical Evidence](#-clinical-evidence--standards)
 
 ---
 
@@ -68,12 +66,13 @@ flowchart TD
         Routes["API Endpoints (/auth, /meals, /foods, /caregiver, /telemetry)"]
     end
 
-    subgraph AI ["AI & Machine Learning Microservice (:5050)"]
-        PyAI["Python Inference Engine (SafeTensors Model & HuggingFace Tokenizer)"]
+    subgraph AI ["AI & Machine Learning Microservices"]
+        PyAI["Python AI NLP Engine (:5050 - CLAW LLM / Safetensors)"]
+        YOLO["Python YOLO Vision Service (:8000 - Food Segmentation)"]
     end
 
     subgraph Storage ["Database & Cloud Tier"]
-        MySQL[("MySQL 8.0 (Relational Database, Schema & Auto-Seeding)")]
+        MySQL[("MySQL 8.0 / TiDB Serverless (Relational DB & Auto-Seed)")]
         CloudSync[("Supabase Cloud PostgreSQL (Dual-Sync Telehealth Cache)")]
     end
 
@@ -83,6 +82,7 @@ flowchart TD
     Express -->|Query / Cache| MySQL
     Express -.->|Optional Cloud Backup| CloudSync
     Express <-->|Inference IPC| PyAI
+    Express <-->|Vision IPC| YOLO
     UI -->|Telehealth Export| PDF
 ```
 
@@ -103,45 +103,68 @@ The application employs a **Unified Single Sign-On (SSO)** architecture. You do 
 
 ---
 
-## 🚀 Quick Start & Local Setup
+## 💻 Installation & Setup Guide
 
-### Prerequisites
-* **Node.js** v18.0 or higher
-* **MySQL** 8.0+ (via Laragon, XAMPP, or standalone service on port `3306`)
-* **Python** 3.9+ *(optional, required only for local `.safetensors` microservice)*
+This guide provides comprehensive instructions for deploying NutriVision AI locally on **Windows**, **macOS**, and **Linux**, or in containerized environments.
 
----
+### 📋 Prerequisites & System Requirements
 
-### Option A: 1-Click Master Launcher (Windows)
+Before getting started, ensure the following software is installed on your machine:
 
-The repository includes a battle-tested master batch launcher that automatically checks MySQL, starts the Python AI microservice, spins up the Node.js REST API, and executes system health verification:
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/syifamojocanggih-hash/Nutrivision_AI.git
-   cd "Nutrivision AI"
-   ```
-2. Double-click **`start_all_backend.bat`** (or run in Command Prompt):
-   ```cmd
-   start_all_backend.bat
-   ```
-3. Open your browser and navigate to:
-   ```text
-   http://localhost:5000
-   ```
+| Component | Minimum Version | Recommended | Notes / Download Link |
+| :--- | :--- | :--- | :--- |
+| **Node.js** | `v18.0.0+` | `v20.x LTS` | [nodejs.org](https://nodejs.org/) (includes `npm`) |
+| **Python** | `3.9.x` | `3.10.x` or `3.11.x` | [python.org](https://www.python.org/) (for AI Vision & NLP microservices) |
+| **Database** | **MySQL 8.0+** or **TiDB Serverless** | MySQL 8.0+ (Port 3306) | Via XAMPP, Laragon, Docker, or [TiDB Cloud](https://tidbcloud.com) |
+| **Git** | `v2.x+` | Latest | [git-scm.com](https://git-scm.com/) |
 
 ---
 
-### Option B: Manual Step-by-Step Installation
+### ⚡ Method 1: One-Click Master Launcher (Recommended)
 
-#### 1. Backend Server Setup
+NutriVision AI includes automated master launcher scripts that check database connectivity, initialize microservices, start the Node.js API, run system diagnostics, and serve the frontend web client.
+
+#### On macOS / Linux:
 ```bash
-cd server
-npm install
+# 1. Clone the repository
+git clone https://github.com/syifamojocanggih-hash/Nutrivision_AI.git
+cd Nutrivision_AI
+
+# 2. Grant execution permission & start all backend services
+chmod +x start_all_backend.sh
+./start_all_backend.sh
 ```
 
-#### 2. Configure Environment (`server/.env`)
-Ensure your MySQL database service is running on port 3306, then configure `server/.env`:
+#### On Windows:
+```cmd
+# 1. Clone the repository
+git clone https://github.com/syifamojocanggih-hash/Nutrivision_AI.git
+cd Nutrivision_AI
+
+# 2. Run the master launcher batch script (or double-click start_all_backend.bat)
+start_all_backend.bat
+```
+
+> 🌐 Once launched, open your browser and navigate to: **`http://localhost:5000`**
+
+---
+
+### 🛠️ Method 2: Manual Step-by-Step Installation
+
+If you prefer to configure and run each microservice individually:
+
+#### Step 1: Clone Repository
+```bash
+git clone https://github.com/syifamojocanggih-hash/Nutrivision_AI.git
+cd Nutrivision_AI
+```
+
+#### Step 2: Configure Environment Variables
+Copy or create the `.env` file inside the `server/` directory:
+```bash
+cp server/.env.example server/.env
+```
+Edit `server/.env` to match your database credentials:
 ```env
 PORT=5000
 DB_HOST=127.0.0.1
@@ -149,56 +172,143 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=nutrivision_ai
-JWT_SECRET=nutrivision_jwt_secret_key_gayatama5_production_grade_clinical_secure
+JWT_SECRET=nutrivision-secret-clinical-key-2026
+PYTHON_AI_URL=http://127.0.0.1:5050
+VISION_AI_URL=http://127.0.0.1:8000
 NODE_ENV=development
 ```
-*(The MySQL database `nutrivision_ai`, relational tables, and clinical seeds will be created and populated automatically on first run).*
+> 💡 *Note: The database `nutrivision_ai`, tables, and initial clinical demo seeds are generated automatically when the Node.js server starts for the first time.*
 
-#### 3. Start Backend & AI Services
+#### Step 3: Install & Start Node.js REST API Backend
 ```bash
-# Terminal 1: Python FastAPI YOLO Vision Service (Port 8000)
-cd vision
-python -m venv venv
-source venv/bin/activate  # (On Windows: venv\Scripts\activate)
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-
-# Terminal 2: Node.js Express REST API (Port 5000)
 cd server
+npm install
 npm start
+# Or for live-reload development mode:
+# npm run dev
+```
+*The Express REST API server will run on port `5000` and automatically serve the frontend client.*
+
+#### Step 4: Setup & Start Python YOLO Vision Microservice (Port 8000)
+In a new terminal window:
+```bash
+cd vision
+
+# Create and activate Python virtual environment
+python3 -m venv venv
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+
+# Install dependencies (FastAPI, PyTorch CPU, Ultralytics YOLO)
+pip install -r requirements.txt
+
+# Start the Vision microservice
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### 4. Run Automated Test Suite
-To verify that all 49 endpoints (Auth, Meals, Foods, Caregiver, Telemetry, and Safetensors AI) are operating properly:
+#### Step 5: Setup & Start Python AI NLP / Safetensors Microservice (Port 5050)
+In another terminal window:
 ```bash
+cd nlp
+
+# Create and activate virtual environment (or reuse vision venv)
+python3 -m venv venv
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+
+# Install NLP dependencies
+pip install -r requirements.txt
+
+# Start the NLP & Safetensors classification service
+python main.py 5050
+```
+
+#### Step 6: Access the Web Application
+Open your browser and navigate to:
+* 🌐 **Frontend Web App & PWA:** `http://localhost:5000`
+* 🩺 **Backend API Health Check:** `http://localhost:5000/api/health`
+* 👁️ **YOLO Vision API Docs:** `http://localhost:8000/docs`
+* 🧠 **Python AI NLP Health:** `http://localhost:5050/health`
+
+---
+
+### 🐳 Method 3: Docker Deployment (Vision Microservice)
+
+The YOLO Vision service can also be containerized using the provided `Dockerfile`:
+```bash
+cd vision
+# Build Docker image
+docker build -t nutrivision-vision .
+
+# Run Docker container
+docker run -d -p 8000:8000 --name nutrivision-vision-container nutrivision-vision
+```
+
+---
+
+### 🧪 Automated System Diagnostic & Verification
+
+To verify that all database tables, initial seeds, AI endpoints, and REST routes are functioning properly:
+```bash
+# Run system diagnostic audit
+node server/verify_system.js
+
+# Run automated API test suite (49 test cases)
+cd server
 npm test
 ```
 
 ---
 
-## 📡 REST API Specification
+### ⚙️ Environment Variables Reference
 
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :---: |
-| `GET` | `/api/health` | Server uptime, port status, and database latency | No |
-| `POST` | `/api/auth/register` | Register new clinical patient and compute ERAS targets | No |
-| `POST` | `/api/auth/login` | Authenticate user (Unified SSO) and issue JWT token | No |
-| `GET` | `/api/auth/me` | Fetch authenticated user profile & nutritional targets | **Yes** |
-| `PUT` | `/api/auth/profile` | Update anthropometrics, recovery phase, and restrictions | **Yes** |
-| `GET` | `/api/meals` | Retrieve patient historical meal logs and macronutrient breakdowns | **Yes** |
-| `POST` | `/api/meals` | Log a meal with segmented polygon items, protein, and calories | **Yes** |
-| `DELETE` | `/api/meals/:id` | Remove a specific meal log | **Yes** |
-| `GET` | `/api/meals/weekly-stats` | 7-day adherence aggregate score and compliance percentages | **Yes** |
-| `GET` | `/api/foods` | Query Indonesian food composition catalog (`?q=`, `?category=`, `?symptom=`) | No |
-| `GET` | `/api/foods/:id` | Detailed micronutrients (Albumin, Zinc, Iron, Vitamin C) | No |
-| `POST` | `/api/cv/analyze` | Multi-segment computer vision plate analysis (`multipart/form-data`) | No |
-| `POST` | `/api/caregiver/generate-token` | Generate encrypted read-only telehealth monitoring token | **Yes** |
-| `GET` | `/api/caregiver/view/:token` | Read-only patient recovery view for family caregivers | No |
-| `GET` | `/api/community/posts` | Clinical community feed and peer recovery stories | No |
-| `POST` | `/api/community/posts` | Share a recovery milestone or high-protein recipe | **Yes** |
-| `GET` | `/api/telemetry/stats` | System telemetry metrics, active sessions, and throughput | **Admin** |
-| `GET` | `/api/telemetry/audit-logs` | Comprehensive security audit trail | **Admin** |
-| `GET` | `/api/notifications` | Fetch clinical notifications and reminder alerts | **Yes** |
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `PORT` | `5000` | Port for Node.js Express REST API server |
+| `DB_HOST` | `127.0.0.1` | MySQL / TiDB host address |
+| `DB_PORT` | `3306` *(or `4000` for TiDB)* | MySQL / TiDB database port |
+| `DB_USER` | `root` | Database username |
+| `DB_PASSWORD` | *(empty)* | Database password |
+| `DB_NAME` | `nutrivision_ai` | Database schema name |
+| `TIDB_SSL` | `false` | Set to `true` when using TiDB Cloud SSL certificates |
+| `JWT_SECRET` | *(custom string)* | Secret key for signing and verifying JWT session tokens |
+| `PYTHON_AI_URL` | `http://127.0.0.1:5050` | Microservice URL for Python AI NLP Safetensors engine |
+| `VISION_AI_URL` | `http://127.0.0.1:8000` | Microservice URL for Python FastAPI YOLO Vision engine |
+| `NODE_ENV` | `development` | Application environment mode (`development` / `production`) |
+
+---
+
+### ❓ Troubleshooting & FAQ
+
+<details>
+<summary><b>1. Error: <code>ECONNREFUSED 127.0.0.1:3306</code> (Database Connection Failed)</b></summary>
+Ensure your MySQL service is running. If using XAMPP or Laragon, open the control panel and start the MySQL module. If using Docker:
+<code>docker run -d --name mysql-nutrivision -p 3306:3306 -e MYSQL_ROOT_PASSWORD= -e MYSQL_DATABASE=nutrivision_ai mysql:8.0</code>
+</details>
+
+<details>
+<summary><b>2. Error: <code>Port 5000 / 8000 / 5050 is already in use</code></b></summary>
+Find and terminate the existing process occupying the port:
+<ul>
+<li><b>macOS/Linux:</b> <code>lsof -ti:5000 | xargs kill -9</code></li>
+<li><b>Windows:</b> <code>netstat -ano | findstr :5000</code> followed by <code>taskkill /PID &lt;PID&gt; /F</code></li>
+</ul>
+</details>
+
+<details>
+<summary><b>3. PyTorch installation is slow or fails in <code>vision/</code></b></summary>
+Use the lightweight CPU-only PyTorch build specified in <code>vision/requirements.txt</code>:
+<code>pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu</code>
+</details>
+
+<details>
+<summary><b>4. How to use TiDB Cloud Serverless instead of local MySQL?</b></summary>
+Set <code>DB_HOST=gateway01.ap-southeast-1.prod.aws.tidbcloud.com</code>, <code>DB_PORT=4000</code>, <code>TIDB_SSL=true</code>, along with your TiDB Cloud username and password in <code>server/.env</code>.
+</details>
 
 ---
 
@@ -206,38 +316,60 @@ npm test
 
 ```text
 Nutrivision AI/
-├── index.html                  # Main PWA application entry point
-├── manifest.json               # Web App Manifest (PWA installable metadata)
-├── sw.js                       # Service Worker (offline cache-first engine)
-├── start_all_backend.bat       # 1-Click launcher for MySQL, Node.js & Python AI
-├── model.safetensors           # Local HuggingFace Safetensors AI model weights
-├── tokenizer.json              # Tokenizer vocabulary configuration
+├── start_all_backend.sh        # 1-Click launcher for macOS / Linux
+├── start_all_backend.bat       # 1-Click launcher for Windows
 │
-├── css/                        # Modular CSS Design System (Organic Matcha Theme)
-│   ├── base.css                # Typography, CSS variables, and layout resets
-│   ├── components.css          # Cards, modals, buttons, and custom inputs
-│   ├── layout.css              # Navigation bars, grids, and responsive views
-│   ├── doctor.css              # Clinical DPJP portal and patient roster styling
-│   └── accessibility.css       # WCAG AAA high-contrast and font scaler styles
+├── frontend/                   # Client-Side Progressive Web App (PWA)
+│   ├── index.html              # Single Page Application entry point
+│   ├── manifest.json           # Web App Manifest (PWA install metadata)
+│   ├── sw.js                   # Service Worker (offline cache-first engine)
+│   ├── css/                    # Modular CSS Design System (Organic Matcha Theme)
+│   │   ├── base.css            # Typography, CSS variables, resets
+│   │   ├── components.css      # Cards, modals, buttons, form controls
+│   │   ├── layout.css          # Navigation bars, grid layouts, responsive views
+│   │   ├── doctor.css          # Clinical DPJP portal and patient roster styling
+│   │   └── accessibility.css   # WCAG AAA high-contrast and font scaler styles
+│   ├── js/                     # Client Application Logic
+│   │   ├── app.js              # Central application controller & state management
+│   │   ├── db.js               # IndexedDB storage and local caching layer
+│   │   ├── api-client.js       # REST API client & Axios/Fetch wrapper
+│   │   ├── cv-engine.js        # Multi-segment Canvas computer vision pipeline
+│   │   ├── planner.js          # Dual-mode ERAS meal planning algorithms
+│   │   ├── progress.js         # Macro rings, 7-day adherence tracker & PDF engine
+│   │   ├── caregiver.js        # Tokenized caregiver sharing controller
+│   │   ├── i18n.js             # Bilingual Internationalization (ID/EN)
+│   │   └── supabase-config.js  # Optional Supabase cloud sync config
+│   ├── icons/                  # PWA and application icons
+│   └── images/                 # Food assets and clinical graphic illustrations
 │
-├── js/                         # Client-Side Application Core
-│   ├── app.js                  # Central controller, state management, and UI logic
-│   ├── db.js                   # IndexedDB storage and local caching layer
-│   ├── api-client.js           # REST API client & Axios/Fetch wrapper
-│   ├── cv-engine.js            # Multi-segment Canvas computer vision pipeline
-│   ├── planner.js              # Dual-mode ERAS meal planning algorithms
-│   ├── progress.js             # Macro rings, 7-day adherence tracker & PDF engine
-│   ├── caregiver.js            # Tokenized caregiver sharing controller
-│   └── supabase-config.js      # Optional Supabase cloud synchronization config
-│
-├── server/                     # Production REST API Backend
-│   ├── server.js               # Node.js Express server entry point
-│   ├── ai_service.py           # Python Safetensors microservice (:5050)
+├── server/                     # Production Node.js REST API Backend
+│   ├── server.js               # Express server entry point & static frontend server
 │   ├── verify_system.js        # Automated health & diagnostic audit runner
-│   ├── database/               # MySQL schema and initial seeder
+│   ├── database/               # Relational Database Layer
 │   │   ├── connection.js       # MySQL connection pool (mysql2/promise)
 │   │   ├── schema.sql          # Relational DDL tables & indexes
 │   │   └── seed.js             # Initial clinical users, foods, and meals seeder
+│   ├── middleware/             # Auth JWT & Role-Based Access Control middleware
+│   ├── routes/                 # REST API route endpoints
+│   └── test/                   # Automated API test suite (49 test cases)
+│       └── api.test.js
+│
+├── vision/                     # Python YOLO Food Segmentation Microservice (:8000)
+│   ├── main.py                 # FastAPI application & YOLO inference endpoints
+│   ├── best.pt                 # Pre-trained YOLO model weights for food segmentation
+│   ├── requirements.txt        # Vision microservice Python dependencies
+│   └── Dockerfile              # Containerization definition for Vision service
+│
+└── nlp/                        # Python AI NLP & Safetensors Microservice (:5050)
+    ├── main.py                 # NLP classification service & LLM decision support
+    ├── model.safetensors       # Local SafeTensors model weights
+    ├── tokenizer.json          # HuggingFace Tokenizer vocabulary configuration
+    └── requirements.txt        # NLP microservice Python dependencies
+```
+
+---
+
+## 🔬 Clinical Evidence & Standards�── seed.js             # Initial clinical users, foods, and meals seeder
 │   ├── routes/                 # REST API route handlers
 │   └── test/                   # Automated API test suite (49 test cases)
 │       └── api.test.js
