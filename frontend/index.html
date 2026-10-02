@@ -3750,19 +3750,12 @@
       <div id="modal-clinical-validation-box" class="modal-clinical-validation-box"></div>
 
       <!-- Human-in-the-Loop Editable Segment List (FR-07) -->
-      <div class="scan-modal-segments-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div class="scan-modal-segments-header">
         <span style="font-size:var(--font-xs);font-weight:600;color:var(--ink);" data-i18n="scan_modal_correct_ingredients">Koreksi Bahan Hasil Deteksi:</span>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button type="button" class="btn-sm-teal" style="font-size:11px;background:rgba(21,128,61,0.08);border:1px solid rgba(21,128,61,0.25);color:#15803d;display:inline-flex;align-items:center;gap:4px;cursor:pointer;padding:4px 8px;border-radius:6px;"
-            onclick="window.activeLearningCollector && window.activeLearningCollector.exportDatasetZip()" title="Download seluruh sampel koreksi (.zip format YOLO) untuk di-train di Google Colab">
-            <iconify-icon icon="solar:box-minimalistic-bold" style="font-size:14px;"></iconify-icon>
-            <span>Dataset AI (<b class="active-learning-sample-count">0 sampel</b>)</span>
-          </button>
-          <button class="btn-sm-teal" style="font-size:11px;display:inline-flex;align-items:center;gap:4px;"
-            onclick="app.navigate('catalog'); app.closeModal('scan-modal');">
-            <i data-lucide="plus" class="btn-icon-sm"></i> <span data-i18n="scan_modal_add_catalog">Tambah dari Katalog</span>
-          </button>
-        </div>
+        <button class="btn-sm-teal" style="font-size:11px;display:inline-flex;align-items:center;gap:4px;"
+          onclick="app.navigate('catalog'); app.closeModal('scan-modal');">
+          <i data-lucide="plus" class="btn-icon-sm"></i> <span data-i18n="scan_modal_add_catalog">Tambah dari Katalog</span>
+        </button>
       </div>
 
       <div class="segment-edit-list" id="modal-segment-edit-list">

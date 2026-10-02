@@ -5110,8 +5110,8 @@ class NutriVisionApp {
     }
 
     this.showToast(isId 
-      ? `✅ Berhasil mengoreksi bahan menjadi "${newName}". Sampel disimpan ke Dataset AI!` 
-      : `✅ Corrected ingredient to "${newName}". Sample saved to AI Dataset!`, 'success');
+      ? `✅ Berhasil mengoreksi bahan menjadi "${newName}". Nutrisi piring diperbarui.` 
+      : `✅ Corrected ingredient to "${newName}". Plate nutrition updated.`, 'success');
   }
 
   cancelSegmentNameEdit() {
