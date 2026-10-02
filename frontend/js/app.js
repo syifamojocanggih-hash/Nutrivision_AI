@@ -4287,7 +4287,7 @@ class NutriVisionApp {
     progressTracker.renderWeeklyBarChart();
     this.renderOverviewPlate();
     this.closeModal('onboarding-modal');
-    this.showToast('✅ Rencana diagnostik gizi pemulihan berhasil disimpan & diterapkan ke dasbor!');
+    this.showToast('✅ Target gizi harian berhasil disimpan!');
     this.goToDashboard('overview');
 
     if (typeof this.pendingAuthCallback === 'function') {
@@ -5154,11 +5154,11 @@ class NutriVisionApp {
     }
     if (snapBtn) snapBtn.style.display = 'none';
 
-    this.showToast('Memproses citra makanan dengan Computer Vision...');
+    this.showToast('Menganalisis foto makanan...');
     cvEngine.processCustomImageScan(snapshot || '', (res) => {
       this.renderScanModalUI();
       this.renderOverviewPlate();
-      this.showToast('Segmentasi piring berhasil diselesaikan!');
+      this.showToast('Makanan berhasil dideteksi!');
     });
   }
 
@@ -5177,11 +5177,11 @@ class NutriVisionApp {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       cameraHandler.readFileAsDataURL(file).then(dataUrl => {
-        this.showToast('Mengunggah & menganalisis foto makanan...');
+        this.showToast('Menganalisis foto makanan...');
         cvEngine.processCustomImageScan(dataUrl, (res) => {
           this.renderScanModalUI();
           this.renderOverviewPlate();
-          this.showToast('Segmentasi foto berhasil dilakukan!');
+          this.showToast('Makanan berhasil dideteksi!');
         });
       }).catch(err => {
         this.showToast('Gagal memuat gambar: ' + err);
@@ -7478,7 +7478,7 @@ class NutriVisionApp {
         window.budgetPlanner.render();
       }
 
-      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan lengkapi data diagnostik untuk mengaktifkan rekomendasi gizi Anda.`);
+      this.showToast(`✅ Akun ${name} berhasil dibuat! Silakan atur target gizi Anda.`);
 
       // Pre-fill quiz identity inputs immediately
       const onboardName = document.getElementById('onboard-name');

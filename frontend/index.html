@@ -158,12 +158,7 @@
           <div class="lp-banner-icon">
             <i data-lucide="alert-triangle" style="width:20px;height:20px;"></i>
           </div>
-          <div data-i18n="banner_notice">
-            <strong>Public Service &amp; Clinical Decision-Support Notice:</strong>
-            All food image segmentations and nutritional estimations on this application are presented as clinical
-            decision-support ranges, not as a replacement for professional medical advice, prescription, or clinical
-            diagnosis from a physician or registered dietitian.
-          </div>
+          <div data-i18n="banner_notice"><strong>Catatan Medis:</strong> Estimasi gizi pada aplikasi ini adalah panduan pendukung dan tidak menggantikan anjuran dokter atau ahli gizi.</div>
         </div>
       </div>
     </section>
@@ -174,14 +169,8 @@
         <div class="lp-hero-grid">
           <!-- Left Column -->
           <div class="lp-hero-content">
-            <h1 class="lp-hero-title" data-i18n="hero_title">
-              Scan meals, don't guess your <span class="highlight-coral">recovery</span> nutrition.
-            </h1>
-            <p class="lp-hero-desc" data-i18n="hero_desc">
-              After surgery, physical injury, or during post-hospital eldercare, daily protein requirements should never
-              be left to guesswork. NutriVision AI identifies plate contents from photos, computes instant nutrition
-              ranges, and aligns meals with local nutrient-dense foods.
-            </p>
+            <h1 class="lp-hero-title" data-i18n="hero_title">Foto makananmu, ketahui <span class="highlight-coral">gizinya</span> seketika.</h1>
+            <p class="lp-hero-desc" data-i18n="hero_desc">Cukup ambil foto piring makanan untuk menghitung protein, kalori, dan nutrisi harian secara otomatis guna mendukung pemulihan tubuh.</p>
 
             <div class="lp-hero-actions">
               <button class="lp-btn-hero-primary" onclick="app.openAuthModal('login')">
@@ -800,19 +789,18 @@
     <!-- 7. CTA PENUTUP (TEAL-900 BAND, 1 CORAL BUTTON) -->
     <section class="lp-cta-band">
       <div class="lp-container">
-        <h2 class="lp-cta-title">Start Tracking Recovery Nutrition Today</h2>
+        <h2 class="lp-cta-title">Mulai Pantau Gizimu Sekarang</h2>
         <p class="lp-cta-desc">
-          Harness AI food segmentation and nutrient-dense local superfoods — 100% free for public health and fully
-          offline-capable on your device.
+          Scan makananmu, hitung kalori &amp; protein dengan mudah, dan nikmati rekomendasi menu sehat harian.
         </p>
         <div class="lp-cta-actions">
           <button class="lp-btn-hero-primary" onclick="app.goToDashboard('overview', 'quiz')">
             <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
-            <span data-i18n="profile_btn_quiz">Start Nutrition Diagnostic</span>
+            <span data-i18n="profile_btn_quiz">Mulai Sekarang</span>
           </button>
           <button class="lp-btn-hero-secondary" onclick="app.goToDashboard('overview')">
             <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
-            <span>Open Dashboard Directly →</span>
+            <span>Buka Dasbor Langsung →</span>
           </button>
         </div>
       </div>
@@ -1700,13 +1688,11 @@
               </div>
               <div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-                  <h3 style="margin:0;font-size:16px;font-weight:800;color:#1E293B;" data-i18n="ov_complete_profile_title">Complete Your Nutritional Needs &amp; Dietary Preferences</h3>
+                  <h3 style="margin:0;font-size:16px;font-weight:800;color:#1E293B;" data-i18n="ov_complete_profile_title">Lengkapi Target Pemulihanmu</h3>
                   <span class="badge"
                     style="background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;font-size:11px;font-weight:700;">Required</span>
                 </div>
-                <p style="margin:0;font-size:13px;color:#475569;line-height:1.45;" data-i18n="ov_complete_profile_desc">
-                  Your account is active! Complete diagnostic data (recovery condition, dietary restrictions/allergies, and local food preferences) to activate precision nutrition algorithms.
-                </p>
+                <p style="margin:0;font-size:13px;color:#475569;line-height:1.45;" data-i18n="ov_complete_profile_desc">Isi data singkat (kondisi tubuh &amp; pantangan makanan) agar target gizi harianmu terhitung otomatis.</p>
               </div>
             </div>
             <button type="button" class="btn-primary-teal"
@@ -1725,10 +1711,8 @@
           <section class="card hero-scan-card">
             <div class="hero-header">
               <div>
-                <h2 data-i18n="ov_card1_title">Segmentasi Citra Makanan Berbasis AI</h2>
-                <p data-i18n="ov_card1_desc">Foto makananmu dari kamera atau galeri. Sistem menyekat bahan per segmen,
-                  mengestimasi rentang gizi,
-                  dan mencocokkannya dengan target fase pemulihanmu.</p>
+                <h2 data-i18n="ov_card1_title">Scan Piring Makanan</h2>
+                <p data-i18n="ov_card1_desc">Foto atau pilih gambar makanan untuk menghitung porsi dan kandungan gizi secara otomatis.</p>
               </div>
               <div class="hero-actions">
                 <button class="btn-primary-coral" onclick="app.openScanModal()">
@@ -1809,7 +1793,7 @@
           <section class="card recovery-target-card-full">
             <div class="card-head">
               <div class="card-title-group">
-                <h2 data-i18n="ov_card2_title">Target Gizi Pemulihan Hari Ini</h2>
+                <h2 data-i18n="ov_card2_title">Target Gizi Hari Ini</h2>
                 <div class="card-subtitle"><span data-i18n="ov_phase_prefix">Fase aktif:</span> <span
                     class="user-condition-placeholder" data-i18n="ov_unconfigured_tag">Not configured (Start Nutrition Diagnostic)</span></div>
               </div>
@@ -1969,12 +1953,8 @@
           <!-- CARD 3: SMART FOOD BUDGETING & MEAL PLANNER (MODERN CLINICAL REDESIGN) -->
           <section class="card budget-card-full" id="budget-card-section">
             <div class="card-head" style="margin-bottom:22px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;">
-              <h2 data-i18n="ov_card3_title" style="font-size:18px;font-weight:800;color:#0F172A;margin:0;letter-spacing:-0.2px;">
-                Perencana Anggaran &amp; Menu Makan Cerdas
-              </h2>
-              <p data-i18n="ov_card3_sub" style="font-size:12px;color:#64748B;margin:0;line-height:1.45;">
-                Rekomendasi menu pemulihan tinggi protein berbasis bahan lokal terjangkau &amp; indeks harga pangan Bapanas terkalibrasi.
-              </p>
+              <h2 data-i18n="ov_card3_title" style="font-size:18px;font-weight:800;color:#0F172A;margin:0;letter-spacing:-0.2px;">Rencana Menu &amp; Belanja Hemat</h2>
+              <p data-i18n="ov_card3_sub" style="font-size:12px;color:#64748B;margin:0;line-height:1.45;">Rekomendasi menu bergizi tinggi yang hemat dan mudah ditemukan di pasar terdekat.</p>
             </div>
 
             <!-- Modern Toolbar Control Strip (Matching User Screenshot) -->
