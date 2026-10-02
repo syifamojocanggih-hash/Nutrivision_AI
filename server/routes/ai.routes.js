@@ -82,6 +82,77 @@ router.get('/health', async (req, res) => {
 });
 
 /**
+ * POST /api/ai/vision-identify
+ * Automatic Multimodal Vision AI Fallback for food recognition
+ * Identifies Indonesian dishes from image and corrects low-confidence YOLO guesses automatically!
+ */
+router.post('/vision-identify', optionalAuth, async (req, res) => {
+  try {
+    const { image, candidateFoods } = req.body;
+    if (!image) {
+      return res.status(400).json({ success: false, message: 'Image data wajib diisi (base64 data URL).' });
+    }
+
+    const candidateStr = Array.isArray(candidateFoods) && candidateFoods.length > 0
+      ? candidateFoods.map(c => `${c.food_name || 'unknown'} (conf: ${(c.confidence * 100).toFixed(0)}%)`).join(', ')
+      : 'Belum ada tebakan awal';
+
+    const prompt = `Kamu adalah AI Vision Pengenal Makanan Indonesia untuk NutriVision AI.
+Periksa foto makanan di piring ini secara teliti.
+Tugasmu:
+1. Identifikasi komponen makanan utama yang ada di atas piring (misal: Nasi Putih, Nasi Merah, Dada Ayam Panggang, Ayam Goreng, Ikan Bakar, Telur Rebus, Tempe, Tahu, Sayur Bayam, Tumis Kangkung, Brokoli, Buah Pisang, dll).
+2. Jika ada kandidat tebakan YOLO yang ragu: "${candidateStr}", verifikasi apakah tebakan tersebut benar atau keliru. Jika keliru, sebutkan nama makanan yang sebenarnya.
+
+Jawab HANYA dalam format JSON valid tanpa tanda kutip markdown (\`\`\`json) atau teks pengantar:
+{
+  "identifiedFoods": [
+    {
+      "food_name": "Nama Makanan Indonesia yang Spesifik",
+      "confidence": 95,
+      "category": "pokok|lauk|sayur|buah",
+      "replaced_guess": "Nama tebakan lama jika mengoreksi, atau null"
+    }
+  ]
+}`;
+
+    const messages = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          { type: 'image_url', image_url: { url: image } }
+        ]
+      }
+    ];
+
+    const llmOutput = await callOpenAICompatible(messages, 512, 20000);
+    const jsonMatch = llmOutput.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return res.json({
+        success: true,
+        source: 'Multimodal Vision AI',
+        identifiedFoods: parsed.identifiedFoods || []
+      });
+    }
+
+    return res.json({
+      success: false,
+      message: 'Tidak dapat mengurai respons Vision AI.',
+      identifiedFoods: []
+    });
+
+  } catch (err) {
+    console.warn('[AI Vision Identify] Error calling Vision AI:', err.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Gagal menganalisis citra dengan Vision AI: ' + err.message,
+      identifiedFoods: []
+    });
+  }
+});
+
+/**
  * POST /api/ai/classify
  * Analyze food description, meal plan, or community recipe text using CLAW LLM Model
  */

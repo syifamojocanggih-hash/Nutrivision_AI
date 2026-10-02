@@ -4991,7 +4991,7 @@ class NutriVisionApp {
                   <span>${isId ? 'Ubah' : 'Edit'}</span>
                 </button>
                 ${(seg.isManualCorrection) ? `<span style="font-size:11px;color:#15803d;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#dcfce7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon> ${correctedLabel}</span>` : ''}
-                ${(!seg.isManualCorrection && (seg.unrecognized || seg.confidence < 50)) ? `<span style="font-size:11px;color:#d97706;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:danger-triangle-bold-duotone"></iconify-icon> ${uncertainLabel}</span>` : ''}
+                ${(!seg.isManualCorrection && seg.isLowConfidence) ? `<span style="font-size:11px;color:#b45309;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px;border:1px solid #fde68a;"><iconify-icon icon="solar:shield-warning-bold"></iconify-icon> ${isId ? 'Perlu Konfirmasi' : 'Needs Review'}</span>` : (!seg.isManualCorrection && (seg.unrecognized || seg.confidence < 50) ? `<span style="font-size:11px;color:#d97706;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:danger-triangle-bold-duotone"></iconify-icon> ${uncertainLabel}</span>` : '')}
               </div>
               <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} ${calsUnit} · ${confLabel}: <span style="font-weight:600;color:${seg.confidence < 50 ? '#d97706' : '#15803d'};">${seg.confidence}%</span></div>
             </div>
@@ -5094,14 +5094,24 @@ class NutriVisionApp {
       return;
     }
 
+    const seg = cvEngine.currentScan?.segments?.find(s => s.id === segmentId);
+    const originalGuess = seg ? (seg.rawGuess || seg.name) : null;
+    const originalConf = seg ? seg.confidence : null;
+
     cvEngine.updateSegmentName(segmentId, newName);
     this.editingSegmentId = null;
     this.renderScanModalUI();
     this.renderOverviewPlate();
 
+    // Simpan otomatis ke Active Learning Dataset Collector (IndexedDB lokal, aman untuk hosting gratis)
+    if (window.activeLearningCollector && seg) {
+      const currentImage = cvEngine.currentScan?.imageUrl || '';
+      window.activeLearningCollector.recordCorrection(seg, currentImage, originalGuess, originalConf);
+    }
+
     this.showToast(isId 
-      ? `✅ Berhasil mengoreksi bahan menjadi "${newName}". Nutrisi piring diperbarui.` 
-      : `✅ Corrected ingredient to "${newName}". Plate nutrition updated.`, 'success');
+      ? `✅ Berhasil mengoreksi bahan menjadi "${newName}". Sampel disimpan ke Dataset AI!` 
+      : `✅ Corrected ingredient to "${newName}". Sample saved to AI Dataset!`, 'success');
   }
 
   cancelSegmentNameEdit() {

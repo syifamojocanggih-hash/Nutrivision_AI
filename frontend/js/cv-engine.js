@@ -708,15 +708,77 @@ class NutriVisionCVEngine {
       });
 
       if (!yoloRes.ok) throw new Error('Gagal menghubungi Vision Service YOLO');
-      const detectedFoods = await yoloRes.json();
+      let detectedFoods = await yoloRes.json();
+      const apiBaseUrl = window.nutriAPI ? window.nutriAPI.baseUrl : 'http://localhost:5000';
+
+      // 3b. Dual-Engine Fallback: Jika YOLO tidak menemukan makanan, gunakan Multimodal Vision AI
+      if (!detectedFoods || detectedFoods.length === 0) {
+        try {
+          if (window.app) app.showToast('Mencoba deteksi sekunder dengan Multimodal Vision AI...');
+          const aiRes = await fetch(`${apiBaseUrl}/api/ai/vision-identify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageSrc })
+          });
+          if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            if (aiData.success && Array.isArray(aiData.identifiedFoods) && aiData.identifiedFoods.length > 0) {
+              detectedFoods = aiData.identifiedFoods.map((item, idx) => ({
+                food_name: item.food_name,
+                confidence: (item.confidence || 90) / 100,
+                total_pixels: 40000,
+                polygon_xyn: [[0.2 + idx*0.1, 0.2], [0.7, 0.2 + idx*0.1], [0.7, 0.7], [0.2, 0.7]],
+                isAutoCorrected: true
+              }));
+            }
+          }
+        } catch (aiErr) {
+          console.warn('[Vision Fallback] Secondary AI error:', aiErr);
+        }
+      }
 
       if (!detectedFoods || detectedFoods.length === 0) {
          throw new Error('Tidak ada makanan yang terdeteksi di piring.');
       }
 
+      // 3c. Dual-Engine Fallback: Jika ada tebakan YOLO dengan confidence rendah (< 50%), verifikasi otomatis
+      const hasLowConfidence = detectedFoods.some(f => (f.confidence || 0) < 0.50);
+      if (hasLowConfidence) {
+        try {
+          if (window.app) app.showToast('Memverifikasi otomatis dengan Multimodal Vision AI...');
+          const aiRes = await fetch(`${apiBaseUrl}/api/ai/vision-identify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image: imageSrc,
+              candidateFoods: detectedFoods
+            })
+          });
+
+          if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            if (aiData.success && Array.isArray(aiData.identifiedFoods) && aiData.identifiedFoods.length > 0) {
+              console.log('[Vision AI Dual-Engine] Hasil identifikasi multimodal:', aiData.identifiedFoods);
+              let aiIdx = 0;
+              detectedFoods.forEach((food) => {
+                if ((food.confidence || 0) < 0.50 && aiIdx < aiData.identifiedFoods.length) {
+                  const verified = aiData.identifiedFoods[aiIdx];
+                  console.log(`[Auto-Correction] Mengoreksi "${food.food_name}" -> "${verified.food_name}" (${verified.confidence}%)`);
+                  food.food_name = verified.food_name;
+                  food.confidence = (verified.confidence || 95) / 100;
+                  food.isAutoCorrected = true;
+                  aiIdx++;
+                }
+              });
+            }
+          }
+        } catch (visionAiErr) {
+          console.warn('[Vision AI Dual-Engine] Fallback failed, proceeding with YOLO detections:', visionAiErr);
+        }
+      }
+
       // 4. Panggil API Portioning
       if (window.app) app.showToast('Menghitung estimasi nutrisi...');
-      const apiBaseUrl = window.nutriAPI ? window.nutriAPI.baseUrl : 'http://localhost:5000';
       const portionRes = await fetch(`${apiBaseUrl}/api/portioning/calculate-nutrition`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -741,15 +803,25 @@ class NutriVisionCVEngine {
          const cals = hasNutrition ? food.nutrition.calories : (estimated_grams * 1.5);
          const protein = hasNutrition ? food.nutrition.protein : (estimated_grams * 0.1);
          const fat = hasNutrition ? food.nutrition.fat : (estimated_grams * 0.05);
-         const displayName = food.food_name + (food.error ? ' (Estimasi)' : '');
+
+         const confPercent = Math.round((food.confidence || 0.90) * 100);
+         // Filter guard jika confidence < 40% dan belum dikoreksi Vision AI
+         const isLowConfidence = confPercent < 40 && !food.isAutoCorrected;
+         const rawFoodName = food.food_name || 'Bahan Makanan';
+         const displayName = isLowConfidence 
+            ? `Bahan Belum Yakin (Tebakan: ${rawFoodName})`
+            : (rawFoodName + (food.error ? ' (Estimasi)' : ''));
 
          return {
             id: 'seg-custom-' + Date.now() + '-' + index,
             name: displayName,
+            rawGuess: rawFoodName,
+            isLowConfidence: isLowConfidence,
+            unrecognized: isLowConfidence,
             foodId: food.food_name.toLowerCase().replace(/\s+/g, '-'),
             portionGrams: Math.round(estimated_grams),
-            confidence: Math.round((food.confidence || 0.90) * 100), // convert 0.9 to 90
-            color: '#4ade80', // default green color
+            confidence: confPercent,
+            color: isLowConfidence ? '#F59E0B' : '#4ade80',
             cals: [Math.round(cals), Math.round(cals * 1.1)],
             protein: [Math.round(protein), Math.round(protein * 1.1)],
             carbs: [0, 5], // Optional field in UI
