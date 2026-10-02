@@ -120,7 +120,7 @@ async function fetchProvinces() {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 6500);
 
     const res = await fetch('https://api-panelhargav2.badanpangan.go.id/api/provinces', {
       headers: { 'Accept': 'application/json', 'User-Agent': 'NutriVision-AI/1.0' },
@@ -152,7 +152,9 @@ async function fetchProvinces() {
       }
     }
   } catch (err) {
-    console.warn('[NutriVision Food Prices] Bapanas provinces fetch fallback:', err.message);
+    if (err.name !== 'AbortError') {
+      console.warn('[NutriVision Food Prices] Bapanas provinces fetch notice:', err.message);
+    }
   }
 
   // Fallback ke 38 Provinsi bawaan
@@ -178,7 +180,7 @@ async function fetchCities(provinceId) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 6500);
 
     const res = await fetch(`https://api-panelhargav2.badanpangan.go.id/api/cities?province_id=${pid}`, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'NutriVision-AI/1.0' },
@@ -202,7 +204,9 @@ async function fetchCities(provinceId) {
       }
     }
   } catch (err) {
-    console.warn(`[NutriVision Food Prices] Bapanas cities fetch fallback for prov ${pid}:`, err.message);
+    if (err.name !== 'AbortError') {
+      console.warn(`[NutriVision Food Prices] Bapanas cities fetch notice for prov ${pid}:`, err.message);
+    }
   }
 
   // Fallback

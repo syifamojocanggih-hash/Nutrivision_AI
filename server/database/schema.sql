@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS meals (
   total_protein DOUBLE DEFAULT 0,
   total_carbs DOUBLE DEFAULT 0,
   total_fat DOUBLE DEFAULT 0,
-  image_url VARCHAR(500),
+  image_url LONGTEXT,
   confidence INT DEFAULT 92,
   clinical_advice TEXT,
   segments_json LONGTEXT,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS foods (
   price_est INT DEFAULT 0,
   symptom_tags TEXT,
   clinical_note TEXT,
-  image_url VARCHAR(500),
+  image_url LONGTEXT,
   INDEX idx_foods_category (category)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

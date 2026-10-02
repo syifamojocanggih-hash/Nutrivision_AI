@@ -47,13 +47,31 @@ async function callOpenAICompatible(messages, maxTokens = 4096, timeoutMs = 1500
 
 // Initialize Symptom Filter Agent (isomorphic engine)
 let clinicalFilterAgent = null;
-try {
-  const agentPath = path.join(__dirname, '../../frontend/js/symptom_filter_agent.js');
-  const fallbackPath = path.join(__dirname, '../../js/symptom_filter_agent.js');
-  const agentModule = require(fs.existsSync(agentPath) ? agentPath : fallbackPath);
-  clinicalFilterAgent = agentModule.clinicalNutritionFilterAgent || new agentModule.ClinicalNutritionFilterAgent();
-} catch (e) {
-  console.warn('[AI Routes] Could not load symptom_filter_agent:', e.message);
+const candidateAgentPaths = [
+  path.join(__dirname, '../data/symptom_filter_agent.js'),
+  path.join(__dirname, '../js/symptom_filter_agent.js'),
+  path.join(__dirname, '../lib/symptom_filter_agent.js'),
+  path.join(__dirname, '../../frontend/js/symptom_filter_agent.js'),
+  path.join(__dirname, '../../js/symptom_filter_agent.js')
+];
+
+for (const p of candidateAgentPaths) {
+  if (fs.existsSync(p)) {
+    try {
+      const agentModule = require(p);
+      clinicalFilterAgent = agentModule.clinicalNutritionFilterAgent || (agentModule.ClinicalNutritionFilterAgent ? new agentModule.ClinicalNutritionFilterAgent() : null);
+      if (clinicalFilterAgent) {
+        console.log(`[AI Routes] symptom_filter_agent loaded successfully from ${p}`);
+        break;
+      }
+    } catch (e) {
+      console.warn(`[AI Routes] Failed to load symptom_filter_agent from ${p}:`, e.message);
+    }
+  }
+}
+
+if (!clinicalFilterAgent) {
+  console.warn('[AI Routes] Note: symptom_filter_agent not initialized, will use AI LLM fallback.');
 }
 
 /**

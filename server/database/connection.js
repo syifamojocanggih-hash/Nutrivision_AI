@@ -105,6 +105,16 @@ async function doInitialize() {
       console.log('✅ TiDB Cloud schema tables applied successfully.');
     }
 
+    // 2b. Auto-migration: Ensure image_url columns are LONGTEXT to store base64 images without ER_DATA_TOO_LONG
+    try {
+      await pool.query('ALTER TABLE meals MODIFY COLUMN image_url LONGTEXT');
+      await pool.query('ALTER TABLE foods MODIFY COLUMN image_url LONGTEXT');
+      console.log('✅ TiDB Cloud schema migration: image_url columns upgraded to LONGTEXT.');
+    } catch (migErr) {
+      // Non-fatal if tables do not exist yet or already upgraded
+      console.log('ℹ️ Image_url column check/migration status:', migErr.message);
+    }
+
     // Mark as initialized BEFORE seeding to allow internal queries without deadlock
     isInitialized = true;
 

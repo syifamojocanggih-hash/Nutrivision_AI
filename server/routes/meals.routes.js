@@ -8,6 +8,7 @@ function sanitizeMeal(meal) {
   if (!meal) return null;
   return {
     ...meal,
+    imageUrl: meal.image_url || meal.imageUrl,
     segments: typeof meal.segments_json === 'string' ? JSON.parse(meal.segments_json || '[]') : (meal.segments_json || [])
   };
 }

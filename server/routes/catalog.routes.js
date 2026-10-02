@@ -2,14 +2,31 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 
+const fs = require('fs');
+
 // Mengambil data raksasa dari data.js di backend sehingga tidak membebani frontend
 let NUTRIVISION_DATA = null;
-try {
-    const primaryPath = path.join(__dirname, '../../frontend/js/data.js');
-    const fallbackPath = path.join(__dirname, '../../js/data.js');
-    NUTRIVISION_DATA = require(require('fs').existsSync(primaryPath) ? primaryPath : fallbackPath);
-} catch (err) {
-    console.error("Gagal memuat NUTRIVISION_DATA:", err);
+const candidateDataPaths = [
+    path.join(__dirname, '../data/data.js'),
+    path.join(__dirname, '../js/data.js'),
+    path.join(__dirname, '../../frontend/js/data.js'),
+    path.join(__dirname, '../../js/data.js')
+];
+
+for (const p of candidateDataPaths) {
+    if (fs.existsSync(p)) {
+        try {
+            NUTRIVISION_DATA = require(p);
+            console.log(`[Catalog Routes] NUTRIVISION_DATA loaded successfully from ${p}`);
+            break;
+        } catch (err) {
+            console.warn(`[Catalog Routes] Failed to load data from ${p}:`, err.message);
+        }
+    }
+}
+
+if (!NUTRIVISION_DATA) {
+    console.warn("[Catalog Routes] Warning: NUTRIVISION_DATA could not be loaded from candidate paths.");
 }
 
 /**
