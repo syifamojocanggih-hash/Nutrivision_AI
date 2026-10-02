@@ -3397,112 +3397,96 @@ class NutriVisionApp {
     try {
       const activeReg = window.BappenasFoodAPI.getActiveRegion() || {};
       const provinces = await window.BappenasFoodAPI.getProvinces();
+      const isId = (window.i18n ? window.i18n.getLanguage() : 'id') === 'id';
+      const provPlaceholder = isId ? '-- Pilih Provinsi Domisili --' : '-- Select Domicile Province --';
 
-      provSelect.innerHTML = `<option value="">-- Pilih Provinsi Domisili --</option>` + provinces.map(p => 
-        `<option value="${p.id}" ${(p.id === activeReg.provinceId || p.name.toLowerCase() === (activeReg.provinceName || '').toLowerCase()) ? 'selected' : ''}>${p.name} (${p.multiplier}x)</option>`
+      provSelect.innerHTML = `<option value="">${provPlaceholder}</option>` + provinces.map(p => 
+        `<option value="${p.id}" ${(p.id === activeReg.provinceId || (activeReg.provinceName && p.name.toLowerCase() === activeReg.provinceName.toLowerCase())) ? 'selected' : ''}>${p.name} (${p.multiplier}x)</option>`
       ).join('');
 
-      const curProvId = provSelect.value || activeReg.provinceId || 11;
+      const curProvId = provSelect.value || activeReg.provinceId;
       if (curProvId) {
         await this.populateOnboardCities(curProvId, activeReg.cityName);
+      } else {
+        if (citySelect) {
+          citySelect.innerHTML = `<option value="">${isId ? '-- Pilih Provinsi Terlebih Dahulu --' : '-- Select Province First --'}</option>`;
+          citySelect.disabled = true;
+        }
       }
     } catch (e) {
       console.warn('initOnboardRegions error:', e);
     }
   }
 
-  // ─── Searchable City Combobox ─────────────────────────────────────────────
+  // ─── Provincial & City Dropdown Selection ─────────────────────────────────
 
   async populateOnboardCities(provinceId, selectedCityName = '') {
-    const hiddenInput = document.getElementById('onboard-city');
-    const textInput   = document.getElementById('onboard-city-input');
-    if (!window.BappenasFoodAPI) return;
+    const citySelect = document.getElementById('onboard-city');
+    if (!citySelect || !window.BappenasFoodAPI) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'id') === 'id';
+
+    if (!provinceId) {
+      citySelect.innerHTML = `<option value="">${isId ? '-- Pilih Provinsi Terlebih Dahulu --' : '-- Select Province First --'}</option>`;
+      citySelect.disabled = true;
+      return;
+    }
+
+    citySelect.disabled = false;
+    citySelect.innerHTML = `<option value="">${isId ? 'Memuat data kota...' : 'Loading cities...'}</option>`;
 
     try {
       const cities = await window.BappenasFoodAPI.getCities(provinceId);
-      this._cityOptions = cities.map(c => c.name);
-    } catch (e) {
-      this._cityOptions = ['Semua Wilayah'];
-    }
-
-    // Reset UI
-    if (textInput) { textInput.value = selectedCityName || ''; textInput.placeholder = 'Cari kota / kabupaten...'; }
-    if (hiddenInput) hiddenInput.value = selectedCityName || '';
-    this._renderCityDropdownItems(this._cityOptions, selectedCityName);
-  }
-
-  _renderCityDropdownItems(list, highlight = '') {
-    const dropdown = document.getElementById('onboard-city-dropdown');
-    if (!dropdown) return;
-    if (!list || list.length === 0) {
-      dropdown.innerHTML = `<div style="padding:10px 14px;font-size:12.5px;color:#94A3B8;">Tidak ada hasil ditemukan.</div>`;
-      return;
-    }
-    dropdown.innerHTML = list.map((name, i) => {
-      const isMatch = highlight && name.toLowerCase() === highlight.toLowerCase();
-      return `<div class="city-dd-item${isMatch ? ' selected' : ''}"
-        style="padding:9px 14px;font-size:13px;cursor:pointer;color:${isMatch ? '#0F766E' : '#1E293B'};background:${isMatch ? '#F0FDF4' : 'transparent'};border-bottom:1px solid #F1F5F9;transition:background 0.15s;"
-        onmousedown="app.selectCity('${name.replace(/'/g, "\\'")}')"
-        onmouseover="this.style.background='#F0FDF4';this.style.color='#0F766E'"
-        onmouseout="this.style.background='${isMatch ? '#F0FDF4' : 'transparent'}';this.style.color='${isMatch ? '#0F766E' : '#1E293B'}'"
-        >${name}</div>`;
-    }).join('');
-  }
-
-  openCityDropdown() {
-    const dropdown = document.getElementById('onboard-city-dropdown');
-    const textInput = document.getElementById('onboard-city-input');
-    if (!dropdown) return;
-    // Show all options when focused
-    const term = textInput ? textInput.value : '';
-    this.filterCityDropdown(term, true);
-    dropdown.style.display = 'block';
-  }
-
-  closeCityDropdown() {
-    const dropdown = document.getElementById('onboard-city-dropdown');
-    if (dropdown) dropdown.style.display = 'none';
-    // If typed text does not match any option, clear it
-    const textInput = document.getElementById('onboard-city-input');
-    const hiddenInput = document.getElementById('onboard-city');
-    if (textInput && hiddenInput) {
-      const options = this._cityOptions || [];
-      const exact = options.find(o => o.toLowerCase() === textInput.value.toLowerCase());
-      if (!exact) {
-        // Keep free-text as city value to support rare city names
-        hiddenInput.value = textInput.value;
-        this.handleOnboardCityChange(textInput.value);
+      if (!cities || cities.length === 0) {
+        citySelect.innerHTML = `<option value="">${isId ? '-- Pilih Kota / Kabupaten --' : '-- Select City / Regency --'}</option><option value="Semua Wilayah">${isId ? 'Semua Wilayah' : 'All Regions'}</option>`;
+        return;
       }
+
+      citySelect.innerHTML = `<option value="">${isId ? '-- Pilih Kota / Kabupaten --' : '-- Select City / Regency --'}</option>` + cities.map(c => {
+        const isMatch = selectedCityName && (
+          c.name.toLowerCase() === selectedCityName.toLowerCase() ||
+          c.name.toLowerCase().includes(selectedCityName.toLowerCase()) ||
+          selectedCityName.toLowerCase().includes(c.name.toLowerCase())
+        );
+        return `<option value="${c.name}" ${isMatch ? 'selected' : ''}>${c.name}</option>`;
+      }).join('');
+
+      // If selectedCityName was matched or present, sync it
+      if (selectedCityName && citySelect.value) {
+        this.handleOnboardCityChange(citySelect.value);
+      }
+    } catch (e) {
+      console.warn('populateOnboardCities error:', e);
+      citySelect.innerHTML = `<option value="">${isId ? '-- Pilih Kota / Kabupaten --' : '-- Select City / Regency --'}</option><option value="Semua Wilayah">${isId ? 'Semua Wilayah' : 'All Regions'}</option>`;
     }
-  }
-
-  filterCityDropdown(term, forceOpen = false) {
-    const dropdown = document.getElementById('onboard-city-dropdown');
-    if (!dropdown) return;
-    const options = this._cityOptions || [];
-    const filtered = term
-      ? options.filter(o => o.toLowerCase().includes(term.toLowerCase()))
-      : options;
-    this._renderCityDropdownItems(filtered, term);
-    dropdown.style.display = 'block';
-  }
-
-  selectCity(cityName) {
-    const textInput  = document.getElementById('onboard-city-input');
-    const hiddenInput = document.getElementById('onboard-city');
-    if (textInput)  textInput.value  = cityName;
-    if (hiddenInput) hiddenInput.value = cityName;
-    this.handleOnboardCityChange(cityName);
-    this.closeCityDropdown();
   }
 
   async handleOnboardProvinceChange(provinceId) {
-    if (!provinceId) return;
+    const citySelect = document.getElementById('onboard-city');
+    if (!provinceId) {
+      if (citySelect) {
+        const isId = (window.i18n ? window.i18n.getLanguage() : 'id') === 'id';
+        citySelect.innerHTML = `<option value="">${isId ? '-- Pilih Provinsi Terlebih Dahulu --' : '-- Select Province First --'}</option>`;
+        citySelect.disabled = true;
+        this.handleOnboardCityChange('');
+      }
+      return;
+    }
     await this.populateOnboardCities(provinceId);
   }
 
   handleOnboardCityChange(cityName) {
-    // City selected — value is already persisted via hiddenInput
+    if (this.userProfile) {
+      this.userProfile.city = cityName || '';
+    }
+  }
+
+  selectCity(cityName) {
+    const citySelect = document.getElementById('onboard-city');
+    if (citySelect && cityName) {
+      citySelect.value = cityName;
+      this.handleOnboardCityChange(cityName);
+    }
   }
 
   validateQuizStep(step) {
@@ -3510,6 +3494,7 @@ class NutriVisionApp {
       const nameVal = document.getElementById('onboard-name')?.value?.trim();
       const contactVal = document.getElementById('onboard-contact')?.value?.trim();
       const provVal = document.getElementById('onboard-province')?.value;
+      const cityVal = document.getElementById('onboard-city')?.value;
       const ageVal = parseInt(document.getElementById('onboard-age')?.value, 10);
 
       if (!nameVal) {
@@ -3525,6 +3510,11 @@ class NutriVisionApp {
       if (!provVal) {
         this.showToast('Silakan pilih Provinsi Domisili untuk kalibrasi harga pangan regional.', 'warning');
         document.getElementById('onboard-province')?.focus();
+        return false;
+      }
+      if (!cityVal) {
+        this.showToast('Silakan pilih Kota / Kabupaten Domisili Anda.', 'warning');
+        document.getElementById('onboard-city')?.focus();
         return false;
       }
       if (!ageVal || isNaN(ageVal) || ageVal < 5 || ageVal > 120) {

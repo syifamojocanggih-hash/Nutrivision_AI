@@ -120,7 +120,7 @@ async function fetchProvinces() {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6500);
+    const timeout = setTimeout(() => controller.abort(), 1200);
 
     const res = await fetch('https://api-panelhargav2.badanpangan.go.id/api/provinces', {
       headers: { 'Accept': 'application/json', 'User-Agent': 'NutriVision-AI/1.0' },
@@ -180,7 +180,7 @@ async function fetchCities(provinceId) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6500);
+    const timeout = setTimeout(() => controller.abort(), 1200);
 
     const res = await fetch(`https://api-panelhargav2.badanpangan.go.id/api/cities?province_id=${pid}`, {
       headers: { 'Accept': 'application/json', 'User-Agent': 'NutriVision-AI/1.0' },

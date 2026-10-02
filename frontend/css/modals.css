@@ -1418,6 +1418,13 @@
   outline: none !important;
 }
 
+.quiz-custom-select:disabled {
+  background-color: #F8FAFC !important;
+  color: #94A3B8 !important;
+  cursor: not-allowed !important;
+  border-color: #E2E8F0 !important;
+}
+
 /* Gender Toggle Buttons */
 .gender-toggle-group {
   display: grid;
