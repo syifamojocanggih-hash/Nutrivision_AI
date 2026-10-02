@@ -937,6 +937,32 @@
   padding: 4px;
 }
 
+.btn-edit-ingredient {
+  all: unset;
+  background: rgba(21, 128, 61, 0.08);
+  border: 1px solid rgba(21, 128, 61, 0.22);
+  color: #15803d;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-edit-ingredient:hover {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.seg-display-name:hover {
+  text-decoration: underline;
+  color: #15803d;
+}
+
 .preset-selector-row {
   display: flex;
   gap: 6px;

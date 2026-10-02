@@ -4917,7 +4917,7 @@ class NutriVisionApp {
       cvEngine.renderCanvas(modalCanvas, renderW, renderH, true);
     }
 
-    // Render Editable Segment List (FR-07)
+    // Render Editable Segment List (FR-07) with Human-in-the-Loop Inline Name Correction
     const editList = document.getElementById('modal-segment-edit-list');
     if (editList && cvEngine.currentScan) {
       const uncertainLabel = isId ? 'Belum Yakin' : 'Uncertain';
@@ -4925,18 +4925,75 @@ class NutriVisionApp {
       const calsUnit = isId ? 'kkal' : 'kcal';
       const portionTitle = isId ? 'Ubah porsi gram' : 'Adjust portion grams';
       const removeTitle = isId ? 'Hapus bahan' : 'Remove ingredient';
+      const editTitle = isId ? 'Ubah nama makanan/bahan' : 'Edit ingredient name';
+      const saveTitle = isId ? 'Simpan' : 'Save';
+      const cancelTitle = isId ? 'Batal' : 'Cancel';
+      const correctedLabel = isId ? 'Terkoreksi' : 'Corrected';
 
-      editList.innerHTML = cvEngine.currentScan.segments.map(seg => {
+      const commonOptions = [
+        'Nasi Putih', 'Nasi Merah', 'Dada Ayam Fillet Rebus / Kukus', 'Dada Ayam Panggang / Bakar',
+        'Ayam Goreng', 'Telur Rebus', 'Telur Dadar', 'Tempe Panggang / Kukus', 'Tempe Goreng',
+        'Tahu Rebus / Kukus', 'Tahu Goreng', 'Ikan Bakar', 'Salmon Panggang', 'Ikan Tuna Kukus / Suwir',
+        'Ikan Gabus Liar', 'Sup Daging Sapi Kuah Bening', 'Bakso', 'Sayur Bayam Kuah Bening',
+        'Brokoli Kukus', 'Salad Sayur Segar', 'Gado-gado / Pecel Sayur', 'Karedok', 'Capcay Kuah',
+        'Tumis Buncis', 'Sayur Asem', 'Sup Wortel dan Kentang Bening', 'Roti Gandum Utuh',
+        'Kentang Kukus / Rebus', 'Ubi Jalar Rebus', 'Jagung Manis Rebus', 'Singkong Rebus',
+        'Oatmeal / Havermut', 'Edamame Rebus', 'Kacang Hijau Rebus', 'Buah Pisang', 'Alpukat',
+        'Potongan Buah Pepaya', 'Potongan Buah Apel'
+      ];
+
+      const datalistHtml = `
+        <datalist id="datalist-common-foods">
+          ${commonOptions.map(opt => `<option value="${opt}"></option>`).join('')}
+        </datalist>
+      `;
+
+      editList.innerHTML = datalistHtml + cvEngine.currentScan.segments.map(seg => {
         const segName = isId ? seg.name : (seg.nameEn || seg.name);
+        const isEditing = this.editingSegmentId === seg.id;
+
+        if (isEditing) {
+          return `
+            <div class="segment-edit-item editing-mode" style="border:1.5px solid #15803d;background:rgba(21,128,61,0.04);flex-direction:column;align-items:stretch;gap:8px;padding:10px 12px;border-radius:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#15803d;">
+                  <span class="segment-color-dot" style="background: ${seg.color}"></span>
+                  <span>${isId ? 'Koreksi Nama Bahan' : 'Correct Ingredient Name'}:</span>
+                </div>
+                <button type="button" class="btn-cancel-edit" onclick="app.cancelSegmentNameEdit()" style="background:none;border:none;color:var(--ink-mute);cursor:pointer;font-size:16px;line-height:1;" title="${cancelTitle}">✕</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <input type="text" id="edit-seg-input-${seg.id}" list="datalist-common-foods"
+                       value="${segName.replace(/ \(Estimasi\)$/,'')}" 
+                       style="flex:1;padding:7px 10px;font-size:13px;font-weight:500;border:1.5px solid #15803d;border-radius:7px;outline:none;background:#ffffff;color:#0f172a;" 
+                       placeholder="${isId ? 'Pilih atau ketik nama bahan...' : 'Select or type ingredient...'}"
+                       onkeydown="if(event.key === 'Enter') { event.preventDefault(); app.saveSegmentNameEdit('${seg.id}'); } else if (event.key === 'Escape') { app.cancelSegmentNameEdit(); }">
+                <button type="button" class="btn-sm-teal" style="padding:7px 12px;font-size:12px;background:#15803d;color:#fff;border-radius:7px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-weight:600;" 
+                        onclick="app.saveSegmentNameEdit('${seg.id}')">
+                  <iconify-icon icon="solar:check-circle-bold" style="font-size:15px;"></iconify-icon> ${saveTitle}
+                </button>
+              </div>
+              <div style="font-size:11px;color:#166534;line-height:1.35;">
+                💡 ${isId ? 'Pilih dari saran atau ketik nama makanan apa saja. Nutrisi piring akan otomatis dihitung ulang.' : 'Select from suggestions or type any food. Plate nutrients will auto-recalculate.'}
+              </div>
+            </div>
+          `;
+        }
+
         return `
           <div class="segment-edit-item ${seg.unrecognized ? 'unrecognized' : ''}">
             <span class="segment-color-dot" style="background: ${seg.color}"></span>
             <div class="segment-edit-info">
-              <div class="name">
-                ${segName} 
-                ${(seg.unrecognized || seg.confidence < 50) ? `<span style="font-size:11px;color:#d97706;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:danger-triangle-bold-duotone"></iconify-icon> ${uncertainLabel}</span>` : ''}
+              <div class="name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span class="seg-display-name" onclick="app.startSegmentNameEdit('${seg.id}')" title="${editTitle}" style="cursor:pointer;font-weight:600;color:var(--ink);">${segName}</span>
+                <button type="button" class="btn-edit-ingredient" onclick="app.startSegmentNameEdit('${seg.id}')" title="${editTitle}">
+                  <i data-lucide="edit-3" style="width:11px;height:11px;"></i>
+                  <span>${isId ? 'Ubah' : 'Edit'}</span>
+                </button>
+                ${(seg.isManualCorrection) ? `<span style="font-size:11px;color:#15803d;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#dcfce7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:check-circle-bold-duotone"></iconify-icon> ${correctedLabel}</span>` : ''}
+                ${(!seg.isManualCorrection && (seg.unrecognized || seg.confidence < 50)) ? `<span style="font-size:11px;color:#d97706;display:inline-flex;align-items:center;gap:3px;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px;"><iconify-icon icon="solar:danger-triangle-bold-duotone"></iconify-icon> ${uncertainLabel}</span>` : ''}
               </div>
-              <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} ${calsUnit} · ${confLabel}: <span style="font-weight:600;color:${seg.confidence < 50 ? '#d97706' : 'inherit'};">${seg.confidence}%</span></div>
+              <div class="stats">${seg.portionGrams}g · ${seg.protein[0]}-${seg.protein[1]}g Prot · ${seg.cals[0]}-${seg.cals[1]} ${calsUnit} · ${confLabel}: <span style="font-weight:600;color:${seg.confidence < 50 ? '#d97706' : '#15803d'};">${seg.confidence}%</span></div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
               <input type="number" value="${seg.portionGrams}" min="10" max="800" step="10" 
@@ -5009,8 +5066,47 @@ class NutriVisionApp {
 
   removeSegment(segmentId) {
     cvEngine.removeSegment(segmentId);
+    if (this.editingSegmentId === segmentId) this.editingSegmentId = null;
     this.renderScanModalUI();
     this.renderOverviewPlate();
+  }
+
+  startSegmentNameEdit(segmentId) {
+    this.editingSegmentId = segmentId;
+    this.renderScanModalUI();
+    setTimeout(() => {
+      const input = document.getElementById('edit-seg-input-' + segmentId);
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 40);
+  }
+
+  saveSegmentNameEdit(segmentId) {
+    const input = document.getElementById('edit-seg-input-' + segmentId);
+    if (!input) return;
+    const newName = input.value.trim();
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    
+    if (!newName) {
+      this.showToast(isId ? 'Nama bahan makanan tidak boleh kosong.' : 'Food ingredient name cannot be empty.', 'warning');
+      return;
+    }
+
+    cvEngine.updateSegmentName(segmentId, newName);
+    this.editingSegmentId = null;
+    this.renderScanModalUI();
+    this.renderOverviewPlate();
+
+    this.showToast(isId 
+      ? `✅ Berhasil mengoreksi bahan menjadi "${newName}". Nutrisi piring diperbarui.` 
+      : `✅ Corrected ingredient to "${newName}". Plate nutrition updated.`, 'success');
+  }
+
+  cancelSegmentNameEdit() {
+    this.editingSegmentId = null;
+    this.renderScanModalUI();
   }
 
   // Mulai Kamera Langsung

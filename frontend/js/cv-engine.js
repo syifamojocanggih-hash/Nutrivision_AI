@@ -464,22 +464,13 @@ class NutriVisionCVEngine {
         const targetSeg = getTargetSegment(mx, my);
 
         if (targetSeg) {
-            // Jika diklik, gulir ke bawah dan fokus pada item edit
-            if (window.app && window.app.showToast) {
-               window.app.showToast(`Memilih ${targetSeg.name}... Silakan ubah dari katalog di bawah.`);
+            // Jika diklik, gulir ke bawah dan langsung aktifkan mode edit nama bahan
+            if (window.app && typeof window.app.startSegmentNameEdit === 'function') {
+               window.app.startSegmentNameEdit(targetSeg.id);
             }
             const editList = document.getElementById('modal-segment-edit-list');
             if (editList) {
                editList.scrollIntoView({ behavior: 'smooth', block: 'center' });
-               // Tambahkan highlight efek sebentar
-               const items = editList.querySelectorAll('.segment-edit-item');
-               items.forEach(el => {
-                   if (el.innerHTML.includes(targetSeg.name)) {
-                       el.style.transition = 'background 0.3s';
-                       el.style.background = 'rgba(217, 119, 6, 0.15)'; // highlight orange muda
-                       setTimeout(() => el.style.background = '', 1500);
-                   }
-               });
             }
         }
       };
@@ -542,6 +533,159 @@ class NutriVisionCVEngine {
     seg.protein = [Math.round(seg.protein[0] * multiplier * 10) / 10, Math.round(seg.protein[1] * multiplier * 10) / 10];
     seg.carbs = [Math.round(seg.carbs[0] * multiplier * 10) / 10, Math.round(seg.carbs[1] * multiplier * 10) / 10];
     seg.fat = [Math.round(seg.fat[0] * multiplier * 10) / 10, Math.round(seg.fat[1] * multiplier * 10) / 10];
+  }
+
+  // Lookup data nutrisi untuk makanan berdasarkan nama
+  lookupFoodNutrition(foodName) {
+    if (!foodName || typeof foodName !== 'string') return null;
+    const cleanName = foodName.toLowerCase().trim();
+
+    // 1. Kamus bawaan lengkap pangan lokal & 33 kelas YOLO
+    const standardFoods = {
+      // Karbohidrat / Pokok
+      "nasi putih": { calories: 130, protein: 2.7, carbs: 28.2, fat: 0.3, color: "#94A3B8" },
+      "nasi merah": { calories: 111, protein: 2.6, carbs: 23.0, fat: 0.9, color: "#B91C1C" },
+      "oatmeal": { calories: 68, protein: 2.4, carbs: 12.0, fat: 1.4, color: "#FDE68A" },
+      "oatmeal / havermut": { calories: 68, protein: 2.4, carbs: 12.0, fat: 1.4, color: "#FDE68A" },
+      "havermut": { calories: 68, protein: 2.4, carbs: 12.0, fat: 1.4, color: "#FDE68A" },
+      "ubi jalar rebus": { calories: 86, protein: 1.6, carbs: 20.1, fat: 0.1, color: "#F97316" },
+      "ubi jalar": { calories: 86, protein: 1.6, carbs: 20.1, fat: 0.1, color: "#F97316" },
+      "kentang kukus / rebus": { calories: 87, protein: 1.9, carbs: 20.0, fat: 0.1, color: "#FBBF24" },
+      "kentang rebus": { calories: 87, protein: 1.9, carbs: 20.0, fat: 0.1, color: "#FBBF24" },
+      "kentang kukus": { calories: 87, protein: 1.9, carbs: 20.0, fat: 0.1, color: "#FBBF24" },
+      "jagung manis rebus": { calories: 96, protein: 3.4, carbs: 21.0, fat: 1.5, color: "#FACC15" },
+      "jagung rebus": { calories: 96, protein: 3.4, carbs: 21.0, fat: 1.5, color: "#FACC15" },
+      "singkong rebus": { calories: 160, protein: 1.4, carbs: 38.0, fat: 0.3, color: "#FEF08A" },
+      "singkong": { calories: 160, protein: 1.4, carbs: 38.0, fat: 0.3, color: "#FEF08A" },
+      "roti gandum utuh": { calories: 247, protein: 13.0, carbs: 41.0, fat: 3.4, color: "#D97706" },
+      "roti gandum": { calories: 247, protein: 13.0, carbs: 41.0, fat: 3.4, color: "#D97706" },
+      "roti tawar": { calories: 265, protein: 9.0, carbs: 49.0, fat: 3.2, color: "#FEF3C7" },
+
+      // Protein Hewani
+      "dada ayam fillet rebus / kukus": { calories: 165, protein: 31.0, carbs: 0, fat: 3.6, color: "#F87171" },
+      "dada ayam rebus": { calories: 165, protein: 31.0, carbs: 0, fat: 3.6, color: "#F87171" },
+      "dada ayam fillet": { calories: 165, protein: 31.0, carbs: 0, fat: 3.6, color: "#F87171" },
+      "dada ayam panggang / bakar": { calories: 190, protein: 29.0, carbs: 0, fat: 7.0, color: "#DC2626" },
+      "dada ayam bakar": { calories: 190, protein: 29.0, carbs: 0, fat: 7.0, color: "#DC2626" },
+      "ayam panggang": { calories: 190, protein: 29.0, carbs: 0, fat: 7.0, color: "#DC2626" },
+      "ayam goreng": { calories: 260, protein: 24.6, carbs: 0, fat: 17.5, color: "#EA580C" },
+      "telur rebus": { calories: 155, protein: 12.6, carbs: 1.1, fat: 10.6, color: "#FDE047" },
+      "telur dadar": { calories: 185, protein: 11.0, carbs: 1.5, fat: 14.5, color: "#FBBF24" },
+      "telur mata sapi": { calories: 180, protein: 12.0, carbs: 1.0, fat: 14.0, color: "#FBBF24" },
+      "ikan bakar": { calories: 140, protein: 22.0, carbs: 0, fat: 5.0, color: "#FB923C" },
+      "salmon panggang": { calories: 206, protein: 22.0, carbs: 0, fat: 12.0, color: "#FB7185" },
+      "ikan tuna kukus / suwir": { calories: 132, protein: 28.0, carbs: 0, fat: 1.3, color: "#F43F5E" },
+      "ikan gabus liar": { calories: 118, protein: 25.2, carbs: 0, fat: 1.2, color: "#38BDF8" },
+      "ikan kembung": { calories: 125, protein: 21.3, carbs: 0, fat: 3.4, color: "#0EA5E9" },
+      "sup daging sapi kuah bening": { calories: 120, protein: 12.0, carbs: 4.0, fat: 6.0, color: "#A855F7" },
+      "daging sapi": { calories: 215, protein: 26.0, carbs: 0, fat: 12.0, color: "#9333EA" },
+      "bakso": { calories: 202, protein: 12.0, carbs: 16.0, fat: 10.0, color: "#9CA3AF" },
+
+      // Protein Nabati
+      "tempe panggang / kukus": { calories: 193, protein: 19.0, carbs: 9.4, fat: 11.0, color: "#CA8A04" },
+      "tempe goreng": { calories: 225, protein: 18.0, carbs: 12.0, fat: 14.0, color: "#B45309" },
+      "tempe": { calories: 193, protein: 19.0, carbs: 9.4, fat: 11.0, color: "#CA8A04" },
+      "tahu rebus / kukus": { calories: 76, protein: 8.0, carbs: 1.9, fat: 4.8, color: "#F3F4F6" },
+      "tahu goreng": { calories: 115, protein: 9.7, carbs: 2.5, fat: 8.5, color: "#E5E7EB" },
+      "tahu": { calories: 76, protein: 8.0, carbs: 1.9, fat: 4.8, color: "#F3F4F6" },
+      "edamame rebus": { calories: 122, protein: 11.0, carbs: 9.0, fat: 5.0, color: "#84CC16" },
+      "kacang hijau rebus": { calories: 105, protein: 7.0, carbs: 19.0, fat: 0.4, color: "#65A30D" },
+
+      // Sayuran
+      "sayur bayam kuah bening": { calories: 36, protein: 2.5, carbs: 5.5, fat: 0.5, color: "#16A34A" },
+      "bayam": { calories: 36, protein: 2.5, carbs: 5.5, fat: 0.5, color: "#16A34A" },
+      "brokoli kukus": { calories: 35, protein: 2.4, carbs: 7.2, fat: 0.4, color: "#15803D" },
+      "brokoli": { calories: 35, protein: 2.4, carbs: 7.2, fat: 0.4, color: "#15803D" },
+      "salad sayur segar": { calories: 25, protein: 1.2, carbs: 4.0, fat: 0.3, color: "#4ADE80" },
+      "gado-gado / pecel sayur": { calories: 135, protein: 5.5, carbs: 12.0, fat: 8.0, color: "#A16207" },
+      "gado-gado": { calories: 135, protein: 5.5, carbs: 12.0, fat: 8.0, color: "#A16207" },
+      "pecel": { calories: 135, protein: 5.5, carbs: 12.0, fat: 8.0, color: "#A16207" },
+      "karedok": { calories: 115, protein: 4.8, carbs: 10.0, fat: 7.0, color: "#65A30D" },
+      "capcay kuah": { calories: 65, protein: 3.0, carbs: 8.0, fat: 2.5, color: "#10B981" },
+      "capcay": { calories: 65, protein: 3.0, carbs: 8.0, fat: 2.5, color: "#10B981" },
+      "tumis buncis": { calories: 55, protein: 2.0, carbs: 7.0, fat: 2.5, color: "#22C55E" },
+      "sayur asem": { calories: 45, protein: 1.8, carbs: 8.0, fat: 1.0, color: "#EAB308" },
+      "sup wortel dan kentang bening": { calories: 40, protein: 1.2, carbs: 8.5, fat: 0.3, color: "#F97316" },
+
+      // Buah
+      "buah pisang": { calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, color: "#FDE047" },
+      "pisang": { calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, color: "#FDE047" },
+      "alpukat": { calories: 160, protein: 2.0, carbs: 8.5, fat: 14.7, color: "#84CC16" },
+      "potongan buah pepaya": { calories: 43, protein: 0.5, carbs: 10.8, fat: 0.3, color: "#FB923C" },
+      "pepaya": { calories: 43, protein: 0.5, carbs: 10.8, fat: 0.3, color: "#FB923C" },
+      "potongan buah apel": { calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, color: "#EF4444" },
+      "apel": { calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, color: "#EF4444" }
+    };
+
+    // Cek exact atau partial match di standardFoods
+    if (standardFoods[cleanName]) {
+      return { ...standardFoods[cleanName], defaultPortionGrams: 100 };
+    }
+    for (const [key, val] of Object.entries(standardFoods)) {
+      if (cleanName.includes(key) || key.includes(cleanName)) {
+        return { ...val, defaultPortionGrams: 100 };
+      }
+    }
+
+    // Cek di database katalog NUTRIVISION_DATA jika tersedia
+    if (window.NUTRIVISION_DATA && Array.isArray(window.NUTRIVISION_DATA.indonesianFoodDatabase)) {
+      const match = window.NUTRIVISION_DATA.indonesianFoodDatabase.find(f => 
+        (f.name && f.name.toLowerCase() === cleanName) || 
+        (f.name && f.name.toLowerCase().includes(cleanName)) ||
+        (cleanName.includes(f.name.toLowerCase()))
+      );
+      if (match) {
+        return {
+          calories: match.calories || 150,
+          protein: match.protein || 10,
+          carbs: match.carbs || 15,
+          fat: match.fat || 5,
+          color: match.color || "#4ade80",
+          defaultPortionGrams: match.defaultPortionGrams || 100
+        };
+      }
+    }
+
+    // Fallback cerdas jika tidak ditemukan
+    return {
+      calories: 130,
+      protein: 8,
+      carbs: 15,
+      fat: 4,
+      color: "#4ade80",
+      defaultPortionGrams: 100
+    };
+  }
+
+  // Koreksi Manual: Ubah Nama Bahan & Rekalkulasi Nutrisi Otomatis
+  updateSegmentName(segmentId, newName, customNutrition = null) {
+    if (!this.currentScan || !this.currentScan.segments) return;
+    const seg = this.currentScan.segments.find(s => s.id === segmentId);
+    if (!seg) return;
+
+    seg.name = newName.trim();
+    seg.nameEn = newName.trim();
+    seg.foodId = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    seg.confidence = 100; // Human-in-the-loop: 100% keyakinan
+    seg.isManualCorrection = true;
+    seg.unrecognized = false;
+
+    // Ambil nutrisi baru dan hitung ulang berdasarkan porsi gram saat ini
+    const nutri = customNutrition || this.lookupFoodNutrition(newName);
+    const grams = seg.portionGrams || 100;
+    const baseGrams = nutri.defaultPortionGrams || 100;
+    const ratio = grams / (baseGrams || 100);
+
+    const cals = Math.round(nutri.calories * ratio);
+    const prot = Math.round(nutri.protein * ratio * 10) / 10;
+    const carbs = Math.round((nutri.carbs || 0) * ratio * 10) / 10;
+    const fat = Math.round((nutri.fat || 0) * ratio * 10) / 10;
+
+    seg.cals = [Math.round(cals * 0.95), Math.round(cals * 1.05)];
+    seg.protein = [Math.round(prot * 0.95 * 10) / 10, Math.round(prot * 1.05 * 10) / 10];
+    seg.carbs = [Math.round(carbs * 0.95 * 10) / 10, Math.round(carbs * 1.05 * 10) / 10];
+    seg.fat = [Math.round(fat * 0.95 * 10) / 10, Math.round(fat * 1.05 * 10) / 10];
+    if (nutri.color) seg.color = nutri.color;
   }
   async processCustomImageScan(imageSrc, callback) {
     try {
