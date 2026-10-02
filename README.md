@@ -6,19 +6,19 @@
 *From What You Eat to What You Need*
 #### **Precision Clinical Nutrition &amp; Post-Operative Telehealth Platform (ERAS Protocol)**
 
-[![PWA Ready](https://img.shields.io/badge/PWA-Ready%20%26%20Offline%20First-243818?style=for-the-badge&logo=pwa&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
-[![Computer Vision](https://img.shields.io/badge/Computer%20Vision-Multi--Segment%20AI-4C5C2C?style=for-the-badge&logo=opencv&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready%20%26%20Offline%20First-243818?style=for-the-badge&logo=pwa&logoColor=white)](https://nutrivision-ai-eight.vercel.app)
+[![Computer Vision](https://img.shields.io/badge/Computer%20Vision-Multi--Segment%20AI-4C5C2C?style=for-the-badge&logo=opencv&logoColor=white)](https://nutrivision-ai-eight.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Node.js%20%26%20Express-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Database-MySQL%208.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
 [![Safetensors AI](https://img.shields.io/badge/AI%20Inference-HuggingFace%20Safetensors-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/)
 [![Supabase Cloud](https://img.shields.io/badge/Cloud%20Sync-Supabase%20PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=black)](https://supabase.com)
-[![Export PDF](https://img.shields.io/badge/Telehealth-1--Click%20A4%20PDF%20Export-1F4725?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
-[![WCAG AAA](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AAA-000000?style=for-the-badge&logo=accessibility&logoColor=white)](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)
+[![Export PDF](https://img.shields.io/badge/Telehealth-1--Click%20A4%20PDF%20Export-1F4725?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://nutrivision-ai-eight.vercel.app)
+[![WCAG AAA](https://img.shields.io/badge/Accessibility-WCAG%202.1%20AAA-000000?style=for-the-badge&logo=accessibility&logoColor=white)](https://nutrivision-ai-eight.vercel.app)
 
 <br>
 
 🌐 **Live Application Demo:**  
-👉 **[https://syifamojocanggih-hash.github.io/Nutrivision_AI/](https://syifamojocanggih-hash.github.io/Nutrivision_AI/)**
+👉 **[https://nutrivision-ai-eight.vercel.app](https://nutrivision-ai-eight.vercel.app)**
 
 <br>
 
