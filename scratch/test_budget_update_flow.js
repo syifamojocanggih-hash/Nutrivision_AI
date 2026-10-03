@@ -58,11 +58,11 @@ async function testBudgetUpdateFlow() {
   console.log('budget-clean-footer display:', dom['budget-clean-footer']?.style?.display);
   console.log('budget-input-amount value:', dom['budget-input-amount']?.value);
 
-  if (window.budgetPlanner.isPlanGenerated !== false) throw new Error('FAIL: Initial state must be empty (false)');
-  if (dom['budget-empty-state']?.style?.display !== 'block') throw new Error('FAIL: Empty state box must be visible');
-  if (dom['budget-active-content']?.style?.display !== 'none') throw new Error('FAIL: Active content must be hidden initially');
-  if (dom['budget-clean-footer']?.style?.display !== 'none') throw new Error('FAIL: Footer must be hidden initially');
-  console.log('>>> TEST 1 PASSED: Budgeting starts cleanly empty until user inputs data!\n');
+  if (window.budgetPlanner.isPlanGenerated !== true) throw new Error('FAIL: Initial state must be generated (true)');
+  if (dom['budget-empty-state']?.style?.display !== 'none') throw new Error('FAIL: Empty state box must be hidden');
+  if (dom['budget-active-content']?.style?.display !== 'block') throw new Error('FAIL: Active content must be visible initially');
+  if (dom['budget-clean-footer']?.style?.display !== 'flex') throw new Error('FAIL: Footer must be visible initially');
+  console.log('>>> TEST 1 PASSED: Budgeting starts with active recommendations populated!\n');
 
   console.log('=== TEST 2: Typing without clicking Perbarui ===');
   dom['budget-input-amount'].value = '350000';

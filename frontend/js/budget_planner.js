@@ -10,7 +10,7 @@ class NutriVisionBudgetPlanner {
     this.activeWeek = 1;        // Minggu ke-1 (untuk tampilan 14/30 hari)
     this.preference = 'seimbang'; // 'seimbang', 'tinggi_protein', 'tekstur_lunak'
     this.plan = [];             // Data menu per hari [ { day, dailyBudget, breakfast, lunch, dinner, totalCost, totalProt, totalCals } ]
-    this.isPlanGenerated = false; // Status awal kosong: tunggu input & klik Perbarui
+    this.isPlanGenerated = true; // Rekomendasi menu pangan lokal aktif secara default agar tidak kosong
     
     // Basis Data Menu Pangan Lokal Bergizi & Terjangkau
     this.mealPool = {
@@ -391,25 +391,16 @@ class NutriVisionBudgetPlanner {
 
   init() {
     this.bindInputs();
-    const isDemo = Boolean(window.app?.userProfile?.isDemo);
-    let savedPlan = null;
-    try {
-      if (typeof localStorage !== 'undefined') {
-        savedPlan = localStorage.getItem('nutrivision_budget_generated');
-      }
-    } catch(e) {}
+    if (window.app?.userProfile?.budget) {
+      if (window.app.userProfile.budget.budgetAmount) this.budgetAmount = window.app.userProfile.budget.budgetAmount;
+      if (window.app.userProfile.budget.durationDays) this.durationDays = window.app.userProfile.budget.durationDays;
+      if (window.app.userProfile.budget.preference) this.preference = window.app.userProfile.budget.preference;
+    }
 
     const inputAmount = document.getElementById('budget-input-amount');
-    if (isDemo || savedPlan === 'true') {
-      this.isPlanGenerated = true;
-      if (inputAmount && !inputAmount.value) {
-        inputAmount.value = this.formatRupiah(this.budgetAmount);
-      }
-    } else {
-      this.isPlanGenerated = false;
-      if (inputAmount) {
-        inputAmount.value = '';
-      }
+    this.isPlanGenerated = true;
+    if (inputAmount && (!inputAmount.value || inputAmount.value.trim() === '')) {
+      inputAmount.value = this.formatRupiah(this.budgetAmount);
     }
     this.generatePlan();
     this.render();
@@ -1121,6 +1112,10 @@ class NutriVisionBudgetPlanner {
         activeContent.style.display = 'block';
         if (footerBox) footerBox.style.display = 'flex';
       }
+    }
+
+    if (!this.plan || this.plan.length === 0) {
+      this.generatePlan();
     }
 
     const dayPlan = this.plan.find(p => p.dayNumber === this.activeDay) || this.plan[0];

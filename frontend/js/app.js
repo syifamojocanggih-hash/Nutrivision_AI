@@ -2073,6 +2073,19 @@ class NutriVisionApp {
         if (hub) hub.style.display = 'none';
         if (secStandar) secStandar.style.display = 'none';
         if (secHemat) secHemat.style.display = 'block';
+        if (window.budgetPlanner) {
+          window.budgetPlanner.isPlanGenerated = true;
+          const inputAmount = document.getElementById('budget-input-amount');
+          if (inputAmount && (!inputAmount.value || inputAmount.value.trim() === '')) {
+            inputAmount.value = window.budgetPlanner.formatRupiah(window.budgetPlanner.budgetAmount || 200000);
+          }
+          if (typeof window.budgetPlanner.render === 'function') {
+            window.budgetPlanner.render();
+          }
+        }
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
       } else {
         this.showPlannerHub();
       }
@@ -7486,9 +7499,12 @@ class NutriVisionApp {
         localStorage.removeItem('nutrivision_budget_generated');
       } catch (e) {}
       if (window.budgetPlanner) {
-        window.budgetPlanner.isPlanGenerated = false;
+        window.budgetPlanner.budgetAmount = 200000;
+        window.budgetPlanner.durationDays = 7;
+        window.budgetPlanner.isPlanGenerated = true;
         const inputAmount = document.getElementById('budget-input-amount');
-        if (inputAmount) inputAmount.value = '';
+        if (inputAmount) inputAmount.value = window.budgetPlanner.formatRupiah(200000);
+        window.budgetPlanner.generatePlan();
         window.budgetPlanner.render();
       }
 
@@ -7785,9 +7801,12 @@ class NutriVisionApp {
       localStorage.removeItem('nutrivision_budget_generated');
     } catch (e) {}
     if (window.budgetPlanner) {
-      window.budgetPlanner.isPlanGenerated = false;
+      window.budgetPlanner.budgetAmount = 200000;
+      window.budgetPlanner.durationDays = 7;
+      window.budgetPlanner.isPlanGenerated = true;
       const inputAmount = document.getElementById('budget-input-amount');
-      if (inputAmount) inputAmount.value = '';
+      if (inputAmount) inputAmount.value = window.budgetPlanner.formatRupiah(200000);
+      window.budgetPlanner.generatePlan();
       window.budgetPlanner.render();
     }
 
@@ -11572,9 +11591,15 @@ class NutriVisionApp {
       }
       if (window.budgetPlanner) {
         try {
-          if (typeof window.budgetPlanner.init === 'function' && !window.budgetPlanner.plan?.length) {
-            window.budgetPlanner.init();
-          } else if (typeof window.budgetPlanner.render === 'function') {
+          window.budgetPlanner.isPlanGenerated = true;
+          const inputAmount = document.getElementById('budget-input-amount');
+          if (inputAmount && (!inputAmount.value || inputAmount.value.trim() === '')) {
+            inputAmount.value = window.budgetPlanner.formatRupiah(window.budgetPlanner.budgetAmount || 200000);
+          }
+          if (!window.budgetPlanner.plan || !window.budgetPlanner.plan.length) {
+            window.budgetPlanner.generatePlan();
+          }
+          if (typeof window.budgetPlanner.render === 'function') {
             window.budgetPlanner.render();
           }
         } catch (err) {
