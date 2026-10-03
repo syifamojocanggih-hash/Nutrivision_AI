@@ -302,10 +302,10 @@
       booster_toast_reset: 'Nutrition targets reset to standard clinical recovery baseline.',
 
       // Meal Planner View
-      plan_subtab_symptom: 'Symptom-Aware & Food Filter',
-      plan_subtab_calendar: 'Recovery Cycle & Schedule Calendar',
-      plan_filter_title: 'Symptom-Aware Texture & Food Filter',
-      plan_filter_sub: 'Select active clinical complaints or symptoms for automatic texture adaptation',
+      plan_subtab_symptom: 'Texture & Menu Safety Filter',
+      plan_subtab_calendar: 'Recovery Agenda & Daily Schedule',
+      plan_filter_title: 'Meal Planner Texture & Safety Adjustment',
+      plan_filter_sub: 'Configure active physiological symptoms and restrictions for automated meal texture filtering',
       symp_nausea: 'Nausea',
       symp_dysphagia: 'Difficulty Swallowing (Dysphagia)',
       symp_gerd: 'GERD / Acid Reflux',
@@ -395,8 +395,8 @@
       toast_caregiver_copied: 'Caregiver access link copied to clipboard!',
 
       // Recovery Cycle & Schedule Calendar (Planner)
-      plan_cal_title: 'Recovery Cycle & Nutrition Schedule Calendar',
-      plan_cal_sub: 'Clinical recovery phase guide & daily meal planning based on ERAS & ESPEN',
+      plan_cal_title: 'Clinical Recovery Phase Agenda & Daily Meal Plan',
+      plan_cal_sub: 'Clinical ERAS & ESPEN recovery phase guide & structured daily meal planning',
       plan_badge_today: 'TODAY',
       plan_btn_add_sched: 'Add Schedule',
       plan_badge_day30: 'Day 30',
@@ -984,10 +984,10 @@
       booster_toast_reset: 'Target gizi dikembalikan ke batas standar pemulihan klinis.',
 
       // Meal Planner View
-      plan_subtab_symptom: 'Symptom-Aware & Filter Pantangan',
-      plan_subtab_calendar: 'Kalender Siklus & Jadwal Nutrisi',
-      plan_filter_title: 'Symptom-Aware Texture & Food Filter',
-      plan_filter_sub: 'Tandai keluhan/gejala saat ini untuk penyesuaian tekstur menu',
+      plan_subtab_symptom: 'Filter Tekstur & Keamanan Menu',
+      plan_subtab_calendar: 'Agenda Pemulihan & Jadwal Makan',
+      plan_filter_title: 'Penyesuaian Tekstur & Keamanan Menu Planner',
+      plan_filter_sub: 'Pilih gejala fisiologis dan pantangan aktif untuk penyesuaian otomatis tekstur & keamanan menu klinis',
       symp_nausea: 'Mual',
       symp_dysphagia: 'Sulit Menelan / Disfagia',
       symp_gerd: 'GERD / Asam Lambung',
@@ -1077,8 +1077,8 @@
       toast_caregiver_copied: 'Tautan pendamping berhasil disalin!',
 
       // Recovery Cycle & Schedule Calendar (Planner)
-      plan_cal_title: 'Kalender Siklus & Jadwal Nutrisi',
-      plan_cal_sub: 'Panduan fase pemulihan klinis & perencanaan menu harian berbasis ERAS & ESPEN',
+      plan_cal_title: 'Agenda Fase Pemulihan & Perencanaan Menu Harian',
+      plan_cal_sub: 'Panduan fase pemulihan klinis ERAS & ESPEN serta rincian menu harian pasien pasca-bedah',
       plan_badge_today: 'HARI INI',
       plan_btn_add_sched: 'Tambah Jadwal',
       plan_badge_day30: 'Hari ke-30',
