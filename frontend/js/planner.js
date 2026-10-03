@@ -1286,7 +1286,6 @@ class NutriVisionPlanner {
   logMeal(mealName, macroStr) {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     app.requireAuth(() => {
-      // Parse protein and calories from macroStr e.g. "28g Protein · 420 kkal" or "420 kcal"
       let prot = 25;
       let cals = 380;
       const protMatch = macroStr.match(/(\d+)g Protein/i);
@@ -1299,12 +1298,17 @@ class NutriVisionPlanner {
         protein: [prot, prot],
         carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
         fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
-        cals: [cals, cals]
+        cals: [cals, cals],
+        calories: [cals, cals]
       }, userKey, { name: mealName, source: isId ? 'Rencana Menu' : 'Meal Planner' });
 
-      progressTracker.renderMacroDonut(app.userProfile.targets);
+      const targets = app.userProfile?.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+      progressTracker.renderMacroDonut(targets);
+      progressTracker.renderTodayMealHistory();
+      progressTracker.renderHistoryPage();
       progressTracker.renderWeeklyBarChart();
-      app.showToast(isId ? `Menu "${mealName}" berhasil dicatat!` : `Meal "${mealName}" logged!`);
+      if (typeof app.updateProfileUI === 'function') app.updateProfileUI();
+      app.showToast(isId ? `Menu "${mealName}" berhasil dicatat ke asupan gizi hari ini!` : `Meal "${mealName}" logged to today's intake!`, 'success');
     }, isId ? 'catat menu' : 'log meal');
   }
 

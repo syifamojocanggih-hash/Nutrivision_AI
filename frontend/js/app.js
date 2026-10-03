@@ -11465,7 +11465,40 @@ class NutriVisionApp {
     this.renderUpcomingEvents(dateKey);
 
     const isDone = this.completedScheduleItems[key];
-    this.showToast(isDone ? '✓ Jadwal diselesaikan!' : 'Status jadwal diperbarui', 'info');
+    const targetDate = dateKey || this.selectedCalendarDate || new Date().toISOString().split('T')[0];
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
+    const schedules = this.getConditionSchedules(cond, targetDate);
+    const item = (schedules || []).find(s => s.id === scheduleId);
+
+    if (item && isDone) {
+      let prot = item.protein || 0;
+      let cals = item.calories || 0;
+      if (!prot && (item.title || item.desc)) {
+        const text = (item.title || '') + ' ' + (item.desc || '');
+        const pMatch = text.match(/(\d+)\s*g\s*Protein/i);
+        if (pMatch) prot = parseInt(pMatch[1], 10);
+      }
+      if (!cals && (item.title || item.desc)) {
+        const text = (item.title || '') + ' ' + (item.desc || '');
+        const cMatch = text.match(/(\d+)\s*(?:kkal|kcal)/i);
+        if (cMatch) cals = parseInt(cMatch[1], 10);
+      }
+      if (prot > 0 || cals > 0) {
+        const userKey = this.userProfile?.id || this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+        if (window.progressTracker && typeof window.progressTracker.addLoggedMeal === 'function') {
+          window.progressTracker.addLoggedMeal({
+            protein: [prot, prot],
+            carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
+            fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
+            cals: [cals, cals],
+            calories: [cals, cals]
+          }, userKey, { name: item.title, source: 'Jadwal Kalender' });
+        }
+      }
+    }
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    this.showToast(isDone ? (isId ? '✓ Jadwal diselesaikan & gizi dicatat!' : '✓ Schedule completed & logged!') : (isId ? 'Status jadwal diperbarui' : 'Schedule status updated'), 'info');
   }
 
   openCalendarModal() {
@@ -12193,14 +12226,25 @@ class NutriVisionApp {
         protein: [prot, prot],
         carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
         fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
-        cals: [cals, cals]
+        cals: [cals, cals],
+        calories: [cals, cals]
       }, userKey, { name, source });
 
-      if (typeof window.progressTracker.renderMacroDonut === 'function' && this.userProfile?.targets) {
-        window.progressTracker.renderMacroDonut(this.userProfile.targets);
+      const targets = this.userProfile?.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+      if (typeof window.progressTracker.renderMacroDonut === 'function') {
+        window.progressTracker.renderMacroDonut(targets);
+      }
+      if (typeof window.progressTracker.renderTodayMealHistory === 'function') {
+        window.progressTracker.renderTodayMealHistory();
+      }
+      if (typeof window.progressTracker.renderHistoryPage === 'function') {
+        window.progressTracker.renderHistoryPage();
       }
       if (typeof window.progressTracker.renderWeeklyBarChart === 'function') {
         window.progressTracker.renderWeeklyBarChart();
+      }
+      if (typeof this.updateProfileUI === 'function') {
+        this.updateProfileUI();
       }
     }
 

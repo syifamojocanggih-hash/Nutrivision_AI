@@ -249,6 +249,7 @@ class NutriVisionProgress {
 
   // Tambahkan hasil scan / menu baru ke asupan hari ini
   addLoggedMeal(aggregatedNutrients, userKey, mealMeta = {}) {
+    this.isConfigured = true;
     const pArr = Array.isArray(aggregatedNutrients.protein) ? aggregatedNutrients.protein : [aggregatedNutrients.protein || 0, aggregatedNutrients.protein || 0];
     const cArr = Array.isArray(aggregatedNutrients.carbs) ? aggregatedNutrients.carbs : [aggregatedNutrients.carbs || 0, aggregatedNutrients.carbs || 0];
     const fArr = Array.isArray(aggregatedNutrients.fat) ? aggregatedNutrients.fat : [aggregatedNutrients.fat || 0, aggregatedNutrients.fat || 0];
@@ -295,10 +296,18 @@ class NutriVisionProgress {
     }
 
     this.saveUserProgress(userKey);
+    const activeTargets = (typeof app !== 'undefined' && app.userProfile?.targets) 
+      ? app.userProfile.targets 
+      : { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+    this.renderMacroDonut(activeTargets);
     this.renderTodayMealHistory();
     this.renderHistoryPage();
     this.renderWeeklyBarChart();
     this.updateProgressPageSummary();
+
+    if (typeof app !== 'undefined' && typeof app.updateProfileUI === 'function') {
+      app.updateProfileUI();
+    }
 
     // Sinkronisasi ke backend MySQL secara async (fire-and-forget)
     if (typeof window !== 'undefined' && window.nutriAPI) {

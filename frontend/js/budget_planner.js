@@ -1085,15 +1085,23 @@ class NutriVisionBudgetPlanner {
       tracker.addLoggedMeal({
         protein: [dayPlan.totalDayProtein, dayPlan.totalDayProtein],
         calories: [dayPlan.totalDayCalories, dayPlan.totalDayCalories],
+        cals: [dayPlan.totalDayCalories, dayPlan.totalDayCalories],
         carbs: [180, 180],
         fat: [35, 35]
       }, userKey, { name: isId ? `Rencana Menu Hari ke-${this.activeDay}` : `Day ${this.activeDay} Meal Plan`, source: 'Budget Planner' });
+
+      const targets = window.app?.userProfile?.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+      if (typeof tracker.renderMacroDonut === 'function') tracker.renderMacroDonut(targets);
+      if (typeof tracker.renderTodayMealHistory === 'function') tracker.renderTodayMealHistory();
+      if (typeof tracker.renderHistoryPage === 'function') tracker.renderHistoryPage();
+      if (typeof tracker.renderWeeklyBarChart === 'function') tracker.renderWeeklyBarChart();
+      if (window.app && typeof window.app.updateProfileUI === 'function') window.app.updateProfileUI();
     }
 
     if (window.app && typeof window.app.showToast === 'function') {
       window.app.showToast(isId 
         ? `Menu Hari ke-${this.activeDay} (${dayPlan.totalDayProtein}g Protein) berhasil dicatat ke progres harian!` 
-        : `Day ${this.activeDay} menu (${dayPlan.totalDayProtein}g Protein) logged to daily progress!`);
+        : `Day ${this.activeDay} menu (${dayPlan.totalDayProtein}g Protein) logged to daily progress!`, 'success');
     }
   }
 
