@@ -11884,9 +11884,9 @@ class NutriVisionApp {
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
-          <button type="button" class="btn-outline-glass" style="font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#233917;border:1px solid #CBD5E1;background:#FFFFFF;cursor:pointer;"
+          <button type="button" style="all:unset;cursor:pointer;font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#233917;border:1px solid #DCE5B8;background:#EAF3E2;display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;"
             onclick="app.showDoctorRecipeDetails('${item.id}')">
-            <i data-lucide="book-open" style="width:13px;height:13px;vertical-align:middle;"></i> Rincian Resep
+            <i data-lucide="book-open" style="width:13px;height:13px;"></i> Rincian Resep
           </button>
           <button type="button" class="btn-primary-teal" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Rekomendasi Dokter')">
@@ -11974,9 +11974,9 @@ class NutriVisionApp {
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
-          <button type="button" class="btn-outline-glass" style="font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#92400E;border:1px solid #FCD34D;background:#FFFDF7;cursor:pointer;"
+          <button type="button" style="all:unset;cursor:pointer;font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#92400E;border:1px solid #FCD34D;background:#FFFDF7;display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;"
             onclick="app.showBudgetRecipeDetails('${item.id}')">
-            <i data-lucide="book-open" style="width:13px;height:13px;vertical-align:middle;"></i> Komposisi Bahan
+            <i data-lucide="book-open" style="width:13px;height:13px;"></i> Komposisi Bahan
           </button>
           <button type="button" class="btn-primary-coral" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Alternatif Budget Hemat')">

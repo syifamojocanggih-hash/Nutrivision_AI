@@ -895,10 +895,7 @@
             <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span>
             <span data-i18n="nav_overview">Daily Overview</span>
           </button>
-          <button class="nav-item" data-sec="recommendation-menu" onclick="app.navigate('recommendation-menu')">
-            <span class="nav-icon"><i data-lucide="sparkles"></i></span>
-            <span data-i18n="nav_recommendation">Recommendation Menu</span>
-          </button>
+
           <button class="nav-item" data-sec="planner">
             <span class="nav-icon"><i data-lucide="utensils"></i></span>
             <span data-i18n="nav_planner">Meal Planner</span>
@@ -2026,63 +2023,58 @@
          VIEW: DEDICATED RECOMMENDATION MENU PAGE (FULL PAGE)
          ========================================================================= -->
       <div class="view-section" id="view-recommendation-menu">
-        <!-- Top Header Card -->
-        <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg, #FAFDF6 0%, #FFFFFF 100%);border-left:4.5px solid #233917;padding:22px 26px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:280px;">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-                <button type="button" class="btn-outline-glass" onclick="app.navigate('overview')"
-                  style="font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;border:1px solid #CBD5E1;background:#FFFFFF;color:#233917;cursor:pointer;">
-                  <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
-                  <span>Kembali ke Dashboard</span>
-                </button>
-                <span class="badge" style="background:#EAF3E2;color:#15803D;border:1px solid #C4E2B2;font-size:11px;font-weight:700;">
-                  <i data-lucide="shield-check" style="width:12px;height:12px;"></i> Standar ESPEN &amp; Bapanas RI
-                </span>
-              </div>
-              <h1 style="font-size:24px;font-weight:800;color:#0F172A;margin:0 0 6px;letter-spacing:-0.3px;">
-                Recommendation Menu
-              </h1>
-              <p style="font-size:13px;color:#64748B;margin:0;line-height:1.5;max-width:760px;">
-                Direktori lengkap menu pemulihan klinis yang direkomendasikan dokter spesialis gizi klinis untuk percepatan penyembuhan luka, serta alternatif pangan lokal bergizi padat untuk budget hemat.
-              </p>
-            </div>
 
-            <!-- Tab Switcher on Page -->
-            <div style="display:inline-flex;background:#F1F5F0;padding:4px;border-radius:12px;border:1px solid #DCE5B8;">
-              <button type="button" id="tab-btn-recom-standar" class="recom-page-tab-btn active" onclick="app.switchRecommendationTab('standar')"
-                style="padding:8px 18px;border-radius:9px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all 0.2s ease;">
-                <i data-lucide="stethoscope" style="width:15px;height:15px;"></i>
-                <span>Menu Standar Klinis (Dokter)</span>
-              </button>
-              <button type="button" id="tab-btn-recom-hemat" class="recom-page-tab-btn" onclick="app.switchRecommendationTab('hemat')"
-                style="padding:8px 18px;border-radius:9px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all 0.2s ease;">
-                <i data-lucide="wallet" style="width:15px;height:15px;"></i>
-                <span>Menu Hemat Terjangkau</span>
-              </button>
-            </div>
+        <!-- Sub-Navigation Bar (mirroring planner style) -->
+        <div class="planner-subnav-bar">
+          <button type="button" class="btn-planner-back" onclick="app.navigate('overview')">
+            <i data-lucide="arrow-left"></i>
+            <span>Kembali ke Dashboard</span>
+          </button>
+          <!-- Tab Switcher -->
+          <div style="display:inline-flex;background:#F1F5F0;padding:4px;border-radius:12px;border:1px solid #DCE5B8;">
+            <button type="button" id="tab-btn-recom-standar" class="recom-page-tab-btn active" onclick="app.switchRecommendationTab('standar')">
+              <i data-lucide="stethoscope" style="width:14px;height:14px;"></i>
+              <span>Menu Standar Klinis</span>
+            </button>
+            <button type="button" id="tab-btn-recom-hemat" class="recom-page-tab-btn" onclick="app.switchRecommendationTab('hemat')">
+              <i data-lucide="wallet" style="width:14px;height:14px;"></i>
+              <span>Menu Hemat Terjangkau</span>
+            </button>
           </div>
+          <span class="badge" style="background:#EAF3E2;color:#15803D;border:1px solid #C4E2B2;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+            <i data-lucide="shield-check" style="width:12px;height:12px;"></i>
+            Standar ESPEN &amp; Bapanas RI
+          </span>
+        </div>
+
+        <!-- Hero Header (same style as planner-hub-hero) -->
+        <div class="planner-hub-hero" style="margin-bottom:24px;">
+          <div class="planner-hub-badge">
+            <i data-lucide="sparkles"></i>
+            <span>NutriVision Recommendation Menu</span>
+          </div>
+          <h1 class="planner-hub-title">Direktori Rekomendasi Menu Pemulihan</h1>
+          <p class="planner-hub-subtitle">
+            Pilih antara menu klinis yang direkomendasikan dokter spesialis gizi klinis,
+            atau temukan alternatif pangan lokal bergizi tinggi yang ramah di kantong.
+          </p>
         </div>
 
         <!-- SECTION 1: DIREKTORI REKOMENDASI DOKTER -->
         <div id="recom-page-section-standar" class="recom-page-section">
-          <div class="card" style="margin-bottom:18px;padding:16px 20px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-              <!-- Filter Category Pills -->
-              <div class="recom-filter-pills" id="page-doctor-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button type="button" class="recom-pill-btn active" data-cat="all" onclick="app.filterDoctorRecommendationsPage('all', this)">Semua Menu</button>
-                <button type="button" class="recom-pill-btn" data-cat="sarapan" onclick="app.filterDoctorRecommendationsPage('sarapan', this)">Sarapan (Pagi)</button>
-                <button type="button" class="recom-pill-btn" data-cat="siang" onclick="app.filterDoctorRecommendationsPage('siang', this)">Makan Siang</button>
-                <button type="button" class="recom-pill-btn" data-cat="malam" onclick="app.filterDoctorRecommendationsPage('malam', this)">Makan Malam</button>
-                <button type="button" class="recom-pill-btn" data-cat="snack" onclick="app.filterDoctorRecommendationsPage('snack', this)">Selingan / Snack</button>
-              </div>
-
-              <!-- Instant Search Input -->
-              <div style="position:relative;min-width:240px;flex:1;max-width:340px;">
-                <input type="text" id="page-doctor-search" placeholder="Cari menu anjuran dokter..." oninput="app.searchDoctorRecommendationsPage(this.value)"
-                  style="width:100%;padding:8px 14px 8px 34px;font-size:12.5px;border:1px solid #CBD5E1;border-radius:10px;outline:none;background:#FFFFFF;" />
-                <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94A3B8;"></i>
-              </div>
+          <!-- Filter & Search Bar -->
+          <div class="planner-subnav-bar" style="margin-bottom:18px;">
+            <div class="recom-filter-pills" id="page-doctor-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
+              <button type="button" class="recom-pill-btn active" data-cat="all" onclick="app.filterDoctorRecommendationsPage('all', this)">Semua Menu</button>
+              <button type="button" class="recom-pill-btn" data-cat="sarapan" onclick="app.filterDoctorRecommendationsPage('sarapan', this)">Sarapan (Pagi)</button>
+              <button type="button" class="recom-pill-btn" data-cat="siang" onclick="app.filterDoctorRecommendationsPage('siang', this)">Makan Siang</button>
+              <button type="button" class="recom-pill-btn" data-cat="malam" onclick="app.filterDoctorRecommendationsPage('malam', this)">Makan Malam</button>
+              <button type="button" class="recom-pill-btn" data-cat="snack" onclick="app.filterDoctorRecommendationsPage('snack', this)">Selingan / Snack</button>
+            </div>
+            <div style="position:relative;min-width:220px;max-width:320px;">
+              <input type="text" id="page-doctor-search" placeholder="Cari menu anjuran dokter..." oninput="app.searchDoctorRecommendationsPage(this.value)"
+                style="width:100%;padding:8px 14px 8px 34px;font-size:12.5px;border:1px solid #CBD5E1;border-radius:10px;outline:none;background:#FFFFFF;" />
+              <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94A3B8;"></i>
             </div>
           </div>
 
@@ -2094,23 +2086,19 @@
 
         <!-- SECTION 2: DIREKTORI ALTERNATIF BUDGET HEMAT -->
         <div id="recom-page-section-hemat" class="recom-page-section" style="display:none;">
-          <div class="card" style="margin-bottom:18px;padding:16px 20px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-              <!-- Filter Category Pills -->
-              <div class="recom-filter-pills" id="page-budget-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button type="button" class="recom-pill-btn active" data-cat="all" onclick="app.filterBudgetAlternativesPage('all', this)">Semua Alternatif</button>
-                <button type="button" class="recom-pill-btn" data-cat="under8k" onclick="app.filterBudgetAlternativesPage('under8k', this)">&lt; Rp 8.000 / porsi</button>
-                <button type="button" class="recom-pill-btn" data-cat="under10k" onclick="app.filterBudgetAlternativesPage('under10k', this)">&lt; Rp 10.000 / porsi</button>
-                <button type="button" class="recom-pill-btn" data-cat="nabati" onclick="app.filterBudgetAlternativesPage('nabati', this)">Protein Nabati</button>
-                <button type="button" class="recom-pill-btn" data-cat="hewani" onclick="app.filterBudgetAlternativesPage('hewani', this)">Protein Hewani Hemat</button>
-              </div>
-
-              <!-- Instant Search Input -->
-              <div style="position:relative;min-width:240px;flex:1;max-width:340px;">
-                <input type="text" id="page-budget-search" placeholder="Cari alternatif hemat..." oninput="app.searchBudgetAlternativesPage(this.value)"
-                  style="width:100%;padding:8px 14px 8px 34px;font-size:12.5px;border:1px solid #CBD5E1;border-radius:10px;outline:none;background:#FFFFFF;" />
-                <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94A3B8;"></i>
-              </div>
+          <!-- Filter & Search Bar -->
+          <div class="planner-subnav-bar" style="margin-bottom:18px;">
+            <div class="recom-filter-pills" id="page-budget-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
+              <button type="button" class="recom-pill-btn active" data-cat="all" onclick="app.filterBudgetAlternativesPage('all', this)">Semua Alternatif</button>
+              <button type="button" class="recom-pill-btn" data-cat="under8k" onclick="app.filterBudgetAlternativesPage('under8k', this)">&lt; Rp 8.000 / porsi</button>
+              <button type="button" class="recom-pill-btn" data-cat="under10k" onclick="app.filterBudgetAlternativesPage('under10k', this)">&lt; Rp 10.000 / porsi</button>
+              <button type="button" class="recom-pill-btn" data-cat="nabati" onclick="app.filterBudgetAlternativesPage('nabati', this)">Protein Nabati</button>
+              <button type="button" class="recom-pill-btn" data-cat="hewani" onclick="app.filterBudgetAlternativesPage('hewani', this)">Protein Hewani Hemat</button>
+            </div>
+            <div style="position:relative;min-width:220px;max-width:320px;">
+              <input type="text" id="page-budget-search" placeholder="Cari alternatif hemat..." oninput="app.searchBudgetAlternativesPage(this.value)"
+                style="width:100%;padding:8px 14px 8px 34px;font-size:12.5px;border:1px solid #CBD5E1;border-radius:10px;outline:none;background:#FFFFFF;" />
+              <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94A3B8;"></i>
             </div>
           </div>
 

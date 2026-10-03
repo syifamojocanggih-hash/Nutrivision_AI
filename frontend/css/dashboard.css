@@ -73,6 +73,32 @@
   transform: scale(0.98);
 }
 
+.btn-primary-teal {
+  all: unset;
+  cursor: pointer;
+  background: #233917;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: var(--font-sm);
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 12px rgba(35, 57, 23, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-primary-teal:hover {
+  background: #1B2D12;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(35, 57, 23, 0.32);
+}
+
+.btn-primary-teal:active {
+  transform: scale(0.98);
+}
+
 .btn-outline-glass {
   all: unset;
   cursor: pointer;
@@ -788,9 +814,21 @@
   box-shadow: 0 8px 20px rgba(35, 57, 23, 0.08);
 }
 
+/* === RECOMMENDATION MENU PAGE: TAB BUTTONS === */
 .recom-page-tab-btn {
+  all: unset;
+  cursor: pointer;
   background: transparent;
   color: #475569;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .recom-page-tab-btn:hover {
@@ -802,6 +840,112 @@
   background: #233917 !important;
   color: #FFFFFF !important;
   box-shadow: 0 2px 8px rgba(35, 57, 23, 0.2);
+}
+
+/* === RECOMMENDATION MENU PAGE: FILTER PILLS === */
+.recom-pill-btn {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.recom-pill-btn:hover {
+  background: #EAF3E2;
+  color: #233917;
+  border-color: #DCE5B8;
+}
+
+.recom-pill-btn.active {
+  background: #233917;
+  color: #FFFFFF;
+  border-color: #233917;
+  box-shadow: 0 2px 6px rgba(35, 57, 23, 0.2);
+}
+
+/* === RECOMMENDATION MENU PAGE: MENU CARDS === */
+.recom-menu-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.recom-menu-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+}
+
+.recom-menu-card.doctor-card {
+  border-left: 3.5px solid #15803D;
+}
+
+.recom-menu-card.doctor-card:hover {
+  border-color: #15803D;
+  background: #FDFEFF;
+}
+
+.recom-menu-card.budget-card {
+  border-left: 3.5px solid #D97706;
+}
+
+.recom-menu-card.budget-card:hover {
+  border-color: #D97706;
+  background: #FFFDF8;
+}
+
+/* === RECOMMENDATION MENU PAGE: MACRO BADGE PILLS === */
+.recom-macro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.recom-macro-pill.doctor {
+  background: #EAF3E2;
+  color: #15803D;
+  border: 1px solid #C4E2B2;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recom-macro-pill.protein {
+  background: #EAF3E2;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+}
+
+.recom-macro-pill.calories {
+  background: #FEF9C3;
+  color: #78350F;
+  border: 1px solid #FDE68A;
+}
+
+.recom-macro-pill.price {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  font-size: 12px;
 }
 
 
