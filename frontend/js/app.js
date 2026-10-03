@@ -2068,7 +2068,7 @@ class NutriVisionApp {
         if (hub) hub.style.display = 'none';
         if (secStandar) secStandar.style.display = 'block';
         if (secHemat) secHemat.style.display = 'none';
-        try { this.renderClinicalCalendarAndScheduleSuite(); } catch (e) { console.warn(e); }
+        this.switchStandarSubmode(this.standarActiveSubmode || 'calendar');
       } else if (this.plannerActiveMode === 'hemat') {
         if (hub) hub.style.display = 'none';
         if (secStandar) secStandar.style.display = 'none';
@@ -11529,7 +11529,7 @@ class NutriVisionApp {
     }
   }
 
-  openMealPlannerMode(mode = 'standar') {
+  openMealPlannerMode(mode = 'standar', submode = null) {
     this.plannerActiveMode = mode;
 
     if (this.activeSection !== 'planner') {
@@ -11560,11 +11560,7 @@ class NutriVisionApp {
           window.mealPlanner.renderPlanner();
         }
       }
-      try {
-        this.renderClinicalCalendarAndScheduleSuite();
-      } catch (err) {
-        console.warn('Calendar suite render error:', err);
-      }
+      this.switchStandarSubmode(submode || this.standarActiveSubmode || 'calendar');
     } else {
       if (secStandar) secStandar.style.display = 'none';
       if (secHemat) secHemat.style.display = 'block';
@@ -11592,6 +11588,43 @@ class NutriVisionApp {
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  switchStandarSubmode(submode = 'calendar') {
+    this.standarActiveSubmode = submode;
+
+    const subviewCal = document.getElementById('standar-subview-calendar');
+    const subviewSym = document.getElementById('standar-subview-symptom');
+    const btnCal = document.getElementById('btn-submode-calendar');
+    const btnSym = document.getElementById('btn-submode-symptom');
+
+    if (submode === 'calendar') {
+      if (subviewCal) subviewCal.style.display = 'block';
+      if (subviewSym) subviewSym.style.display = 'none';
+      if (btnCal) btnCal.classList.add('active');
+      if (btnSym) btnSym.classList.remove('active');
+      try {
+        this.renderClinicalCalendarAndScheduleSuite();
+      } catch (err) {
+        console.warn('Calendar suite render error:', err);
+      }
+    } else {
+      if (subviewCal) subviewCal.style.display = 'none';
+      if (subviewSym) subviewSym.style.display = 'block';
+      if (btnCal) btnCal.classList.remove('active');
+      if (btnSym) btnSym.classList.add('active');
+      if (window.mealPlanner && typeof window.mealPlanner.renderRestrictionsUI === 'function') {
+        try {
+          window.mealPlanner.renderRestrictionsUI();
+        } catch (err) {
+          console.warn('Restrictions UI render error:', err);
+        }
+      }
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   // =========================================================================
