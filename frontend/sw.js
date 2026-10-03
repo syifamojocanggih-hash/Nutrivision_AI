@@ -1,5 +1,5 @@
 // NutriVision AI Service Worker
-const CACHE_NAME = 'nutrivision-v1.4.2';
+const CACHE_NAME = 'nutrivision-v1.3.9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -19,22 +19,17 @@ const ASSETS_TO_CACHE = [
   './js/iconify-icon.min.js',
   './js/supabase.min.js',
   './js/supabase-config.js',
-  './js/db.js',
-  './js/api-client.js',
-  './js/bappenas-api.js',
   './js/data.js',
   './js/cv-engine.js',
   './js/camera.js',
   './js/symptom_filter_agent.js',
   './js/planner.js',
-  './js/budget_planner.js',
   './js/progress.js',
   './js/community.js',
   './js/caregiver.js',
-  './js/i18n.js',
   './js/admin_validator.js',
-  './js/food_clinical_validator.js',
-  './js/active-learning-collector.js',
+  './js/db.js',
+  './js/i18n.js',
   './js/app.js',
   './icons/icon.svg',
   './icons/icon-192.png',
@@ -50,7 +45,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW v1.4.2] Pre-caching offline assets');
+      console.log('[SW] Pre-caching offline assets');
       return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
         console.warn('[SW] Caching warning (some non-critical assets might fail on first run):', err);
       });
@@ -64,7 +59,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keyList.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[SW] Purging old cache version:', key);
+            console.log('[SW] Removing old cache:', key);
             return caches.delete(key);
           }
         })
@@ -74,40 +69,14 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Navigation or asset request strategy: Stale-While-Revalidate or Network-first with Cache fallback
   if (event.request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
-
-  // Network-First for HTML documents and scripts to prevent stale client cache lock
-  const isDocument = event.request.mode === 'navigate' || 
-                     event.request.destination === 'document' || 
-                     url.pathname.endsWith('.html') || 
-                     url.pathname === '/';
-  const isScript = event.request.destination === 'script' || url.pathname.endsWith('.js');
-
-  if (isDocument || isScript) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Cache-First for static assets (images, fonts, stylesheets) with background update
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
@@ -115,7 +84,10 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse);
+        .catch((err) => {
+          console.log('[SW] Network failed, serving cached fallback if available:', err);
+          return cachedResponse;
+        });
 
       return cachedResponse || fetchPromise;
     })

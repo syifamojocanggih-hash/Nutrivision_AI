@@ -10,7 +10,7 @@ class NutriVisionBudgetPlanner {
     this.activeWeek = 1;        // Minggu ke-1 (untuk tampilan 14/30 hari)
     this.preference = 'seimbang'; // 'seimbang', 'tinggi_protein', 'tekstur_lunak'
     this.plan = [];             // Data menu per hari [ { day, dailyBudget, breakfast, lunch, dinner, totalCost, totalProt, totalCals } ]
-    this.isPlanGenerated = true; // Rekomendasi menu pangan lokal aktif secara default agar tidak kosong
+    this.isPlanGenerated = false; // Status awal kosong: tunggu input & klik Perbarui
     
     // Basis Data Menu Pangan Lokal Bergizi & Terjangkau
     this.mealPool = {
@@ -391,23 +391,25 @@ class NutriVisionBudgetPlanner {
 
   init() {
     this.bindInputs();
-    if (window.app?.userProfile?.budget) {
-      if (window.app.userProfile.budget.budgetAmount) this.budgetAmount = window.app.userProfile.budget.budgetAmount;
-      if (window.app.userProfile.budget.durationDays) this.durationDays = window.app.userProfile.budget.durationDays;
-      if (window.app.userProfile.budget.preference) this.preference = window.app.userProfile.budget.preference;
-    }
-
-    if (typeof this.budgetAmount !== 'number' || isNaN(this.budgetAmount) || this.budgetAmount < 15000) {
-      this.budgetAmount = 200000;
-    }
-    if (typeof this.durationDays !== 'number' || isNaN(this.durationDays) || (this.durationDays !== 7 && this.durationDays !== 30)) {
-      this.durationDays = 7;
-    }
+    const isDemo = Boolean(window.app?.userProfile?.isDemo);
+    let savedPlan = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        savedPlan = localStorage.getItem('nutrivision_budget_generated');
+      }
+    } catch(e) {}
 
     const inputAmount = document.getElementById('budget-input-amount');
-    this.isPlanGenerated = true;
-    if (inputAmount && (!inputAmount.value || inputAmount.value.trim() === '')) {
-      inputAmount.value = this.formatRupiah(this.budgetAmount);
+    if (isDemo || savedPlan === 'true') {
+      this.isPlanGenerated = true;
+      if (inputAmount && !inputAmount.value) {
+        inputAmount.value = this.formatRupiah(this.budgetAmount);
+      }
+    } else {
+      this.isPlanGenerated = false;
+      if (inputAmount) {
+        inputAmount.value = '';
+      }
     }
     this.generatePlan();
     this.render();
@@ -1104,18 +1106,21 @@ class NutriVisionBudgetPlanner {
   render() {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
 
-    // 0. Enforce active content visibility (never show empty blank state)
+    // 0. Toggle empty state vs active content visibility
     const emptyBox = document.getElementById('budget-empty-state');
     const activeContent = document.getElementById('budget-active-content');
     const footerBox = document.getElementById('budget-clean-footer');
 
-    this.isPlanGenerated = true;
-    if (emptyBox) emptyBox.style.display = 'none';
-    if (activeContent) activeContent.style.display = 'block';
-    if (footerBox) footerBox.style.display = 'flex';
-
-    if (!this.plan || this.plan.length === 0) {
-      this.generatePlan();
+    if (emptyBox && activeContent) {
+      if (!this.isPlanGenerated) {
+        emptyBox.style.display = 'block';
+        activeContent.style.display = 'none';
+        if (footerBox) footerBox.style.display = 'none';
+      } else {
+        emptyBox.style.display = 'none';
+        activeContent.style.display = 'block';
+        if (footerBox) footerBox.style.display = 'flex';
+      }
     }
 
     const dayPlan = this.plan.find(p => p.dayNumber === this.activeDay) || this.plan[0];
@@ -1265,10 +1270,10 @@ class NutriVisionBudgetPlanner {
         : `Est. Cost: <b>${this.formatRupiah(dayPlan.totalDayCost)}</b> (Quota: <b>${this.formatRupiah(dayPlan.dailyBudget)}</b>) · Protein: <b>${dayPlan.totalDayProtein}g</b>`;
     }
 
-    // Render Sarapan, Siang, Malam with individual error isolation
-    try { this.renderMealCard('breakfast', dayPlan.breakfast, isId); } catch (e) { console.warn('renderMealCard breakfast error:', e); }
-    try { this.renderMealCard('lunch', dayPlan.lunch, isId); } catch (e) { console.warn('renderMealCard lunch error:', e); }
-    try { this.renderMealCard('dinner', dayPlan.dinner, isId); } catch (e) { console.warn('renderMealCard dinner error:', e); }
+    // Render Sarapan, Siang, Malam
+    this.renderMealCard('breakfast', dayPlan.breakfast, isId);
+    this.renderMealCard('lunch', dayPlan.lunch, isId);
+    this.renderMealCard('dinner', dayPlan.dinner, isId);
 
     // Update streak element for backwards compatibility with tests
     const streakText = document.getElementById('ov-card3-streak-text');
@@ -1276,28 +1281,14 @@ class NutriVisionBudgetPlanner {
       streakText.textContent = isId ? 'Streak: 0 Hari' : 'Streak: 0 Days';
     }
 
-    try {
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    } catch (e) {}
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
   }
 
   renderMealCard(mealType, meal, isId) {
     const cardEl = document.getElementById(`meal-card-${mealType}`);
     if (!cardEl) return;
-
-    if (!meal) {
-      const fallbackList = this.mealPool[mealType] || this.mealPool.breakfast || [];
-      meal = fallbackList[0] || {
-        name: 'Menu Bergizi Seimbang',
-        price: 8500,
-        calories: 360,
-        protein: 18,
-        desc: 'Porsi gizi seimbang untuk pemulihan.',
-        focus: 'Regenerasi Jaringan & Serat Alami'
-      };
-    }
 
     let timeStr = '07:00';
     let typeLabel = isId ? 'Sarapan' : 'Breakfast';
@@ -1363,16 +1354,5 @@ class NutriVisionBudgetPlanner {
   }
 }
 
-// Inisialisasi global & auto-init saat DOM siap
+// Inisialisasi global
 window.budgetPlanner = new NutriVisionBudgetPlanner();
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    if (window.budgetPlanner && (!window.budgetPlanner.plan || !window.budgetPlanner.plan.length)) {
-      window.budgetPlanner.init();
-    }
-  });
-} else {
-  if (window.budgetPlanner && (!window.budgetPlanner.plan || !window.budgetPlanner.plan.length)) {
-    window.budgetPlanner.init();
-  }
-}
