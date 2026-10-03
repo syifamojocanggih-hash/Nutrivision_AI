@@ -2175,141 +2175,94 @@
             </button>
           </div>
 
-          <!-- 2 TOMBOL PEMISAH UTAMA (KALENDER SIKLUS vs SYMPTOM-AWARE) -->
-          <div class="standar-submode-toggle-card">
-            <div class="standar-submode-grid">
-              <!-- Tombol 1: Kalender Siklus -->
-              <button type="button" class="standar-submode-btn active" id="btn-submode-calendar" onclick="app.switchStandarSubmode('calendar')">
-                <div class="submode-icon-circle icon-cal">
-                  <i data-lucide="calendar"></i>
-                </div>
-                <div class="submode-text-group">
-                  <div class="submode-title-row">
-                    <span class="submode-title">1. Kalender Siklus &amp; Jadwal</span>
-                    <span class="submode-active-pill pill-cal"><i data-lucide="check"></i> Aktif</span>
-                  </div>
-                  <p class="submode-desc">Jadwal makan per jam (Sarapan, Siang, Malam), kalender harian, &amp; target 3 bulan.</p>
-                </div>
-              </button>
+          <!-- Symptom-Aware Filter on Dedicated Planner -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-head symptom-modern-head">
+            <div class="card-title-group">
+              <h2 class="symptom-modern-title" data-i18n="plan_filter_title">Gejala Fisiologis Pasien</h2>
+              <div class="card-subtitle symptom-modern-subtitle" data-i18n="plan_filter_sub">Pilih gejala yang dialami untuk penyesuaian otomatis tekstur &amp; keamanan makanan.</div>
+            </div>
+            <span class="symptom-active-badge" id="symptom-active-count-badge">3 aktif</span>
+          </div>
 
-              <!-- Tombol 2: Symptom Aware -->
-              <button type="button" class="standar-submode-btn" id="btn-submode-symptom" onclick="app.switchStandarSubmode('symptom')">
-                <div class="submode-icon-circle icon-sym">
-                  <i data-lucide="shield-alert"></i>
+          <div class="symptom-chip-grid" id="planner-symptom-chips">
+            <button type="button" class="symptom-chip active" data-symptom="dysphagia"
+              onclick="mealPlanner.toggleSymptom('dysphagia', this);">
+              <span class="symptom-chip-icon">✓</span> <span data-i18n="symp_dysphagia">Sulit Menelan (Disfagia)</span>
+            </button>
+            <button type="button" class="symptom-chip active" data-symptom="nausea"
+              onclick="mealPlanner.toggleSymptom('nausea', this);">
+              <span class="symptom-chip-icon">✓</span> <span data-i18n="symp_nausea">Mual (Nausea)</span>
+            </button>
+            <button type="button" class="symptom-chip" data-symptom="gerd"
+              onclick="mealPlanner.toggleSymptom('gerd', this);">
+              <span class="symptom-chip-icon">+</span> <span data-i18n="symp_gerd">GERD / Asam Lambung</span>
+            </button>
+            <button type="button" class="symptom-chip" data-symptom="diarrhea"
+              onclick="mealPlanner.toggleSymptom('diarrhea', this);">
+              <span class="symptom-chip-icon">+</span> <span data-i18n="symp_diarrhea">Diare</span>
+            </button>
+            <button type="button" class="symptom-chip active" data-symptom="constipation"
+              onclick="mealPlanner.toggleSymptom('constipation', this);">
+              <span class="symptom-chip-icon">✓</span> <span data-i18n="symp_constipation">Konstipasi</span>
+            </button>
+            <button type="button" class="symptom-chip" data-symptom="low_appetite"
+              onclick="mealPlanner.toggleSymptom('low_appetite', this);">
+              <span class="symptom-chip-icon">+</span> <span data-i18n="symp_low_appetite">Nafsu Makan Rendah</span>
+            </button>
+          </div>
+
+          <!-- Symptom-Aware Dietary Restrictions & Allergies Section -->
+          <div class="symptom-restrictions-card" id="symptom-restrictions-section">
+            <div class="symptom-restr-head">
+              <div class="symptom-restr-title-wrap">
+                <div class="symptom-restr-title-row">
+                  <svg class="symptom-restr-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                  </svg>
+                  <h3 class="symptom-restr-title" data-i18n="plan_restr_title">Daftar Pantangan &amp; Alergi Makanan</h3>
+                  <span class="symptom-restr-count-badge" id="symptom-restr-count-badge">0 pantangan</span>
                 </div>
-                <div class="submode-text-group">
-                  <div class="submode-title-row">
-                    <span class="submode-title">2. Filter Gejala &amp; Pantangan</span>
-                    <span class="submode-active-pill pill-sym"><i data-lucide="check"></i> Aktif</span>
-                  </div>
-                  <p class="submode-desc">Penyesuaian keluhan disfagia, mual, GERD &amp; proteksi otomatis alergi makanan.</p>
-                </div>
+                <p class="symptom-restr-sub" data-i18n="plan_restr_sub">Tambah atau kurangi pantangan personal secara langsung tanpa perlu mengulang kuis diagnosa dari awal.</p>
+              </div>
+            </div>
+
+            <!-- Input bar -->
+            <div class="symptom-restr-input-row">
+              <div class="symptom-restr-input-wrap">
+                <input type="text" id="symptom-restriction-input" class="symptom-restr-input"
+                  placeholder="Ketik pantangan (cth: Udang, Telur, Gluten, Santan, Kacang)..."
+                  data-i18n-placeholder="plan_restr_placeholder"
+                  onkeydown="if(event.key === 'Enter') { event.preventDefault(); mealPlanner.addCustomRestrictionFromInput(); }">
+              </div>
+              <button type="button" class="btn-add-restriction" id="btn-add-symptom-restriction" onclick="mealPlanner.addCustomRestrictionFromInput();">
+                <span class="btn-icon">+</span> <span data-i18n="plan_restr_add_btn">Tambah</span>
               </button>
+            </div>
+
+            <!-- Quick suggestion chips -->
+            <div class="symptom-restr-quick-wrap">
+              <span class="symptom-restr-quick-lbl" data-i18n="plan_restr_quick_title">Pilihan Cepat:</span>
+              <div class="symptom-restr-quick-chips" id="symptom-restr-quick-list">
+                <!-- Dynamically bound by mealPlanner -->
+              </div>
+            </div>
+
+            <!-- Active Restrictions List -->
+            <div class="symptom-restr-active-box" id="symptom-restr-active-box">
+              <!-- Dynamically populated by mealPlanner.renderRestrictionsUI() -->
             </div>
           </div>
 
-          <!-- SUB-VIEW 1: SYMPTOM-AWARE & PANTANGAN -->
-          <div id="standar-subview-symptom" class="standar-subview" style="display:none;">
-            <!-- Symptom-Aware Filter on Dedicated Planner -->
-            <div class="card" style="margin-bottom:20px;">
-              <div class="card-head symptom-modern-head">
-                <div class="card-title-group">
-                  <h2 class="symptom-modern-title" data-i18n="plan_filter_title">Gejala Fisiologis Pasien</h2>
-                  <div class="card-subtitle symptom-modern-subtitle" data-i18n="plan_filter_sub">Pilih gejala yang dialami untuk penyesuaian otomatis tekstur &amp; keamanan makanan.</div>
-                </div>
-                <span class="symptom-active-badge" id="symptom-active-count-badge">3 aktif</span>
-              </div>
+          <div class="symptom-result-container" id="symptom-result-box" style="margin-top:16px;">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
 
-              <div class="symptom-chip-grid" id="planner-symptom-chips">
-                <button type="button" class="symptom-chip active" data-symptom="dysphagia"
-                  onclick="mealPlanner.toggleSymptom('dysphagia', this);">
-                  <span class="symptom-chip-icon">✓</span> <span data-i18n="symp_dysphagia">Sulit Menelan (Disfagia)</span>
-                </button>
-                <button type="button" class="symptom-chip active" data-symptom="nausea"
-                  onclick="mealPlanner.toggleSymptom('nausea', this);">
-                  <span class="symptom-chip-icon">✓</span> <span data-i18n="symp_nausea">Mual (Nausea)</span>
-                </button>
-                <button type="button" class="symptom-chip" data-symptom="gerd"
-                  onclick="mealPlanner.toggleSymptom('gerd', this);">
-                  <span class="symptom-chip-icon">+</span> <span data-i18n="symp_gerd">GERD / Asam Lambung</span>
-                </button>
-                <button type="button" class="symptom-chip" data-symptom="diarrhea"
-                  onclick="mealPlanner.toggleSymptom('diarrhea', this);">
-                  <span class="symptom-chip-icon">+</span> <span data-i18n="symp_diarrhea">Diare</span>
-                </button>
-                <button type="button" class="symptom-chip active" data-symptom="constipation"
-                  onclick="mealPlanner.toggleSymptom('constipation', this);">
-                  <span class="symptom-chip-icon">✓</span> <span data-i18n="symp_constipation">Konstipasi</span>
-                </button>
-                <button type="button" class="symptom-chip" data-symptom="low_appetite"
-                  onclick="mealPlanner.toggleSymptom('low_appetite', this);">
-                  <span class="symptom-chip-icon">+</span> <span data-i18n="symp_low_appetite">Nafsu Makan Rendah</span>
-                </button>
-              </div>
-
-              <!-- Symptom-Aware Dietary Restrictions & Allergies Section -->
-              <div class="symptom-restrictions-card" id="symptom-restrictions-section">
-                <div class="symptom-restr-head">
-                  <div class="symptom-restr-title-wrap">
-                    <div class="symptom-restr-title-row">
-                      <svg class="symptom-restr-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <line x1="9" y1="9" x2="15" y2="15"/>
-                        <line x1="15" y1="9" x2="9" y2="15"/>
-                      </svg>
-                      <h3 class="symptom-restr-title" data-i18n="plan_restr_title">Daftar Pantangan &amp; Alergi Makanan</h3>
-                      <span class="symptom-restr-count-badge" id="symptom-restr-count-badge">0 pantangan</span>
-                    </div>
-                    <p class="symptom-restr-sub" data-i18n="plan_restr_sub">Tambah atau kurangi pantangan personal secara langsung tanpa perlu mengulang kuis diagnosa dari awal.</p>
-                  </div>
-                </div>
-
-                <!-- Input bar -->
-                <div class="symptom-restr-input-row">
-                  <div class="symptom-restr-input-wrap">
-                    <input type="text" id="symptom-restriction-input" class="symptom-restr-input"
-                      placeholder="Ketik pantangan (cth: Udang, Telur, Gluten, Santan, Kacang)..."
-                      data-i18n-placeholder="plan_restr_placeholder"
-                      onkeydown="if(event.key === 'Enter') { event.preventDefault(); mealPlanner.addCustomRestrictionFromInput(); }">
-                  </div>
-                  <button type="button" class="btn-add-restriction" id="btn-add-symptom-restriction" onclick="mealPlanner.addCustomRestrictionFromInput();">
-                    <span class="btn-icon">+</span> <span data-i18n="plan_restr_add_btn">Tambah</span>
-                  </button>
-                </div>
-
-                <!-- Quick suggestion chips -->
-                <div class="symptom-restr-quick-wrap">
-                  <span class="symptom-restr-quick-lbl" data-i18n="plan_restr_quick_title">Pilihan Cepat:</span>
-                  <div class="symptom-restr-quick-chips" id="symptom-restr-quick-list">
-                    <!-- Dynamically bound by mealPlanner -->
-                  </div>
-                </div>
-
-                <!-- Active Restrictions List -->
-                <div class="symptom-restr-active-box" id="symptom-restr-active-box">
-                  <!-- Dynamically populated by mealPlanner.renderRestrictionsUI() -->
-                </div>
-              </div>
-
-              <div class="symptom-result-container" id="symptom-result-box" style="margin-top:16px;">
-                <!-- Populated dynamically via JS -->
-              </div>
-
-              <!-- Quick Next Button to Calendar -->
-              <div style="text-align:center;padding:16px 0 6px;margin-top:16px;border-top:1px dashed #E2E8F0;">
-                <button type="button" class="btn-subview-transition" onclick="app.switchStandarSubmode('calendar')"
-                  style="display:inline-flex;align-items:center;gap:8px;background:#233917;color:#FFFFFF;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;box-shadow:0 3px 10px rgba(35,57,23,0.15);">
-                  <span>Lihat Jadwal di Kalender Siklus</span>
-                  <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
-                </button>
-              </div>
-            </div>
-          </div> <!-- Close #standar-subview-symptom -->
-
-          <!-- SUB-VIEW 2: KALENDER SIKLUS PEMULIHAN -->
-          <div id="standar-subview-calendar" class="standar-subview">
-            <!-- Kalender Siklus Pemulihan & Jadwal Nutrisi Pasien (Clinical Calendar & Schedule Suite) -->
-            <div class="card cal-suite-main-card" id="planner-calendar-card" style="margin-bottom:24px;border:none;background:transparent;box-shadow:none;padding:0;">
+        <!-- Kalender Siklus Pemulihan & Jadwal Nutrisi Pasien (Clinical Calendar & Schedule Suite) -->
+        <div class="card cal-suite-main-card" id="planner-calendar-card" style="margin-bottom:24px;border:none;background:transparent;box-shadow:none;padding:0;">
           <!-- 1. Header & Condition Switcher -->
           <div class="cal-suite-top-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
             <div class="cal-suite-title-group">
@@ -2453,7 +2406,7 @@
           <div class="cal-disclaimer-footer" style="text-align:center;padding:16px 8px 6px;font-size:11.5px;color:#94A3B8;" data-i18n="plan_clinical_note_sub">
             Post-Surgery Patient Nutrition Schedule • Aligned with ESPEN &amp; Clinical Guidelines
           </div>
-        </div> <!-- Close #standar-subview-calendar -->
+        </div>
       </div> <!-- Close #planner-section-standar -->
 
       <!-- =========================================================================
