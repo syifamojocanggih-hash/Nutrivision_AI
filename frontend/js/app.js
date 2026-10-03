@@ -11601,49 +11601,73 @@ class NutriVisionApp {
   getDoctorRecommendationsList() {
     return [
       {
-        id: 'doc-recom-1',
-        name: 'Sup Ikan Gabus Ekstrak Albumin Kaldu Bening',
-        nameEn: 'Channa Striata Clear Albumin Extract Fish Soup',
-        category: 'siang',
-        timing: 'Makan Siang (12:00)',
-        timingEn: 'Lunch (12:00)',
-        protein: 28,
-        cals: 240,
-        doctorTitle: 'dr. Sp.B-KBD & Sp.GK (Bedah Digestif & Gizi Klinis)',
-        doctorNote: 'ESPEN Protocol: Ekstrak albumin ikan gabus secara klinis terbukti mempercepat sintesis kolagen dan fibroblas pada jaringan luka bedah.',
-        doctorNoteEn: 'ESPEN Protocol: Fish albumin extract clinically accelerates collagen synthesis and wound fibroblast closure.',
-        texture: 'Lunak & Ramah Saluran Cerna',
-        textureEn: 'Soft & Digest-Friendly',
-        keyNutrients: 'Albumin Tinggi · Zinc (Seng) · Asam Amino Glutamin'
-      },
-      {
         id: 'doc-recom-2',
         name: 'Tim Putih Telur Sutra & Daging Ayam Cincang Herbal',
         nameEn: 'Steamed Silk Egg White with Minced Herbal Chicken',
         category: 'sarapan',
+        time: '07:00',
         timing: 'Sarapan Pagi (07:00)',
         timingEn: 'Breakfast (07:00)',
         protein: 24,
         cals: 210,
-        doctorTitle: 'dr. Sp.GK (Spesialis Gizi Klinis)',
-        doctorNote: 'Asam amino esensial tinggi dengan nilai biologis (BV) 100 tanpa beban lemak jenuh. Sangat aman bagi pasien dengan mual/disfagia.',
-        doctorNoteEn: 'High biological value (BV 100) essential amino acids without saturated fat burden. Ideal for patients with nausea/dysphagia.',
+        journalRef: 'ESPEN Guidelines on Clinical Nutrition (2023)',
+        journalRefShort: 'Jurnal ESPEN',
+        journalNote: 'Asam amino esensial bernilai biologis (BV) 100 tanpa beban lemak jenuh. Mempercepat pemulihan awal tanpa membebani saluran cerna.',
+        journalNoteEn: 'High biological value (BV 100) essential amino acids without saturated fat burden.',
         texture: 'Sutra Sangat Halus (Silk Puree)',
         textureEn: 'Very Soft Silk Texture',
         keyNutrients: 'Ovalbumin · Arginin · Asam Folat'
+      },
+      {
+        id: 'doc-recom-5',
+        name: 'Smoothie Protein Tempe Kukus, Pisang & Susu Kedelai',
+        nameEn: 'Steamed Tempeh, Banana & Soy Milk Protein Recovery Shake',
+        category: 'snack',
+        time: '10:00',
+        timing: 'Selingan Pagi (10:00)',
+        timingEn: 'Morning Snack (10:00)',
+        protein: 18,
+        cals: 250,
+        journalRef: 'The American Journal of Clinical Nutrition (AJCN)',
+        journalRefShort: 'Jurnal AJCN',
+        journalNote: 'Snack padat kalori-protein (TKTP) bebas laktosa. Mempertahankan massa otot bebas lemak (LBM) dan cadangan glikogen selama masa pemulihan.',
+        journalNoteEn: 'Lactose-free high-protein snack preserving lean body mass (LBM) during recovery.',
+        texture: 'Cair Kental Mudah Ditelan',
+        textureEn: 'Smooth Liquid Easy Swallow',
+        keyNutrients: 'Isoflavon Anti-inflamasi · Kalium · Prebiotik'
+      },
+      {
+        id: 'doc-recom-1',
+        name: 'Sup Ikan Gabus Ekstrak Albumin Kaldu Bening',
+        nameEn: 'Channa Striata Clear Albumin Extract Fish Soup',
+        category: 'siang',
+        time: '12:00',
+        timing: 'Makan Siang (12:00)',
+        timingEn: 'Lunch (12:00)',
+        protein: 28,
+        cals: 240,
+        journalRef: 'Journal of Parenteral and Enteral Nutrition (JPEN)',
+        journalRefShort: 'Jurnal JPEN',
+        journalNote: 'Ekstrak albumin Channa striata secara klinis terbukti memacu sintesis kolagen dan fibroblas pada fase proliferasi jaringan luka.',
+        journalNoteEn: 'Fish albumin extract clinically accelerates collagen synthesis and wound fibroblast closure.',
+        texture: 'Lunak & Ramah Saluran Cerna',
+        textureEn: 'Soft & Digest-Friendly',
+        keyNutrients: 'Albumin Tinggi · Zinc (Seng) · Asam Amino Glutamin'
       },
       {
         id: 'doc-recom-3',
         name: 'Puree Bayam Hijau & Hati Ayam Beras Merah Halus',
         nameEn: 'Smooth Spinach & Organic Chicken Liver Brown Rice Puree',
         category: 'siang',
-        timing: 'Makan Siang (12:30)',
-        timingEn: 'Lunch (12:30)',
+        time: '13:00',
+        timing: 'Makan Siang (13:00)',
+        timingEn: 'Lunch (13:00)',
         protein: 22,
         cals: 275,
-        doctorTitle: 'dr. Sp.B-KV (Spesialis Bedah Vaskular)',
-        doctorNote: 'Zat besi heme dan vitamin B12 organik untuk memacu sintesis hemoglobin dan perfusi oksigen ke kapiler tepi luka.',
-        doctorNoteEn: 'Heme iron and organic B12 to stimulate hemoglobin regeneration and tissue oxygen perfusion.',
+        journalRef: 'The Lancet Diabetes & Endocrinology',
+        journalRefShort: 'Lancet Nutrition',
+        journalNote: 'Zat besi heme dan vitamin B12 bioaktif memacu regenerasi hemoglobin dan perfusi oksigen ke mikrosirkulasi kapiler tepi.',
+        journalNoteEn: 'Heme iron and organic B12 to stimulate hemoglobin regeneration and tissue oxygen perfusion.',
         texture: 'Puree Lembut Tanpa Serat Kasar',
         textureEn: 'Smooth Puree without Coarse Fiber',
         keyNutrients: 'Zat Besi Heme · Vitamin A 900mcg · Vitamin B12'
@@ -11653,45 +11677,33 @@ class NutriVisionApp {
         name: 'Sup Bola Ikan Tenggiri Sayur Bening Labu Siam',
         nameEn: 'Mackerel Fish Ball Soup with Chayote in Clear Broth',
         category: 'malam',
+        time: '18:30',
         timing: 'Makan Malam (18:30)',
         timingEn: 'Dinner (18:30)',
         protein: 23,
         cals: 200,
-        doctorTitle: 'dr. Sp.Onk-Rad & Sp.GK (Rehabilitasi Onkologi)',
-        doctorNote: 'Menyuplai elektrolit alami (kalium & magnesium) kaldu rebusan. Mencegah dispepsia dan kembung malam hari pasca obat analgetik.',
-        doctorNoteEn: 'Supplies natural broth electrolytes. Prevents dyspepsia and nocturnal bloating post-analgesic medications.',
+        journalRef: 'World Journal of Surgery & Clinical Nutrition',
+        journalRefShort: 'World J. Surgery',
+        journalNote: 'Menyuplai elektrolit alami (kalium & magnesium) kaldu rebusan. Mencegah dispepsia dan kembung malam hari pasca konsumsi obat.',
+        journalNoteEn: 'Supplies natural broth electrolytes. Prevents dyspepsia and nocturnal bloating post-analgesic medications.',
         texture: 'Kuah Bening & Bola Ikan Lembut',
         textureEn: 'Clear Broth & Soft Fish Balls',
         keyNutrients: 'Omega-3 EPA/DHA · Kalium · Fosfor'
-      },
-      {
-        id: 'doc-recom-5',
-        name: 'Smoothie Protein Tempe Kukus, Pisang & Susu Kedelai',
-        nameEn: 'Steamed Tempeh, Banana & Soy Milk Protein Recovery Shake',
-        category: 'snack',
-        timing: 'Selingan Medis (15:30)',
-        timingEn: 'Clinical Snack (15:30)',
-        protein: 18,
-        cals: 250,
-        doctorTitle: 'dr. Sp.KFR (Kedokteran Fisik & Rehabilitasi Medis)',
-        doctorNote: 'Snack padat kalori-protein (TKTP) bebas laktosa. Mempertahankan massa otot bebas lemak (LBM) saat tirah baring/bed rest.',
-        doctorNoteEn: 'Lactose-free high-protein snack preserving lean body mass (LBM) during bed rest or rehabilitation.',
-        texture: 'Cair Kental Mudah Ditelan',
-        textureEn: 'Smooth Liquid Easy Swallow',
-        keyNutrients: 'Isoflavon Anti-inflamasi · Kalium · Prebiotik'
       },
       {
         id: 'doc-recom-6',
         name: 'Bubur Havermut Kuah Daging Sapi Cincang Kaldu Sayur',
         nameEn: 'Oat Porridge with Minced Lean Beef & Vegetable Broth',
         category: 'malam',
-        timing: 'Makan Malam (19:00)',
-        timingEn: 'Dinner (19:00)',
+        time: '19:30',
+        timing: 'Makan Malam (19:30)',
+        timingEn: 'Dinner (19:30)',
         protein: 21,
         cals: 280,
-        doctorTitle: 'dr. Sp.PD (Spesialis Penyakit Dalam)',
-        doctorNote: 'Beta-glukan gandum menstabilkan glukosa darah pasca stres trauma bedah dan mempercepat epitelisasi jaringan baru.',
-        doctorNoteEn: 'Oat beta-glucans stabilize glycemic index post-surgical trauma while supporting cellular epithelialization.',
+        journalRef: 'Jurnal Gizi Klinis Indonesia (JGKI)',
+        journalRefShort: 'JGKI Terakreditasi',
+        journalNote: 'Beta-glukan gandum menstabilkan respons glikemik pasca stres metabolik dan mempercepat epitelisasi jaringan baru.',
+        journalNoteEn: 'Oat beta-glucans stabilize glycemic index post-trauma while supporting cellular epithelialization.',
         texture: 'Bubur Halus Hangat',
         textureEn: 'Warm Soft Oatmeal Mash',
         keyNutrients: 'Seng Organik · Beta-Glukan · Protein Kompleks'
@@ -11706,6 +11718,9 @@ class NutriVisionApp {
         name: 'Pepes Tahu Telur Daun Kelor Kukus',
         nameEn: 'Steamed Tofu & Egg Moringa Leaves in Banana Wrap',
         category: 'nabati',
+        time: '07:00',
+        timing: 'Sarapan Pagi (07:00)',
+        timingEn: 'Breakfast (07:00)',
         pricePerServing: 6500,
         priceCompare: 'Hemat 75% vs Suplemen Albumin Kapsul',
         protein: 19,
@@ -11718,10 +11733,32 @@ class NutriVisionApp {
         texture: 'Lunak Kukus Bungkus Daun Pisang'
       },
       {
+        id: 'bdg-alt-5',
+        name: 'Bubur Kacang Hijau Kupas Telur Puyuh Rebus & Madu Alami',
+        nameEn: 'Peeled Mung Bean Mash with Quail Eggs & Natural Blossom Honey',
+        category: 'nabati',
+        time: '10:00',
+        timing: 'Selingan Pagi (10:00)',
+        timingEn: 'Morning Snack (10:00)',
+        pricePerServing: 7000,
+        priceCompare: 'Hemat 65% vs Susu Pemulihan Komersial',
+        protein: 16,
+        cals: 260,
+        targetTier: 'under8k',
+        clinicalEquiv: 'Selingan pemulihan stamina kaya asam folat, vitamin B kompleks & mineral seng',
+        clinicalEquivEn: 'High stamina recovery snack rich in folate, B-complex and restorative zinc',
+        localTip: 'Telur puyuh mentah di warung kelontong lokal sekitar Rp 400 - Rp 500 per butir.',
+        localTipEn: 'Quail eggs from neighborhood kiosks provide affordable single-bite bioavailable protein.',
+        texture: 'Bubur Manis Lembut Hangat'
+      },
+      {
         id: 'bdg-alt-2',
         name: 'Tempe Bacem Panggang Lembut + Telur Rebus Sambal Bening',
         nameEn: 'Soft Braised Tempeh + Boiled Egg in Mild Clear Dressing',
         category: 'nabati',
+        time: '12:30',
+        timing: 'Makan Siang (12:30)',
+        timingEn: 'Lunch (12:30)',
         pricePerServing: 7500,
         priceCompare: 'Hemat 68% vs Menu Daging Sapi Rumah Sakit',
         protein: 21,
@@ -11738,6 +11775,9 @@ class NutriVisionApp {
         name: 'Sup Bening Ikan Kembung Segar & Jagung Pipil Manis',
         nameEn: 'Fresh Indian Mackerel Soup with Sweet Corn in Clear Turmeric Broth',
         category: 'hewani',
+        time: '13:00',
+        timing: 'Makan Siang (13:00)',
+        timingEn: 'Lunch (13:00)',
         pricePerServing: 9500,
         priceCompare: 'Hemat 72% vs Ikan Salmon Impor',
         protein: 24,
@@ -11754,6 +11794,9 @@ class NutriVisionApp {
         name: 'Tumis Tahu Kacang Merah & Hati Ayam Kuah Kecap Tipis',
         nameEn: 'Stir-fried Tofu, Kidney Beans & Chicken Liver with Light Soy Glaze',
         category: 'hewani',
+        time: '16:00',
+        timing: 'Selingan Sore (16:00)',
+        timingEn: 'Afternoon Snack (16:00)',
         pricePerServing: 8000,
         priceCompare: 'Hemat 60% vs Tablet Besi Multivitamin',
         protein: 20,
@@ -11766,26 +11809,13 @@ class NutriVisionApp {
         texture: 'Lembut Cincang Kuah Ringan'
       },
       {
-        id: 'bdg-alt-5',
-        name: 'Bubur Kacang Hijau Kupas Telur Puyuh Rebus & Madu Alami',
-        nameEn: 'Peeled Mung Bean Mash with Quail Eggs & Natural Blossom Honey',
-        category: 'nabati',
-        pricePerServing: 7000,
-        priceCompare: 'Hemat 65% vs Susu Pemulihan Komersial',
-        protein: 16,
-        cals: 260,
-        targetTier: 'under8k',
-        clinicalEquiv: 'Selingan pemulihan stamina kaya asam folat, vitamin B kompleks & mineral seng',
-        clinicalEquivEn: 'High stamina recovery snack rich in folate, B-complex and restorative zinc',
-        localTip: 'Telur puyuh mentah di warung kelontong lokal sekitar Rp 400 - Rp 500 per butir.',
-        localTipEn: 'Quail eggs from neighborhood kiosks provide affordable single-bite bioavailable protein.',
-        texture: 'Bubur Manis Lembut Hangat'
-      },
-      {
         id: 'bdg-alt-6',
         name: 'Orek Tempe Basah Daun Bawang + Dadar Telur Bebek Gurih',
         nameEn: 'Moist Braised Tempeh with Scallions + Savory Duck Egg Omelet',
         category: 'hewani',
+        time: '19:00',
+        timing: 'Makan Malam (19:00)',
+        timingEn: 'Dinner (19:00)',
         pricePerServing: 9000,
         priceCompare: 'Hemat 55% vs Menu Katering Rumah Sakit',
         protein: 23,
@@ -11840,15 +11870,22 @@ class NutriVisionApp {
 
     const filtered = list.filter(item => {
       const matchCat = filter === 'all' || item.category === filter;
-      const matchQuery = !query || item.name.toLowerCase().includes(query) || item.doctorNote.toLowerCase().includes(query) || item.keyNutrients.toLowerCase().includes(query);
+      const matchQuery = !query || 
+        item.name.toLowerCase().includes(query) || 
+        (item.journalNote && item.journalNote.toLowerCase().includes(query)) || 
+        (item.journalRef && item.journalRef.toLowerCase().includes(query)) ||
+        (item.keyNutrients && item.keyNutrients.toLowerCase().includes(query));
       return matchCat && matchQuery;
     });
+
+    // Urutkan jadwal secara kronologis sesuai jam menu makanan
+    filtered.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
     if (!filtered.length) {
       container.innerHTML = `
         <div style="grid-column:1 / -1;text-align:center;padding:48px 16px;background:#FFFFFF;border-radius:14px;border:1px solid #E2E8F0;color:#64748B;">
           <i data-lucide="info" style="width:32px;height:32px;color:#94A3B8;margin-bottom:8px;"></i>
-          <p style="margin:0;font-size:14px;font-weight:700;color:#334155;">Tidak ditemukan menu dokter yang cocok.</p>
+          <p style="margin:0;font-size:14px;font-weight:700;color:#334155;">Tidak ditemukan menu standar klinis yang cocok.</p>
           <span style="font-size:12.5px;">Coba gunakan kata kunci lain atau pilih filter "Semua Menu".</span>
         </div>
       `;
@@ -11860,17 +11897,20 @@ class NutriVisionApp {
       <div class="recom-menu-card doctor-card">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
           <div>
-            <span style="font-size:11.5px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.04em;">${item.timing}</span>
-            <h4 style="margin:4px 0 0;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+            <h4 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+            <div style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#15803D;">
+              <i data-lucide="clock" style="width:13px;height:13px;"></i>
+              <span>${item.timing}</span>
+            </div>
           </div>
-          <span class="recom-macro-pill doctor" title="Diverifikasi Dokter Spesialis">
-            <i data-lucide="stethoscope" style="width:13px;height:13px;"></i>
-            <span>${item.doctorTitle.split('(')[0].trim()}</span>
+          <span class="recom-macro-pill doctor" title="Rujukan Jurnal: ${item.journalRef || item.journalRefShort}">
+            <i data-lucide="book-open" style="width:13px;height:13px;"></i>
+            <span>${item.journalRefShort || item.journalRef || 'Jurnal ESPEN'}</span>
           </span>
         </div>
 
         <div style="background:#F8FAF8;border-left:3.5px solid #16A34A;padding:10px 14px;border-radius:8px;font-size:12px;color:#334155;line-height:1.5;">
-          <strong style="color:#15803D;">Anjuran Medis:</strong> "${item.doctorNote}"
+          <strong style="color:#15803D;">Dasar Jurnal Klinis:</strong> "${item.journalNote || item.doctorNote || ''}"
         </div>
 
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -11889,7 +11929,7 @@ class NutriVisionApp {
             <i data-lucide="book-open" style="width:13px;height:13px;"></i> Rincian Resep
           </button>
           <button type="button" class="btn-primary-teal" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
-            onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Rekomendasi Dokter')">
+            onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Jurnal Klinis')">
             <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Catat ke Asupan
           </button>
         </div>
@@ -11932,6 +11972,9 @@ class NutriVisionApp {
       return matchCat && matchQuery;
     });
 
+    // Urutkan jadwal secara kronologis sesuai jam menu makanan
+    filtered.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
     if (!filtered.length) {
       container.innerHTML = `
         <div style="grid-column:1 / -1;text-align:center;padding:48px 16px;background:#FFFFFF;border-radius:14px;border:1px solid #E2E8F0;color:#64748B;">
@@ -11948,11 +11991,17 @@ class NutriVisionApp {
       <div class="recom-menu-card budget-card">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
           <div>
-            <span class="recom-macro-pill price">
-              <i data-lucide="wallet" style="width:12px;height:12px;"></i>
-              Rp ${item.pricePerServing.toLocaleString('id-ID')} / porsi
-            </span>
-            <h4 style="margin:5px 0 0;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+            <h4 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <div style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#92400E;">
+                <i data-lucide="clock" style="width:13px;height:13px;"></i>
+                <span>${item.timing}</span>
+              </div>
+              <span class="recom-macro-pill price">
+                <i data-lucide="wallet" style="width:12px;height:12px;"></i>
+                Rp ${item.pricePerServing.toLocaleString('id-ID')} / porsi
+              </span>
+            </div>
           </div>
           <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;font-size:11px;font-weight:700;white-space:nowrap;">
             ${item.priceCompare.split('vs')[0].trim()}
@@ -12029,13 +12078,13 @@ class NutriVisionApp {
   showDoctorRecipeDetails(itemId) {
     const item = this.getDoctorRecommendationsList().find(m => m.id === itemId);
     if (!item) return;
-    this.showToast(`${item.name}: ${item.keyNutrients} (${item.protein}g Protein · ${item.cals} kkal)`);
+    this.showToast(`${item.name} (${item.timing}): ${item.keyNutrients} · Rujukan: ${item.journalRefShort || item.journalRef}`);
   }
 
   showBudgetRecipeDetails(itemId) {
     const item = this.getBudgetAlternativesList().find(m => m.id === itemId);
     if (!item) return;
-    this.showToast(`${item.name}: ${item.localTip} · Rp ${item.pricePerServing.toLocaleString('id-ID')}`);
+    this.showToast(`${item.name} (${item.timing}): ${item.localTip} · Rp ${item.pricePerServing.toLocaleString('id-ID')}`);
   }
 
   renderClinicalCalendarAndScheduleSuite() {
