@@ -500,6 +500,7 @@
 
 
 @media (max-width: 820px) {
+
   /* Overlay: modal muncul di tengah (bukan di bawah) */
   #auth-modal.modal-overlay {
     align-items: center !important;
@@ -508,14 +509,16 @@
 
   /* Modal box: isi penuh lebar layar, tinggi fleksibel dengan scroll sendiri */
   .auth-split-modal {
-    display: flex !important;            /* Ganti grid → flex kolum tunggal */
+    display: flex !important;
+    /* Ganti grid → flex kolum tunggal */
     flex-direction: column !important;
     grid-template-columns: unset !important;
     width: 100% !important;
     max-width: 440px !important;
     max-height: 90vh !important;
     border-radius: 24px !important;
-    overflow: hidden !important;         /* Sembunyikan luapan luar */
+    overflow: hidden !important;
+    /* Sembunyikan luapan luar */
   }
 
   /* SEMBUNYIKAN panel kiri sepenuhnya di mobile — jimatkan ruang */
@@ -527,7 +530,8 @@
   .auth-split-form-panel {
     padding: 28px 20px 24px !important;
     flex: 1 1 auto !important;
-    overflow-y: auto !important;         /* Scroll ada DI DALAM panel form */
+    overflow-y: auto !important;
+    /* Scroll ada DI DALAM panel form */
     -webkit-overflow-scrolling: touch !important;
     max-height: 90vh !important;
   }
@@ -870,14 +874,17 @@
     padding: 16px !important;
     width: 96vw !important;
   }
+
   .scan-modal-grid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
+
   .scan-result-canvas-container,
   .camera-capture-viewport {
     height: 240px;
   }
+
   .camera-crosshair-box {
     width: 170px;
     height: 170px;
@@ -1094,9 +1101,21 @@
 }
 
 @keyframes consentShake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 .consent-error-shake {
@@ -1153,13 +1172,16 @@
 .quiz-modal-box::-webkit-scrollbar {
   width: 6px;
 }
+
 .quiz-modal-box::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .quiz-modal-box::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 6px;
 }
+
 .quiz-modal-box::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
@@ -1200,7 +1222,7 @@
   justify-content: center;
   transition: all 0.25s ease;
   flex-shrink: 0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
 }
 
 .bullet-info {
@@ -1299,6 +1321,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1514,7 +1537,7 @@
   transition: transform 0.2s ease;
 }
 
-.quiz-condition-dropdown:focus + .quiz-condition-arrow {
+.quiz-condition-dropdown:focus+.quiz-condition-arrow {
   transform: translateY(-50%) rotate(180deg);
   color: #233917;
 }
@@ -1768,19 +1791,34 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
 }
 
 .diag-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.diag-card-protein { border-color: #FECACA; background: #FEF2F2; }
-.diag-card-calories { border-color: #BBF7D0; background: #F0FDF4; }
-.diag-card-carbs { border-color: #FED7AA; background: #FFF7ED; }
-.diag-card-fat { border-color: #D9E1B2; background: #F4F7EC; }
+.diag-card-protein {
+  border-color: #FECACA;
+  background: #FEF2F2;
+}
+
+.diag-card-calories {
+  border-color: #BBF7D0;
+  background: #F0FDF4;
+}
+
+.diag-card-carbs {
+  border-color: #FED7AA;
+  background: #FFF7ED;
+}
+
+.diag-card-fat {
+  border-color: #D9E1B2;
+  background: #F4F7EC;
+}
 
 .diag-label {
   font-size: 10px;
@@ -1967,15 +2005,19 @@
     padding: 20px 18px !important;
     border-radius: 18px !important;
   }
+
   .onboard-stepper-bullets .bullet-info {
     display: none;
   }
+
   .quiz-options-grid {
     grid-template-columns: 1fr;
   }
+
   .diagnostic-summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .onboard-budget-tiers-grid {
     grid-template-columns: 1fr;
   }
@@ -2149,9 +2191,11 @@
   .plate-breakdown-items-grid {
     grid-template-columns: 1fr;
   }
+
   .plate-food-card {
     flex-direction: column;
   }
+
   .plate-food-thumb-box {
     width: 100%;
     height: 130px;
@@ -2217,10 +2261,12 @@
   body * {
     visibility: hidden !important;
   }
+
   #pdf-printable-report,
   #pdf-printable-report * {
     visibility: visible !important;
   }
+
   #pdf-printable-report {
     position: absolute !important;
     left: 0 !important;
@@ -2233,12 +2279,14 @@
     margin: 0 !important;
     background: #FFFFFF !important;
   }
+
   .modal-overlay {
     position: static !important;
     background: none !important;
     padding: 0 !important;
     display: block !important;
   }
+
   .pdf-preview-modal-box {
     border: none !important;
     box-shadow: none !important;
@@ -2248,6 +2296,7 @@
     height: auto !important;
     max-height: none !important;
   }
+
   .pdf-modal-header,
   .close-btn {
     display: none !important;
@@ -2286,6 +2335,7 @@
 #food-recipe-modal-content::-webkit-scrollbar {
   width: 5px;
 }
+
 #food-recipe-modal-content::-webkit-scrollbar-thumb {
   background: #CBD5E1;
   border-radius: 10px;
@@ -4544,130 +4594,137 @@
   .booster-modal-box {
     padding: 20px 16px;
   }
+
   .booster-baseline-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .booster-preset-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .booster-slider-cards-grid {
     grid-template-columns: 1fr;
   }
+
   .booster-bottom-summary-bar {
     flex-direction: column;
     align-items: stretch;
     gap: 14px;
   }
+
   .booster-bottom-summary-bar .right-actions {
     justify-content: space-between;
   }
-/* ==========================================================================
+
+  /* ==========================================================================
    RECOMMENDATION MENU DIRECTORY MODALS (DOCTOR & BUDGET ALTERNATIVES)
    ========================================================================== */
-.recommendation-modal-box {
-  max-width: 860px !important;
-  width: 95% !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-  border-radius: 20px !important;
-  padding: 24px !important;
-  background: var(--card) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25) !important;
-}
+  .recommendation-modal-box {
+    max-width: 860px !important;
+    width: 95% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    background: var(--card) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25) !important;
+  }
 
-.recom-pill-btn {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid #CBD5E1;
-  background: #FFFFFF;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
+  .recom-pill-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
 
-.recom-pill-btn:hover {
-  background: #F1F5F9;
-  border-color: #94A3B8;
-  color: #1E293B;
-}
+  .recom-pill-btn:hover {
+    background: #F1F5F9;
+    border-color: #94A3B8;
+    color: #1E293B;
+  }
 
-.recom-pill-btn.active {
-  background: #233917;
-  border-color: #233917;
-  color: #FFFFFF;
-}
+  .recom-pill-btn.active {
+    background: #233917;
+    border-color: #233917;
+    color: #FFFFFF;
+  }
 
-.recom-menu-card {
-  background: #FFFFFF;
-  border-radius: 26px;
-  padding: 22px 22px 20px;
-  border: 1px solid #DDD4B0;
-  box-shadow: 0 10px 30px rgba(28, 32, 14, 0.05);
-  transition: all 0.25s cubic-bezier(0.33, 1, 0.68, 1);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+  .recom-menu-card {
+    background: #FFFFFF;
+    border-radius: 26px;
+    padding: 22px 22px 20px;
+    border: 1px solid #DDD4B0;
+    box-shadow: 0 10px 30px rgba(28, 32, 14, 0.05);
+    transition: all 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-.recom-menu-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
-  border-color: #9EA76B;
-}
+  .recom-menu-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+    border-color: #9EA76B;
+  }
 
-.recom-menu-card.doctor-card {
-  border: 1px solid #DDD4B0;
-}
+  .recom-menu-card.doctor-card {
+    border: 1px solid #DDD4B0;
+  }
 
-.recom-menu-card.doctor-card:hover {
-  border-color: #9EA76B;
-  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
-  transform: translateY(-6px);
-}
+  .recom-menu-card.doctor-card:hover {
+    border-color: #9EA76B;
+    box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+    transform: translateY(-6px);
+  }
 
-.recom-menu-card.budget-card {
-  border: 1px solid #DDD4B0;
-}
+  .recom-menu-card.budget-card {
+    border: 1px solid #DDD4B0;
+  }
 
-.recom-menu-card.budget-card:hover {
-  border-color: #9EA76B;
-  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
-  transform: translateY(-6px);
-}
+  .recom-menu-card.budget-card:hover {
+    border-color: #9EA76B;
+    box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+    transform: translateY(-6px);
+  }
 
-.recom-macro-pill {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
+  .recom-macro-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
 
-.recom-macro-pill.protein {
-  background: #EAF3E2;
-  color: #15803D;
-  border: 1px solid #D4E8C7;
-}
+  .recom-macro-pill.protein {
+    background: #EAF3E2;
+    color: #15803D;
+    border: 1px solid #D4E8C7;
+  }
 
-.recom-macro-pill.calories {
-  background: #F1F5F9;
-  color: #475569;
-  border: 1px solid #E2E8F0;
-}
+  .recom-macro-pill.calories {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+  }
 
-.recom-macro-pill.price {
-  background: #FEF3C7;
-  color: #92400E;
-  border: 1px solid #FDE68A;
-}
+  .recom-macro-pill.price {
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+  }
 
-.recom-macro-pill.doctor {
-  background: #EFF6FF;
-  color: #1D4ED8;
-  border: 1px solid #DBEAFE;
+  .recom-macro-pill.doctor {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #DBEAFE;
+  }
 }
