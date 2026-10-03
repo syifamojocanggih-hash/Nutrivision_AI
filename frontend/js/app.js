@@ -2060,8 +2060,13 @@ class NutriVisionApp {
     }
 
     if (sectionId === 'planner') {
-      const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
-      this.renderClinicalCalendarAndScheduleSuite();
+      if (this.plannerActiveMode === 'standar') {
+        this.openMealPlannerMode('standar');
+      } else if (this.plannerActiveMode === 'hemat') {
+        this.openMealPlannerMode('hemat');
+      } else {
+        this.showPlannerHub();
+      }
     }
 
     if (sectionId === 'progress') {
@@ -11321,7 +11326,7 @@ class NutriVisionApp {
   openCalendarModal() {
     const modal = document.getElementById('modal-clinical-calendar');
     if (modal) modal.style.display = 'flex';
-    this.navigate('planner');
+    this.openMealPlannerMode('standar');
     setTimeout(() => {
       const calCard = document.getElementById('planner-calendar-card');
       if (calCard && typeof calCard.scrollIntoView === 'function') {
@@ -11466,6 +11471,78 @@ class NutriVisionApp {
     this.renderClinicalCalendar(this.calendarViewMode);
 
     this.showToast('Jadwal dan status checklist berhasil direset ke default klinis.', 'success');
+  }
+
+  // =========================================================================
+  // MEAL PLANNER DUAL-MODE CONTROLLER (FR-10 Hub: Standar vs Hemat)
+  // =========================================================================
+
+  showPlannerHub() {
+    this.plannerActiveMode = null;
+    const hub = document.getElementById('planner-hub-screen');
+    const secStandar = document.getElementById('planner-section-standar');
+    const secHemat = document.getElementById('planner-section-hemat');
+
+    if (hub) hub.style.display = 'block';
+    if (secStandar) secStandar.style.display = 'none';
+    if (secHemat) secHemat.style.display = 'none';
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+
+    const plannerView = document.getElementById('view-planner');
+    if (plannerView) {
+      plannerView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  openMealPlannerMode(mode = 'standar') {
+    this.plannerActiveMode = mode;
+    this.navigate('planner');
+
+    const hub = document.getElementById('planner-hub-screen');
+    const secStandar = document.getElementById('planner-section-standar');
+    const secHemat = document.getElementById('planner-section-hemat');
+
+    if (hub) hub.style.display = 'none';
+
+    if (mode === 'standar') {
+      if (secStandar) secStandar.style.display = 'block';
+      if (secHemat) secHemat.style.display = 'none';
+      if (window.mealPlanner && typeof window.mealPlanner.setMode === 'function') {
+        window.mealPlanner.currentMode = 'standar';
+        if (typeof window.mealPlanner.renderPlanner === 'function') {
+          window.mealPlanner.renderPlanner();
+        }
+      }
+      this.renderClinicalCalendarAndScheduleSuite();
+    } else {
+      if (secStandar) secStandar.style.display = 'none';
+      if (secHemat) secHemat.style.display = 'block';
+      if (window.mealPlanner && typeof window.mealPlanner.setMode === 'function') {
+        window.mealPlanner.currentMode = 'hemat';
+        if (typeof window.mealPlanner.renderPlanner === 'function') {
+          window.mealPlanner.renderPlanner();
+        }
+      }
+      if (window.budgetPlanner) {
+        if (typeof window.budgetPlanner.init === 'function' && !window.budgetPlanner.plan?.length) {
+          window.budgetPlanner.init();
+        } else if (typeof window.budgetPlanner.render === 'function') {
+          window.budgetPlanner.render();
+        }
+      }
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+
+    const plannerView = document.getElementById('view-planner');
+    if (plannerView) {
+      plannerView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   renderClinicalCalendarAndScheduleSuite() {
@@ -11685,11 +11762,7 @@ class NutriVisionApp {
   navigateToBudgetModule() {
     this.closeAdjustBudgetModal();
     this.closeCalendarModal();
-    this.navigate('planner');
-    const budgetSection = document.getElementById('view-planner');
-    if (budgetSection) {
-      budgetSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    this.openMealPlannerMode('hemat');
   }
 
   updateCalendarBudgetBar() {
