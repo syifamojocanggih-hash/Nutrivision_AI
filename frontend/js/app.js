@@ -4404,6 +4404,52 @@ class NutriVisionApp {
     }
   }
 
+  syncLoggedMealToOverviewScan(meal, triggerRender = true) {
+    if (!meal || !window.cvEngine) return;
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const prot = Number(meal.protein) || 20;
+    const cals = Number(meal.calories) || 200;
+    const carbs = Number(meal.carbs) || Math.round(cals * 0.5 / 4);
+    const fat = Number(meal.fat) || Math.round(cals * 0.25 / 9);
+
+    const scanData = {
+      id: meal.id || ('scan_' + Date.now()),
+      title: meal.name || (isId ? 'Menu Asupan Pemulihan' : 'Recovery Meal'),
+      imageUrl: meal.imageUrl || meal.image || 'images/plate_bubur_gabus.jpg',
+      confidenceOverall: 92,
+      segments: [
+        {
+          id: 'seg_' + (meal.id || Date.now()),
+          name: meal.name || (isId ? 'Hidangan Utama' : 'Main Dish'),
+          nameEn: meal.name,
+          portionGrams: 200,
+          protein: [Math.round(prot * 0.95), Math.round(prot * 1.05)],
+          calories: cals,
+          carbs: carbs,
+          fat: fat,
+          confidence: 92,
+          color: 'rgba(34, 197, 94, 0.75)',
+          polygon: [[25, 25], [75, 25], [75, 75], [25, 75]]
+        }
+      ],
+      _isLoggedToday: true,
+      _loggedMealName: meal.name,
+      _loggedTime: meal.time || 'Hari Ini',
+      _loggedNutrients: {
+        protein: [prot, prot],
+        cals: [cals, cals],
+        carbs: [carbs, carbs],
+        fat: [fat, fat],
+        totalGrams: 200
+      }
+    };
+
+    window.cvEngine.loadScanData(scanData);
+    if (triggerRender && typeof this.renderOverviewPlate === 'function') {
+      this.renderOverviewPlate();
+    }
+  }
+
   // Render Piring Segmentasi di Dashboard Utama (Simple 2-Column Split)
   renderOverviewPlate() {
     const canvas = document.getElementById('overview-plate-canvas');
@@ -4415,6 +4461,13 @@ class NutriVisionApp {
     const confNote = document.getElementById('overview-conf-note');
     const statusWrap = document.getElementById('overview-scan-status-wrap');
     const btnAddDaily = document.getElementById('overview-btn-add-daily');
+
+    // Jika scan belum aktif di cvEngine tapi sudah ada asupan hari ini, sinkronkan ke piring overview
+    if ((!cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) &&
+        window.progressTracker && Array.isArray(window.progressTracker.todayMeals) && window.progressTracker.todayMeals.length > 0) {
+      const latestMeal = window.progressTracker.todayMeals[0];
+      this.syncLoggedMealToOverviewScan(latestMeal, false);
+    }
 
     // JIKA BELUM ADA SCAN MAKANAN / BELUM LOGIN: TAMPILKAN STATUS KOSONG BERSIH ("Piring Belum Terisi" Bentuk Piring)
     if (!cvEngine.currentScan || !cvEngine.currentScan.segments || cvEngine.currentScan.segments.length === 0) {

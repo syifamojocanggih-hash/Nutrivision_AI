@@ -305,8 +305,16 @@ class NutriVisionProgress {
     this.renderWeeklyBarChart();
     this.updateProgressPageSummary();
 
-    if (typeof app !== 'undefined' && typeof app.updateProfileUI === 'function') {
-      app.updateProfileUI();
+    if (typeof app !== 'undefined') {
+      if (typeof app.syncLoggedMealToOverviewScan === 'function') {
+        app.syncLoggedMealToOverviewScan(mealEntry, false);
+      }
+      if (typeof app.renderOverviewPlate === 'function') {
+        app.renderOverviewPlate();
+      }
+      if (typeof app.updateProfileUI === 'function') {
+        app.updateProfileUI();
+      }
     }
 
     // Sinkronisasi ke backend MySQL secara async (fire-and-forget)
@@ -1191,6 +1199,9 @@ class NutriVisionProgress {
         // Update macro donut kalau profile sudah ada
         const activeTargets = (typeof app !== 'undefined' ? app.userProfile?.targets : null) || targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
         this.renderMacroDonut(activeTargets);
+        if (typeof app !== 'undefined' && typeof app.renderOverviewPlate === 'function') {
+          app.renderOverviewPlate();
+        }
         this.renderWeeklyBarChart();
         this.updateProgressPageSummary();
 
