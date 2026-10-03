@@ -11895,18 +11895,12 @@ class NutriVisionApp {
 
     container.innerHTML = filtered.map(item => `
       <div class="recom-menu-card doctor-card">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-          <div>
-            <h4 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
-            <div style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#15803D;">
-              <i data-lucide="clock" style="width:13px;height:13px;"></i>
-              <span>${item.timing}</span>
-            </div>
+        <div>
+          <h4 style="margin:0 0 6px;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+          <div style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#15803D;">
+            <i data-lucide="clock" style="width:13px;height:13px;"></i>
+            <span>${item.timing}</span>
           </div>
-          <span class="recom-macro-pill doctor" title="Rujukan Jurnal: ${item.journalRef || item.journalRefShort}">
-            <i data-lucide="book-open" style="width:13px;height:13px;"></i>
-            <span>${item.journalRefShort || item.journalRef || 'Jurnal ESPEN'}</span>
-          </span>
         </div>
 
         <div style="background:#F8FAF8;border-left:3.5px solid #16A34A;padding:10px 14px;border-radius:8px;font-size:12px;color:#334155;line-height:1.5;">
@@ -11923,14 +11917,10 @@ class NutriVisionApp {
           <strong>Target Klinis:</strong> ${item.keyNutrients}
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
-          <button type="button" style="all:unset;cursor:pointer;font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#233917;border:1px solid #DCE5B8;background:#EAF3E2;display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;"
-            onclick="app.showDoctorRecipeDetails('${item.id}')">
-            <i data-lucide="book-open" style="width:13px;height:13px;"></i> Rincian Resep
-          </button>
-          <button type="button" class="btn-primary-teal" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
+        <div style="margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
+          <button type="button" class="btn-primary-teal" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:9px 16px;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Jurnal Klinis')">
-            <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Catat ke Asupan
+            <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat ke Asupan
           </button>
         </div>
       </div>
@@ -12003,9 +11993,15 @@ class NutriVisionApp {
               </span>
             </div>
           </div>
-          <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;font-size:11px;font-weight:700;white-space:nowrap;">
-            ${item.priceCompare.split('vs')[0].trim()}
-          </span>
+          <button type="button" class="recom-hint-btn" 
+            title="Tips Belanja Pasar: ${item.localTip.replace(/"/g, '&quot;')}"
+            onclick="app.showToast('💡 Tips Belanja: ${item.localTip.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'info', 4500)"
+            aria-label="Tips Belanja Pasar"
+            style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#F8FAFC;border:1.5px solid #CBD5E1;color:#64748B;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:all 0.2s;"
+            onmouseover="this.style.background='#FEF3C7';this.style.borderColor='#FDE68A';this.style.color='#92400E';"
+            onmouseout="this.style.background='#F8FAFC';this.style.borderColor='#CBD5E1';this.style.color='#64748B';">
+            <i data-lucide="info" style="width:15px;height:15px;"></i>
+          </button>
         </div>
 
         <div style="background:#FFFBEB;border-left:3.5px solid #F59E0B;padding:10px 14px;border-radius:8px;font-size:12px;color:#78350F;line-height:1.5;">
@@ -12018,18 +12014,10 @@ class NutriVisionApp {
           <span class="recom-macro-pill calories" style="background:#F8FAFC;"><i data-lucide="tag" style="width:12px;height:12px;"></i> ${item.texture}</span>
         </div>
 
-        <div style="font-size:11.5px;color:#475569;line-height:1.4;background:#F8FAFC;padding:8px 12px;border-radius:8px;border:1px dashed #CBD5E1;">
-          💡 <strong>Tips Belanja Pasar:</strong> ${item.localTip}
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
-          <button type="button" style="all:unset;cursor:pointer;font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#92400E;border:1px solid #FCD34D;background:#FFFDF7;display:inline-flex;align-items:center;gap:6px;transition:background 0.15s;"
-            onclick="app.showBudgetRecipeDetails('${item.id}')">
-            <i data-lucide="book-open" style="width:13px;height:13px;"></i> Komposisi Bahan
-          </button>
-          <button type="button" class="btn-primary-coral" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
+        <div style="margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
+          <button type="button" class="btn-primary-coral" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:9px 16px;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Alternatif Budget Hemat')">
-            <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Catat ke Asupan
+            <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat ke Asupan
           </button>
         </div>
       </div>

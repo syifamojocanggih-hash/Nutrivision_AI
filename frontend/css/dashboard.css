@@ -908,6 +908,11 @@
   background: #FFFDF8;
 }
 
+.recom-hint-btn:focus-visible {
+  outline: 2px solid #D97706;
+  outline-offset: 2px;
+}
+
 /* === RECOMMENDATION MENU PAGE: MACRO BADGE PILLS === */
 .recom-macro-pill {
   display: inline-flex;

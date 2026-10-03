@@ -2035,19 +2035,14 @@
               </p>
             </div>
 
-            <!-- Filter & Search Bar -->
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:16px;border-top:1px solid #F1F5F9;">
-              <div class="recom-filter-pills" id="page-doctor-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
+            <!-- Filter Pills -->
+            <div style="padding-top:16px;border-top:1px solid #F1F5F9;">
+              <div class="recom-filter-pills" id="page-doctor-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button type="button" class="recom-pill-btn active" data-cat="all" onclick="app.filterDoctorRecommendationsPage('all', this)">Semua Menu</button>
                 <button type="button" class="recom-pill-btn" data-cat="sarapan" onclick="app.filterDoctorRecommendationsPage('sarapan', this)">Sarapan (Pagi)</button>
                 <button type="button" class="recom-pill-btn" data-cat="siang" onclick="app.filterDoctorRecommendationsPage('siang', this)">Makan Siang</button>
                 <button type="button" class="recom-pill-btn" data-cat="malam" onclick="app.filterDoctorRecommendationsPage('malam', this)">Makan Malam</button>
                 <button type="button" class="recom-pill-btn" data-cat="snack" onclick="app.filterDoctorRecommendationsPage('snack', this)">Selingan / Snack</button>
-              </div>
-              <div style="position:relative;min-width:220px;max-width:320px;">
-                <input type="text" id="page-doctor-search" placeholder="Cari menu rujukan jurnal klinis..." oninput="app.searchDoctorRecommendationsPage(this.value)"
-                  style="width:100%;padding:8px 14px 8px 34px;font-size:12.5px;border:1px solid #CBD5E1;border-radius:10px;outline:none;background:#FFFFFF;" />
-                <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94A3B8;"></i>
               </div>
             </div>
           </div>
@@ -2069,19 +2064,14 @@
               </p>
             </div>
 
-            <!-- Filter & Search Bar -->
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:16px;border-top:1px solid #F1F5F9;">
-              <div class="recom-filter-pills" id="page-budget-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
+            <!-- Filter Pills -->
+            <div style="padding-top:16px;border-top:1px solid #F1F5F9;">
+              <div class="recom-filter-pills" id="page-budget-filter-pills" style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button type="button" class="recom-pill-btn active" data-cat="all" onclick="app.filterBudgetAlternativesPage('all', this)">Semua Alternatif</button>
                 <button type="button" class="recom-pill-btn" data-cat="under8k" onclick="app.filterBudgetAlternativesPage('under8k', this)">&lt; Rp 8.000 / porsi</button>
                 <button type="button" class="recom-pill-btn" data-cat="under10k" onclick="app.filterBudgetAlternativesPage('under10k', this)">&lt; Rp 10.000 / porsi</button>
                 <button type="button" class="recom-pill-btn" data-cat="nabati" onclick="app.filterBudgetAlternativesPage('nabati', this)">Protein Nabati</button>
                 <button type="button" class="recom-pill-btn" data-cat="hewani" onclick="app.filterBudgetAlternativesPage('hewani', this)">Protein Hewani Hemat</button>
-              </div>
-              <div style="position:relative;min-width:220px;max-width:320px;">
-                <input type="text" id="page-budget-search" placeholder="Cari alternatif hemat..." oninput="app.searchBudgetAlternativesPage(this.value)"
-                  style="width:100%;padding:8px 14px 8px 34px;font-size:12.5px;border:1px solid #CBD5E1;border-radius:10px;outline:none;background:#FFFFFF;" />
-                <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94A3B8;"></i>
               </div>
             </div>
           </div>
