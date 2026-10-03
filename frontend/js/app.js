@@ -818,6 +818,11 @@ class NutriVisionApp {
     if (window.caregiverHandler && typeof window.caregiverHandler.renderCaregiverList === 'function') {
       window.caregiverHandler.renderCaregiverList();
     }
+    try {
+      this.renderClinicalCalendarAndScheduleSuite();
+    } catch (e) {
+      console.warn(e);
+    }
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
@@ -10540,31 +10545,35 @@ class NutriVisionApp {
     const container = document.getElementById('recovery-month-pills');
     if (!container) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
     let milestones = profile?.monthlyMilestones || [];
 
     if (!milestones || milestones.length === 0) {
       milestones = [
-        { monthIndex: 1, durationDays: 'Hari 1–30', phaseName: 'Fase Inflamasi & Granulasi' },
-        { monthIndex: 2, durationDays: 'Hari 31–60', phaseName: 'Fase Proliferasi & Kolagen' },
-        { monthIndex: 3, durationDays: 'Hari 61–90', phaseName: 'Fase Remodeling Jaringan' }
+        { monthIndex: 1, durationDays: 'Hari 1–30', durationDaysEn: 'Days 1–30', phaseName: 'Fase Inflamasi & Granulasi', phaseNameEn: 'Inflammatory & Granulation Phase' },
+        { monthIndex: 2, durationDays: 'Hari 31–60', durationDaysEn: 'Days 31–60', phaseName: 'Fase Proliferasi & Kolagen', phaseNameEn: 'Proliferation & Collagen Phase' },
+        { monthIndex: 3, durationDays: 'Hari 61–90', durationDaysEn: 'Days 61–90', phaseName: 'Fase Remodeling Jaringan', phaseNameEn: 'Tissue Remodeling Phase' }
       ];
     }
 
     container.innerHTML = milestones.map(m => {
       const isActive = m.monthIndex === (this.activeRecoveryMonthIndex || 1);
+      const mDur = isId ? (m.durationDays || `Hari ${(m.monthIndex-1)*30+1}–${m.monthIndex*30}`) : (m.durationDaysEn || `Days ${(m.monthIndex-1)*30+1}–${m.monthIndex*30}`);
+      const mName = isId ? (m.phaseName || '') : (m.phaseNameEn || m.phaseName || '');
+      const mLabel = isId ? `Bulan ${m.monthIndex} (${mDur})` : `Month ${m.monthIndex} (${mDur})`;
       return `
         <div class="cal-milestone-card month-pill-btn ${isActive ? 'active' : ''}"
              onclick="app.switchRecoveryMonth(${m.monthIndex})"
              role="button"
              tabindex="0"
-             title="${m.phaseName}">
+             title="${mName}">
           <div class="cal-milestone-card-top">
-            <span class="cal-milestone-label">Bulan ${m.monthIndex} (${m.durationDays})</span>
+            <span class="cal-milestone-label">${mLabel}</span>
             ${isActive ? '<span class="cal-milestone-active-dot"></span>' : ''}
           </div>
-          <div class="cal-milestone-name">${m.phaseName}</div>
+          <div class="cal-milestone-name">${mName}</div>
         </div>
       `;
     }).join('');
@@ -10574,17 +10583,22 @@ class NutriVisionApp {
     const bannerEl = document.getElementById('recovery-month-target-banner');
     if (!bannerEl) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
     const milestones = profile?.monthlyMilestones || [];
     const idx = monthIndex || this.activeRecoveryMonthIndex || 1;
     const milestone = milestones.find(m => m.monthIndex === idx) || milestones[0] || {
       monthLabel: 'Bulan ke-1 (Hari 1–30)',
+      monthLabelEn: 'Month 1 (Days 1–30)',
       phaseName: 'Fase Inflamasi & Granulasi',
-      healingTarget: { title: 'Penutupan Luka Insisi Primer & Mitigasi Risiko Infeksi (SSI)' },
+      phaseNameEn: 'Inflammatory & Granulation Phase',
+      healingTarget: { title: 'Penutupan Luka Insisi Primer & Mitigasi Risiko Infeksi (SSI)', titleEn: 'Primary Incision Closure & Infection Control (SSI)' },
       nutritionTarget: {
         protein: '1.5 – 2.0 g/kg BB',
+        proteinEn: '1.5 – 2.0 g/kg BW',
         calories: '1.850 – 2.000 kkal/hari',
+        caloriesEn: '1,850 – 2,000 kcal/day',
         recommendedMenu: ['Ikan Gabus', 'Putih Telur', 'Sup Labu']
       }
     };
@@ -10597,22 +10611,34 @@ class NutriVisionApp {
       <span class="cal-food-tag">${item}</span>
     `).join('');
 
-    const proteinStr = milestone.nutritionTarget?.protein ? milestone.nutritionTarget.protein.split('/hari')[0].trim() : '1.5 – 2.0 g/kg BB';
-    const caloriesStr = milestone.nutritionTarget?.calories ? milestone.nutritionTarget.calories.split('(')[0].trim() : '1.850 – 2.000 kkal/hari';
-    const goalTitle = milestone.healingTarget?.title || 'Penutupan Luka Insisi Primer & Mitigasi Risiko Infeksi (SSI)';
+    const proteinStr = isId ? (milestone.nutritionTarget?.protein ? milestone.nutritionTarget.protein.split('/hari')[0].trim() : '1.5 – 2.0 g/kg BB') : (milestone.nutritionTarget?.proteinEn || milestone.nutritionTarget?.protein || '1.5 – 2.0 g/kg BW');
+    const caloriesStr = isId ? (milestone.nutritionTarget?.calories ? milestone.nutritionTarget.calories.split('(')[0].trim() : '1.850 – 2.000 kkal/hari') : (milestone.nutritionTarget?.caloriesEn || (milestone.nutritionTarget?.calories ? milestone.nutritionTarget.calories.replace('kkal', 'kcal') : '1,850 – 2,000 kcal/day'));
+    const goalTitle = isId ? (milestone.healingTarget?.title || 'Penutupan Luka Insisi Primer & Mitigasi Risiko Infeksi (SSI)') : (milestone.healingTarget?.titleEn || milestone.healingTarget?.title || 'Primary Incision Closure & Infection Control');
     const citation = milestone.scientificCitation || 'ESPEN Guidelines on Clinical Nutrition in Surgery (2021) & ERAS Society';
 
+    const col1Title = isId ? 'TARGET MEDIS & GIZI' : 'MEDICAL & NUTRITION TARGETS';
+    const protLabel = isId ? 'Target Protein:' : 'Protein Target:';
+    const protNote = isId ? '(Albumin Tinggi)' : '(High Albumin)';
+    const calLabel = isId ? 'Kebutuhan Energi:' : 'Basal Energy:';
+    const col2Title = isId ? 'ALOKASI ANGGARAN' : 'BUDGET ALLOCATION';
+    const btnBudgetLabel = isId ? 'Atur Budget' : 'Adjust Budget';
+    const durLabel = isId ? `/ ${budgetDuration} hari` : `/ ${budgetDuration} days`;
+    const avgDailyLabel = isId ? `Rata-rata ~Rp ${avgDaily.toLocaleString('id-ID')}/hari` : `Avg ~Rp ${avgDaily.toLocaleString('en-US')}/day`;
+    const statusLabel = isId ? 'Status: Hemat Budget Terkontrol' : 'Status: Budget Controlled';
+    const col3Title = isId ? 'INDIKATOR KLINIS UTAMA' : 'KEY CLINICAL INDICATOR';
+    const valText = isId ? `Tervalidasi Protokol ERAS & ESPEN 2021 (${citation})` : `Validated ERAS & ESPEN 2021 Protocol (${citation})`;
+
     bannerEl.innerHTML = `
-      <div class="cal-metric-banner-grid" data-phase="${milestone.monthLabel || ('Bulan ke-' + idx)}">
+      <div class="cal-metric-banner-grid" data-phase="${isId ? (milestone.monthLabel || ('Bulan ke-' + idx)) : (milestone.monthLabelEn || ('Month ' + idx))}">
         <!-- Col 1: TARGET MEDIS & GIZI -->
         <div class="cal-metric-col col-targets">
-          <div class="cal-metric-col-title">TARGET MEDIS &amp; GIZI</div>
+          <div class="cal-metric-col-title">${col1Title}</div>
           <div class="cal-metric-line">
-            <span class="cal-metric-label">Target Protein:</span>
-            <span class="cal-metric-val"><strong>${proteinStr}</strong> <span class="cal-metric-note">(Albumin Tinggi)</span></span>
+            <span class="cal-metric-label">${protLabel}</span>
+            <span class="cal-metric-val"><strong>${proteinStr}</strong> <span class="cal-metric-note">${protNote}</span></span>
           </div>
           <div class="cal-metric-line">
-            <span class="cal-metric-label">Kebutuhan Energi:</span>
+            <span class="cal-metric-label">${calLabel}</span>
             <span class="cal-metric-val"><strong>${caloriesStr}</strong></span>
           </div>
           <div class="cal-food-tags">
@@ -10623,27 +10649,27 @@ class NutriVisionApp {
         <!-- Col 2: ALOKASI ANGGARAN -->
         <div class="cal-metric-col col-budget">
           <div class="cal-budget-header-row">
-            <span class="cal-metric-col-title">ALOKASI ANGGARAN</span>
-            <button type="button" class="cal-btn-link btn-budget-sync-link" onclick="app.openAdjustBudgetModal()" title="Sesuaikan Budget">Atur Budget</button>
+            <span class="cal-metric-col-title">${col2Title}</span>
+            <button type="button" class="cal-btn-link btn-budget-sync-link" onclick="app.openAdjustBudgetModal()" title="${btnBudgetLabel}">${btnBudgetLabel}</button>
           </div>
           <div class="cal-budget-amount-row">
-            <span class="cal-budget-amount" id="cal-banner-budget-amount">Rp ${budgetAmount.toLocaleString('id-ID')}</span>
-            <span class="cal-budget-duration" id="cal-banner-budget-duration">/ ${budgetDuration} hari</span>
+            <span class="cal-budget-amount" id="cal-banner-budget-amount">Rp ${budgetAmount.toLocaleString(isId ? 'id-ID' : 'en-US')}</span>
+            <span class="cal-budget-duration" id="cal-banner-budget-duration">${durLabel}</span>
           </div>
-          <div class="cal-budget-daily" id="cal-banner-budget-daily">Rata-rata ~Rp ${avgDaily.toLocaleString('id-ID')}/hari</div>
+          <div class="cal-budget-daily" id="cal-banner-budget-daily">${avgDailyLabel}</div>
           <div class="cal-budget-status-pill">
             <span class="cal-status-dot"></span>
-            <span id="cal-banner-budget-status">Status: Hemat Budget Terkontrol</span>
+            <span id="cal-banner-budget-status">${statusLabel}</span>
           </div>
         </div>
 
         <!-- Col 3: INDIKATOR KLINIS UTAMA -->
-        <div class="cal-metric-col col-clinical" data-target="Target Penyembuhan Medis">
-          <div class="cal-metric-col-title">INDIKATOR KLINIS UTAMA</div>
-          <div class="cal-clinical-goal" title="Target Penyembuhan Medis: ${milestone.monthLabel || ''} ${goalTitle}">${milestone.monthLabel ? (milestone.monthLabel + ': ') : ''}${goalTitle}</div>
+        <div class="cal-metric-col col-clinical" data-target="${goalTitle}">
+          <div class="cal-metric-col-title">${col3Title}</div>
+          <div class="cal-clinical-goal" title="${goalTitle}">${goalTitle}</div>
           <div class="cal-validation-tag" title="${citation}">
             <i data-lucide="check" style="width:14px;height:14px;stroke-width:2.5;color:#233917;"></i>
-            <span>Tervalidasi Protokol ERAS &amp; ESPEN 2021 (${citation})</span>
+            <span>${valText}</span>
           </div>
         </div>
       </div>
@@ -10673,23 +10699,29 @@ class NutriVisionApp {
     const badgeTextEl = document.getElementById('upcoming-date-text');
     if (!listEl) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     const targetDate = dateStr || this.selectedCalendarDate || new Date().toISOString().split('T')[0];
     this.selectedCalendarDate = targetDate;
     const schedules = this.getConditionSchedules(cond, targetDate);
 
-    // Format tanggal Indonesia
+    // Format tanggal
     const dateParts = targetDate.split('-');
     const dateObj = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
-    const monthNames = [
+    const monthNames = isId ? [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ] : [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const dayNames = isId 
+      ? ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+      : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const now = new Date();
     const isToday = (dateObj.getFullYear() === now.getFullYear() && dateObj.getMonth() === now.getMonth() && dateObj.getDate() === now.getDate());
 
-    const formattedDateText = `${dayNames[dateObj.getDay()]}, ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}${isToday ? ' (Hari Ini)' : ''}`;
+    const formattedDateText = `${dayNames[dateObj.getDay()]}, ${dateObj.getDate()} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()}${isToday ? (isId ? ' (Hari Ini)' : ' (Today)') : ''}`;
     if (badgeTextEl) {
       badgeTextEl.textContent = formattedDateText;
     }
@@ -10697,7 +10729,7 @@ class NutriVisionApp {
     if (!schedules || schedules.length === 0) {
       listEl.innerHTML = `
         <div style="text-align:center;padding:24px 12px;color:#64748B;">
-          <p style="margin:0;font-size:12px;">Belum ada jadwal pemulihan untuk tanggal ini.</p>
+          <p style="margin:0;font-size:12px;">${isId ? 'Belum ada jadwal pemulihan untuk tanggal ini.' : 'No recovery schedule for this date yet.'}</p>
         </div>
       `;
       this.updateCalendarBudgetBar();
@@ -10710,46 +10742,46 @@ class NutriVisionApp {
       if (!t.includes(':')) t = `${t}:00`;
       
       const hour = parseInt(t.split(':')[0], 10);
-      let period = 'Sarapan';
-      if (hour >= 9 && hour < 12) period = 'Selingan Pagi';
-      else if (hour >= 12 && hour < 15) period = 'Makan Siang';
-      else if (hour >= 15 && hour < 18) period = 'Snack Sore';
-      else if (hour >= 18) period = 'Makan Malam';
+      let period = isId ? 'Sarapan' : 'Breakfast';
+      if (hour >= 9 && hour < 12) period = isId ? 'Selingan Pagi' : 'Morning Snack';
+      else if (hour >= 12 && hour < 15) period = isId ? 'Makan Siang' : 'Lunch';
+      else if (hour >= 15 && hour < 18) period = isId ? 'Snack Sore' : 'Afternoon Snack';
+      else if (hour >= 18) period = isId ? 'Makan Malam' : 'Dinner';
 
-      if (titleStr && titleStr.toLowerCase().includes('sarapan')) period = 'Sarapan';
-      else if (titleStr && titleStr.toLowerCase().includes('selingan')) period = 'Selingan Pagi';
-      else if (titleStr && titleStr.toLowerCase().includes('siang')) period = 'Makan Siang';
-      else if (titleStr && titleStr.toLowerCase().includes('snack')) period = 'Snack Sore';
-      else if (titleStr && titleStr.toLowerCase().includes('malam')) period = 'Makan Malam';
+      if (titleStr && titleStr.toLowerCase().includes('sarapan')) period = isId ? 'Sarapan' : 'Breakfast';
+      else if (titleStr && titleStr.toLowerCase().includes('selingan')) period = isId ? 'Selingan Pagi' : 'Morning Snack';
+      else if (titleStr && titleStr.toLowerCase().includes('siang')) period = isId ? 'Makan Siang' : 'Lunch';
+      else if (titleStr && titleStr.toLowerCase().includes('snack')) period = isId ? 'Snack Sore' : 'Afternoon Snack';
+      else if (titleStr && titleStr.toLowerCase().includes('malam')) period = isId ? 'Makan Malam' : 'Dinner';
 
       return `${t} ${period}`;
     };
 
     // Helper to extract or construct nutritional metadata string
     const getNutriMeta = (s) => {
+      const loc = isId ? 'id-ID' : 'en-US';
       if (s.protein && s.calories && s.price) {
-        return `${s.protein}g Protein • ${s.calories} kkal • Rp ${s.price.toLocaleString('id-ID')}`;
+        return `${s.protein}g Protein • ${s.calories} ${isId ? 'kkal' : 'kcal'} • Rp ${s.price.toLocaleString(loc)}`;
       }
       if (s.protein && s.price) {
-        return `${s.protein}g Protein (Tinggi Albumin) • Rp ${s.price.toLocaleString('id-ID')}`;
+        return `${s.protein}g Protein (${isId ? 'Tinggi Albumin' : 'High Albumin'}) • Rp ${s.price.toLocaleString(loc)}`;
       }
       if (s.desc) {
-        // Look for target in desc
         const matchProt = s.desc.match(/(\d+g\s*Protein)/i);
-        const matchCals = s.desc.match(/(\d+\s*kkal)/i);
-        const priceStr = s.price ? ` • Rp ${s.price.toLocaleString('id-ID')}` : '';
+        const matchCals = s.desc.match(/(\d+\s*(?:kkal|kcal))/i);
+        const priceStr = s.price ? ` • Rp ${s.price.toLocaleString(loc)}` : '';
         if (matchProt) {
           return `${matchProt[1]} ${matchCals ? '• ' + matchCals[1] : ''}${priceStr}`;
         }
         if (s.category === 'hydration') {
-          return `Hidrasi & Elektrolit Alami${priceStr ? priceStr : ' • Rp 5.000'}`;
+          return `${isId ? 'Hidrasi & Elektrolit Alami' : 'Hydration & Natural Electrolytes'}${priceStr ? priceStr : ' • Rp 5.000'}`;
         }
         if (s.category === 'snack') {
-          return `Serat Lembut Ramah Cerna${priceStr ? priceStr : ' • Rp 4.500'}`;
+          return `${isId ? 'Serat Lembut Ramah Cerna' : 'Digestive-Friendly Gentle Fiber'}${priceStr ? priceStr : ' • Rp 4.500'}`;
         }
         return `${s.desc.slice(0, 50)}...${priceStr}`;
       }
-      return `Target Gizi Seimbang • Rp ${(s.price || 7500).toLocaleString('id-ID')}`;
+      return `${isId ? 'Target Gizi Seimbang' : 'Balanced Nutrition Target'} • Rp ${(s.price || 7500).toLocaleString(loc)}`;
     };
 
     const itemsHtml = schedules.map(s => {
@@ -10768,13 +10800,13 @@ class NutriVisionApp {
       const symptomBadgeHtml = isSymptomMeal ? `
         <span class="cal-symptom-tag">
           <i data-lucide="sparkles" style="width:11px;height:11px;"></i>
-          <span>Rekomendasi Gejala</span>
+          <span>${isId ? 'Rekomendasi Gejala' : 'Symptom Adaptive'}</span>
         </span>
       ` : '';
 
       const symptomMetaHtml = isSymptomMeal ? `
         <span style="display:inline-flex;align-items:center;gap:3px;color:#7C3AED;font-size:10.5px;font-weight:600;background:#F5F3FF;padding:1px 6px;border-radius:4px;border:1px solid #DDD6FE;">
-          ✦ Adaptif Gejala
+          ✦ ${isId ? 'Adaptif Gejala' : 'Symptom Adaptive'}
         </span>
       ` : '';
 
@@ -10788,13 +10820,13 @@ class NutriVisionApp {
             <div style="display:flex;align-items:center;gap:6px;">
               <button type="button" class="cal-meal-status-btn ${isCompleted ? 'completed' : ''}"
                       onclick="app.toggleScheduleCompletion('${s.id}', '${targetDate}')"
-                      title="${isCompleted ? 'Tandai belum selesai' : 'Tandai sudah dikonsumsi'}">
+                      title="${isCompleted ? (isId ? 'Tandai belum selesai' : 'Mark as incomplete') : (isId ? 'Tandai sudah dikonsumsi' : 'Mark as consumed')}">
                 ${isCompleted 
-                  ? `<i data-lucide="check" style="width:12px;height:12px;stroke-width:3;"></i> <span>Sudah dikonsumsi</span>` 
-                  : `<span class="checkbox-box"></span> <span>Tandai selesai</span>`}
+                  ? `<i data-lucide="check" style="width:12px;height:12px;stroke-width:3;"></i> <span>${isId ? 'Sudah dikonsumsi' : 'Consumed'}</span>` 
+                  : `<span class="checkbox-box"></span> <span>${isId ? 'Tandai selesai' : 'Mark complete'}</span>`}
               </button>
               ${s.isCustom ? `
-                <button type="button" class="btn-delete-sched" onclick="app.deleteCustomSchedule('${s.id}')" title="Hapus jadwal">
+                <button type="button" class="btn-delete-sched" onclick="app.deleteCustomSchedule('${s.id}')" title="${isId ? 'Hapus jadwal' : 'Delete schedule'}">
                   <i data-lucide="trash-2" style="width:12px;height:12px;color:#DC2626;"></i>
                 </button>
               ` : ''}
@@ -10813,7 +10845,7 @@ class NutriVisionApp {
 
     const counterEl = document.getElementById('cal-events-counter');
     if (counterEl) {
-      counterEl.textContent = `${schedules.length} Jadwal Nutrisi Terdaftar`;
+      counterEl.textContent = isId ? `${schedules.length} Jadwal Nutrisi Terdaftar` : `${schedules.length} Scheduled Nutrition Items`;
     }
 
     this.updateCalendarBudgetBar();
@@ -10855,16 +10887,24 @@ class NutriVisionApp {
     const effStart = (activeStart && activeEnd && activeStart > activeEnd) ? activeEnd : activeStart;
     const effEnd = (activeStart && activeEnd && activeStart > activeEnd) ? activeStart : activeEnd;
 
-    // Month Names Indonesian
-    const monthNames = [
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
+    // Month Names
+    const monthNames = isId ? [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ] : [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    const monthNamesShort = [
+    const monthNamesShort = isId ? [
       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
       'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+    ] : [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
-    const dayHeaders = ['M', 'S', 'S', 'R', 'K', 'J', 'S'];
+    const dayHeaders = isId ? ['M', 'S', 'S', 'R', 'K', 'J', 'S'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
     // Update Header Date Range Text
     const rangeTextEl = document.getElementById('calendar-picker-range-text');
@@ -10890,7 +10930,7 @@ class NutriVisionApp {
       const sDate = new Date(effStart);
       const eDate = new Date(effEnd);
       const diffDays = Math.round(Math.abs((eDate - sDate) / (24 * 60 * 60 * 1000))) + 1;
-      dayBadgeEl.textContent = `Hari ke-${diffDays}`;
+      dayBadgeEl.textContent = isId ? `Hari ke-${diffDays}` : `Day ${diffDays}`;
     }
 
     // Month 1 & Month 2 anchor dates
@@ -10949,7 +10989,7 @@ class NutriVisionApp {
                data-date="${dateStr}"
                onclick="app.selectCalendarDateRange('${dateStr}')"
                onmouseenter="app.hoverCalendarDate('${dateStr}')"
-               title="${day} ${monthNames[month]} ${year} - Klik untuk memilih rentang">
+               title="${day} ${monthNames[month]} ${year} - ${isId ? 'Klik untuk memilih rentang' : 'Click to select range'}">
             <span class="cal-day-number cal-day-num">${day}</span>
             <span class="cal-dot-indicator" style="display:none;"></span>
           </div>
@@ -10960,13 +11000,13 @@ class NutriVisionApp {
         <div class="cal-month-column">
           <div class="cal-month-top-bar">
             ${isLeftCol ? `
-              <button type="button" class="cal-nav-btn-icon" onclick="app.shiftCalendarMonth(-1)" title="Bulan Sebelumnya">
+              <button type="button" class="cal-nav-btn-icon" onclick="app.shiftCalendarMonth(-1)" title="${isId ? 'Bulan Sebelumnya' : 'Previous Month'}">
                 <i data-lucide="chevron-left" style="width:16px;height:16px;"></i>
               </button>
             ` : '<div class="cal-nav-btn-placeholder"></div>'}
             <h3 class="cal-month-title" ${isLeftCol ? 'id="calendar-month-year-title"' : ''}>${monthNames[month]} ${year}</h3>
             ${!isLeftCol ? `
-              <button type="button" class="cal-nav-btn-icon" onclick="app.shiftCalendarMonth(1)" title="Bulan Berikutnya">
+              <button type="button" class="cal-nav-btn-icon" onclick="app.shiftCalendarMonth(1)" title="${isId ? 'Bulan Berikutnya' : 'Next Month'}">
                 <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
               </button>
             ` : '<div class="cal-nav-btn-placeholder"></div>'}
@@ -11148,6 +11188,7 @@ class NutriVisionApp {
     const listEl = document.getElementById('pantangan-events-list');
     if (!listEl) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond];
     const contraindications = profile?.contraindications || [];
@@ -11155,7 +11196,7 @@ class NutriVisionApp {
     if (contraindications.length === 0) {
       listEl.innerHTML = `
         <div style="text-align:center;padding:24px 12px;color:#64748B;">
-          <p style="margin:0;font-size:12px;">Tidak ada catatan pantangan khusus untuk kondisi ini.</p>
+          <p style="margin:0;font-size:12px;">${isId ? 'Tidak ada catatan pantangan khusus untuk kondisi ini.' : 'No special dietary restriction notes for this condition.'}</p>
         </div>
       `;
       return;
@@ -11167,7 +11208,7 @@ class NutriVisionApp {
     }
 
     const itemsHtml = contraindications.map(c => {
-      const isCritical = c.risk.includes('Kritis') || c.risk.includes('Total') || c.risk.includes('Mutlak');
+      const isCritical = c.risk.includes('Kritis') || c.risk.includes('Total') || c.risk.includes('Mutlak') || c.risk.includes('Critical');
       const isActive = (c.id === this.activeRestrictionId);
       const forbiddenList = c.forbiddenItems || [];
 
@@ -11193,7 +11234,7 @@ class NutriVisionApp {
                     <h4 class="timeline-title">${c.food}</h4>
                   </div>
                   <span class="restriction-badge-active">
-                    Peringatan Klinis Dokter · ${c.risk}
+                    ${isId ? 'Peringatan Klinis Dokter' : "Doctor's Clinical Warning"} · ${c.risk}
                   </span>
                 </div>
                 <p class="timeline-desc">${c.reason}</p>
@@ -11203,7 +11244,7 @@ class NutriVisionApp {
                   <div class="restriction-forbidden-box-active">
                     <div class="restriction-forbidden-header-active">
                       <i data-lucide="ban" style="width:12px;height:12px;color:#FECDD3;"></i>
-                      <span>Contoh Jenis Makanan yang Dilarang:</span>
+                      <span>${isId ? 'Contoh Jenis Makanan yang Dilarang:' : 'Examples of Prohibited Food Types:'}</span>
                     </div>
                     <div class="restriction-forbidden-tags-active">
                       ${forbiddenList.map(item => `
@@ -11217,7 +11258,7 @@ class NutriVisionApp {
 
                 <div class="restriction-citation-active">
                   <i data-lucide="book-open" style="width:11px;height:11px;color:#FECDD3;"></i>
-                  <span>Validasi Medis: ${c.citation}</span>
+                  <span>${isId ? 'Validasi Medis' : 'Medical Validation'}: ${c.citation}</span>
                 </div>
               </div>
             </div>
@@ -11247,7 +11288,7 @@ class NutriVisionApp {
               </div>
               <div class="restriction-expand-hint">
                 <i data-lucide="chevron-down" style="width:11px;height:11px;"></i>
-                <span>Klik untuk lihat jenis makanan dilarang (${forbiddenList.length})</span>
+                <span>${isId ? `Klik untuk lihat jenis makanan dilarang (${forbiddenList.length})` : `Click to view prohibited foods (${forbiddenList.length})`}</span>
               </div>
             </div>
           </div>
@@ -11260,11 +11301,11 @@ class NutriVisionApp {
         <div style="display:flex;align-items:center;gap:10px;">
           <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#DC2626;flex-shrink:0;"></i>
           <p style="margin:0;font-size:11.5px;color:#991B1B;line-height:1.45;">
-            <strong>Peringatan Klinis Medis:</strong> Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.
+            <strong>${isId ? 'Peringatan Klinis Medis:' : 'Medical Clinical Warning:'}</strong> ${isId ? 'Hindari makanan & kebiasaan berikut untuk mencegah komplikasi, peradangan jaringan, atau kegagalan sintesis pemulihan.' : 'Avoid the following foods & habits to prevent complications, tissue inflammation, or recovery synthesis failure.'}
           </p>
         </div>
         <span style="font-size:10.5px;color:#991B1B;font-weight:600;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;">
-          <i data-lucide="shield-check" style="width:12px;height:12px;"></i> Validasi Medis Terverifikasi
+          <i data-lucide="shield-check" style="width:12px;height:12px;"></i> ${isId ? 'Validasi Medis Terverifikasi' : 'Verified Medical Validation'}
         </span>
       </div>
       <div class="upcoming-events-list">
@@ -11287,13 +11328,14 @@ class NutriVisionApp {
     const listEl = document.getElementById('validation-events-list');
     if (!listEl) return;
 
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const cond = conditionId || this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
     const profile = NUTRIVISION_DATA.recoveryProfiles[cond];
     const mIdx = monthIndex || this.activeRecoveryMonthIndex || 1;
     const milestone = profile?.monthlyMilestones?.find(m => m.monthIndex === mIdx) || profile?.monthlyMilestones?.[0];
 
     if (!profile || !milestone) {
-      listEl.innerHTML = `<p style="font-size:12px;color:#64748B;">Data validasi tidak ditemukan.</p>`;
+      listEl.innerHTML = `<p style="font-size:12px;color:#64748B;">${isId ? 'Data validasi tidak ditemukan.' : 'Validation data not found.'}</p>`;
       return;
     }
 
@@ -11302,7 +11344,7 @@ class NutriVisionApp {
         <div style="background:#F7F9EC;border:1px solid #DDE2B9;border-radius:10px;padding:12px 14px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
             <i data-lucide="check-circle-2" style="width:16px;height:16px;color:#9EA76B;"></i>
-            <h4 style="margin:0;font-size:13.5px;font-weight:700;color:#141708;">Konsensus Ilmiah &amp; Acuan Klinis</h4>
+            <h4 style="margin:0;font-size:13.5px;font-weight:700;color:#141708;">${isId ? 'Konsensus Ilmiah & Acuan Klinis' : 'Scientific Consensus & Clinical Reference'}</h4>
           </div>
           <p style="margin:0;font-size:12.5px;color:#233412;line-height:1.5;font-weight:500;">
             ${milestone.scientificCitation}
@@ -11312,29 +11354,29 @@ class NutriVisionApp {
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
           <h4 style="margin:0 0 6px;font-size:12.5px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:6px;">
             <i data-lucide="target" style="width:14px;height:14px;color:#233917;"></i>
-            <span>Biomarker & Target Penyembuhan</span>
+            <span>${isId ? 'Biomarker & Target Penyembuhan' : 'Biomarkers & Healing Targets'}</span>
           </h4>
           <p style="margin:0 0 4px;font-size:11.5px;color:#334155;line-height:1.5;">
-            <strong>Target:</strong> ${milestone.healingTarget.title}
+            <strong>${isId ? 'Target' : 'Target'}:</strong> ${milestone.healingTarget.title}
           </p>
           <p style="margin:0 0 4px;font-size:11.5px;color:#475569;line-height:1.5;">
-            <strong>Indikator:</strong> ${milestone.healingTarget.markers}
+            <strong>${isId ? 'Indikator' : 'Indicators'}:</strong> ${milestone.healingTarget.markers}
           </p>
           <p style="margin:0;font-size:11px;color:#64748B;line-height:1.5;">
-            <strong>Tujuan Klinis:</strong> ${milestone.healingTarget.clinicalGoal}
+            <strong>${isId ? 'Tujuan Klinis' : 'Clinical Goal'}:</strong> ${milestone.healingTarget.clinicalGoal}
           </p>
         </div>
 
         <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;">
           <h4 style="margin:0 0 6px;font-size:12.5px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:6px;">
             <i data-lucide="pie-chart" style="width:14px;height:14px;color:#233917;"></i>
-            <span>Parameter Target Nutrisi</span>
+            <span>${isId ? 'Parameter Target Nutrisi' : 'Nutrition Target Parameters'}</span>
           </h4>
           <ul style="margin:0;padding-left:18px;font-size:11.5px;color:#334155;line-height:1.6;">
-            <li><strong>Protein Target:</strong> ${milestone.nutritionTarget.protein}</li>
-            <li><strong>Kebutuhan Kalori:</strong> ${milestone.nutritionTarget.calories}</li>
-            <li><strong>Mikronutrien Kunci:</strong> ${milestone.nutritionTarget.micronutrients}</li>
-            <li><strong>Tekstur Makanan:</strong> ${milestone.nutritionTarget.texture}</li>
+            <li><strong>${isId ? 'Protein Target' : 'Target Protein'}:</strong> ${milestone.nutritionTarget.protein}</li>
+            <li><strong>${isId ? 'Kebutuhan Kalori' : 'Calorie Requirements'}:</strong> ${milestone.nutritionTarget.calories}</li>
+            <li><strong>${isId ? 'Mikronutrien Kunci' : 'Key Micronutrients'}:</strong> ${milestone.nutritionTarget.micronutrients}</li>
+            <li><strong>${isId ? 'Tekstur Makanan' : 'Food Texture'}:</strong> ${milestone.nutritionTarget.texture}</li>
           </ul>
         </div>
       </div>
@@ -12112,14 +12154,15 @@ class NutriVisionApp {
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
 
     // Update patient profile badge in calendar header
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
     const headerCondLabel = document.getElementById('cal-header-condition-label');
     if (headerCondLabel) {
       const condLabels = {
-        'post-surgery': 'Profil: Pasca-Bedah',
-        'rehab': 'Profil: Fisioterapi',
-        'gym': 'Profil: Pemulihan Umum'
+        'post-surgery': isId ? 'Profil: Pasca-Bedah' : 'Profile: Post-Surgery',
+        'rehab': isId ? 'Profil: Fisioterapi' : 'Profile: Physical Therapy',
+        'gym': isId ? 'Profil: Pemulihan Umum' : 'Profile: General Recovery'
       };
-      headerCondLabel.textContent = condLabels[cond] || 'Profil Pemulihan';
+      headerCondLabel.textContent = condLabels[cond] || (isId ? 'Profil Pemulihan' : 'Recovery Profile');
     }
 
     // Sync quick condition switcher in modal header
@@ -12131,11 +12174,11 @@ class NutriVisionApp {
     const condTagEl = document.getElementById('cal-detail-condition-tag');
     if (condTagEl) {
       const condNames = {
-        'post-surgery': 'PROFIL PASCA-OPERASI & BEDAH',
-        'rehab': 'PROFIL REHABILITASI & FISIOTERAPI',
-        'gym': 'PROFIL GYM & MUSCLE RECOVERY'
+        'post-surgery': isId ? 'PROFIL PASCA-OPERASI & BEDAH' : 'POST-SURGERY & SURGICAL PROFILE',
+        'rehab': isId ? 'PROFIL REHABILITASI & FISIOTERAPI' : 'REHABILITATION & PHYSICAL THERAPY PROFILE',
+        'gym': isId ? 'PROFIL GYM & MUSCLE RECOVERY' : 'GYM & MUSCLE RECOVERY PROFILE'
       };
-      condTagEl.textContent = condNames[cond] || 'PROFIL PEMULIHAN KLINIS';
+      condTagEl.textContent = condNames[cond] || (isId ? 'PROFIL PEMULIHAN KLINIS' : 'CLINICAL RECOVERY PROFILE');
     }
 
     this.renderRecoveryMonthPills(cond);
@@ -12329,32 +12372,38 @@ class NutriVisionApp {
   }
 
   updateCalendarBudgetBar() {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const loc = isId ? 'id-ID' : 'en-US';
     const dur = window.budgetPlanner ? window.budgetPlanner.durationDays : (this.userProfile?.budget?.durationDays || 7);
     const amount = window.budgetPlanner ? window.budgetPlanner.budgetAmount : (this.userProfile?.budget?.budgetAmount || 200000);
     const tier = this.userProfile?.budget?.tier || (amount <= (dur === 30 ? 800000 : 200000) ? 'super_budget' : amount <= (dur === 30 ? 1200000 : 300000) ? 'budget' : 'optimal');
     const daily = Math.round(amount / dur);
 
-    const tierLabels = {
+    const tierLabels = isId ? {
       'super_budget': 'Hemat Budget Terkontrol',
       'budget': 'Standar Seimbang Terkontrol',
       'optimal': 'Optimal Pemulihan'
+    } : {
+      'super_budget': 'Controlled Budget Saver',
+      'budget': 'Controlled Balanced Standard',
+      'optimal': 'Optimal Recovery'
     };
 
     const bannerAmt = document.getElementById('cal-banner-budget-amount');
-    if (bannerAmt) bannerAmt.textContent = `Rp ${amount.toLocaleString('id-ID')}`;
+    if (bannerAmt) bannerAmt.textContent = `Rp ${amount.toLocaleString(loc)}`;
     const bannerDur = document.getElementById('cal-banner-budget-duration');
-    if (bannerDur) bannerDur.textContent = `/ ${dur} hari`;
+    if (bannerDur) bannerDur.textContent = isId ? `/ ${dur} hari` : `/ ${dur} days`;
     const bannerDaily = document.getElementById('cal-banner-budget-daily');
-    if (bannerDaily) bannerDaily.textContent = `Rata-rata ~Rp ${daily.toLocaleString('id-ID')}/hari`;
+    if (bannerDaily) bannerDaily.textContent = isId ? `Rata-rata ~Rp ${daily.toLocaleString(loc)}/hari` : `Average ~Rp ${daily.toLocaleString(loc)}/day`;
     const bannerStatus = document.getElementById('cal-banner-budget-status');
-    if (bannerStatus) bannerStatus.textContent = `Status: ${tierLabels[tier] || 'Hemat Budget Terkontrol'}`;
+    if (bannerStatus) bannerStatus.textContent = `Status: ${tierLabels[tier] || (isId ? 'Hemat Budget Terkontrol' : 'Controlled Budget Saver')}`;
 
     const barTotal = document.getElementById('cal-budget-bar-total');
     const barDaily = document.getElementById('cal-budget-bar-daily');
     const barTier = document.getElementById('cal-budget-bar-tier');
-    if (barTotal) barTotal.textContent = `Rp ${amount.toLocaleString('id-ID')} (${dur} Hari)`;
-    if (barDaily) barDaily.textContent = `· ~Rp ${daily.toLocaleString('id-ID')}/hari`;
-    if (barTier) barTier.textContent = tierLabels[tier] || 'Standar Seimbang';
+    if (barTotal) barTotal.textContent = isId ? `Rp ${amount.toLocaleString(loc)} (${dur} Hari)` : `Rp ${amount.toLocaleString(loc)} (${dur} Days)`;
+    if (barDaily) barDaily.textContent = isId ? `· ~Rp ${daily.toLocaleString(loc)}/hari` : `· ~Rp ${daily.toLocaleString(loc)}/day`;
+    if (barTier) barTier.textContent = tierLabels[tier] || (isId ? 'Standar Seimbang' : 'Balanced Standard');
   }
 
   // =========================================================================
