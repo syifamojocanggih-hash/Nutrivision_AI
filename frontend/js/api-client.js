@@ -40,7 +40,7 @@ class NutriVisionAPIClient {
   async checkHealth() {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const res = await fetch(`${this.baseUrl}/api/health`, {
         signal: controller.signal
@@ -164,18 +164,22 @@ class NutriVisionAPIClient {
   // 2. MEALS & NUTRITION TRACKING
   // =========================================================================
   async getMeals(limit = 50, userId = null) {
+    const uid = userId || (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || '';
     const params = new URLSearchParams({ limit });
-    if (userId) params.append('userId', userId);
+    if (uid) params.append('userId', uid);
     return await this.request(`/api/meals?${params.toString()}`);
   }
 
   async getMealsToday(userId = null) {
-    const q = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    const uid = userId || (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || '';
+    const dateKey = new Date().toISOString().split('T')[0];
+    const q = uid ? `?userId=${encodeURIComponent(uid)}&date=${encodeURIComponent(dateKey)}` : `?date=${encodeURIComponent(dateKey)}`;
     return await this.request(`/api/meals/today${q}`);
   }
 
   async getMealsByDate(date, userId = null) {
-    const q = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    const uid = userId || (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || '';
+    const q = uid ? `?userId=${encodeURIComponent(uid)}` : '';
     return await this.request(`/api/meals/date/${date}${q}`);
   }
 
@@ -187,7 +191,8 @@ class NutriVisionAPIClient {
   }
 
   async getWeeklyStats(userId = null) {
-    const q = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+    const uid = userId || (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || '';
+    const q = uid ? `?userId=${encodeURIComponent(uid)}` : '';
     return await this.request(`/api/meals/weekly-stats${q}`);
   }
 

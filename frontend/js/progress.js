@@ -312,7 +312,7 @@ class NutriVisionProgress {
     // Sinkronisasi ke backend MySQL secara async (fire-and-forget)
     if (typeof window !== 'undefined' && window.nutriAPI) {
       const userProfile = (typeof app !== 'undefined' ? app.userProfile : null) || {};
-      const userId = userProfile?.id || userProfile?.contact || userProfile?.email || 'usr_patient_siti';
+      const userId = userProfile?.id || userProfile?.contact || userProfile?.email || userKey || '';
       const mealPayload = {
         title: mealEntry.name,
         mealType: (mealMeta?.mealType) || (mealEntry.source?.toLowerCase().includes('malam') ? 'dinner' :
@@ -1103,7 +1103,7 @@ class NutriVisionProgress {
       if (!isOnline) return;
 
       // 2. Ambil data hari ini & rekap mingguan dari server secara paralel
-      const activeUserId = (typeof app !== 'undefined' && app.userProfile?.id) || userKey || null;
+      const activeUserId = (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || userKey || '';
       const [todayData, weeklyData] = await Promise.all([
         window.nutriAPI.getMealsToday(activeUserId).catch(() => null),
         window.nutriAPI.getWeeklyStats(activeUserId).catch(() => null)
@@ -1155,18 +1155,24 @@ class NutriVisionProgress {
           imageUrl: m.image_url || ''
         }));
 
-        if (serverMeals.length > 0) {
-          this.todayMeals = serverMeals;
-          if (todayData.summary) {
-            this.todayIntake.protein   = todayData.summary.totalProtein  || 0;
-            this.todayIntake.calories  = todayData.summary.totalCalories || 0;
-            this.todayIntake.carbs     = todayData.summary.totalCarbs    || 0;
-            this.todayIntake.fat       = todayData.summary.totalFat      || 0;
+        if (serverMeals.length > 0 || (todayData.summary && (todayData.summary.totalProtein > 0 || todayData.summary.totalCalories > 0))) {
+          this.isConfigured = true;
+          const serverIds = new Set(serverMeals.map(m => m.id));
+          const unsyncedLocal = (this.todayMeals || []).filter(m => !m._serverId && !serverIds.has(m.id));
+          this.todayMeals = [...unsyncedLocal, ...serverMeals];
+
+          if (todayData.summary && (todayData.summary.totalProtein > 0 || todayData.summary.totalCalories > 0)) {
+            const localUnsyncedProt = unsyncedLocal.reduce((s, m) => s + (m.protein || 0), 0);
+            const localUnsyncedCal = unsyncedLocal.reduce((s, m) => s + (m.calories || 0), 0);
+            this.todayIntake.protein   = Math.round((todayData.summary.totalProtein  || 0) + localUnsyncedProt);
+            this.todayIntake.calories  = Math.round((todayData.summary.totalCalories || 0) + localUnsyncedCal);
+            this.todayIntake.carbs     = Math.round(todayData.summary.totalCarbs    || 0);
+            this.todayIntake.fat       = Math.round(todayData.summary.totalFat      || 0);
           } else {
-            this.todayIntake.protein  = serverMeals.reduce((s, m) => s + (m.protein  || 0), 0);
-            this.todayIntake.calories = serverMeals.reduce((s, m) => s + (m.calories || 0), 0);
-            this.todayIntake.carbs    = serverMeals.reduce((s, m) => s + (m.carbs    || 0), 0);
-            this.todayIntake.fat      = serverMeals.reduce((s, m) => s + (m.fat      || 0), 0);
+            this.todayIntake.protein  = Math.round(this.todayMeals.reduce((s, m) => s + (m.protein  || 0), 0));
+            this.todayIntake.calories = Math.round(this.todayMeals.reduce((s, m) => s + (m.calories || 0), 0));
+            this.todayIntake.carbs    = Math.round(this.todayMeals.reduce((s, m) => s + (m.carbs    || 0), 0));
+            this.todayIntake.fat      = Math.round(this.todayMeals.reduce((s, m) => s + (m.fat      || 0), 0));
           }
         }
 
@@ -1183,10 +1189,8 @@ class NutriVisionProgress {
         this.renderTodayMealHistory();
 
         // Update macro donut kalau profile sudah ada
-        const prof = (typeof app !== 'undefined' ? app.userProfile : null);
-        if (prof?.targets) {
-          this.renderMacroDonut(prof.targets);
-        }
+        const activeTargets = (typeof app !== 'undefined' ? app.userProfile?.targets : null) || targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+        this.renderMacroDonut(activeTargets);
         this.renderWeeklyBarChart();
         this.updateProgressPageSummary();
 

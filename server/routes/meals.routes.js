@@ -20,9 +20,6 @@ function sanitizeMeal(meal) {
 router.get('/', optionalAuth, async (req, res) => {
   try {
     const userId = req.user ? req.user.id : req.query.userId;
-    if (!userId) {
-      return res.json({ success: true, count: 0, meals: [] });
-    }
     const limit = parseInt(req.query.limit) || 50;
 
     const meals = await db.query(
@@ -48,21 +45,13 @@ router.get('/', optionalAuth, async (req, res) => {
 router.get('/today', optionalAuth, async (req, res) => {
   try {
     const userId = req.user ? req.user.id : req.query.userId;
-    if (!userId) {
-      return res.json({
-        success: true,
-        date: new Date().toISOString().split('T')[0],
-        count: 0,
-        summary: { totalProtein: 0, totalCalories: 0, totalCarbs: 0, totalFat: 0 },
-        meals: []
-      });
-    }
+    const targetDate = req.query.date || new Date().toISOString().split('T')[0];
 
     const meals = await db.query(
       `SELECT * FROM meals
-       WHERE user_id = ? AND DATE(timestamp) = CURDATE()
+       WHERE user_id = ? AND (DATE(timestamp) = ? OR DATE(timestamp) = CURDATE())
        ORDER BY timestamp DESC`,
-      [userId]
+      [userId, targetDate]
     );
 
     const totalProtein = meals.reduce((sum, m) => sum + (parseFloat(m.total_protein) || 0), 0);
@@ -72,7 +61,7 @@ router.get('/today', optionalAuth, async (req, res) => {
 
     return res.json({
       success: true,
-      date: new Date().toISOString().split('T')[0],
+      date: targetDate,
       count: meals.length,
       summary: {
         totalProtein: Math.round(totalProtein * 10) / 10,
@@ -94,7 +83,7 @@ router.get('/today', optionalAuth, async (req, res) => {
  */
 router.get('/date/:date', optionalAuth, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.query.userId || 'usr_patient_siti');
+    const userId = req.user ? req.user.id : req.query.userId;
     const { date } = req.params;
 
     // Basic YYYY-MM-DD validation
@@ -138,7 +127,7 @@ router.get('/date/:date', optionalAuth, async (req, res) => {
  */
 router.post('/', optionalAuth, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.body.userId || 'usr_patient_siti');
+    const userId = req.user ? req.user.id : req.body.userId;
     const {
       title, mealType, totalCalories, totalProtein, totalCarbs,
       totalFat, imageUrl, confidence, clinicalAdvice, segments
