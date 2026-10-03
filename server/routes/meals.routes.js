@@ -197,22 +197,48 @@ router.post('/', optionalAuth, async (req, res) => {
 router.get('/weekly-stats', optionalAuth, async (req, res) => {
   try {
     const userId = req.user ? req.user.id : req.query.userId;
+    const daysNameId = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const daysNameEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+
     if (!userId) {
+      const emptyHistory = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayIdx = d.getDay();
+        emptyHistory.push({
+          date: dateStr,
+          dayId: daysNameId[dayIdx],
+          dayEn: daysNameEn[dayIdx],
+          targetProtein: 75,
+          actualProtein: 0,
+          targetCalories: 1850,
+          actualCalories: 0,
+          compliancePct: 0,
+          status: 'Belum Ada Data'
+        });
+      }
       return res.json({
         success: true,
         userId: 'guest',
         targetProtein: 75,
         targetCalories: 1850,
         averageCompliancePct: 0,
-        days: []
+        loggedDaysCount: 0,
+        streakDays: 0,
+        clinicalSummary: 'Belum ada riwayat asupan makanan yang dicatat dalam 7 hari terakhir.',
+        days: emptyHistory
       });
     }
+
     const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]) || { target_protein: 98, daily_calories: 1850 };
 
     const targetProtein = user.target_protein || 98;
     const targetCalories = user.daily_calories || 1850;
 
-    // Fetch meals from last 7 days (MySQL DATE() and DATE_SUB)
+    // Fetch meals from last 7 calendar days (CURDATE - 6 days through CURDATE)
     const meals = await db.query(`
       SELECT
         DATE_FORMAT(timestamp, '%Y-%m-%d') as meal_date,
@@ -221,17 +247,14 @@ router.get('/weekly-stats', optionalAuth, async (req, res) => {
         SUM(total_calories) as daily_calories,
         COUNT(id) as meal_count
       FROM meals
-      WHERE user_id = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+      WHERE user_id = ? AND DATE(timestamp) >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
       GROUP BY DATE_FORMAT(timestamp, '%Y-%m-%d'), DAYOFWEEK(timestamp)
       ORDER BY meal_date ASC
     `, [userId]);
 
-    const daysNameId = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-    const daysNameEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    const today = new Date();
     const history = [];
     let totalPct = 0;
+    let loggedDaysCount = 0;
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -244,6 +267,7 @@ router.get('/weekly-stats', optionalAuth, async (req, res) => {
       const caloriesActual = record ? Math.round(record.daily_calories) : 0;
       const pct = Math.min(Math.round((proteinActual / targetProtein) * 100), 120);
 
+      if (proteinActual > 0) loggedDaysCount++;
       totalPct += pct;
 
       history.push({
@@ -259,7 +283,32 @@ router.get('/weekly-stats', optionalAuth, async (req, res) => {
       });
     }
 
-    const avgCompliance = Math.round(totalPct / 7);
+    // Hitung streak dari riwayat hari yang tercatat
+    let streak = 0;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].actualProtein > 0) {
+        streak++;
+      } else {
+        if (i === history.length - 1) {
+          // Jika hari ini belum selesai makan, jangan putus streak kemarin
+          continue;
+        }
+        break;
+      }
+    }
+
+    const avgCompliance = loggedDaysCount > 0 ? Math.round(totalPct / 7) : 0;
+
+    let clinicalSummary = `Rata-rata kepatuhan protein 7 hari terakhir: ${avgCompliance}%. `;
+    if (avgCompliance >= 85) {
+      clinicalSummary += 'Pasien menunjukkan konsistensi tinggi pada asupan protein pemulihan. Pertahankan pemenuhan nutrisi ini untuk regenerasi jaringan optimal.';
+    } else if (avgCompliance >= 50) {
+      clinicalSummary += 'Kepatuhan asupan terpantau cukup baik, namun dianjurkan untuk meningkatkan porsi lauk tinggi protein agar mencapai target regenerasi klinis.';
+    } else if (loggedDaysCount > 0) {
+      clinicalSummary += 'Pencatatan asupan masih terbatas. Disarankan untuk lebih disiplin mencatat setiap waktu makan.';
+    } else {
+      clinicalSummary += 'Belum ada riwayat asupan makanan yang dicatat dalam 7 hari terakhir. Mulai catat hidangan untuk pemantauan klinis.';
+    }
 
     return res.json({
       success: true,
@@ -267,6 +316,10 @@ router.get('/weekly-stats', optionalAuth, async (req, res) => {
       targetProtein,
       targetCalories,
       averageCompliancePct: avgCompliance,
+      loggedDaysCount,
+      streakDays: streak,
+      clinicalSummary,
+      recoveryPhase: user.recovery_phase || 'phase2',
       days: history
     });
   } catch (err) {

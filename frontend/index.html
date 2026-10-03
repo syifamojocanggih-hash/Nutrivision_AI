@@ -2039,7 +2039,7 @@
 
           <div class="planner-gateway-grid">
             <!-- Pilihan 1: Menu Standar Klinis -->
-            <div class="planner-gateway-card card-standar" onclick="app.openMealPlannerMode('standar')">
+            <div class="planner-gateway-card card-standar" role="button" tabindex="0" onclick="app.openMealPlannerMode('standar')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.openMealPlannerMode('standar');}">
               <div class="gateway-card-top">
                 <div class="gateway-icon-wrap icon-standar">
                   <i data-lucide="stethoscope"></i>
@@ -2056,14 +2056,14 @@
                 <li><i data-lucide="shield-check"></i> <span>Filter keluhan fisiologis (mual, sulit menelan / disfagia)</span></li>
                 <li><i data-lucide="alert-triangle"></i> <span>Proteksi otomatis pantangan &amp; alergi klinis</span></li>
               </ul>
-              <button type="button" class="btn-gateway-action btn-standar">
+              <button type="button" class="btn-gateway-action btn-standar" onclick="event.stopPropagation(); app.openMealPlannerMode('standar');">
                 <span>Buka Menu Standar Klinis</span>
                 <i data-lucide="arrow-right"></i>
               </button>
             </div>
 
             <!-- Pilihan 2: Menu Hemat Terjangkau -->
-            <div class="planner-gateway-card card-hemat" onclick="app.openMealPlannerMode('hemat')">
+            <div class="planner-gateway-card card-hemat" role="button" tabindex="0" onclick="app.openMealPlannerMode('hemat')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();app.openMealPlannerMode('hemat');}">
               <div class="gateway-card-top">
                 <div class="gateway-icon-wrap icon-hemat">
                   <i data-lucide="wallet"></i>
@@ -2080,7 +2080,7 @@
                 <li><i data-lucide="map-pin"></i> <span>Terkalibrasi disparitas harga pangan regional Bapanas</span></li>
                 <li><i data-lucide="shopping-cart"></i> <span>Daftar belanja bahan pasar otomatis &amp; cetak rencana</span></li>
               </ul>
-              <button type="button" class="btn-gateway-action btn-hemat">
+              <button type="button" class="btn-gateway-action btn-hemat" onclick="event.stopPropagation(); app.openMealPlannerMode('hemat');">
                 <span>Buka Menu Hemat Terjangkau</span>
                 <i data-lucide="arrow-right"></i>
               </button>
@@ -2945,8 +2945,8 @@
               <div class="card-subtitle" data-i18n="prog_recap_sub">Analisis kepatuhan harian terhadap anjuran target
                 gizi</div>
             </div>
-            <span class="badge coral" style="font-weight:700;"><i data-lucide="flame" class="btn-icon-sm"></i> <span
-                data-i18n="prog_streak_badge">Streak 6 Hari</span></span>
+            <span class="badge coral" id="prog-page-streak-badge" style="font-weight:700;"><i data-lucide="flame" class="btn-icon-sm"></i> <span
+                id="prog-page-streak-text">Streak 0 Hari</span></span>
           </div>
 
           <div class="weekly-bar-chart" id="weekly-bar-chart-box-full" style="height:180px;margin-bottom:20px;">
@@ -2968,11 +2968,8 @@
                   Ekspor</span>
               </span>
             </div>
-            <p style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:12px;"
-              data-i18n="prog_telehealth_desc">
-              Rata-rata kepatuhan protein 7 hari terakhir: <b>92%</b>. Pasien menunjukkan konsistensi tinggi pada asupan
-              protein hewani dan nabati bertekstur lunak. Tidak dilaporkan adanya keluhan sembelit signifikan setelah
-              penambahan serat sayur bening bayam.
+            <p id="prog-telehealth-desc" style="font-size:var(--font-sm);color:var(--ink-soft);line-height:1.6;margin-bottom:12px;">
+              Memuat ringkasan kepatuhan nutrisi...
             </p>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;">
               <button class="btn-primary-teal"

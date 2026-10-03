@@ -2060,10 +2060,19 @@ class NutriVisionApp {
     }
 
     if (sectionId === 'planner') {
+      const hub = document.getElementById('planner-hub-screen');
+      const secStandar = document.getElementById('planner-section-standar');
+      const secHemat = document.getElementById('planner-section-hemat');
+
       if (this.plannerActiveMode === 'standar') {
-        this.openMealPlannerMode('standar');
+        if (hub) hub.style.display = 'none';
+        if (secStandar) secStandar.style.display = 'block';
+        if (secHemat) secHemat.style.display = 'none';
+        try { this.renderClinicalCalendarAndScheduleSuite(); } catch (e) { console.warn(e); }
       } else if (this.plannerActiveMode === 'hemat') {
-        this.openMealPlannerMode('hemat');
+        if (hub) hub.style.display = 'none';
+        if (secStandar) secStandar.style.display = 'none';
+        if (secHemat) secHemat.style.display = 'block';
       } else {
         this.showPlannerHub();
       }
@@ -2072,6 +2081,10 @@ class NutriVisionApp {
     if (sectionId === 'progress') {
       const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
       this.renderJourneyRoadmap(cond);
+      if (typeof progressTracker !== 'undefined') {
+        progressTracker.renderWeeklyBarChart();
+        progressTracker.updateProgressPageSummary();
+      }
     }
 
     if (sectionId === 'ai-text') {
@@ -10279,6 +10292,19 @@ class NutriVisionApp {
 
       const superfoodsList = (p.superfoods || []).map(sf => `<span style="display:inline-block;padding:2px 6px;border-radius:4px;background:rgba(35,57,23,0.06);font-size:10px;font-weight:600;color:#233917;">${sf}</span>`).join(' ');
 
+      let effectivePct = p.progressPct;
+      if (!this.userProfile?.isDemo && typeof progressTracker !== 'undefined') {
+        const loggedCount = (progressTracker.weeklyLogs || []).filter(l => (l.protein || 0) > 0).length;
+        if (isCompleted) {
+          effectivePct = 100;
+        } else if (isActive) {
+          // Fase 2 aktif: kalkulasi capaian dinamis berbasis riwayat kepatuhan pasien
+          effectivePct = Math.min(100, Math.round(25 + (loggedCount / 7) * 70));
+        } else {
+          effectivePct = 0;
+        }
+      }
+
       return `
         <div class="journey-step-box" data-phase="${p.phaseNum}" onclick="app.selectJourneyPhase('${cond}', ${p.phaseNum})"
              style="background:${cardBg};border:${cardBorder};border-radius:12px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px;box-shadow:${isActive ? '0 4px 16px rgba(35,57,23,0.08)' : 'none'};">
@@ -10298,10 +10324,10 @@ class NutriVisionApp {
           <div style="margin-top:auto;padding-top:4px;">
             <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;">
               <span>Target Tercapai</span>
-              <span style="color:var(--ink);font-weight:700;">${p.progressPct}%</span>
+              <span style="color:var(--ink);font-weight:700;">${effectivePct}%</span>
             </div>
             <div style="width:100%;height:6px;background:#EAECE0;border-radius:3px;overflow:hidden;">
-              <div style="width:${p.progressPct}%;height:100%;background:${progressColor};border-radius:3px;transition:width 0.4s ease;"></div>
+              <div style="width:${effectivePct}%;height:100%;background:${progressColor};border-radius:3px;transition:width 0.4s ease;"></div>
             </div>
           </div>
 
@@ -11499,7 +11525,19 @@ class NutriVisionApp {
 
   openMealPlannerMode(mode = 'standar') {
     this.plannerActiveMode = mode;
-    this.navigate('planner');
+
+    if (this.activeSection !== 'planner') {
+      this.activeSection = 'planner';
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active-view'));
+      const targetSection = document.getElementById('view-planner');
+      if (targetSection) targetSection.classList.add('active-view');
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sec === 'planner');
+      });
+      document.querySelectorAll('.bottom-nav-pwa .bottom-nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sec === 'planner');
+      });
+    }
 
     const hub = document.getElementById('planner-hub-screen');
     const secStandar = document.getElementById('planner-section-standar');
@@ -11516,7 +11554,11 @@ class NutriVisionApp {
           window.mealPlanner.renderPlanner();
         }
       }
-      this.renderClinicalCalendarAndScheduleSuite();
+      try {
+        this.renderClinicalCalendarAndScheduleSuite();
+      } catch (err) {
+        console.warn('Calendar suite render error:', err);
+      }
     } else {
       if (secStandar) secStandar.style.display = 'none';
       if (secHemat) secHemat.style.display = 'block';
@@ -11527,10 +11569,14 @@ class NutriVisionApp {
         }
       }
       if (window.budgetPlanner) {
-        if (typeof window.budgetPlanner.init === 'function' && !window.budgetPlanner.plan?.length) {
-          window.budgetPlanner.init();
-        } else if (typeof window.budgetPlanner.render === 'function') {
-          window.budgetPlanner.render();
+        try {
+          if (typeof window.budgetPlanner.init === 'function' && !window.budgetPlanner.plan?.length) {
+            window.budgetPlanner.init();
+          } else if (typeof window.budgetPlanner.render === 'function') {
+            window.budgetPlanner.render();
+          }
+        } catch (err) {
+          console.warn('Budget planner render error:', err);
         }
       }
     }
@@ -11539,10 +11585,7 @@ class NutriVisionApp {
       window.lucide.createIcons();
     }
 
-    const plannerView = document.getElementById('view-planner');
-    if (plannerView) {
-      plannerView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   renderClinicalCalendarAndScheduleSuite() {

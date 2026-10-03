@@ -131,6 +131,8 @@ class NutriVisionProgress {
             this.weeklyLogs = this.create7DayLogs(targets.protein, targets.calories);
             this.saveUserProgress(userKey);
           }
+          this.renderWeeklyBarChart();
+          this.updateProgressPageSummary();
           // Sinkronisasi async dari backend (tidak blokir UI)
           this.syncFromServer(userKey, targets);
           return;
@@ -142,6 +144,8 @@ class NutriVisionProgress {
 
     // Default: inisialisasi progres bersih 0 intake untuk akun nyata
     this.initUserProgress(targets, userKey);
+    this.renderWeeklyBarChart();
+    this.updateProgressPageSummary();
     // Sinkronisasi async dari backend (tidak blokir UI)
     this.syncFromServer(userKey, targets);
   }
@@ -201,6 +205,12 @@ class NutriVisionProgress {
         source: isId ? 'Camilan Sore' : 'Snack'
       }
     ];
+    this.serverStreak = 6;
+    this.serverSummary = isId
+      ? 'Pasien menunjukkan kepatuhan tinggi pada asupan protein pemulihan pasca-bedah dengan toleransi cerna yang sangat baik.'
+      : 'Patient shows high compliance with post-surgical protein recovery with excellent digestive tolerance.';
+    this.renderWeeklyBarChart();
+    this.updateProgressPageSummary();
   }
 
   // Perbarui target setelah pengisian kuesioner profil diagnostik
@@ -266,6 +276,8 @@ class NutriVisionProgress {
     this.saveUserProgress(userKey);
     this.renderTodayMealHistory();
     this.renderHistoryPage();
+    this.renderWeeklyBarChart();
+    this.updateProgressPageSummary();
 
     // Sinkronisasi ke backend MySQL secara async (fire-and-forget)
     if (typeof window !== 'undefined' && window.nutriAPI) {
@@ -325,25 +337,30 @@ class NutriVisionProgress {
     const streakText = document.getElementById('ov-card3-streak-text');
     const avgText = document.getElementById('ov-weekly-avg-text');
 
+    const progStreakBadge = document.getElementById('prog-page-streak-badge');
+    const progStreakText = document.getElementById('prog-page-streak-text');
+
     // Hitung streak & rata-rata kepatuhan secara dinamis
     const logs = this.weeklyLogs || [];
     const loggedDays = logs.filter(l => (l.protein || 0) > 0);
 
-    let streak = 0;
-    // Hitung streak dari hari-hari lampau yang tercatat secara berurutan
-    const pastLogs = logs.filter(l => !l.isToday);
-    for (let i = pastLogs.length - 1; i >= 0; i--) {
-      if ((pastLogs[i].protein || 0) > 0) {
-        streak++;
-      } else {
-        break;
+    let streak = (this.serverStreak !== undefined) ? this.serverStreak : 0;
+    if (this.serverStreak === undefined) {
+      // Hitung streak dari hari-hari lampau yang tercatat secara berurutan
+      const pastLogs = logs.filter(l => !l.isToday);
+      for (let i = pastLogs.length - 1; i >= 0; i--) {
+        if ((pastLogs[i].protein || 0) > 0) {
+          streak++;
+        } else {
+          break;
+        }
       }
-    }
-    const todayLog = logs.find(l => l.isToday);
-    if (todayLog && (todayLog.protein || 0) > 0) {
-      const tgt = todayLog.targetProt || 75;
-      if (streak === 0 || ((todayLog.protein || 0) >= tgt * 0.9)) {
-        streak += 1;
+      const todayLog = logs.find(l => l.isToday);
+      if (todayLog && (todayLog.protein || 0) > 0) {
+        const tgt = todayLog.targetProt || 75;
+        if (streak === 0 || ((todayLog.protein || 0) >= tgt * 0.9)) {
+          streak += 1;
+        }
       }
     }
 
@@ -351,6 +368,9 @@ class NutriVisionProgress {
       if (streakBadge) streakBadge.className = 'badge gray';
       if (streakText) streakText.textContent = isId ? 'Streak: 0 Hari' : 'Streak: 0 Days';
       if (avgText) avgText.innerHTML = isId ? 'Rata-rata mingguan: <b>Belum ada riwayat</b>' : 'Weekly average: <b>No history yet</b>';
+
+      if (progStreakBadge) progStreakBadge.className = 'badge gray';
+      if (progStreakText) progStreakText.textContent = isId ? 'Streak 0 Hari' : 'Streak 0 Days';
 
       const emptyHtml = logs.map(log => `
         <div class="bar-column ${log.isToday ? 'today' : ''}">
@@ -363,6 +383,7 @@ class NutriVisionProgress {
 
       if (container1) container1.innerHTML = emptyHtml;
       if (container2) container2.innerHTML = emptyHtml;
+      this.updateProgressPageSummary();
       return;
     }
 
@@ -372,6 +393,9 @@ class NutriVisionProgress {
     if (streakBadge) streakBadge.className = streak > 0 ? 'badge teal' : 'badge gray';
     if (streakText) streakText.textContent = isId ? `Streak: ${streak} Hari` : `Streak: ${streak} Day${streak > 1 ? 's' : ''}`;
     if (avgText) avgText.innerHTML = isId ? `Rata-rata mingguan: <b>${avgCompliance}% tercapai</b>` : `Weekly average: <b>${avgCompliance}% achieved</b>`;
+
+    if (progStreakBadge) progStreakBadge.className = streak > 0 ? 'badge coral' : 'badge gray';
+    if (progStreakText) progStreakText.textContent = isId ? `Streak ${streak} Hari` : `Streak ${streak} Day${streak > 1 ? 's' : ''}`;
 
     const maxProt = Math.max(100, ...logs.map(l => (l.targetProt || 75) * 1.15));
 
@@ -389,6 +413,49 @@ class NutriVisionProgress {
 
     if (container1) container1.innerHTML = html;
     if (container2) container2.innerHTML = html;
+
+    this.updateProgressPageSummary();
+  }
+
+  // Perbarui teks ringkasan kepatuhan telehealth secara dinamis berbasis data riil
+  updateProgressPageSummary() {
+    const descEl = document.getElementById('prog-telehealth-desc');
+    if (!descEl) return;
+
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const logs = this.weeklyLogs || [];
+    const logged = logs.filter(l => (l.protein || 0) > 0);
+    const avgProt = logged.length > 0 ? Math.round(logged.reduce((acc, l) => acc + l.protein, 0) / logged.length) : 0;
+    const targetProt = (typeof app !== 'undefined' && app.userProfile?.targets?.protein) || 75;
+    const avgPct = logged.length > 0 ? Math.min(120, Math.round((avgProt / targetProt) * 100)) : 0;
+
+    if (logged.length === 0) {
+      descEl.innerHTML = isId
+        ? 'Belum ada riwayat asupan makanan yang dicatat dalam 7 hari terakhir. Mulai catat hidangan harian via <b>Pindai Piring</b> atau <b>Meal Planner</b> untuk memantau grafik kepatuhan klinis Anda.'
+        : 'No meal intake records found in the last 7 days. Start logging meals via <b>Plate Scanner</b> or <b>Meal Planner</b> to monitor your clinical compliance.';
+      return;
+    }
+
+    if (this.serverSummary && isId) {
+      descEl.innerHTML = `Rata-rata kepatuhan protein 7 hari terakhir: <b>${avgPct}%</b> (${avgProt}g / ${targetProt}g per hari). ${this.serverSummary}`;
+      return;
+    }
+
+    if (isId) {
+      let clinicalNote = avgPct >= 85
+        ? 'Pasien menunjukkan konsistensi tinggi pada asupan protein pemulihan. Pertahankan pemenuhan nutrisi ini untuk regenerasi jaringan dan hemostasis optimal.'
+        : (avgPct >= 50
+          ? 'Kepatuhan asupan terpantau cukup baik, namun dianjurkan untuk meningkatkan porsi lauk tinggi protein (seperti ikan gabus, putih telur, atau tempe) agar mencapai target regenerasi klinis.'
+          : 'Kepatuhan asupan protein masih di bawah anjuran klinis. Disarankan untuk memprioritaskan makanan padat gizi agar mencegah risiko malnutrisi atau pemulihan lambat.');
+      descEl.innerHTML = `Rata-rata kepatuhan protein 7 hari terakhir: <b>${avgPct}%</b> (${avgProt}g / ${targetProt}g per hari). ${clinicalNote}`;
+    } else {
+      let clinicalNote = avgPct >= 85
+        ? 'Patient demonstrates high consistency in recovery protein intake. Maintain this nutrition level for optimal tissue repair.'
+        : (avgPct >= 50
+          ? 'Intake compliance is moderately good, but increasing high-protein portions (snakehead fish, egg whites, tempeh) is advised to hit targets.'
+          : 'Intake compliance is below clinical recommendations. High-protein, nutrient-dense meals are strongly recommended to accelerate recovery.');
+      descEl.innerHTML = `Average protein compliance over the last 7 days: <b>${avgPct}%</b> (${avgProt}g / ${targetProt}g daily). ${clinicalNote}`;
+    }
   }
 
   // Render Macro Progress Bars & Center Donut (Mendukung Zero/Preview Mode & Configured State)
@@ -1001,15 +1068,48 @@ class NutriVisionProgress {
     if (typeof window === 'undefined' || !window.nutriAPI) return;
 
     try {
-      // 1. Tunggu health check (bisa sudah selesai karena dipanggil di constructor api-client)
+      // 1. Tunggu health check
       const isOnline = window.nutriAPI.isServerOnline || await window.nutriAPI.checkHealth();
       if (!isOnline) return;
 
-      // 2. Ambil data hari ini dari server untuk pengguna aktif
+      // 2. Ambil data hari ini & rekap mingguan dari server secara paralel
       const activeUserId = (typeof app !== 'undefined' && app.userProfile?.id) || userKey || null;
-      const todayData = await window.nutriAPI.getMealsToday(activeUserId).catch(() => null);
+      const [todayData, weeklyData] = await Promise.all([
+        window.nutriAPI.getMealsToday(activeUserId).catch(() => null),
+        window.nutriAPI.getWeeklyStats(activeUserId).catch(() => null)
+      ]);
+
+      // 3. Sinkronkan riwayat 7 hari dari server jika data weekly-stats valid
+      if (weeklyData?.success && Array.isArray(weeklyData.days) && weeklyData.days.length > 0) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const targetProt = targets?.protein || (typeof app !== 'undefined' && app.userProfile?.targets?.protein) || 75;
+        const targetCal = targets?.calories || (typeof app !== 'undefined' && app.userProfile?.targets?.calories) || 1850;
+
+        const serverWeeklyLogs = weeklyData.days.map(d => ({
+          day: d.dayId || d.day || 'Sen',
+          date: d.date,
+          dateKey: d.date,
+          protein: Math.round(d.actualProtein || 0),
+          targetProt: d.targetProtein || targetProt,
+          calories: Math.round(d.actualCalories || 0),
+          targetCal: d.targetCalories || targetCal,
+          compliancePct: d.compliancePct || 0,
+          isToday: d.date === todayStr
+        }));
+
+        if (serverWeeklyLogs.length === 7) {
+          this.weeklyLogs = serverWeeklyLogs;
+        }
+        if (weeklyData.streakDays !== undefined) {
+          this.serverStreak = weeklyData.streakDays;
+        }
+        if (weeklyData.clinicalSummary) {
+          this.serverSummary = weeklyData.clinicalSummary;
+        }
+      }
+
+      // 4. Sinkronkan detail hidangan hari ini
       if (todayData?.success && Array.isArray(todayData.meals)) {
-        // Konversi format server ke format internal todayMeals
         const serverMeals = todayData.meals.map(m => ({
           id: m.id,
           _serverId: m.id,
@@ -1025,7 +1125,6 @@ class NutriVisionProgress {
           imageUrl: m.image_url || ''
         }));
 
-        // Server adalah sumber kebenaran utama HANYA jika ada data meal hari ini
         if (serverMeals.length > 0) {
           this.todayMeals = serverMeals;
           if (todayData.summary) {
@@ -1034,43 +1133,45 @@ class NutriVisionProgress {
             this.todayIntake.carbs     = todayData.summary.totalCarbs    || 0;
             this.todayIntake.fat       = todayData.summary.totalFat      || 0;
           } else {
-            // Hitung ulang dari serverMeals langsung
             this.todayIntake.protein  = serverMeals.reduce((s, m) => s + (m.protein  || 0), 0);
             this.todayIntake.calories = serverMeals.reduce((s, m) => s + (m.calories || 0), 0);
             this.todayIntake.carbs    = serverMeals.reduce((s, m) => s + (m.carbs    || 0), 0);
             this.todayIntake.fat      = serverMeals.reduce((s, m) => s + (m.fat      || 0), 0);
           }
         }
-        // Jika server tidak punya data hari ini (meals kosong), JANGAN timpa localStorage
-        // — data lokal tetap dipertahankan (offline / belum sync ke MySQL)
 
-          // Update today's weeklyLog entry
-          const todayLog = this.weeklyLogs.find(l => l.isToday);
-          if (todayLog) {
-            todayLog.protein = this.todayIntake.protein;
-            todayLog.calories = this.todayIntake.calories;
-            const tProt = todayLog.targetProt || targets?.protein || 75;
-            todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / tProt) * 100));
-          }
-
-          this.saveUserProgress(userKey);
-          this.renderTodayMealHistory();
-
-          // Update macro donut kalau profile sudah ada
-          const prof = (typeof app !== 'undefined' ? app.userProfile : null);
-          if (prof?.targets) {
-            this.renderMacroDonut(prof.targets);
-          }
-          this.renderWeeklyBarChart();
-
-          // Update history page jika sedang terbuka
-          const histView = document.getElementById('view-history');
-          if (histView && histView.classList.contains('active-view')) {
-            this.renderHistoryPage();
-          }
-
-          console.log(`[NutriVision] ✅ Sync dari server: ${serverMeals.length} hidangan hari ini dimuat.`);
+        // Update today's weeklyLog entry
+        const todayLog = this.weeklyLogs.find(l => l.isToday);
+        if (todayLog) {
+          todayLog.protein = this.todayIntake.protein;
+          todayLog.calories = this.todayIntake.calories;
+          const tProt = todayLog.targetProt || targets?.protein || 75;
+          todayLog.compliancePct = Math.min(100, Math.round((this.todayIntake.protein / tProt) * 100));
         }
+
+        this.saveUserProgress(userKey);
+        this.renderTodayMealHistory();
+
+        // Update macro donut kalau profile sudah ada
+        const prof = (typeof app !== 'undefined' ? app.userProfile : null);
+        if (prof?.targets) {
+          this.renderMacroDonut(prof.targets);
+        }
+        this.renderWeeklyBarChart();
+        this.updateProgressPageSummary();
+
+        // Update history page jika sedang terbuka
+        const histView = document.getElementById('view-history');
+        if (histView && histView.classList.contains('active-view')) {
+          this.renderHistoryPage();
+        }
+
+        console.log(`[NutriVision] ✅ Sync dari server: ${serverMeals.length} hidangan & 7-hari mingguan termuat.`);
+      } else {
+        // Jika tidak ada data meals hari ini tapi weekly-stats sudah didapat
+        this.renderWeeklyBarChart();
+        this.updateProgressPageSummary();
+      }
     } catch (err) {
       // Silent fail — mode offline tetap berjalan dari localStorage
       console.warn('[NutriVision] syncFromServer gagal (offline):', err.message);

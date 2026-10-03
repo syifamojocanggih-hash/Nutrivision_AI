@@ -4753,6 +4753,10 @@
   transition: transform 0.2s ease;
 }
 
+.btn-gateway-action * {
+  pointer-events: none;
+}
+
 .planner-gateway-card:hover .btn-gateway-action i,
 .planner-gateway-card:hover .btn-gateway-action svg {
   transform: translateX(4px);
