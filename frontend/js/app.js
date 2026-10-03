@@ -378,7 +378,10 @@ class NutriVisionApp {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('✅ ServiceWorker Registered. Scope:', reg.scope))
+          .then(reg => {
+            console.log('✅ ServiceWorker Registered. Scope:', reg.scope);
+            if (typeof reg.update === 'function') reg.update();
+          })
           .catch(err => console.log('ServiceWorker registration failed:', err));
       });
     }
@@ -2073,11 +2076,18 @@ class NutriVisionApp {
         if (hub) hub.style.display = 'none';
         if (secStandar) secStandar.style.display = 'none';
         if (secHemat) secHemat.style.display = 'block';
+        if (!window.budgetPlanner && typeof NutriVisionBudgetPlanner !== 'undefined') {
+          window.budgetPlanner = new NutriVisionBudgetPlanner();
+          window.budgetPlanner.init();
+        }
         if (window.budgetPlanner) {
           window.budgetPlanner.isPlanGenerated = true;
           const inputAmount = document.getElementById('budget-input-amount');
           if (inputAmount && (!inputAmount.value || inputAmount.value.trim() === '')) {
             inputAmount.value = window.budgetPlanner.formatRupiah(window.budgetPlanner.budgetAmount || 200000);
+          }
+          if (!window.budgetPlanner.plan || !window.budgetPlanner.plan.length) {
+            window.budgetPlanner.generatePlan();
           }
           if (typeof window.budgetPlanner.render === 'function') {
             window.budgetPlanner.render();
@@ -11588,6 +11598,10 @@ class NutriVisionApp {
         if (typeof window.mealPlanner.renderPlanner === 'function') {
           window.mealPlanner.renderPlanner();
         }
+      }
+      if (!window.budgetPlanner && typeof NutriVisionBudgetPlanner !== 'undefined') {
+        window.budgetPlanner = new NutriVisionBudgetPlanner();
+        window.budgetPlanner.init();
       }
       if (window.budgetPlanner) {
         try {

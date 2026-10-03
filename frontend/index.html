@@ -2564,7 +2564,7 @@
 
           <!-- Empty State when budget plan is not yet generated -->
           <div id="budget-empty-state" class="budget-empty-box"
-            style="display:none;padding:28px 20px;text-align:center;background:#FCFDFB;border:1.5px dashed #CBD5E1;border-radius:16px;margin:8px 0 10px;">
+            style="display:none !important;padding:28px 20px;text-align:center;background:#FCFDFB;border:1.5px dashed #CBD5E1;border-radius:16px;margin:8px 0 10px;">
             <div
               style="width:48px;height:48px;border-radius:14px;background:#F1F5E8;color:#0F4C3A;border:1px solid #DDE2B9;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;box-shadow:0 2px 8px rgba(15,76,58,0.08);">
               <i data-lucide="wallet" style="width:24px;height:24px;"></i>
@@ -5900,7 +5900,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/camera.js"></script>
   <script src="js/symptom_filter_agent.js"></script>
   <script src="js/planner.js"></script>
-  <script src="js/budget_planner.js"></script>
+  <script src="js/budget_planner.js?v=1.4.2"></script>
   <script src="js/progress.js"></script>
   <script src="js/caregiver.js"></script>
   <script src="js/i18n.js"></script>
@@ -5908,7 +5908,7 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
   <script src="js/food_clinical_validator.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="js/active-learning-collector.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=1.4.2"></script>
 
   <!-- ============================================================
        PWA INSTALL — Banner Toast + Floating Button + Logic
@@ -6392,11 +6392,25 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
       }
     }
 
-    // Register service worker
+    // Register service worker with auto-update
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js', { scope: './' })
-          .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+          .then(reg => {
+            console.log('[SW] Registered, scope:', reg.scope);
+            if (typeof reg.update === 'function') reg.update();
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              if (installingWorker) {
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[SW] New version detected, reloading...');
+                    window.location.reload();
+                  }
+                };
+              }
+            };
+          })
           .catch(err => console.warn('[SW] Registration failed:', err));
       });
     }

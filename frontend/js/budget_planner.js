@@ -397,6 +397,13 @@ class NutriVisionBudgetPlanner {
       if (window.app.userProfile.budget.preference) this.preference = window.app.userProfile.budget.preference;
     }
 
+    if (typeof this.budgetAmount !== 'number' || isNaN(this.budgetAmount) || this.budgetAmount < 15000) {
+      this.budgetAmount = 200000;
+    }
+    if (typeof this.durationDays !== 'number' || isNaN(this.durationDays) || (this.durationDays !== 7 && this.durationDays !== 30)) {
+      this.durationDays = 7;
+    }
+
     const inputAmount = document.getElementById('budget-input-amount');
     this.isPlanGenerated = true;
     if (inputAmount && (!inputAmount.value || inputAmount.value.trim() === '')) {
@@ -1097,22 +1104,15 @@ class NutriVisionBudgetPlanner {
   render() {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
 
-    // 0. Toggle empty state vs active content visibility
+    // 0. Enforce active content visibility (never show empty blank state)
     const emptyBox = document.getElementById('budget-empty-state');
     const activeContent = document.getElementById('budget-active-content');
     const footerBox = document.getElementById('budget-clean-footer');
 
-    if (emptyBox && activeContent) {
-      if (!this.isPlanGenerated) {
-        emptyBox.style.display = 'block';
-        activeContent.style.display = 'none';
-        if (footerBox) footerBox.style.display = 'none';
-      } else {
-        emptyBox.style.display = 'none';
-        activeContent.style.display = 'block';
-        if (footerBox) footerBox.style.display = 'flex';
-      }
-    }
+    this.isPlanGenerated = true;
+    if (emptyBox) emptyBox.style.display = 'none';
+    if (activeContent) activeContent.style.display = 'block';
+    if (footerBox) footerBox.style.display = 'flex';
 
     if (!this.plan || this.plan.length === 0) {
       this.generatePlan();
@@ -1265,10 +1265,10 @@ class NutriVisionBudgetPlanner {
         : `Est. Cost: <b>${this.formatRupiah(dayPlan.totalDayCost)}</b> (Quota: <b>${this.formatRupiah(dayPlan.dailyBudget)}</b>) · Protein: <b>${dayPlan.totalDayProtein}g</b>`;
     }
 
-    // Render Sarapan, Siang, Malam
-    this.renderMealCard('breakfast', dayPlan.breakfast, isId);
-    this.renderMealCard('lunch', dayPlan.lunch, isId);
-    this.renderMealCard('dinner', dayPlan.dinner, isId);
+    // Render Sarapan, Siang, Malam with individual error isolation
+    try { this.renderMealCard('breakfast', dayPlan.breakfast, isId); } catch (e) { console.warn('renderMealCard breakfast error:', e); }
+    try { this.renderMealCard('lunch', dayPlan.lunch, isId); } catch (e) { console.warn('renderMealCard lunch error:', e); }
+    try { this.renderMealCard('dinner', dayPlan.dinner, isId); } catch (e) { console.warn('renderMealCard dinner error:', e); }
 
     // Update streak element for backwards compatibility with tests
     const streakText = document.getElementById('ov-card3-streak-text');
@@ -1276,14 +1276,28 @@ class NutriVisionBudgetPlanner {
       streakText.textContent = isId ? 'Streak: 0 Hari' : 'Streak: 0 Days';
     }
 
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
-      window.lucide.createIcons();
-    }
+    try {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    } catch (e) {}
   }
 
   renderMealCard(mealType, meal, isId) {
     const cardEl = document.getElementById(`meal-card-${mealType}`);
     if (!cardEl) return;
+
+    if (!meal) {
+      const fallbackList = this.mealPool[mealType] || this.mealPool.breakfast || [];
+      meal = fallbackList[0] || {
+        name: 'Menu Bergizi Seimbang',
+        price: 8500,
+        calories: 360,
+        protein: 18,
+        desc: 'Porsi gizi seimbang untuk pemulihan.',
+        focus: 'Regenerasi Jaringan & Serat Alami'
+      };
+    }
 
     let timeStr = '07:00';
     let typeLabel = isId ? 'Sarapan' : 'Breakfast';
@@ -1349,5 +1363,16 @@ class NutriVisionBudgetPlanner {
   }
 }
 
-// Inisialisasi global
+// Inisialisasi global & auto-init saat DOM siap
 window.budgetPlanner = new NutriVisionBudgetPlanner();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.budgetPlanner && (!window.budgetPlanner.plan || !window.budgetPlanner.plan.length)) {
+      window.budgetPlanner.init();
+    }
+  });
+} else {
+  if (window.budgetPlanner && (!window.budgetPlanner.plan || !window.budgetPlanner.plan.length)) {
+    window.budgetPlanner.init();
+  }
+}
