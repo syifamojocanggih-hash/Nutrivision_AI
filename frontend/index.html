@@ -2175,8 +2175,20 @@
             </button>
           </div>
 
-          <!-- Symptom-Aware Filter on Dedicated Planner -->
-        <div class="card" style="margin-bottom:20px;">
+          <!-- Mode Standar Klinis 2-Button View Switcher (Symptom-Aware vs Kalender Siklus) -->
+          <div class="planner-standar-tabs">
+            <button type="button" class="planner-standar-tab-btn active" id="btn-standar-tab-symptom" onclick="app.switchStandarSubTab('symptom')">
+              <i data-lucide="shield-alert"></i>
+              <span data-i18n="plan_subtab_symptom">Symptom-Aware &amp; Filter Pantangan</span>
+            </button>
+            <button type="button" class="planner-standar-tab-btn" id="btn-standar-tab-calendar" onclick="app.switchStandarSubTab('calendar')">
+              <i data-lucide="calendar"></i>
+              <span data-i18n="plan_subtab_calendar">Kalender Siklus &amp; Jadwal Nutrisi</span>
+            </button>
+          </div>
+
+          <!-- Symptom-Aware Filter Card -->
+          <div class="card" id="planner-symptom-card" style="margin-bottom:20px;">
           <div class="card-head symptom-modern-head">
             <div class="card-title-group">
               <h2 class="symptom-modern-title" data-i18n="plan_filter_title">Gejala Fisiologis Pasien</h2>

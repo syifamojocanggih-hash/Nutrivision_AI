@@ -302,6 +302,8 @@
       booster_toast_reset: 'Nutrition targets reset to standard clinical recovery baseline.',
 
       // Meal Planner View
+      plan_subtab_symptom: 'Symptom-Aware & Food Filter',
+      plan_subtab_calendar: 'Recovery Cycle & Schedule Calendar',
       plan_filter_title: 'Symptom-Aware Texture & Food Filter',
       plan_filter_sub: 'Select active clinical complaints or symptoms for automatic texture adaptation',
       symp_nausea: 'Nausea',
@@ -982,6 +984,8 @@
       booster_toast_reset: 'Target gizi dikembalikan ke batas standar pemulihan klinis.',
 
       // Meal Planner View
+      plan_subtab_symptom: 'Symptom-Aware & Filter Pantangan',
+      plan_subtab_calendar: 'Kalender Siklus & Jadwal Nutrisi',
       plan_filter_title: 'Symptom-Aware Texture & Food Filter',
       plan_filter_sub: 'Tandai keluhan/gejala saat ini untuk penyesuaian tekstur menu',
       symp_nausea: 'Mual',
