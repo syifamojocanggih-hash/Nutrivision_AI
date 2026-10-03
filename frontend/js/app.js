@@ -215,9 +215,71 @@ class NutriVisionApp {
   }
 
   saveUserProfile() {
+    // 1. Simpan ke LocalStorage sebagai cache/fallback lokal berkecepatan tinggi
     localStorage.setItem('nutrivision_user_profile', JSON.stringify(this.userProfile));
     this.applyAccessibilitySettings();
     this.updateProfileUI();
+
+    // 2. Simpan & Sinkronkan Target Gizi Harian & Profil ke Database Engine (IndexedDB + Supabase Cloud DB)
+    if (window.nutriVisionDB && typeof window.nutriVisionDB.saveUserDirect === 'function') {
+      const emailKey = (this.userProfile?.contact || this.userProfile?.email || 'patient@nutrivision.ai').trim().toLowerCase();
+      const userId = this.userProfile?.id || 'usr_' + emailKey.replace(/[^a-zA-Z0-9]/g, '_');
+
+      const userRecord = {
+        id: userId,
+        name: this.userProfile?.name || 'Pasien NutriVision',
+        email: emailKey,
+        role: this.userProfile?.role || 'patient',
+        gender: this.userProfile?.gender || 'male',
+        age: this.userProfile?.age || 30,
+        weightKg: this.userProfile?.weightKg || 65,
+        heightCm: this.userProfile?.heightCm || 170,
+        bmi: this.userProfile?.bmi || 22.5,
+        clinicalCondition: this.userProfile?.conditionId || 'post-surgery',
+        conditionTitle: this.userProfile?.conditionTitle || 'Pemulihan Pasca-Bedah',
+        recoveryPhase: this.userProfile?.phase || 'Fase Aktif',
+        activityLevel: this.userProfile?.activityLevel || 'light',
+        restrictions: this.userProfile?.restrictions || '',
+        symptoms: this.userProfile?.symptoms || [],
+        diseases: this.userProfile?.diseases || [this.userProfile?.conditionId || 'post-surgery'],
+        targetProtein: this.userProfile?.targets?.protein || 75,
+        targetCalories: this.userProfile?.targets?.calories || 1850,
+        targetCarbs: this.userProfile?.targets?.carbs || 230,
+        targetFat: this.userProfile?.targets?.fat || 50,
+        baseTargets: this.userProfile?.baseTargets,
+        additionalTargets: this.userProfile?.additionalTargets,
+        healingTarget: this.userProfile?.healingTarget,
+        hasCompletedQuiz: Boolean(this.userProfile?.hasCompletedQuiz),
+        updatedAt: new Date().toISOString()
+      };
+
+      window.nutriVisionDB.saveUserDirect(userRecord).catch(err => {
+        console.warn('Database saveUserDirect notice:', err);
+      });
+    }
+
+    // 3. Sinkronkan ke Backend Node.js Express API jika terhubung
+    if (window.apiClient && window.apiClient.isServerOnline) {
+      window.apiClient.request('/auth/profile', {
+        method: 'PUT',
+        body: {
+          weightKg: this.userProfile?.weightKg,
+          heightCm: this.userProfile?.heightCm,
+          age: this.userProfile?.age,
+          gender: this.userProfile?.gender,
+          clinicalCondition: this.userProfile?.conditionId,
+          recoveryPhase: this.userProfile?.phase,
+          activityLevel: this.userProfile?.activityLevel,
+          targetProtein: this.userProfile?.targets?.protein,
+          dailyCalories: this.userProfile?.targets?.calories,
+          targetCarbs: this.userProfile?.targets?.carbs,
+          targetFat: this.userProfile?.targets?.fat,
+          additionalTargets: this.userProfile?.additionalTargets
+        }
+      }).catch(err => {
+        console.warn('Backend API profile sync notice:', err);
+      });
+    }
   }
 
   // Inisialisasi Aplikasi
@@ -232,20 +294,27 @@ class NutriVisionApp {
     this.applyAccessibilitySettings();
     this.updateProfileUI();
 
-    // Inisialisasi Database Engine (IndexedDB)
+    // Inisialisasi Database Engine (IndexedDB + Cloud Sync)
     if (window.nutriVisionDB) {
       try {
         await window.nutriVisionDB.init();
         const activeSession = window.nutriVisionDB.getCurrentSession();
-        if (activeSession && activeSession.email && !this.userProfile.contact) {
-          const dbUser = await window.nutriVisionDB.getUserByEmail(activeSession.email);
+        const sessionEmail = activeSession?.email || this.userProfile?.contact || this.userProfile?.email;
+        if (sessionEmail) {
+          const dbUser = await window.nutriVisionDB.getUserByEmail(sessionEmail);
           if (dbUser) {
             this.userProfile = {
               ...this.userProfile,
               ...dbUser,
-              contact: dbUser.email
+              contact: dbUser.email || this.userProfile.contact,
+              targets: dbUser.targetProtein ? {
+                protein: dbUser.targetProtein,
+                calories: dbUser.targetCalories || dbUser.dailyCalories || 1850,
+                carbs: dbUser.targetCarbs || 230,
+                fat: dbUser.targetFat || 50
+              } : this.userProfile.targets
             };
-            this.saveUserProfile();
+            localStorage.setItem('nutrivision_user_profile', JSON.stringify(this.userProfile));
             this.updateProfileUI();
           }
         }

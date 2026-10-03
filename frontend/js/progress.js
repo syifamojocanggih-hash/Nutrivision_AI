@@ -72,6 +72,7 @@ class NutriVisionProgress {
   }
 
   // Simpan progres ke LocalStorage per pengguna
+  // Simpan progres ke LocalStorage per pengguna & Sinkronkan ke Database Engine (IndexedDB + Supabase Cloud DB)
   saveUserProgress(userKey) {
     const key = userKey || (typeof app !== 'undefined' && (app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name)) || 'guest';
     try {
@@ -82,6 +83,26 @@ class NutriVisionProgress {
         dateKey: new Date().toISOString().split('T')[0]
       };
       localStorage.setItem('nutrivision_progress_' + key, JSON.stringify(payload));
+
+      // Simpan hidangan baru ke Database Engine (IndexedDB + Supabase Cloud DB)
+      if (window.nutriVisionDB && typeof window.nutriVisionDB.saveMeal === 'function') {
+        const userId = (typeof app !== 'undefined' && app.userProfile?.id) || 'usr_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+        const latestMeal = this.todayMeals && this.todayMeals[0];
+        if (latestMeal && !latestMeal._savedToDb) {
+          latestMeal._savedToDb = true;
+          window.nutriVisionDB.saveMeal({
+            id: latestMeal.id || ('meal_' + Date.now().toString(36)),
+            userId: userId,
+            mealType: latestMeal.source || 'intake',
+            name: latestMeal.name,
+            calories: latestMeal.calories || 0,
+            protein: latestMeal.protein || 0,
+            carbs: latestMeal.carbs || 0,
+            fat: latestMeal.fat || 0,
+            timestamp: new Date().toISOString()
+          }).catch(err => console.warn('Meal DB save notice:', err));
+        }
+      }
     } catch (e) {
       console.warn('Progress storage warning:', e);
     }
