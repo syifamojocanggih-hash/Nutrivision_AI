@@ -4561,8 +4561,100 @@
   .booster-bottom-summary-bar .right-actions {
     justify-content: space-between;
   }
+/* ==========================================================================
+   RECOMMENDATION MENU DIRECTORY MODALS (DOCTOR & BUDGET ALTERNATIVES)
+   ========================================================================== */
+.recommendation-modal-box {
+  max-width: 860px !important;
+  width: 95% !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  background: var(--card) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25) !important;
 }
 
+.recom-pill-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
 
+.recom-pill-btn:hover {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+  color: #1E293B;
+}
 
+.recom-pill-btn.active {
+  background: #233917;
+  border-color: #233917;
+  color: #FFFFFF;
+}
 
+.recom-menu-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.recom-menu-card:hover {
+  transform: translateY(-2px);
+  border-color: #9EA76B;
+  box-shadow: 0 8px 24px rgba(35, 57, 23, 0.09);
+}
+
+.recom-menu-card.doctor-card {
+  border-left: 4px solid #15803D;
+}
+
+.recom-menu-card.budget-card {
+  border-left: 4px solid #D97706;
+}
+
+.recom-macro-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recom-macro-pill.protein {
+  background: #EAF3E2;
+  color: #15803D;
+  border: 1px solid #D4E8C7;
+}
+
+.recom-macro-pill.calories {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+.recom-macro-pill.price {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.recom-macro-pill.doctor {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #DBEAFE;
+}

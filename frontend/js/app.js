@@ -11588,6 +11588,448 @@ class NutriVisionApp {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // =========================================================================
+  // RECOMMENDATION MENU: DOCTOR CLINICAL RECOMMENDATIONS & BUDGET ALTERNATIVES
+  // =========================================================================
+
+  getDoctorRecommendationsList() {
+    return [
+      {
+        id: 'doc-recom-1',
+        name: 'Sup Ikan Gabus Ekstrak Albumin Kaldu Bening',
+        nameEn: 'Channa Striata Clear Albumin Extract Fish Soup',
+        category: 'siang',
+        timing: 'Makan Siang (12:00)',
+        timingEn: 'Lunch (12:00)',
+        protein: 28,
+        cals: 240,
+        doctorTitle: 'dr. Sp.B-KBD & Sp.GK (Bedah Digestif & Gizi Klinis)',
+        doctorNote: 'ESPEN Protocol: Ekstrak albumin ikan gabus secara klinis terbukti mempercepat sintesis kolagen dan fibroblas pada jaringan luka bedah.',
+        doctorNoteEn: 'ESPEN Protocol: Fish albumin extract clinically accelerates collagen synthesis and wound fibroblast closure.',
+        texture: 'Lunak & Ramah Saluran Cerna',
+        textureEn: 'Soft & Digest-Friendly',
+        keyNutrients: 'Albumin Tinggi · Zinc (Seng) · Asam Amino Glutamin'
+      },
+      {
+        id: 'doc-recom-2',
+        name: 'Tim Putih Telur Sutra & Daging Ayam Cincang Herbal',
+        nameEn: 'Steamed Silk Egg White with Minced Herbal Chicken',
+        category: 'sarapan',
+        timing: 'Sarapan Pagi (07:00)',
+        timingEn: 'Breakfast (07:00)',
+        protein: 24,
+        cals: 210,
+        doctorTitle: 'dr. Sp.GK (Spesialis Gizi Klinis)',
+        doctorNote: 'Asam amino esensial tinggi dengan nilai biologis (BV) 100 tanpa beban lemak jenuh. Sangat aman bagi pasien dengan mual/disfagia.',
+        doctorNoteEn: 'High biological value (BV 100) essential amino acids without saturated fat burden. Ideal for patients with nausea/dysphagia.',
+        texture: 'Sutra Sangat Halus (Silk Puree)',
+        textureEn: 'Very Soft Silk Texture',
+        keyNutrients: 'Ovalbumin · Arginin · Asam Folat'
+      },
+      {
+        id: 'doc-recom-3',
+        name: 'Puree Bayam Hijau & Hati Ayam Beras Merah Halus',
+        nameEn: 'Smooth Spinach & Organic Chicken Liver Brown Rice Puree',
+        category: 'siang',
+        timing: 'Makan Siang (12:30)',
+        timingEn: 'Lunch (12:30)',
+        protein: 22,
+        cals: 275,
+        doctorTitle: 'dr. Sp.B-KV (Spesialis Bedah Vaskular)',
+        doctorNote: 'Zat besi heme dan vitamin B12 organik untuk memacu sintesis hemoglobin dan perfusi oksigen ke kapiler tepi luka.',
+        doctorNoteEn: 'Heme iron and organic B12 to stimulate hemoglobin regeneration and tissue oxygen perfusion.',
+        texture: 'Puree Lembut Tanpa Serat Kasar',
+        textureEn: 'Smooth Puree without Coarse Fiber',
+        keyNutrients: 'Zat Besi Heme · Vitamin A 900mcg · Vitamin B12'
+      },
+      {
+        id: 'doc-recom-4',
+        name: 'Sup Bola Ikan Tenggiri Sayur Bening Labu Siam',
+        nameEn: 'Mackerel Fish Ball Soup with Chayote in Clear Broth',
+        category: 'malam',
+        timing: 'Makan Malam (18:30)',
+        timingEn: 'Dinner (18:30)',
+        protein: 23,
+        cals: 200,
+        doctorTitle: 'dr. Sp.Onk-Rad & Sp.GK (Rehabilitasi Onkologi)',
+        doctorNote: 'Menyuplai elektrolit alami (kalium & magnesium) kaldu rebusan. Mencegah dispepsia dan kembung malam hari pasca obat analgetik.',
+        doctorNoteEn: 'Supplies natural broth electrolytes. Prevents dyspepsia and nocturnal bloating post-analgesic medications.',
+        texture: 'Kuah Bening & Bola Ikan Lembut',
+        textureEn: 'Clear Broth & Soft Fish Balls',
+        keyNutrients: 'Omega-3 EPA/DHA · Kalium · Fosfor'
+      },
+      {
+        id: 'doc-recom-5',
+        name: 'Smoothie Protein Tempe Kukus, Pisang & Susu Kedelai',
+        nameEn: 'Steamed Tempeh, Banana & Soy Milk Protein Recovery Shake',
+        category: 'snack',
+        timing: 'Selingan Medis (15:30)',
+        timingEn: 'Clinical Snack (15:30)',
+        protein: 18,
+        cals: 250,
+        doctorTitle: 'dr. Sp.KFR (Kedokteran Fisik & Rehabilitasi Medis)',
+        doctorNote: 'Snack padat kalori-protein (TKTP) bebas laktosa. Mempertahankan massa otot bebas lemak (LBM) saat tirah baring/bed rest.',
+        doctorNoteEn: 'Lactose-free high-protein snack preserving lean body mass (LBM) during bed rest or rehabilitation.',
+        texture: 'Cair Kental Mudah Ditelan',
+        textureEn: 'Smooth Liquid Easy Swallow',
+        keyNutrients: 'Isoflavon Anti-inflamasi · Kalium · Prebiotik'
+      },
+      {
+        id: 'doc-recom-6',
+        name: 'Bubur Havermut Kuah Daging Sapi Cincang Kaldu Sayur',
+        nameEn: 'Oat Porridge with Minced Lean Beef & Vegetable Broth',
+        category: 'malam',
+        timing: 'Makan Malam (19:00)',
+        timingEn: 'Dinner (19:00)',
+        protein: 21,
+        cals: 280,
+        doctorTitle: 'dr. Sp.PD (Spesialis Penyakit Dalam)',
+        doctorNote: 'Beta-glukan gandum menstabilkan glukosa darah pasca stres trauma bedah dan mempercepat epitelisasi jaringan baru.',
+        doctorNoteEn: 'Oat beta-glucans stabilize glycemic index post-surgical trauma while supporting cellular epithelialization.',
+        texture: 'Bubur Halus Hangat',
+        textureEn: 'Warm Soft Oatmeal Mash',
+        keyNutrients: 'Seng Organik · Beta-Glukan · Protein Kompleks'
+      }
+    ];
+  }
+
+  getBudgetAlternativesList() {
+    return [
+      {
+        id: 'bdg-alt-1',
+        name: 'Pepes Tahu Telur Daun Kelor Kukus',
+        nameEn: 'Steamed Tofu & Egg Moringa Leaves in Banana Wrap',
+        category: 'nabati',
+        pricePerServing: 6500,
+        priceCompare: 'Hemat 75% vs Suplemen Albumin Kapsul',
+        protein: 19,
+        cals: 185,
+        targetTier: 'under8k',
+        clinicalEquiv: 'Kaya Albumin & Asam Amino Esensial Setara Ekstrak Ikan',
+        clinicalEquivEn: 'Rich in Albumin & Essential Amino Acids Equal to Fish Extract',
+        localTip: 'Daun kelor segar berlimpah di pasar tradisional, telur ras curah lebih ekonomis dibeli per kg.',
+        localTipEn: 'Fresh moringa leaves from local markets with loose bulk eggs provide superior cost-per-gram protein.',
+        texture: 'Lunak Kukus Bungkus Daun Pisang'
+      },
+      {
+        id: 'bdg-alt-2',
+        name: 'Tempe Bacem Panggang Lembut + Telur Rebus Sambal Bening',
+        nameEn: 'Soft Braised Tempeh + Boiled Egg in Mild Clear Dressing',
+        category: 'nabati',
+        pricePerServing: 7500,
+        priceCompare: 'Hemat 68% vs Menu Daging Sapi Rumah Sakit',
+        protein: 21,
+        cals: 280,
+        targetTier: 'under8k',
+        clinicalEquiv: 'Daya cerna protein tempe fermentasi mencapai 90% setara daging merah',
+        clinicalEquivEn: 'Fermented tempeh protein digestibility reaches 90%, equivalent to lean beef',
+        localTip: 'Pilih tempe kedelai padat bungkus daun pisang tradisional seharga Rp 3.500 - Rp 4.500 per papan.',
+        localTipEn: 'Choose traditional banana leaf wrapped tempeh for active probiotic and digestive enzyme benefits.',
+        texture: 'Empuk Lembut Bacem Rempah'
+      },
+      {
+        id: 'bdg-alt-3',
+        name: 'Sup Bening Ikan Kembung Segar & Jagung Pipil Manis',
+        nameEn: 'Fresh Indian Mackerel Soup with Sweet Corn in Clear Turmeric Broth',
+        category: 'hewani',
+        pricePerServing: 9500,
+        priceCompare: 'Hemat 72% vs Ikan Salmon Impor',
+        protein: 24,
+        cals: 230,
+        targetTier: 'under10k',
+        clinicalEquiv: 'Kandungan Omega-3 EPA/DHA ikan kembung (2,2g) lebih tinggi dari ikan salmon',
+        clinicalEquivEn: 'Omega-3 EPA/DHA content in mackerel (2.2g) is clinically higher than imported salmon',
+        localTip: 'Ikan kembung banjar segar di pasar ikan/pasar pagi berkisar Rp 30.000 - Rp 35.000/kg (isi 6-8 ekor).',
+        localTipEn: 'Fresh mackerel from local morning wet markets offers peak freshness at a fraction of supermarket costs.',
+        texture: 'Daging Ikan Lembut Kuah Kuning Hangat'
+      },
+      {
+        id: 'bdg-alt-4',
+        name: 'Tumis Tahu Kacang Merah & Hati Ayam Kuah Kecap Tipis',
+        nameEn: 'Stir-fried Tofu, Kidney Beans & Chicken Liver with Light Soy Glaze',
+        category: 'hewani',
+        pricePerServing: 8000,
+        priceCompare: 'Hemat 60% vs Tablet Besi Multivitamin',
+        protein: 20,
+        cals: 250,
+        targetTier: 'under10k',
+        clinicalEquiv: 'Zat besi heme alami hati ayam diabsorbsi tubuh 3x lebih cepat tanpa efek samping sembelit',
+        clinicalEquivEn: 'Natural heme iron in chicken liver absorbs 3x faster without causing constipation side-effects',
+        localTip: 'Hati ayam segar dari tukang ayam potong pasar tradisional seharga Rp 2.500 per pasang.',
+        localTipEn: 'Fresh poultry livers from traditional butchers provide cheap, concentrated micronutrients.',
+        texture: 'Lembut Cincang Kuah Ringan'
+      },
+      {
+        id: 'bdg-alt-5',
+        name: 'Bubur Kacang Hijau Kupas Telur Puyuh Rebus & Madu Alami',
+        nameEn: 'Peeled Mung Bean Mash with Quail Eggs & Natural Blossom Honey',
+        category: 'nabati',
+        pricePerServing: 7000,
+        priceCompare: 'Hemat 65% vs Susu Pemulihan Komersial',
+        protein: 16,
+        cals: 260,
+        targetTier: 'under8k',
+        clinicalEquiv: 'Selingan pemulihan stamina kaya asam folat, vitamin B kompleks & mineral seng',
+        clinicalEquivEn: 'High stamina recovery snack rich in folate, B-complex and restorative zinc',
+        localTip: 'Telur puyuh mentah di warung kelontong lokal sekitar Rp 400 - Rp 500 per butir.',
+        localTipEn: 'Quail eggs from neighborhood kiosks provide affordable single-bite bioavailable protein.',
+        texture: 'Bubur Manis Lembut Hangat'
+      },
+      {
+        id: 'bdg-alt-6',
+        name: 'Orek Tempe Basah Daun Bawang + Dadar Telur Bebek Gurih',
+        nameEn: 'Moist Braised Tempeh with Scallions + Savory Duck Egg Omelet',
+        category: 'hewani',
+        pricePerServing: 9000,
+        priceCompare: 'Hemat 55% vs Menu Katering Rumah Sakit',
+        protein: 23,
+        cals: 310,
+        targetTier: 'under10k',
+        clinicalEquiv: 'Telur bebek memiliki densitas asam lemak omega-3 dan protein lebih pekat dari telur biasa',
+        clinicalEquivEn: 'Duck eggs contain denser micronutrients, lecithin, and higher protein ratio than chicken eggs',
+        localTip: 'Telur bebek mentah di pasar tradisional sekitar Rp 2.800 - Rp 3.000/butir.',
+        localTipEn: 'Duck eggs in wet markets cost ~Rp 3.000 and pack over 9g of pure protein each.',
+        texture: 'Padat Lembut Bumbu Tumis Rumahan'
+      }
+    ];
+  }
+
+  openDoctorRecommendationModal(category = 'all') {
+    this.doctorRecomFilter = category;
+    this.doctorRecomSearchQuery = '';
+    const searchInput = document.getElementById('doctor-recom-search');
+    if (searchInput) searchInput.value = '';
+
+    document.querySelectorAll('#doctor-recom-filter-pills .recom-pill-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.cat === category);
+    });
+
+    this.renderDoctorRecommendations();
+    this.openModal('modal-doctor-menu-recommendations');
+  }
+
+  renderDoctorRecommendations() {
+    const container = document.getElementById('doctor-recom-items-grid');
+    if (!container) return;
+
+    const list = this.getDoctorRecommendationsList();
+    const filter = this.doctorRecomFilter || 'all';
+    const query = (this.doctorRecomSearchQuery || '').toLowerCase().trim();
+
+    const filtered = list.filter(item => {
+      const matchCat = filter === 'all' || item.category === filter;
+      const matchQuery = !query || item.name.toLowerCase().includes(query) || item.doctorNote.toLowerCase().includes(query) || item.keyNutrients.toLowerCase().includes(query);
+      return matchCat && matchQuery;
+    });
+
+    if (!filtered.length) {
+      container.innerHTML = `
+        <div style="grid-column:1 / -1;text-align:center;padding:32px 16px;color:#64748B;">
+          <i data-lucide="info" style="width:28px;height:28px;color:#94A3B8;margin-bottom:8px;"></i>
+          <p style="margin:0;font-size:13.5px;font-weight:600;">Tidak ditemukan menu dokter yang cocok.</p>
+          <span style="font-size:12px;">Coba gunakan kata kunci lain atau pilih filter "Semua Menu".</span>
+        </div>
+      `;
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+      <div class="recom-menu-card doctor-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div>
+            <span style="font-size:11px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.04em;">${item.timing}</span>
+            <h4 style="margin:3px 0 0;font-size:14.5px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+          </div>
+          <span class="recom-macro-pill doctor" title="Diverifikasi Dokter Spesialis">
+            <i data-lucide="stethoscope" style="width:12px;height:12px;"></i>
+            <span>${item.doctorTitle.split('(')[0].trim()}</span>
+          </span>
+        </div>
+
+        <div style="background:#F8FAF8;border-left:3px solid #16A34A;padding:8px 12px;border-radius:6px;font-size:11.5px;color:#334155;line-height:1.45;">
+          <strong style="color:#15803D;">Anjuran Medis:</strong> "${item.doctorNote}"
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="recom-macro-pill protein"><i data-lucide="sparkles" style="width:11px;height:11px;"></i> ${item.protein}g Protein</span>
+          <span class="recom-macro-pill calories"><i data-lucide="flame" style="width:11px;height:11px;"></i> ${item.cals} kkal</span>
+          <span class="recom-macro-pill calories" style="background:#F3F4F6;"><i data-lucide="shield" style="width:11px;height:11px;"></i> ${item.texture}</span>
+        </div>
+
+        <div style="font-size:11px;color:#64748B;line-height:1.35;">
+          <strong>Target Klinis:</strong> ${item.keyNutrients}
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #E2E8F0;">
+          <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:5px 12px;border-radius:8px;font-weight:700;color:#233917;border:1px solid #CBD5E1;background:#FFFFFF;cursor:pointer;"
+            onclick="app.showDoctorRecipeDetails('${item.id}')">
+            <i data-lucide="book-open" style="width:12px;height:12px;vertical-align:middle;"></i> Rincian Resep
+          </button>
+          <button type="button" class="btn-primary-teal" style="font-size:11.5px;padding:6px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer;"
+            onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Rekomendasi Dokter')">
+            <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> Catat ke Asupan
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+  }
+
+  filterDoctorRecommendations(category, btnEl) {
+    this.doctorRecomFilter = category;
+    if (btnEl) {
+      document.querySelectorAll('#doctor-recom-filter-pills .recom-pill-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+    this.renderDoctorRecommendations();
+  }
+
+  searchDoctorRecommendations(query) {
+    this.doctorRecomSearchQuery = query;
+    this.renderDoctorRecommendations();
+  }
+
+  openBudgetAlternativesModal(category = 'all') {
+    this.budgetAltFilter = category;
+    this.budgetAltSearchQuery = '';
+    const searchInput = document.getElementById('budget-recom-search');
+    if (searchInput) searchInput.value = '';
+
+    document.querySelectorAll('#budget-recom-filter-pills .recom-pill-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.cat === category);
+    });
+
+    this.renderBudgetAlternatives();
+    this.openModal('modal-budget-menu-alternatives');
+  }
+
+  renderBudgetAlternatives() {
+    const container = document.getElementById('budget-recom-items-grid');
+    if (!container) return;
+
+    const list = this.getBudgetAlternativesList();
+    const filter = this.budgetAltFilter || 'all';
+    const query = (this.budgetAltSearchQuery || '').toLowerCase().trim();
+
+    const filtered = list.filter(item => {
+      let matchCat = true;
+      if (filter === 'under8k') matchCat = item.pricePerServing <= 8000;
+      else if (filter === 'under10k') matchCat = item.pricePerServing <= 10000;
+      else if (filter === 'nabati') matchCat = item.category === 'nabati';
+      else if (filter === 'hewani') matchCat = item.category === 'hewani';
+
+      const matchQuery = !query || item.name.toLowerCase().includes(query) || item.clinicalEquiv.toLowerCase().includes(query) || item.localTip.toLowerCase().includes(query);
+      return matchCat && matchQuery;
+    });
+
+    if (!filtered.length) {
+      container.innerHTML = `
+        <div style="grid-column:1 / -1;text-align:center;padding:32px 16px;color:#64748B;">
+          <i data-lucide="info" style="width:28px;height:28px;color:#94A3B8;margin-bottom:8px;"></i>
+          <p style="margin:0;font-size:13.5px;font-weight:600;">Tidak ditemukan alternatif menu hemat yang cocok.</p>
+          <span style="font-size:12px;">Coba sesuaikan kata kunci atau pilih filter "Semua Alternatif".</span>
+        </div>
+      `;
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+      <div class="recom-menu-card budget-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div>
+            <span class="recom-macro-pill price">
+              <i data-lucide="wallet" style="width:11px;height:11px;"></i>
+              Rp ${item.pricePerServing.toLocaleString('id-ID')} / porsi
+            </span>
+            <h4 style="margin:5px 0 0;font-size:14.5px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+          </div>
+          <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;font-size:10.5px;font-weight:700;white-space:nowrap;">
+            ${item.priceCompare.split('vs')[0].trim()}
+          </span>
+        </div>
+
+        <div style="background:#FFFBEB;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:6px;font-size:11.5px;color:#78350F;line-height:1.45;">
+          <strong>Nilai Gizi Setara:</strong> ${item.clinicalEquiv}
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="recom-macro-pill protein"><i data-lucide="sparkles" style="width:11px;height:11px;"></i> ${item.protein}g Protein</span>
+          <span class="recom-macro-pill calories"><i data-lucide="flame" style="width:11px;height:11px;"></i> ${item.cals} kkal</span>
+          <span class="recom-macro-pill calories" style="background:#F8FAFC;"><i data-lucide="tag" style="width:11px;height:11px;"></i> ${item.texture}</span>
+        </div>
+
+        <div style="font-size:11px;color:#475569;line-height:1.35;background:#F8FAFC;padding:7px 10px;border-radius:6px;border:1px dashed #CBD5E1;">
+          💡 <strong>Tips Belanja Pasar:</strong> ${item.localTip}
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #E2E8F0;">
+          <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:5px 12px;border-radius:8px;font-weight:700;color:#92400E;border:1px solid #FCD34D;background:#FFFDF7;cursor:pointer;"
+            onclick="app.showBudgetRecipeDetails('${item.id}')">
+            <i data-lucide="book-open" style="width:12px;height:12px;vertical-align:middle;"></i> Komposisi Bahan
+          </button>
+          <button type="button" class="btn-primary-coral" style="font-size:11.5px;padding:6px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer;"
+            onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Alternatif Budget Hemat')">
+            <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> Catat ke Asupan
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+  }
+
+  filterBudgetAlternatives(category, btnEl) {
+    this.budgetAltFilter = category;
+    if (btnEl) {
+      document.querySelectorAll('#budget-recom-filter-pills .recom-pill-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+    this.renderBudgetAlternatives();
+  }
+
+  searchBudgetAlternatives(query) {
+    this.budgetAltSearchQuery = query;
+    this.renderBudgetAlternatives();
+  }
+
+  logRecommendedMeal(name, prot, cals, source = 'Rekomendasi Menu') {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const userKey = this.userProfile?.id || this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+
+    if (window.progressTracker && typeof window.progressTracker.addLoggedMeal === 'function') {
+      window.progressTracker.addLoggedMeal({
+        protein: [prot, prot],
+        carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
+        fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
+        cals: [cals, cals]
+      }, userKey, { name, source });
+
+      if (typeof window.progressTracker.renderMacroDonut === 'function' && this.userProfile?.targets) {
+        window.progressTracker.renderMacroDonut(this.userProfile.targets);
+      }
+      if (typeof window.progressTracker.renderWeeklyBarChart === 'function') {
+        window.progressTracker.renderWeeklyBarChart();
+      }
+    }
+
+    this.showToast(isId ? `Menu "${name}" berhasil dicatat ke asupan gizi hari ini!` : `"${name}" logged to today's nutrition intake!`, 'success');
+  }
+
+  showDoctorRecipeDetails(itemId) {
+    const item = this.getDoctorRecommendationsList().find(m => m.id === itemId);
+    if (!item) return;
+    this.showToast(`${item.name}: ${item.keyNutrients} (${item.protein}g Protein · ${item.cals} kkal)`);
+  }
+
+  showBudgetRecipeDetails(itemId) {
+    const item = this.getBudgetAlternativesList().find(m => m.id === itemId);
+    if (!item) return;
+    this.showToast(`${item.name}: ${item.localTip} · Rp ${item.pricePerServing.toLocaleString('id-ID')}`);
+  }
+
   renderClinicalCalendarAndScheduleSuite() {
     const cond = this.journeyCondition || this.userProfile?.conditionId || 'post-surgery';
 
