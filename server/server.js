@@ -28,6 +28,7 @@ const aiRoutes = require('./routes/ai.routes');
 const foodPricesRoutes = require('./routes/food_prices.routes');
 const portioningRoutes = require('./routes/portioning.routes');
 const catalogRoutes = require('./routes/catalog.routes');
+const phasesRoutes = require('./routes/phases.routes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -96,6 +97,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/food-prices', foodPricesRoutes);
 app.use('/api/portioning', portioningRoutes);
 app.use('/api/catalog', catalogRoutes);
+app.use('/api/phases', phasesRoutes);
 
 // Smart Notification Background Cron (Evaluates every 15 minutes)
 setInterval(async () => {

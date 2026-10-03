@@ -10351,25 +10351,33 @@ class NutriVisionApp {
       }
     });
 
+    const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
+
     if (prof) {
       const subEl = document.getElementById('journey-roadmap-sub');
-      if (subEl) subEl.textContent = prof.protocol;
+      if (subEl) subEl.textContent = isEn && prof.protocolEn ? prof.protocolEn : prof.protocol;
       const badgeEl = document.getElementById('journey-active-badge-text');
-      if (badgeEl) badgeEl.textContent = prof.activeBadge || 'Fase 2 Aktif';
+      if (badgeEl) badgeEl.textContent = isEn ? `Phase ${this.activePhase || 2} Active` : (prof.activeBadge || 'Fase 2 Aktif');
+    }
+
+    // Save condition choice to TiDB Cloud database asynchronously
+    if (typeof apiClient !== 'undefined' && apiClient.isServerOnline) {
+      apiClient.updatePhaseProgress({ conditionId, activePhase: this.activePhase || 2 }).catch(err => {
+        console.warn('Notice syncing condition to TiDB:', err.message);
+      });
     }
 
     this.renderJourneyRoadmap(conditionId);
     this.renderJourneyTaxonomyInfoBanner(conditionId);
     this.renderClinicalCalendarAndScheduleSuite();
 
-    const isId = (window.i18n ? window.i18n.getLanguage() : 'id') === 'id';
-    const toastMsg = isId 
-      ? `Jalur pemulihan beralih ke protokol: ${prof ? prof.title : conditionId}`
-      : `Recovery path switched to: ${prof ? (prof.titleEn || prof.title) : conditionId}`;
+    const toastMsg = isEn 
+      ? `Recovery path switched to: ${prof ? (prof.titleEn || prof.title) : conditionId}`
+      : `Jalur pemulihan beralih ke protokol: ${prof ? prof.title : conditionId}`;
     this.showToast(toastMsg, 'info');
   }
 
-  renderJourneyRoadmap(conditionId) {
+  async renderJourneyRoadmap(conditionId) {
     const gridEl = document.getElementById('journey-timeline-grid');
     if (!gridEl) return;
 
@@ -10394,12 +10402,56 @@ class NutriVisionApp {
       dropdownEl.value = cond;
     }
 
-    const subEl = document.getElementById('journey-roadmap-sub');
-    if (subEl) subEl.textContent = profile.protocol;
-    const badgeEl = document.getElementById('journey-active-badge-text');
-    if (badgeEl) badgeEl.textContent = profile.activeBadge || 'Fase 2 Aktif';
+    const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
 
-    const phasesHtml = profile.phases.map((p) => {
+    // Fetch dynamic phase status & completion percentages from TiDB Cloud REST API if available
+    let dynamicData = null;
+    if (typeof apiClient !== 'undefined' && apiClient.isServerOnline) {
+      try {
+        dynamicData = await apiClient.getPhaseProgress(cond);
+      } catch (err) {
+        console.warn('Notice fetching phase progress from TiDB:', err.message);
+      }
+    }
+
+    const activePhaseNum = dynamicData?.activePhase || this.activePhase || 2;
+    this.activePhase = activePhaseNum;
+
+    const subEl = document.getElementById('journey-roadmap-sub');
+    if (subEl) subEl.textContent = dynamicData?.protocol || (isEn && profile.protocolEn ? profile.protocolEn : profile.protocol);
+    const badgeEl = document.getElementById('journey-active-badge-text');
+    if (badgeEl) badgeEl.textContent = isEn ? `Phase ${activePhaseNum} Active` : `Fase ${activePhaseNum} Aktif`;
+
+    const phasesToRender = profile.phases.map((p) => {
+      let phaseDynamic = dynamicData?.phases?.find(dp => dp.phaseNum === p.phaseNum);
+      const isActive = p.phaseNum === activePhaseNum;
+      const isCompleted = p.phaseNum < activePhaseNum;
+
+      let effectivePct = p.progressPct;
+      if (phaseDynamic && phaseDynamic.progressPct !== undefined) {
+        effectivePct = phaseDynamic.progressPct;
+      } else if (!this.userProfile?.isDemo && typeof progressTracker !== 'undefined') {
+        const loggedCount = (progressTracker.weeklyLogs || []).filter(l => (l.protein || 0) > 0).length;
+        if (isCompleted) effectivePct = 100;
+        else if (isActive) effectivePct = Math.min(100, Math.max(15, Math.round(25 + (loggedCount / 7) * 70)));
+        else effectivePct = 0;
+      }
+
+      const weight = dynamicData?.userWeightKg || parseFloat(this.userProfile?.weightKg || 65);
+      const protMultiplier = phaseDynamic?.proteinMultiplier || profile.targetMacronutrients?.proteinGPerKg || profile.proteinMultiplier || 1.5;
+      const calcProteinG = Math.round(weight * protMultiplier * 10) / 10;
+      const displayProteinTarget = phaseDynamic?.proteinTarget || `${protMultiplier} g/kgBB (~${calcProteinG}g/${isEn ? 'day' : 'hari'})`;
+
+      return {
+        ...p,
+        status: isCompleted ? 'completed' : (isActive ? 'active' : 'upcoming'),
+        badgeText: isCompleted ? (isEn ? 'Completed' : 'Selesai') : (isActive ? (isEn ? 'Active Phase' : 'Fase Berjalan') : (isEn ? 'Upcoming' : 'Tahap Lanjut')),
+        effectivePct,
+        displayProteinTarget
+      };
+    });
+
+    const phasesHtml = phasesToRender.map((p) => {
       const isActive = p.status === 'active';
       const isCompleted = p.status === 'completed';
 
@@ -10411,38 +10463,25 @@ class NutriVisionApp {
       if (isActive) {
         cardBorder = '2px solid #233917';
         cardBg = '#FFFFFF';
-        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#233917;color:#FFFFFF;"><i data-lucide="zap" style="width:11px;height:11px;"></i> ${p.badgeText || 'Aktif'}</span>`;
+        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#233917;color:#FFFFFF;"><i data-lucide="zap" style="width:11px;height:11px;"></i> ${p.badgeText}</span>`;
         progressColor = 'var(--coral-500, #D45B3A)';
       } else if (isCompleted) {
         cardBorder = '1px solid #C8D4A8';
         cardBg = '#FAFBF7';
-        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#E8EED6;color:#3F4D1C;"><i data-lucide="check" style="width:11px;height:11px;"></i> ${p.badgeText || 'Selesai'}</span>`;
+        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:#E8EED6;color:#3F4D1C;"><i data-lucide="check" style="width:11px;height:11px;"></i> ${p.badgeText}</span>`;
         progressColor = '#4A5623';
       } else {
         cardBorder = '1px solid #EFE8CA';
         cardBg = '#FCFCF9';
-        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:12px;background:#F1EFE7;color:#7A786E;"><i data-lucide="lock" style="width:11px;height:11px;"></i> ${p.badgeText || 'Tahap Lanjut'}</span>`;
+        badgeHtml = `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:12px;background:#F1EFE7;color:#7A786E;"><i data-lucide="lock" style="width:11px;height:11px;"></i> ${p.badgeText}</span>`;
         progressColor = '#C2C8AE';
       }
 
       const superfoodsList = (p.superfoods || []).map(sf => `<span style="display:inline-block;padding:2px 6px;border-radius:4px;background:rgba(35,57,23,0.06);font-size:10px;font-weight:600;color:#233917;">${sf}</span>`).join(' ');
 
-      let effectivePct = p.progressPct;
-      if (!this.userProfile?.isDemo && typeof progressTracker !== 'undefined') {
-        const loggedCount = (progressTracker.weeklyLogs || []).filter(l => (l.protein || 0) > 0).length;
-        if (isCompleted) {
-          effectivePct = 100;
-        } else if (isActive) {
-          // Fase 2 aktif: kalkulasi capaian dinamis berbasis riwayat kepatuhan pasien
-          effectivePct = Math.min(100, Math.round(25 + (loggedCount / 7) * 70));
-        } else {
-          effectivePct = 0;
-        }
-      }
-
       return `
-        <div class="journey-step-box" data-phase="${p.phaseNum}" onclick="app.selectJourneyPhase('${cond}', ${p.phaseNum})"
-             style="background:${cardBg};border:${cardBorder};border-radius:12px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px;box-shadow:${isActive ? '0 4px 16px rgba(35,57,23,0.08)' : 'none'};">
+        <div class="journey-step-box ${isActive ? 'selected-phase' : ''}" data-phase="${p.phaseNum}" onclick="app.selectJourneyPhase('${cond}', ${p.phaseNum})"
+             style="background:${cardBg};border:${cardBorder};border-radius:12px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease;box-shadow:${isActive ? '0 4px 16px rgba(35,57,23,0.08)' : 'none'};">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
             <span style="font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.3px;">
               ${p.chip}
@@ -10451,33 +10490,33 @@ class NutriVisionApp {
           </div>
 
           <div>
-            <h4 style="margin:0 0 5px 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.35;">${p.title}</h4>
-            <p style="margin:0;font-size:11.5px;color:var(--ink-soft);line-height:1.45;">${p.desc}</p>
+            <h4 style="margin:0 0 5px 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.35;">${isEn && p.titleEn ? p.titleEn : p.title}</h4>
+            <p style="margin:0;font-size:11.5px;color:var(--ink-soft);line-height:1.45;">${isEn && p.descEn ? p.descEn : p.desc}</p>
           </div>
 
           <!-- Progress Bar -->
           <div style="margin-top:auto;padding-top:4px;">
             <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;">
-              <span>Target Tercapai</span>
-              <span style="color:var(--ink);font-weight:700;">${effectivePct}%</span>
+              <span>${isEn ? 'Target Achieved' : 'Target Tercapai'}</span>
+              <span style="color:var(--ink);font-weight:700;">${p.effectivePct}%</span>
             </div>
             <div style="width:100%;height:6px;background:#EAECE0;border-radius:3px;overflow:hidden;">
-              <div style="width:${effectivePct}%;height:100%;background:${progressColor};border-radius:3px;transition:width 0.4s ease;"></div>
+              <div style="width:${p.effectivePct}%;height:100%;background:${progressColor};border-radius:3px;transition:width 0.4s ease;"></div>
             </div>
           </div>
 
           <!-- Metadata Nutrisi & Klinis Spesifik -->
           <div style="padding-top:8px;border-top:1px dashed #E2E6D0;display:flex;flex-direction:column;gap:5px;font-size:11px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="color:var(--ink-soft);font-size:10.5px;">Target Protein:</span>
-              <strong style="color:#233917;font-size:11px;">${p.proteinTarget}</strong>
+              <span style="color:var(--ink-soft);font-size:10.5px;">${isEn ? 'Protein Target:' : 'Target Protein:'}</span>
+              <strong style="color:#233917;font-size:11px;">${p.displayProteinTarget}</strong>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="color:var(--ink-soft);font-size:10.5px;">Tekstur Pangan:</span>
+              <span style="color:var(--ink-soft);font-size:10.5px;">${isEn ? 'Food Texture:' : 'Tekstur Pangan:'}</span>
               <span style="color:var(--ink);font-size:10.5px;font-weight:600;">${p.texture}</span>
             </div>
             <div style="margin-top:2px;">
-              <div style="color:var(--ink-soft);font-size:10px;margin-bottom:3px;">Makanan Super Anjuran:</div>
+              <div style="color:var(--ink-soft);font-size:10px;margin-bottom:3px;">${isEn ? 'Recommended Superfoods:' : 'Makanan Super Anjuran:'}</div>
               <div style="display:flex;flex-wrap:wrap;gap:4px;">
                 ${superfoodsList}
               </div>
@@ -10494,19 +10533,36 @@ class NutriVisionApp {
     }
   }
 
-  selectJourneyPhase(conditionId, phaseNum) {
+  async selectJourneyPhase(conditionId, phaseNum) {
     const profile = NUTRIVISION_DATA.recoveryProfiles[conditionId] || NUTRIVISION_DATA.recoveryProfiles['post-surgery'];
     if (!profile) return;
     const phase = profile.phases.find(p => p.phaseNum === phaseNum);
     if (!phase) return;
 
-    // Visual selection
+    this.activePhase = phaseNum;
+
+    // Visual feedback
     document.querySelectorAll('#journey-timeline-grid .journey-step-box').forEach(box => {
       const isTarget = parseInt(box.dataset.phase, 10) === phaseNum;
       box.classList.toggle('selected-phase', isTarget);
     });
 
-    this.showToast(`Panduan ${phase.chip}: ${phase.title}`, 'info');
+    // Save active phase choice to TiDB Cloud database
+    if (typeof apiClient !== 'undefined' && apiClient.isServerOnline) {
+      try {
+        await apiClient.selectActivePhase(conditionId, phaseNum);
+      } catch (err) {
+        console.warn('Notice saving active phase to TiDB:', err.message);
+      }
+    }
+
+    await this.renderJourneyRoadmap(conditionId);
+
+    const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
+    const toastMsg = isEn 
+      ? `Activated Phase ${phaseNum}: ${phase.titleEn || phase.title}`
+      : `Fase ${phaseNum} diaktifkan: ${phase.title}`;
+    this.showToast(toastMsg, 'info');
   }
 
   // =========================================================================

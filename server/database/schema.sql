@@ -121,3 +121,21 @@ CREATE TABLE IF NOT EXISTS notifications (
   INDEX idx_notif_user_read (user_id, is_read),
   INDEX idx_notif_created (created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS patient_recovery_phases (
+  id VARCHAR(64) PRIMARY KEY,
+  user_id VARCHAR(64) NOT NULL,
+  condition_id VARCHAR(64) DEFAULT 'post_op_digestive',
+  active_phase INT DEFAULT 2,
+  phase1_status VARCHAR(32) DEFAULT 'completed',
+  phase1_pct INT DEFAULT 100,
+  phase2_status VARCHAR(32) DEFAULT 'active',
+  phase2_pct INT DEFAULT 35,
+  phase3_status VARCHAR(32) DEFAULT 'upcoming',
+  phase3_pct INT DEFAULT 0,
+  start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY idx_user_condition (user_id, condition_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

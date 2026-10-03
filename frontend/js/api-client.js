@@ -203,6 +203,33 @@ class NutriVisionAPIClient {
   }
 
   // =========================================================================
+  // CLINICAL RECOVERY PHASES (TiDB DYNAMIC ROADMAP)
+  // =========================================================================
+  async getPhaseProgress(conditionId = null, userId = null) {
+    const uid = userId || (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || '';
+    const params = new URLSearchParams();
+    if (conditionId) params.append('conditionId', conditionId);
+    if (uid) params.append('userId', uid);
+    const query = params.toString() ? '?' + params.toString() : '';
+    return await this.request(`/api/phases/progress${query}`);
+  }
+
+  async updatePhaseProgress(data) {
+    return await this.request('/api/phases/progress', {
+      method: 'PUT',
+      body: data
+    });
+  }
+
+  async selectActivePhase(conditionId, phaseNum, userId = null) {
+    const uid = userId || (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || '';
+    return await this.request('/api/phases/select-phase', {
+      method: 'POST',
+      body: { conditionId, phaseNum, userId: uid }
+    });
+  }
+
+  // =========================================================================
   // 3. FOOD CATALOG (TKPI)
   // =========================================================================
   async getFoods(params = {}) {
