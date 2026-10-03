@@ -4601,28 +4601,41 @@
 
 .recom-menu-card {
   background: #FFFFFF;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 26px;
+  padding: 22px 22px 20px;
+  border: 1px solid #DDD4B0;
+  box-shadow: 0 10px 30px rgba(28, 32, 14, 0.05);
+  transition: all 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  gap: 12px;
 }
 
 .recom-menu-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
   border-color: #9EA76B;
-  box-shadow: 0 8px 24px rgba(35, 57, 23, 0.09);
 }
 
 .recom-menu-card.doctor-card {
-  border-left: 4px solid #15803D;
+  border: 1px solid #DDD4B0;
+}
+
+.recom-menu-card.doctor-card:hover {
+  border-color: #9EA76B;
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+  transform: translateY(-6px);
 }
 
 .recom-menu-card.budget-card {
-  border-left: 4px solid #D97706;
+  border: 1px solid #DDD4B0;
+}
+
+.recom-menu-card.budget-card:hover {
+  border-color: #9EA76B;
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+  transform: translateY(-6px);
 }
 
 .recom-macro-pill {

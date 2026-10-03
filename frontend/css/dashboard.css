@@ -872,40 +872,44 @@
   box-shadow: 0 2px 6px rgba(35, 57, 23, 0.2);
 }
 
-/* === RECOMMENDATION MENU PAGE: MENU CARDS === */
+/* === RECOMMENDATION MENU PAGE: MENU CARDS (Identical to Local Superfoods .popular-food-card) === */
 .recom-menu-card {
   background: #FFFFFF;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 16px;
-  padding: 18px 20px;
+  border-radius: 26px;
+  padding: 22px 22px 20px;
+  border: 1px solid #DDD4B0;
+  box-shadow: 0 10px 30px rgba(28, 32, 14, 0.05);
+  transition: all 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .recom-menu-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+  border-color: #9EA76B;
 }
 
 .recom-menu-card.doctor-card {
-  border-left: 3.5px solid #15803D;
+  border: 1px solid #DDD4B0;
 }
 
 .recom-menu-card.doctor-card:hover {
-  border-color: #15803D;
-  background: #FDFEFF;
+  border-color: #9EA76B;
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+  transform: translateY(-6px);
 }
 
 .recom-menu-card.budget-card {
-  border-left: 3.5px solid #D97706;
+  border: 1px solid #DDD4B0;
 }
 
 .recom-menu-card.budget-card:hover {
-  border-color: #D97706;
-  background: #FFFDF8;
+  border-color: #9EA76B;
+  box-shadow: 0 20px 45px rgba(158, 167, 107, 0.16);
+  transform: translateY(-6px);
 }
 
 .recom-hint-btn:focus-visible {

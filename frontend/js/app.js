@@ -11903,7 +11903,7 @@ class NutriVisionApp {
           </div>
         </div>
 
-        <div style="background:#F8FAF8;border-left:3.5px solid #16A34A;padding:10px 14px;border-radius:8px;font-size:12px;color:#334155;line-height:1.5;">
+        <div style="background:#F7F9EE;border:1px solid #DCE5B8;border-left:4px solid #16A34A;padding:11px 15px;border-radius:14px;font-size:12px;color:#2D3E1A;line-height:1.5;">
           <strong style="color:#15803D;">Dasar Jurnal Klinis:</strong> "${item.journalNote || item.doctorNote || ''}"
         </div>
 
@@ -11917,8 +11917,8 @@ class NutriVisionApp {
           <strong>Target Klinis:</strong> ${item.keyNutrients}
         </div>
 
-        <div style="margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
-          <button type="button" class="btn-primary-teal" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:9px 16px;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
+        <div style="margin-top:auto;padding-top:12px;border-top:1px solid #EFE8CA;">
+          <button type="button" class="btn-primary-teal" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:10px 16px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Jurnal Klinis')">
             <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat ke Asupan
           </button>
@@ -12004,8 +12004,8 @@ class NutriVisionApp {
           </button>
         </div>
 
-        <div style="background:#FFFBEB;border-left:3.5px solid #F59E0B;padding:10px 14px;border-radius:8px;font-size:12px;color:#78350F;line-height:1.5;">
-          <strong>Nilai Gizi Setara:</strong> ${item.clinicalEquiv}
+        <div style="background:#FFFDF5;border:1px solid #FDE68A;border-left:4px solid #D97706;padding:11px 15px;border-radius:14px;font-size:12px;color:#78350F;line-height:1.5;">
+          <strong style="color:#92400E;">Nilai Gizi Setara:</strong> ${item.clinicalEquiv}
         </div>
 
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -12014,8 +12014,8 @@ class NutriVisionApp {
           <span class="recom-macro-pill calories" style="background:#F8FAFC;"><i data-lucide="tag" style="width:12px;height:12px;"></i> ${item.texture}</span>
         </div>
 
-        <div style="margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
-          <button type="button" class="btn-primary-coral" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:9px 16px;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
+        <div style="margin-top:auto;padding-top:12px;border-top:1px solid #EFE8CA;">
+          <button type="button" class="btn-primary-coral" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:10px 16px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Alternatif Budget Hemat')">
             <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat ke Asupan
           </button>
