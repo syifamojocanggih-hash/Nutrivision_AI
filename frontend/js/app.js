@@ -2091,6 +2091,11 @@ class NutriVisionApp {
       this.renderAITextPage();
     }
 
+    if (sectionId === 'recommendation-menu') {
+      this.renderDoctorRecommendationsPage();
+      this.renderBudgetAlternativesPage();
+    }
+
     // Update Desktop Nav Active State
     document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.sec === sectionId || (sectionId === 'history' && btn.dataset.sec === 'overview'));
@@ -2110,6 +2115,7 @@ class NutriVisionApp {
     // Update Topbar Dynamic Scroll Section Label
     const sectionTitleMap = {
       'overview': 'Overview',
+      'recommendation-menu': 'Recommendation Menu',
       'planner': 'Meal Planner',
       'history': 'Meal History',
       'catalog': 'Superfoods',
@@ -11794,27 +11800,43 @@ class NutriVisionApp {
     ];
   }
 
-  openDoctorRecommendationModal(category = 'all') {
-    this.doctorRecomFilter = category;
-    this.doctorRecomSearchQuery = '';
-    const searchInput = document.getElementById('doctor-recom-search');
-    if (searchInput) searchInput.value = '';
-
-    document.querySelectorAll('#doctor-recom-filter-pills .recom-pill-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.cat === category);
-    });
-
-    this.renderDoctorRecommendations();
-    this.openModal('modal-doctor-menu-recommendations');
+  openRecommendationMenuPage(mode = 'standar') {
+    this.navigate('recommendation-menu');
+    this.switchRecommendationTab(mode);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  renderDoctorRecommendations() {
-    const container = document.getElementById('doctor-recom-items-grid');
+  switchRecommendationTab(mode = 'standar') {
+    this.recommendationActiveTab = mode;
+    const btnStandar = document.getElementById('tab-btn-recom-standar');
+    const btnHemat = document.getElementById('tab-btn-recom-hemat');
+    const secStandar = document.getElementById('recom-page-section-standar');
+    const secHemat = document.getElementById('recom-page-section-hemat');
+
+    if (btnStandar) btnStandar.classList.toggle('active', mode === 'standar');
+    if (btnHemat) btnHemat.classList.toggle('active', mode === 'hemat');
+
+    if (secStandar) secStandar.style.display = mode === 'standar' ? 'block' : 'none';
+    if (secHemat) secHemat.style.display = mode === 'hemat' ? 'block' : 'none';
+
+    if (mode === 'standar') {
+      this.renderDoctorRecommendationsPage();
+    } else {
+      this.renderBudgetAlternativesPage();
+    }
+
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  renderDoctorRecommendationsPage() {
+    const container = document.getElementById('page-doctor-items-grid');
     if (!container) return;
 
     const list = this.getDoctorRecommendationsList();
-    const filter = this.doctorRecomFilter || 'all';
-    const query = (this.doctorRecomSearchQuery || '').toLowerCase().trim();
+    const filter = this.pageDoctorFilter || 'all';
+    const query = (this.pageDoctorSearchQuery || '').toLowerCase().trim();
 
     const filtered = list.filter(item => {
       const matchCat = filter === 'all' || item.category === filter;
@@ -11824,10 +11846,10 @@ class NutriVisionApp {
 
     if (!filtered.length) {
       container.innerHTML = `
-        <div style="grid-column:1 / -1;text-align:center;padding:32px 16px;color:#64748B;">
-          <i data-lucide="info" style="width:28px;height:28px;color:#94A3B8;margin-bottom:8px;"></i>
-          <p style="margin:0;font-size:13.5px;font-weight:600;">Tidak ditemukan menu dokter yang cocok.</p>
-          <span style="font-size:12px;">Coba gunakan kata kunci lain atau pilih filter "Semua Menu".</span>
+        <div style="grid-column:1 / -1;text-align:center;padding:48px 16px;background:#FFFFFF;border-radius:14px;border:1px solid #E2E8F0;color:#64748B;">
+          <i data-lucide="info" style="width:32px;height:32px;color:#94A3B8;margin-bottom:8px;"></i>
+          <p style="margin:0;font-size:14px;font-weight:700;color:#334155;">Tidak ditemukan menu dokter yang cocok.</p>
+          <span style="font-size:12.5px;">Coba gunakan kata kunci lain atau pilih filter "Semua Menu".</span>
         </div>
       `;
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -11838,37 +11860,37 @@ class NutriVisionApp {
       <div class="recom-menu-card doctor-card">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
           <div>
-            <span style="font-size:11px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.04em;">${item.timing}</span>
-            <h4 style="margin:3px 0 0;font-size:14.5px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+            <span style="font-size:11.5px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:0.04em;">${item.timing}</span>
+            <h4 style="margin:4px 0 0;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
           </div>
           <span class="recom-macro-pill doctor" title="Diverifikasi Dokter Spesialis">
-            <i data-lucide="stethoscope" style="width:12px;height:12px;"></i>
+            <i data-lucide="stethoscope" style="width:13px;height:13px;"></i>
             <span>${item.doctorTitle.split('(')[0].trim()}</span>
           </span>
         </div>
 
-        <div style="background:#F8FAF8;border-left:3px solid #16A34A;padding:8px 12px;border-radius:6px;font-size:11.5px;color:#334155;line-height:1.45;">
+        <div style="background:#F8FAF8;border-left:3.5px solid #16A34A;padding:10px 14px;border-radius:8px;font-size:12px;color:#334155;line-height:1.5;">
           <strong style="color:#15803D;">Anjuran Medis:</strong> "${item.doctorNote}"
         </div>
 
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <span class="recom-macro-pill protein"><i data-lucide="sparkles" style="width:11px;height:11px;"></i> ${item.protein}g Protein</span>
-          <span class="recom-macro-pill calories"><i data-lucide="flame" style="width:11px;height:11px;"></i> ${item.cals} kkal</span>
-          <span class="recom-macro-pill calories" style="background:#F3F4F6;"><i data-lucide="shield" style="width:11px;height:11px;"></i> ${item.texture}</span>
+          <span class="recom-macro-pill protein"><i data-lucide="sparkles" style="width:12px;height:12px;"></i> ${item.protein}g Protein</span>
+          <span class="recom-macro-pill calories"><i data-lucide="flame" style="width:12px;height:12px;"></i> ${item.cals} kkal</span>
+          <span class="recom-macro-pill calories" style="background:#F1F5F9;"><i data-lucide="shield" style="width:12px;height:12px;"></i> ${item.texture}</span>
         </div>
 
-        <div style="font-size:11px;color:#64748B;line-height:1.35;">
+        <div style="font-size:11.5px;color:#64748B;line-height:1.4;">
           <strong>Target Klinis:</strong> ${item.keyNutrients}
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #E2E8F0;">
-          <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:5px 12px;border-radius:8px;font-weight:700;color:#233917;border:1px solid #CBD5E1;background:#FFFFFF;cursor:pointer;"
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
+          <button type="button" class="btn-outline-glass" style="font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#233917;border:1px solid #CBD5E1;background:#FFFFFF;cursor:pointer;"
             onclick="app.showDoctorRecipeDetails('${item.id}')">
-            <i data-lucide="book-open" style="width:12px;height:12px;vertical-align:middle;"></i> Rincian Resep
+            <i data-lucide="book-open" style="width:13px;height:13px;vertical-align:middle;"></i> Rincian Resep
           </button>
-          <button type="button" class="btn-primary-teal" style="font-size:11.5px;padding:6px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer;"
+          <button type="button" class="btn-primary-teal" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Rekomendasi Dokter')">
-            <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> Catat ke Asupan
+            <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Catat ke Asupan
           </button>
         </div>
       </div>
@@ -11877,41 +11899,27 @@ class NutriVisionApp {
     if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
   }
 
-  filterDoctorRecommendations(category, btnEl) {
-    this.doctorRecomFilter = category;
+  filterDoctorRecommendationsPage(category, btnEl) {
+    this.pageDoctorFilter = category;
     if (btnEl) {
-      document.querySelectorAll('#doctor-recom-filter-pills .recom-pill-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#page-doctor-filter-pills .recom-pill-btn').forEach(b => b.classList.remove('active'));
       btnEl.classList.add('active');
     }
-    this.renderDoctorRecommendations();
+    this.renderDoctorRecommendationsPage();
   }
 
-  searchDoctorRecommendations(query) {
-    this.doctorRecomSearchQuery = query;
-    this.renderDoctorRecommendations();
+  searchDoctorRecommendationsPage(query) {
+    this.pageDoctorSearchQuery = query;
+    this.renderDoctorRecommendationsPage();
   }
 
-  openBudgetAlternativesModal(category = 'all') {
-    this.budgetAltFilter = category;
-    this.budgetAltSearchQuery = '';
-    const searchInput = document.getElementById('budget-recom-search');
-    if (searchInput) searchInput.value = '';
-
-    document.querySelectorAll('#budget-recom-filter-pills .recom-pill-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.cat === category);
-    });
-
-    this.renderBudgetAlternatives();
-    this.openModal('modal-budget-menu-alternatives');
-  }
-
-  renderBudgetAlternatives() {
-    const container = document.getElementById('budget-recom-items-grid');
+  renderBudgetAlternativesPage() {
+    const container = document.getElementById('page-budget-items-grid');
     if (!container) return;
 
     const list = this.getBudgetAlternativesList();
-    const filter = this.budgetAltFilter || 'all';
-    const query = (this.budgetAltSearchQuery || '').toLowerCase().trim();
+    const filter = this.pageBudgetFilter || 'all';
+    const query = (this.pageBudgetSearchQuery || '').toLowerCase().trim();
 
     const filtered = list.filter(item => {
       let matchCat = true;
@@ -11926,10 +11934,10 @@ class NutriVisionApp {
 
     if (!filtered.length) {
       container.innerHTML = `
-        <div style="grid-column:1 / -1;text-align:center;padding:32px 16px;color:#64748B;">
-          <i data-lucide="info" style="width:28px;height:28px;color:#94A3B8;margin-bottom:8px;"></i>
-          <p style="margin:0;font-size:13.5px;font-weight:600;">Tidak ditemukan alternatif menu hemat yang cocok.</p>
-          <span style="font-size:12px;">Coba sesuaikan kata kunci atau pilih filter "Semua Alternatif".</span>
+        <div style="grid-column:1 / -1;text-align:center;padding:48px 16px;background:#FFFFFF;border-radius:14px;border:1px solid #E2E8F0;color:#64748B;">
+          <i data-lucide="info" style="width:32px;height:32px;color:#94A3B8;margin-bottom:8px;"></i>
+          <p style="margin:0;font-size:14px;font-weight:700;color:#334155;">Tidak ditemukan alternatif menu hemat yang cocok.</p>
+          <span style="font-size:12.5px;">Coba gunakan kata kunci lain atau pilih filter "Semua Alternatif".</span>
         </div>
       `;
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -11941,38 +11949,38 @@ class NutriVisionApp {
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
           <div>
             <span class="recom-macro-pill price">
-              <i data-lucide="wallet" style="width:11px;height:11px;"></i>
+              <i data-lucide="wallet" style="width:12px;height:12px;"></i>
               Rp ${item.pricePerServing.toLocaleString('id-ID')} / porsi
             </span>
-            <h4 style="margin:5px 0 0;font-size:14.5px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
+            <h4 style="margin:5px 0 0;font-size:15px;font-weight:800;color:#0F172A;line-height:1.35;">${item.name}</h4>
           </div>
-          <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;font-size:10.5px;font-weight:700;white-space:nowrap;">
+          <span class="badge" style="background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;font-size:11px;font-weight:700;white-space:nowrap;">
             ${item.priceCompare.split('vs')[0].trim()}
           </span>
         </div>
 
-        <div style="background:#FFFBEB;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:6px;font-size:11.5px;color:#78350F;line-height:1.45;">
+        <div style="background:#FFFBEB;border-left:3.5px solid #F59E0B;padding:10px 14px;border-radius:8px;font-size:12px;color:#78350F;line-height:1.5;">
           <strong>Nilai Gizi Setara:</strong> ${item.clinicalEquiv}
         </div>
 
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <span class="recom-macro-pill protein"><i data-lucide="sparkles" style="width:11px;height:11px;"></i> ${item.protein}g Protein</span>
-          <span class="recom-macro-pill calories"><i data-lucide="flame" style="width:11px;height:11px;"></i> ${item.cals} kkal</span>
-          <span class="recom-macro-pill calories" style="background:#F8FAFC;"><i data-lucide="tag" style="width:11px;height:11px;"></i> ${item.texture}</span>
+          <span class="recom-macro-pill protein"><i data-lucide="sparkles" style="width:12px;height:12px;"></i> ${item.protein}g Protein</span>
+          <span class="recom-macro-pill calories"><i data-lucide="flame" style="width:12px;height:12px;"></i> ${item.cals} kkal</span>
+          <span class="recom-macro-pill calories" style="background:#F8FAFC;"><i data-lucide="tag" style="width:12px;height:12px;"></i> ${item.texture}</span>
         </div>
 
-        <div style="font-size:11px;color:#475569;line-height:1.35;background:#F8FAFC;padding:7px 10px;border-radius:6px;border:1px dashed #CBD5E1;">
+        <div style="font-size:11.5px;color:#475569;line-height:1.4;background:#F8FAFC;padding:8px 12px;border-radius:8px;border:1px dashed #CBD5E1;">
           💡 <strong>Tips Belanja Pasar:</strong> ${item.localTip}
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #E2E8F0;">
-          <button type="button" class="btn-outline-glass" style="font-size:11.5px;padding:5px 12px;border-radius:8px;font-weight:700;color:#92400E;border:1px solid #FCD34D;background:#FFFDF7;cursor:pointer;"
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px dashed #E2E8F0;">
+          <button type="button" class="btn-outline-glass" style="font-size:12px;padding:6px 14px;border-radius:8px;font-weight:700;color:#92400E;border:1px solid #FCD34D;background:#FFFDF7;cursor:pointer;"
             onclick="app.showBudgetRecipeDetails('${item.id}')">
-            <i data-lucide="book-open" style="width:12px;height:12px;vertical-align:middle;"></i> Komposisi Bahan
+            <i data-lucide="book-open" style="width:13px;height:13px;vertical-align:middle;"></i> Komposisi Bahan
           </button>
-          <button type="button" class="btn-primary-coral" style="font-size:11.5px;padding:6px 14px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:5px;cursor:pointer;"
+          <button type="button" class="btn-primary-coral" style="font-size:12px;padding:7px 16px;border-radius:8px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;"
             onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Alternatif Budget Hemat')">
-            <i data-lucide="plus-circle" style="width:13px;height:13px;"></i> Catat ke Asupan
+            <i data-lucide="plus-circle" style="width:14px;height:14px;"></i> Catat ke Asupan
           </button>
         </div>
       </div>
@@ -11981,18 +11989,18 @@ class NutriVisionApp {
     if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
   }
 
-  filterBudgetAlternatives(category, btnEl) {
-    this.budgetAltFilter = category;
+  filterBudgetAlternativesPage(category, btnEl) {
+    this.pageBudgetFilter = category;
     if (btnEl) {
-      document.querySelectorAll('#budget-recom-filter-pills .recom-pill-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#page-budget-filter-pills .recom-pill-btn').forEach(b => b.classList.remove('active'));
       btnEl.classList.add('active');
     }
-    this.renderBudgetAlternatives();
+    this.renderBudgetAlternativesPage();
   }
 
-  searchBudgetAlternatives(query) {
-    this.budgetAltSearchQuery = query;
-    this.renderBudgetAlternatives();
+  searchBudgetAlternativesPage(query) {
+    this.pageBudgetSearchQuery = query;
+    this.renderBudgetAlternativesPage();
   }
 
   logRecommendedMeal(name, prot, cals, source = 'Rekomendasi Menu') {

@@ -788,6 +788,22 @@
   box-shadow: 0 8px 20px rgba(35, 57, 23, 0.08);
 }
 
+.recom-page-tab-btn {
+  background: transparent;
+  color: #475569;
+}
+
+.recom-page-tab-btn:hover {
+  color: #1E293B;
+  background: rgba(35, 57, 23, 0.06);
+}
+
+.recom-page-tab-btn.active {
+  background: #233917 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(35, 57, 23, 0.2);
+}
+
 
 .macro-item {
   display: flex;
