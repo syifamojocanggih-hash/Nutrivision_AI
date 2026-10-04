@@ -730,6 +730,24 @@
        profile_act_therapy_desc: "Physiotherapy sessions 2–3 times per week (Factor 1.35)",
        profile_act_active: "Active Physical Exercise / Gym",
        profile_act_active_desc: "Regular post-acute rehabilitation training (Factor 1.55)",
+
+       // Progress & Recovery Roadmap
+       prog_journey_title: "Clinical Recovery Phase Roadmap",
+       prog_journey_sub: "Adaptive clinical pathway based on ERAS & biological tissue regeneration protocols",
+       prog_journey_btn_cal: "Calendar & Schedule",
+       prog_journey_active_badge: "Active Phase",
+       prog_journey_group_med: "🩺 Post-Surgery (Medical)",
+       prog_journey_group_fit: "🏋️ Gym & Fitness",
+       prog_journey_focus_label: "Category Focus:",
+       journey_banner_calendar_title: "Recovery Cycle Calendar & Patient Daily Schedule",
+       journey_banner_calendar_desc: "3-month measurable clinical targets, dietitian-validated clinical nutrition, & daily meal schedules are now integrated in the Meal Planner.",
+       journey_banner_calendar_btn: "Open in Meal Planner",
+       prog_recap_title: "Weekly Clinical Nutrition Compliance Summary",
+       prog_recap_sub: "Daily adherence analysis against clinical nutrition target guidance",
+       prog_telehealth_title: "Patient Telehealth Summary",
+       prog_ready_export: "Ready to Export",
+       prog_btn_pdf: "Export Clinical Report (PDF)",
+       prog_btn_telehealth: "Copy Telehealth Report"
      },
 
     id: {
@@ -1456,6 +1474,24 @@
       profile_act_therapy_desc: "Sesi fisioterapi 2-3 kali per minggu (Faktor 1.35)",
       profile_act_active: "Latihan Fisik Aktif / Gym",
       profile_act_active_desc: "Olahraga teratur pasca-fase pemulihan akut (Faktor 1.55)",
+
+      // Progress & Recovery Roadmap
+      prog_journey_title: "Peta Perjalanan Fase Pemulihan Klinis",
+      prog_journey_sub: "Jalur adaptif berbasis protokol ERAS & regenerasi biologis jaringan",
+      prog_journey_btn_cal: "Kalender & Jadwal",
+      prog_journey_active_badge: "Fase Aktif",
+      prog_journey_group_med: "🩺 Pasca-Operasi (Medis)",
+      prog_journey_group_fit: "🏋️ Gym & Fitness",
+      prog_journey_focus_label: "Fokus Kategori:",
+      journey_banner_calendar_title: "Kalender Siklus Pemulihan & Jadwal Harian Pasien",
+      journey_banner_calendar_desc: "Target klinis 3 bulan terukur, anjuran gizi tervalidasi ahli gizi klinis, & jadwal makan harian kini terintegrasi di halaman Meal Planner.",
+      journey_banner_calendar_btn: "Buka di Meal Planner",
+      prog_recap_title: "Rekapitulasi Kepatuhan Gizi & Nutrisi Mingguan",
+      prog_recap_sub: "Analisis kepatuhan harian terhadap anjuran target gizi",
+      prog_telehealth_title: "Ringkasan Telehealth Pasien",
+      prog_ready_export: "Rekap Siap Ekspor",
+      prog_btn_pdf: "Ekspor Dokumen Laporan (PDF)",
+      prog_btn_telehealth: "Salin Laporan Telehealth"
     }
   };
 

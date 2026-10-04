@@ -10347,6 +10347,215 @@ class NutriVisionApp {
   // =========================================================================
   // RECOVERY JOURNEY ROADMAP & 12-TAXONOMY SELECTOR CONTROLLERS (FR-09)
   // =========================================================================
+
+  // Translation dictionaries for Clinical Recovery Phases & Textures
+  static CLINICAL_PHASE_TRANSLATIONS = {
+    'Fase Adaptasi Cair Jernih & Saring': 'Clear Fluid & Strained Adaptation Phase',
+    'Fase Regenerasi Mukosa & Makanan Lunak': 'Mucosal Regeneration & Soft Foods Phase',
+    'Fase Adaptasi Padat & Reintroduksi Serat': 'Solid Food & Fiber Reintroduction Phase',
+    'Fase Imunonutrisi Akut & Proteksi Infeksi': 'Acute Immunonutrition & Infection Control Phase',
+    'Fase Anti-Cachexia & Pembentukan Massa Otot': 'Anti-Cachexia & Lean Mass Preservation Phase',
+    'Fase Konsolidasi Imun & Ketahanan Vitalitas': 'Immune Consolidation & Vitality Phase',
+    'Fase Resusitasi Nutrisi & Penutupan Defisit Nitrogen': 'Nutritional Resuscitation & Nitrogen Deficit Phase',
+    'Fase Granulasi & Rekonstruksi Jaringan Kulit': 'Granulation & Tissue Reconstruction Phase',
+    'Fase Maturasi Skar & Remodeling Kulit': 'Scar Maturation & Dermal Remodeling Phase',
+    'Fase Cair Jernih & Protein Cair Bening': 'Clear Liquid & Isolated Protein Phase',
+    'Fase Puree Halus & Protein Lunak (Porsi Mikro)': 'Smooth Puree & Soft Protein Phase (Micro-Portions)',
+    'Fase Makanan Padat Lunak & Kunyah Sempurna': 'Soft Solid Foods & Chewing Phase',
+    'Fase Kalus Lunak & Anti-Edema Intra-Artikular': 'Soft Callus & Joint Anti-Edema Phase',
+    'Fase Osifikasi Mineral & Kalus Keras (Aktif)': 'Mineral Ossification & Hard Callus Phase (Active)',
+    'Fase Remodeling Tulang Trabekular & Rekondisi': 'Trabecular Bone Remodeling & Conditioning Phase',
+    'Fase Hemodinamik & Kontrol Cairan-Natrium': 'Hemodynamic & Fluid-Sodium Control Phase',
+    'Fase Penyatuan Tulang Sternum & Endotel (Aktif)': 'Sternal Union & Endothelial Healing Phase (Active)',
+    'Fase Rehabilitasi Jantung & Ketahanan Fisik': 'Cardiac Rehabilitation & Physical Endurance Phase',
+    'Fase Proteksi Otot Bedridden & Hidrasi': 'Bedridden Muscle Protection & Hydration Phase',
+    'Fase Mobilisasi Duduk & Kekuatan Fungsional (Aktif)': 'Sitting Mobilization & Functional Strength Phase (Active)',
+    'Fase Kemandirian Geriatri & Kebugaran Harian': 'Geriatric Independence & Daily Vitality Phase',
+    'Resintesis Glikogen & Reduksi DOMS Akut': 'Glycogen Resynthesis & Acute DOMS Reduction',
+    'Hipertrofi Myofibril & MPS Puncak (Aktif)': 'Myofibrillar Hypertrophy & Peak MPS (Active)',
+    'Adaptasi Neuromuskular & Superkompensasi': 'Neuromuscular Adaptation & Supercompensation',
+    'Fase Saturasi Kreatin & Restorasi Fosfagen': 'Creatine Saturation & Phosphagen Restoration Phase',
+    'Fase Beban Intensitas Maksimal & Proteksi Sendi (Aktif)': 'Maximal Load & Joint Protection Phase (Active)',
+    'Fase Peaking Angkatan & Deload Kompetisi': 'Strength Peaking & Competition Deload Phase',
+    'Fase Resintesis Glikogen Cepat & Rehidrasi Seluler': 'Rapid Glycogen Resynthesis & Cellular Rehydration',
+    'Fase Efisiensi Oksidasi Substrat & Ambang Laktat': 'Substrate Oxidation Efficiency & Lactate Threshold',
+    'Fase Superkompensasi Karbohidrat (Carbo-Loading)': 'Carbohydrate Supercompensation (Carbo-Loading)',
+    'Fase Termogenik & Adaptasi Keseimbangan Nitrogen': 'Thermogenic & Nitrogen Balance Adaptation Phase',
+    'Fase Oksidasi Lemak Subkutan & Hipertrofi LBM': 'Subcutaneous Fat Oxidation & LBM Hypertrophy Phase',
+    'Fase Konsolidasi Komposisi Tubuh & Diet Break': 'Body Composition Consolidation & Diet Break Phase',
+    'Fase Meredakan EIMD & Marker Kerusakan Otot': 'EIMD Alleviation & Muscle Damage Recovery Phase',
+    'Fase Resintesis Cepat Antar-Sesi (Inter-Session Recovery)': 'Inter-Session Rapid Resynthesis Phase',
+    'Fase Remodeling Jaringan Puncak & Kebugaran Super': 'Peak Tissue Remodeling & Super-Fitness Phase'
+  };
+
+  static CLINICAL_PHASE_DESCRIPTIONS = {
+    'Diet cair jernih bertransisi ke sup saring bening, stabilisasi elektrolit, dan pencegahan ileus pasca-anestesi.':
+      'Clear liquid diet transitioning to strained broth, electrolyte stabilization, and post-anesthesia ileus prevention.',
+    'Makanan lunak tim saring kaya albumin & L-Glutamin untuk epitelisasi mukosa usus dan integritas jahitan.':
+      'Steamed soft foods rich in albumin & L-Glutamine for intestinal mucosa epithelization and suture line integrity.',
+    'Pengenalan serat larut air bertahap, normalisasi motilitas peristaltik usus, dan diet seimbang padat.':
+      'Gradual soluble fiber reintroduction, intestinal peristalsis normalization, and balanced solid nutrition.',
+    'Asupan formula imunonutrisi (Arginin + Omega-3) untuk mencegah komplikasi infeksi dan penurunan albumin drastis.':
+      'Immunonutrition formula intake (Arginine + Omega-3) to prevent infectious complications and acute albumin drop.',
+    'Kombinasi protein hewani bernilai biologis tinggi dan asam lemak sehat untuk melawan pemecahan sarkopenia kanker.':
+      'Combination of high biological value animal protein and healthy fatty acids to counteract cancer sarcopenia wasting.',
+    'Diet mediterania kaya antioksidan polifenol, serat prebiotik usus, dan energi optimal untuk terapi lanjutan.':
+      'Mediterranean diet rich in polyphenol antioxidants, gut prebiotic fiber, and optimal energy for ongoing therapy.',
+    'Kalori ekstra tinggi dan asam amino bebas untuk menghentikan pemecahan protein katabolik akut pasca-luka bakar.':
+      'High-calorie nutrition and free amino acids to arrest acute post-burn hypercatabolic protein breakdown.',
+    'Biosintesis masif serabut kolagen tipe I & III, neovaskularisasi graft kulit, dan suplementasi Zinc + Vit C.':
+      'Massive type I & III collagen biosynthesis, skin graft neovascularization, and Zinc + Vitamin C supplementation.',
+    'Mencegah pembentukan kontraktur skar hipertrofik melalui nutrisi anti-inflamasi dan hidrasi epidermis optimal.':
+      'Preventing hypertrophic scar contracture through anti-inflammatory nutrition and optimal epidermal hydration.',
+    'Cairan bebas gula, kaldu saring jernih, dan whey protein isolate cair bening dalam tegukan kecil perlahan.':
+      'Sugar-free fluids, clear strained broth, and clear liquid whey protein isolate taken in slow, small sips.',
+    'Tekstur puree halus lembut konsistensi yogurt, putih telur kukus saring, dan tahu sutra porsi 60–100 ml.':
+      'Smooth puree texture with yogurt consistency, strained steamed egg whites, and silken tofu in 60–100 ml portions.',
+    'Transisi ke daging lembut cincang, ikan kukus, sayuran empuk dengan teknik kunyah 30 kali per suapan.':
+      'Transition to tender minced meat, steamed fish, and soft vegetables chewed thoroughly 30 times per bite.',
+    'Meredakan hematoma fraktur, proteksi cairan sinovial, dan pembentukan jaringan granulasi kartilago lunak.':
+      'Fracture hematoma resolution, synovial fluid protection, and soft cartilaginous callus granulation.',
+    'Deposisi mineral hidroksiapatit kalsium-fosfat pada matriks kolagen dan regenerasi ligamen sendi.':
+      'Calcium-phosphate hydroxyapatite mineral deposition on collagen matrix and joint ligament regeneration.',
+    'Adaptasi beban biomekanik gravitasi penuh, peningkatan densitas mineral tulang, dan pencegahan atrofi otot.':
+      'Full gravitational biomechanical load adaptation, bone mineral density enhancement, and muscle atrophy prevention.',
+    'Pemantauan ketat keseimbangan cairan, diet rendah garam <1500mg, dan proteksi hemostasis sternum insisi.':
+      'Strict fluid balance monitoring, low-sodium diet (<1500mg), and sternal incision hemostasis protection.',
+    'Penyambungan kawat/tulang sternum dengan kalsium-D3 seimbang dan asam lemak omega-3 anti-aritmia.':
+      'Sternal wire/bone union supported with balanced calcium-D3 and anti-arrhythmic omega-3 fatty acids.',
+    'Pola diet Mediterania/DASH permanen untuk mendukung latihan rehabilitasi kardiorespirasi bertahap.':
+      'Permanent Mediterranean/DASH dietary pattern to support progressive cardiorespiratory rehabilitation exercise.',
+    'Pemberian ONS cair tinggi protein + HMB, pencegahan dehidrasi geriatri, dan proteksi luka dekubitus.':
+      'High-protein liquid ONS + HMB provision, geriatric dehydration prevention, and pressure ulcer protection.',
+    'Makanan tim padat nutrisi kaya Vitamin D3 dan Kalsium untuk mendukung latihan berdiri dan mobilisasi mandiri.':
+      'Nutrient-dense steamed meals rich in Vitamin D3 and Calcium to support standing exercises and independent mobility.',
+    'Diet gizi seimbang geriatri padat vitamin B12 dan antioksidan untuk mempertahankan status kognitif dan fisik.':
+      'Balanced geriatric nutrition rich in Vitamin B12 and antioxidants to preserve cognitive and physical fitness.',
+    'Pengisian cepat cadangan glikogen otot, aktivasi jalur mTORC1 via asam amino Leusin, dan hidrasi elektrolit seluler.':
+      'Rapid muscle glycogen replenishment, mTORC1 pathway activation via Leucine, and cellular electrolyte hydration.',
+    'Perbaikan mikrorobekan serat aktin-miosin. Distribusi protein merata setiap 3–4 jam untuk status anabolik positif.':
+      'Actin-myosin microtear repair with evenly distributed protein every 3–4 hours for sustained positive anabolic status.',
+    'Peningkatan densitas serat otot baru, konsolidasi kapasitas angkat beban lebih berat, dan regenerasi deload.':
+      'New muscle fiber density enhancement, heavy lifting capacity consolidation, and deload regeneration.',
+    'Saturasi cadangan fosfokreatin (ATP-PCr), hidrasi seluler miofibril, dan adaptasi beban kompresi awal.':
+      'Phosphocreatine (ATP-PCr) store saturation, myofibrillar cellular hydration, and initial compressive load adaptation.',
+    'Nutrisi pendukung beban angkatan >85% 1RM, densitas tulang aksial, dan suplementasi kalsium-magnesium sendi.':
+      'Nutritional support for >85% 1RM lifting loads, axial bone density, and joint calcium-magnesium supplementation.',
+    'Optimasi cadangan neuromuskular puncak, superkompensasi glikogen, dan kesiapan rekor angkatan baru.':
+      'Peak neuromuscular reserve optimization, glycogen supercompensation, and PR lifting readiness.',
+    'Penggantian cairan elektrolit masif dan karbohidrat multimodal (glukosa:fruktosa 2:1) pasca-sesi high-intensity.':
+      'Massive electrolyte fluid replacement and multimodal carbohydrates (2:1 glucose:fructose) post-high-intensity session.',
+    'Optimasi metabolisme mitokondria, ketahanan VO2 max, dan preservasi massa otot saat volume latihan mingguan tinggi.':
+      'Mitochondrial metabolism optimization, VO2 max endurance, and muscle mass preservation during high weekly training volume.',
+    'Protokol carbo-loading terstruktur menjelang kompetisi endurance dan pemeliharaan imunitas mukosa.':
+      'Structured carbo-loading protocol ahead of endurance competition and mucosal immunity maintenance.',
+    'Penetapan defisit kalori konservatif (-250 kcal) dengan protein maksimal untuk mempertahankan retensi nitrogen positif.':
+      'Conservative caloric deficit (-250 kcal) with maximal protein to preserve positive nitrogen retention.',
+    'Mobilisasi asam lemak bebas melalui defisit terukur seraya menjaga intensitas angkat beban untuk sinyal anabolik otot.':
+      'Free fatty acid mobilization through measured deficit while preserving lifting intensity for anabolic muscle signaling.',
+    'Periode isokalorik terjadwal (refeed / diet break) untuk merestorasi hormon tiroid T3 dan leptin pembakar lemak.':
+      'Scheduled isocaloric period (refeed / diet break) to restore thyroid T3 and fat-burning leptin levels.',
+    'Asupan polifenol antioksidan tinggi (Kurkumin + Tart Cherry) untuk meredakan inflamasi sitokin dan marker CK otot.':
+      'High antioxidant polyphenol intake (Curcumin + Tart Cherry) to soothe cytokine inflammation and muscle CK markers.',
+    'Protokol nutrisi cepat serap di antara sesi pagi dan sore untuk mempertahankan output daya tinggi tanpa kelelahan bertumpuk.':
+      'Rapid-absorbing nutrition protocol between morning and evening sessions to sustain high power output without cumulative fatigue.',
+    'Konsolidasi kapasitas kerja atletik maksimal, adaptasi neuromuscular firing, dan proteksi kekebalan tubuh jangka panjang.':
+      'Peak athletic work capacity consolidation, neuromuscular firing adaptation, and long-term immune protection.'
+  };
+
+  static CLINICAL_TEXTURE_TRANSLATIONS = {
+    'Cair jernih, kaldu saring, puree halus': 'Clear fluids, strained broth, smooth puree',
+    'Lunak tim, bubur halus, tahu sutra kukus': 'Steamed soft foods, smooth porridge, steamed silken tofu',
+    'Padat lunak ke normal berkuah': 'Soft solids to regular soup meals',
+    'Cair kental ONS, sup saring padat energi': 'Dense liquid ONS, energy-dense strained soup',
+    'Lunak padat bergizi tinggi porsi kecil sering': 'Nutrient-dense soft solids in small frequent meals',
+    'Padat kaya nutrisi antioksidan': 'Nutrient-rich antioxidant solids',
+    'Cair kental ONS + lunak padat energi': 'Dense liquid ONS + energy-dense soft solids',
+    'Padat kaya mikronutrien kolagen': 'Nutrient-rich solids high in collagen microminerals',
+    'Padat bergizi seimbang normal': 'Balanced regular solid meals',
+    'Cair jernih encer bebas gula': 'Sugar-free diluted clear fluids',
+    'Puree halus blender lembut (IDDSI Level 4)': 'Smooth blenderized puree (IDDSI Level 4)',
+    'Padat lunak dikunyah sangat halus': 'Soft solids chewed thoroughly',
+    'Lunak sup kaldu tulang kolagen alami (Bone Broth)': 'Soft meals, natural collagen bone broth',
+    'Padat seimbang kaya mineral tulang': 'Balanced solids rich in bone minerals',
+    'Padat bergizi seimbang tinggi kalsium & magnesium': 'Nutritious balanced solids high in calcium & magnesium',
+    'Lunak rendah garam berkuah bening herbal': 'Low-sodium soft meals in clear herbal broth',
+    'Padat teratur kaya serat larut pektin/beta-glukan': 'Regular solids rich in pectin & beta-glucan soluble fiber',
+    'Padat gizi seimbang Mediterania rendah sodium': 'Low-sodium Mediterranean balanced solids',
+    'Cair kental ONS, bubur saring lembut': 'Thick liquid ONS, smooth strained porridge',
+    'Lunak tim cincang halus mudah kunyah (IDDSI Level 5)': 'Finely minced soft steamed meals, easy to chew (IDDSI Level 5)',
+    'Padat lembut ramah geriatri': 'Geriatric-friendly tender soft solids',
+    'Protein shake + karbohidrat cepat cerna sehat': 'Protein shake + healthy fast-digesting carbs',
+    'Padat kaya protein tinggi asam amino esensial': 'Solids rich in protein & essential amino acids',
+    'Padat seimbang makronutrisi kompleks': 'Balanced solids with complex macronutrients',
+    'Padat berenergi tinggi asam amino': 'High-energy solids rich in amino acids',
+    'Padat padat gizi seimbang tinggi protein & elektrolit': 'Nutrient-dense balanced solids high in protein & electrolytes',
+    'Padat tinggi karbohidrat glikemik terkontrol': 'Solids high in controlled-glycemic carbohydrates',
+    'Minuman isotonik + makanan padat karbohidrat tinggi': 'Isotonic drink + high-carbohydrate solid meals',
+    'Padat kaya karbohidrat kompleks & protein lean': 'Solids rich in complex carbs & lean protein',
+    'Padat tinggi karbohidrat indeks glikemik terkontrol': 'Solids high in controlled-glycemic-index carbs',
+    'Padat tinggi serat & protein murni tanpa lemak': 'Solids high in fiber & lean pure protein',
+    'Padat padat nutrisi rendah kalori (High Volume, Low Calorie)': 'Nutrient-dense low-calorie solids (High Volume, Low Calorie)',
+    'Padat gizi seimbang teratur': 'Regular balanced nutrient-rich solids',
+    'Padat berenergi tinggi + smoothie antioksidan': 'High-energy solids + antioxidant smoothie',
+    'Padat berenergi masif mudah cerna': 'Massive energy, easy-to-digest solids',
+    'Padat gizi seimbang kalori ultra-tinggi': 'Balanced solids with ultra-high calories'
+  };
+
+  static CLINICAL_CALORIC_TRANSLATIONS = {
+    'Maintenance to Moderate Surplus (1850 - 2000 kkal)': 'Maintenance to Moderate Surplus (1850 - 2000 kcal)',
+    'Tinggi Kalori & Protein (2000 - 2400 kkal / Anti-Cachexia)': 'High Calorie & Protein (2000 - 2400 kcal / Anti-Cachexia)',
+    'Hypermetabolic High Energy (2400 - 3200 kkal)': 'Hypermetabolic High Energy (2400 - 3200 kcal)',
+    'Hipokalorik Padat Nutrisi / Porsi Mikro (800 - 1200 kkal)': 'Hypocaloric Nutrient-Dense / Micro-Portions (800 - 1200 kcal)',
+    'Moderate Surplus (2000 - 2300 kkal)': 'Moderate Surplus (2000 - 2300 kcal)',
+    'Isokalorik Jantung Sehat (1750 - 1950 kkal)': 'Heart-Healthy Isocaloric (1750 - 1950 kcal)',
+    'Densitas Nutrisi Tinggi (1800 - 2000 kkal)': 'High Nutrient Density (1800 - 2000 kcal)',
+    'Surplus Kalori Moderat (+300 - 500 kcal / 2400 - 2800 kkal)': 'Moderate Caloric Surplus (+300 - 500 kcal / 2400 - 2800 kcal)',
+    'High Caloric Strength Maintenance (2600 - 3200 kkal)': 'High Caloric Strength Maintenance (2600 - 3200 kcal)',
+    'Tinggi Karbohidrat & Energi Tinggi (2800 - 3800 kkal)': 'High Carbohydrate & High Energy (2800 - 3800 kcal)',
+    'Defisit Ringan Termogenik (-200 - 300 kcal / 1900 - 2200 kkal)': 'Mild Thermogenic Deficit (-200 - 300 kcal / 1900 - 2200 kcal)',
+    'Kalori Ekstrem Multi-Sesi (3200 - 5000+ kkal)': 'Extreme Multi-Session Calories (3200 - 5000+ kcal)'
+  };
+
+  static CLINICAL_NUTRIENT_TRANSLATIONS = {
+    'Zinc Organik': 'Organic Zinc',
+    'Zinc Organik (25-50mg)': 'Organic Zinc (25-50mg)',
+    'Kalium Elektrolit': 'Potassium Electrolytes',
+    'Asam Lemak Omega-3 (EPA/DHA)': 'Omega-3 Fatty Acids (EPA/DHA)',
+    'Asam Lemak Omega-3 (3g EPA/DHA)': 'Omega-3 Fatty Acids (3g EPA/DHA)',
+    'Nukleotida': 'Nucleotides',
+    'Selenium Antioksidan': 'Selenium Antioxidant',
+    'Tembaga (Cu)': 'Copper (Cu)',
+    'Zat Besi Fumarat/Bisglisinat': 'Iron Fumarate/Bisglycinate',
+    'Kalsium Sitrat (1200mg)': 'Calcium Citrate (1200mg)',
+    'Kalsium Sitrat': 'Calcium Citrate',
+    'Kalsium Bioavailable (1200mg)': 'Bioavailable Calcium (1200mg)',
+    'Kalsium Organik': 'Organic Calcium',
+    'Fosfor': 'Phosphorus',
+    'Magnesium Bisglisinat (400mg)': 'Magnesium Bisglycinate (400mg)',
+    'Magnesium Bisglisinat': 'Magnesium Bisglycinate',
+    'Magnesium Sitrat': 'Magnesium Citrate',
+    'Gelatin / Kolagen Hidrolisat': 'Gelatin / Hydrolyzed Collagen',
+    'Rendah Natrium (<1500mg Na)': 'Low Sodium (<1500mg Na)',
+    'Lemak Tak Jenuh MUFA/PUFA': 'Unsaturated Fats (MUFA/PUFA)',
+    'Kalium Organik': 'Organic Potassium',
+    'Serat Larut Probiotik': 'Soluble Probiotic Fiber',
+    'Leusin Minimal 3.0g/Meal': 'Leucine Min. 3.0g/Meal',
+    'Karbohidrat Kompleks': 'Complex Carbohydrates',
+    'Kreatin Monohidrat (5g)': 'Creatine Monohydrate (5g)',
+    'Natrium Elektrolit': 'Sodium Electrolytes',
+    'Natrium Elektrolit (500-1000mg/L)': 'Sodium Electrolytes (500-1000mg/L)',
+    'Karbohidrat Cepat & Lambat (6-10g/kg)': 'Fast & Slow Carbohydrates (6-10g/kg)',
+    'Kalium': 'Potassium',
+    'Antioksidan Quercetin': 'Quercetin Antioxidant',
+    'Protein Maksimal (2.0-2.4 g/kg)': 'Maximum Protein (2.0-2.4 g/kg)',
+    'Tinggi Serat Larut (>30g)': 'High Soluble Fiber (>30g)',
+    'Kromium Pikolinat': 'Chromium Picolinate',
+    'Kurkuminoid Bioaktif (500mg)': 'Bioactive Curcuminoids (500mg)',
+    'Vitamin E Alami': 'Natural Vitamin E',
+    'Glukosa Polimer': 'Glucose Polymers'
+  };
+
   handleJourneyGroupSelect(groupKey) {
     // Switch to first default category of the chosen group
     const targetCondition = groupKey === 'fitness' ? 'gym_hypertrophy' : 'post_op_digestive';
@@ -10356,6 +10565,55 @@ class NutriVisionApp {
   handleJourneyCategorySelect(categoryValue) {
     if (!categoryValue) return;
     this.setJourneyCondition(categoryValue);
+  }
+
+  updateJourneyDropdownLabels(isEn) {
+    const optMed = document.getElementById('optgroup-med');
+    const optFit = document.getElementById('optgroup-fit');
+    if (optMed) {
+      optMed.label = isEn ? '🩺 Post-Surgery (Medical) — 7 Categories' : '🩺 Pasca-Operasi (Medis) — 7 Kategori';
+    }
+    if (optFit) {
+      optFit.label = isEn ? '🏋️ Gym & Fitness — 5 Categories' : '🏋️ Gym & Fitness — 5 Kategori';
+    }
+
+    const dropdown = document.getElementById('journey-category-dropdown');
+    if (dropdown) {
+      const optionMapEn = {
+        'post_op_digestive': '1. Digestive & Gastrointestinal Surgery',
+        'post_op_oncology': '2. Oncology & Immunonutrition',
+        'post_op_burns': '3. Burns & Reconstructive Surgery',
+        'post_op_bariatric': '4. Bariatric & Metabolic Surgery',
+        'post_op_orthopedic': '5. Orthopedic, Bone & Trauma',
+        'post_op_cardio': '6. Cardiovascular & Sternotomy',
+        'post_op_geriatric': '7. Geriatric Post-Surgery',
+        'gym_hypertrophy': '8. Bulking & Myofibrillar Hypertrophy',
+        'gym_powerlifting': '9. Powerlifting & Max Strength',
+        'gym_endurance': '10. CrossFit / Endurance',
+        'gym_recomp': '11. Body Recomposition',
+        'gym_high_volume': '12. High-Volume & Anti-DOMS'
+      };
+      const optionMapId = {
+        'post_op_digestive': '1. Saluran Cerna (Bedah Digestif)',
+        'post_op_oncology': '2. Kanker (Onkologi & Imunonutrisi)',
+        'post_op_burns': '3. Luka Bakar & Bedah Rekonstruksi',
+        'post_op_bariatric': '4. Bedah Bariatrik & Metabolik',
+        'post_op_orthopedic': '5. Ortopedi, Tulang & Trauma',
+        'post_op_cardio': '6. Kardiovaskular & Sternotomi',
+        'post_op_geriatric': '7. Geriatri Pasca-Operasi',
+        'gym_hypertrophy': '8. Bulking & Hipertrofi Myofibril',
+        'gym_powerlifting': '9. Powerlifting & Maximum Strength',
+        'gym_endurance': '10. CrossFit / Endurance',
+        'gym_recomp': '11. Body Recomposition',
+        'gym_high_volume': '12. Atlet High-Volume & Anti-DOMS'
+      };
+      const map = isEn ? optionMapEn : optionMapId;
+      dropdown.querySelectorAll('option').forEach(opt => {
+        if (map[opt.value]) {
+          opt.textContent = map[opt.value];
+        }
+      });
+    }
   }
 
   renderJourneyTaxonomyInfoBanner(conditionId) {
@@ -10370,33 +10628,43 @@ class NutriVisionApp {
     const prof = NUTRIVISION_DATA.recoveryProfiles[cond] || NUTRIVISION_DATA.recoveryProfiles['post_op_digestive'];
     if (!prof) return;
 
+    const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
     const protMulti = prof.targetMacronutrients?.proteinGPerKg || prof.proteinMultiplier || 1.5;
-    const cals = prof.caloricNeedType || '2000 kkal';
-    const keyNutrients = (prof.keyMicronutrients || ['Albumin', 'Zinc', 'Glutamin']).join(', ');
+    let cals = prof.caloricNeedType || '2000 kkal';
+    if (isEn) {
+      cals = prof.caloricNeedTypeEn || NutriVisionApp.CLINICAL_CALORIC_TRANSLATIONS[cals] || (prof.caloricNeedType ? prof.caloricNeedType.replace(/kkal/g, 'kcal') : '2000 kcal');
+    }
+    const keyNutrientsRaw = prof.keyMicronutrients || ['Albumin', 'Zinc', 'Glutamin'];
+    const keyNutrients = keyNutrientsRaw.map(n => (isEn ? (NutriVisionApp.CLINICAL_NUTRIENT_TRANSLATIONS[n] || n) : n)).join(', ');
     const apiSources = (prof.recommendedApiSources || ['USDA FoodData Central', 'FatSecret Indonesia']).join(' • ');
     const isMedical = prof.groupKey === 'medical' || (prof.group && prof.group.includes('Medis'));
+
+    const groupText = isEn 
+      ? (isMedical ? 'Post-Surgery (Medical)' : 'Gym & Fitness')
+      : (prof.group || (isMedical ? 'Pasca-Operasi' : 'Gym & Fitness'));
+    const categoryText = isEn && prof.titleEn ? prof.titleEn : (prof.category || prof.title);
 
     bannerEl.innerHTML = `
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
         <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:${isMedical ? '#F0FDF4' : '#FEF3C7'};color:${isMedical ? '#15803D' : '#B45309'};font-weight:700;border:1px solid ${isMedical ? '#BBF7D0' : '#FDE68A'};">
           <i data-lucide="${prof.icon || 'target'}" style="width:12px;height:12px;"></i>
-          <span>${prof.group || (isMedical ? 'Pasca-Operasi' : 'Gym & Fitness')}</span>
+          <span>${groupText}</span>
         </span>
-        <span style="color:var(--ink);font-weight:700;font-size:11.5px;">${prof.category || prof.title}</span>
+        <span style="color:var(--ink);font-weight:700;font-size:11.5px;">${categoryText}</span>
       </div>
 
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:4px;color:var(--ink-soft);">
           <i data-lucide="zap" style="width:12px;height:12px;color:#D97706;"></i>
-          <span><strong>Target:</strong> ${protMulti} g/kg BB (${cals})</span>
+          <span><strong>Target:</strong> ${protMulti} g/kg${isEn ? ' BW' : ' BB'} (${cals})</span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;color:var(--ink-soft);">
           <i data-lucide="shield-check" style="width:12px;height:12px;color:#15803D;"></i>
-          <span><strong>Nutrisi Kunci:</strong> ${keyNutrients}</span>
+          <span><strong>${isEn ? 'Key Nutrients:' : 'Nutrisi Kunci:'}</strong> ${keyNutrients}</span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;color:var(--ink-soft);">
           <i data-lucide="database" style="width:12px;height:12px;color:#0284C7;"></i>
-          <span><strong>Sumber API:</strong> ${apiSources}</span>
+          <span><strong>${isEn ? 'API Sources:' : 'Sumber API:'}</strong> ${apiSources}</span>
         </div>
       </div>
     `;
@@ -10499,6 +10767,7 @@ class NutriVisionApp {
     }
 
     const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
+    this.updateJourneyDropdownLabels(isEn);
 
     // Fetch dynamic phase status & completion percentages from TiDB Cloud REST API if available
     let dynamicData = null;
@@ -10536,7 +10805,9 @@ class NutriVisionApp {
       const weight = dynamicData?.userWeightKg || parseFloat(this.userProfile?.weightKg || 65);
       const protMultiplier = phaseDynamic?.proteinMultiplier || profile.targetMacronutrients?.proteinGPerKg || profile.proteinMultiplier || 1.5;
       const calcProteinG = Math.round(weight * protMultiplier * 10) / 10;
-      const displayProteinTarget = phaseDynamic?.proteinTarget || `${protMultiplier} g/kgBB (~${calcProteinG}g/${isEn ? 'day' : 'hari'})`;
+      const displayProteinTarget = phaseDynamic?.proteinTarget 
+        ? (isEn ? phaseDynamic.proteinTarget.replace(/kgBB/g, 'kg BW').replace(/hari/g, 'day') : phaseDynamic.proteinTarget)
+        : `${protMultiplier} g/kg${isEn ? ' BW' : 'BB'} (~${calcProteinG}g/${isEn ? 'day' : 'hari'})`;
 
       return {
         ...p,
@@ -10573,19 +10844,35 @@ class NutriVisionApp {
         progressColor = '#C2C8AE';
       }
 
+      const chipDisplay = isEn 
+        ? (p.chipEn || p.chip.replace(/Fase/gi, 'Phase').replace(/Hari/gi, 'Days').replace(/Minggu/gi, 'Weeks').replace(/Bulan/gi, 'Months').replace(/\(Aktif\)/gi, '(Active)'))
+        : p.chip;
+
+      const titleDisplay = isEn
+        ? (p.titleEn || NutriVisionApp.CLINICAL_PHASE_TRANSLATIONS[p.title] || p.title)
+        : p.title;
+
+      const descDisplay = isEn
+        ? (p.descEn || NutriVisionApp.CLINICAL_PHASE_DESCRIPTIONS[p.desc] || p.desc)
+        : p.desc;
+
+      const textureDisplay = isEn
+        ? (p.textureEn || NutriVisionApp.CLINICAL_TEXTURE_TRANSLATIONS[p.texture] || p.texture)
+        : p.texture;
+
       return `
         <div class="journey-step-box ${isActive ? 'selected-phase' : ''}" data-phase="${p.phaseNum}" onclick="app.selectJourneyPhase('${cond}', ${p.phaseNum})"
              style="background:${cardBg};border:${cardBorder};border-radius:12px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease;box-shadow:${isActive ? '0 4px 16px rgba(35,57,23,0.08)' : 'none'};">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
             <span style="font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.3px;">
-              ${p.chip}
+              ${chipDisplay}
             </span>
             ${badgeHtml}
           </div>
 
           <div>
-            <h4 style="margin:0 0 5px 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.35;">${isEn && p.titleEn ? p.titleEn : p.title}</h4>
-            <p style="margin:0;font-size:11.5px;color:var(--ink-soft);line-height:1.45;">${isEn && p.descEn ? p.descEn : p.desc}</p>
+            <h4 style="margin:0 0 5px 0;font-size:13.5px;font-weight:700;color:var(--ink);line-height:1.35;">${titleDisplay}</h4>
+            <p style="margin:0;font-size:11.5px;color:var(--ink-soft);line-height:1.45;">${descDisplay}</p>
           </div>
 
           <!-- Progress Bar -->
@@ -10607,7 +10894,7 @@ class NutriVisionApp {
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <span style="color:var(--ink-soft);font-size:10.5px;">${isEn ? 'Food Texture:' : 'Tekstur Pangan:'}</span>
-              <span style="color:var(--ink);font-size:10.5px;font-weight:600;">${p.texture}</span>
+              <span style="color:var(--ink);font-size:10.5px;font-weight:600;">${textureDisplay}</span>
             </div>
           </div>
         </div>
@@ -10618,6 +10905,40 @@ class NutriVisionApp {
 
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons({ root: gridEl });
+    }
+  }
+
+  onLanguageChange(lang) {
+    const isEn = lang === 'en';
+    const cond = this.journeyCondition || this.userProfile?.conditionId || 'post_op_digestive';
+    this.renderJourneyRoadmap(cond);
+    this.renderJourneyTaxonomyInfoBanner(cond);
+    this.updateJourneyDropdownLabels(isEn);
+    if (typeof this.renderOverviewPlate === 'function') {
+      this.renderOverviewPlate();
+    }
+    if (typeof this.renderFoodCatalog === 'function') {
+      this.renderFoodCatalog();
+    }
+    if (typeof this.updateProfileUI === 'function') {
+      this.updateProfileUI();
+    }
+    if (window.progressTracker) {
+      if (typeof window.progressTracker.renderTodayMealHistory === 'function') {
+        window.progressTracker.renderTodayMealHistory();
+      }
+      if (typeof window.progressTracker.renderHistoryPage === 'function') {
+        window.progressTracker.renderHistoryPage();
+      }
+      if (typeof window.progressTracker.renderWeeklyBarChart === 'function') {
+        window.progressTracker.renderWeeklyBarChart();
+      }
+      if (typeof window.progressTracker.updateProgressPageSummary === 'function') {
+        window.progressTracker.updateProgressPageSummary();
+      }
+    }
+    if (window.mealPlanner && typeof window.mealPlanner.renderPlanner === 'function') {
+      window.mealPlanner.renderPlanner();
     }
   }
 
@@ -10647,8 +10968,9 @@ class NutriVisionApp {
     await this.renderJourneyRoadmap(conditionId);
 
     const isEn = (window.i18n ? window.i18n.getLanguage() : 'id') === 'en';
+    const phaseTitleDisplay = isEn ? (phase.titleEn || NutriVisionApp.CLINICAL_PHASE_TRANSLATIONS[phase.title] || phase.title) : phase.title;
     const toastMsg = isEn 
-      ? `Activated Phase ${phaseNum}: ${phase.titleEn || phase.title}`
+      ? `Activated Phase ${phaseNum}: ${phaseTitleDisplay}`
       : `Fase ${phaseNum} diaktifkan: ${phase.title}`;
     this.showToast(toastMsg, 'info');
   }

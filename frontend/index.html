@@ -2920,7 +2920,7 @@
               <button type="button" class="btn-direct-calendar-header" onclick="app.navigate('planner')"
                 title="Buka Kalender &amp; Jadwal Pemulihan di Meal Planner">
                 <i data-lucide="calendar" style="width:14px;height:14px;"></i>
-                <span>Kalender &amp; Jadwal</span>
+                <span data-i18n="prog_journey_btn_cal">Kalender &amp; Jadwal</span>
                 <i data-lucide="arrow-up-right" style="width:13px;height:13px;"></i>
               </button>
               <span class="badge teal" id="journey-active-badge"><i data-lucide="compass" class="btn-icon-sm"></i> <span
@@ -2936,24 +2936,24 @@
                 <button type="button" class="journey-cond-btn active" id="journey-btn-group-med" data-group="medical"
                   onclick="app.handleJourneyGroupSelect('medical')">
                   <i data-lucide="heart-pulse" style="width:14px;height:14px;"></i>
-                  <span>🩺 Pasca-Operasi (Medis)</span>
+                  <span data-i18n="prog_journey_group_med">🩺 Pasca-Operasi (Medis)</span>
                 </button>
                 <button type="button" class="journey-cond-btn" id="journey-btn-group-fit" data-group="fitness"
                   onclick="app.handleJourneyGroupSelect('fitness')">
                   <i data-lucide="dumbbell" style="width:14px;height:14px;"></i>
-                  <span>🏋️ Gym &amp; Fitness</span>
+                  <span data-i18n="prog_journey_group_fit">🏋️ Gym &amp; Fitness</span>
                 </button>
               </div>
 
               <!-- Step 2: Specific Taxonomy Dropdown (12 Categories) -->
               <div style="display:flex;align-items:center;gap:8px;flex-grow:1;max-width:420px;min-width:240px;">
-                <label for="journey-category-dropdown" style="font-size:11.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;">
+                <label for="journey-category-dropdown" style="font-size:11.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;" data-i18n="prog_journey_focus_label">
                   Fokus Kategori:
                 </label>
                 <div style="position:relative;flex-grow:1;">
                   <select id="journey-category-dropdown" class="journey-category-select" onchange="app.handleJourneyCategorySelect(this.value)"
                     style="width:100%;padding:7px 32px 7px 12px;border:1.5px solid #C8D4A8;border-radius:8px;background:#FFFFFF;font-size:12.5px;font-weight:700;color:#233917;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;transition:border-color 0.2s;">
-                    <optgroup label="🩺 Pasca-Operasi (Medis) — 7 Kategori">
+                    <optgroup id="optgroup-med" label="🩺 Pasca-Operasi (Medis) — 7 Kategori">
                       <option value="post_op_digestive" selected>1. Saluran Cerna (Bedah Digestif)</option>
                       <option value="post_op_oncology">2. Kanker (Onkologi &amp; Imunonutrisi)</option>
                       <option value="post_op_burns">3. Luka Bakar &amp; Bedah Rekonstruksi</option>
@@ -2962,7 +2962,7 @@
                       <option value="post_op_cardio">6. Kardiovaskular &amp; Sternotomi</option>
                       <option value="post_op_geriatric">7. Geriatri Pasca-Operasi</option>
                     </optgroup>
-                    <optgroup label="🏋️ Gym &amp; Fitness — 5 Kategori">
+                    <optgroup id="optgroup-fit" label="🏋️ Gym &amp; Fitness — 5 Kategori">
                       <option value="gym_hypertrophy">8. Bulking &amp; Hipertrofi Myofibril</option>
                       <option value="gym_powerlifting">9. Powerlifting &amp; Maximum Strength</option>
                       <option value="gym_endurance">10. CrossFit / Endurance</option>
@@ -2996,16 +2996,16 @@
                 <i data-lucide="calendar-clock" style="width:18px;height:18px;"></i>
               </span>
               <div>
-                <h4 style="margin:0;font-size:13.5px;font-weight:700;color:var(--ink);">Kalender Siklus Pemulihan &amp;
+                <h4 style="margin:0;font-size:13.5px;font-weight:700;color:var(--ink);" data-i18n="journey_banner_calendar_title">Kalender Siklus Pemulihan &amp;
                   Jadwal Harian Pasien</h4>
-                <p style="margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);">Target klinis 3 bulan terukur, anjuran
+                <p style="margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);" data-i18n="journey_banner_calendar_desc">Target klinis 3 bulan terukur, anjuran
                   gizi tervalidasi ahli gizi klinis, &amp; jadwal makan harian kini terintegrasi di halaman Meal Planner.</p>
               </div>
             </div>
             <button type="button" class="btn-direct-calendar-pill" onclick="app.navigate('planner')"
               title="Buka Kalender di Meal Planner">
               <i data-lucide="calendar" style="width:14px;height:14px;"></i>
-              <span>Buka di Meal Planner</span>
+              <span data-i18n="journey_banner_calendar_btn">Buka di Meal Planner</span>
               <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
             </button>
           </div>
