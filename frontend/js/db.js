@@ -407,7 +407,7 @@ class NutriVisionDatabase {
     if (this.supabase) {
       try {
         const row = this.mapUserToSupabaseRow(user);
-        const { error } = await this.supabase.from('users').upsert(row);
+        const { error } = await this.supabase.from('users').upsert(row, { onConflict: 'email' });
         if (error) {
           console.warn('Supabase user upsert notice:', error.message);
           window.dispatchEvent(new CustomEvent('supabase-sync-error', {
@@ -1062,7 +1062,7 @@ class NutriVisionDatabase {
 
     for (const u of localUsers) {
       const row = this.mapUserToSupabaseRow(u);
-      const { error } = await this.supabase.from('users').upsert(row);
+      const { error } = await this.supabase.from('users').upsert(row, { onConflict: 'email' });
       if (!error) {
         syncedUsers++;
       } else {

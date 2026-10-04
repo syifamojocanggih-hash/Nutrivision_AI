@@ -11214,7 +11214,7 @@ class NutriVisionApp {
     const avgDailyLabel = isId ? `Rata-rata ~Rp ${avgDaily.toLocaleString('id-ID')}/hari` : `Avg ~Rp ${avgDaily.toLocaleString('en-US')}/day`;
     const statusLabel = isId ? 'Status: Hemat Budget Terkontrol' : 'Status: Budget Controlled';
     const col3Title = isId ? 'INDIKATOR KLINIS UTAMA' : 'KEY CLINICAL INDICATOR';
-    const valText = isId ? `Tervalidasi Protokol ERAS & ESPEN 2021 (${citation})` : `Validated ERAS & ESPEN 2021 Protocol (${citation})`;
+    const valText = isId ? `Standar Pemulihan Medis Tervalidasi (${citation})` : `Validated Medical Recovery Standards (${citation})`;
 
     bannerEl.innerHTML = `
       <div class="cal-metric-banner-grid" data-phase="${isId ? (milestone.monthLabel || ('Bulan ke-' + idx)) : (milestone.monthLabelEn || ('Month ' + idx))}">

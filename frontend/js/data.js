@@ -276,13 +276,17 @@ const NUTRIVISION_DATA = {
       {
         "monthIndex": 1,
         "monthLabel": "Bulan ke-1 (Hari 1–30)",
-        "phaseName": "Fase Hemostasis Anastomosis & Transisi Diet Lunak",
+        "phaseName": "Fase 1: Transisi Makanan Lunak & Penutupan Luka",
+        "phaseNameEn": "Phase 1: Soft Food Transition & Wound Closure",
         "durationDays": "Hari 1 – 30",
-        "scientificCitation": "ESPEN Guideline: Clinical Nutrition in Surgery (2021) & ERAS Colorectal Consensus",
+        "scientificCitation": "Panduan Pemulihan Medis & Gizi Internasional",
         "healingTarget": {
-          "title": "Integritas Mukosa Saluran Cerna & Penutupan Jahitan",
-          "markers": "Albumin serum > 3.5 g/dL, tidak ada kebocoran anastomosis, peristaltik usus normal, feses berbentuk lunak.",
-          "clinicalGoal": "Mencegah dehisiensi anastomosis lambung/usus dan meminimalkan ileus post-operatif."
+          "title": "Pemulihan Luka Jahitan & Saluran Pencernaan",
+          "titleEn": "Suture Wound & Digestive Tract Recovery",
+          "markers": "Protein darah normal, tidak ada kebocoran luka, pencernaan lancar, buang air besar normal.",
+          "markersEn": "Normal blood protein, no wound leakage, smooth digestion, normal bowel movements.",
+          "clinicalGoal": "Mencegah jahitan terbuka kembali dan melancarkan sistem pencernaan pasca operasi.",
+          "clinicalGoalEn": "Preventing suture reopening and smoothing the digestive system post-surgery."
         },
         "nutritionTarget": {
           "protein": "1.4 – 1.6 g/kg BB/hari (Isolat Peptida & Albumin Ikan Gabus)",
@@ -300,13 +304,17 @@ const NUTRIVISION_DATA = {
       {
         "monthIndex": 2,
         "monthLabel": "Bulan ke-2 (Hari 31–60)",
-        "phaseName": "Fase Proliferasi Vili Usus & Reintroduksi Serat Larut",
+        "phaseName": "Fase 2: Adaptasi Pencernaan & Pengenalan Serat",
+        "phaseNameEn": "Phase 2: Digestive Adaptation & Fiber Introduction",
         "durationDays": "Hari 31 – 60",
-        "scientificCitation": "Weimann A. et al., ESPEN Guidelines & Surgical Wound Healing Consensus",
+        "scientificCitation": "Panduan Pemulihan Jaringan & Kesepakatan Pakar Bedah",
         "healingTarget": {
-          "title": "Absorpsi Nutrisi Optimal & Adaptasi Mikrobiota",
-          "markers": "Peningkatan kapasitas absorpsi makronutrien, toleransi makanan bertekstur padat lunak tanpa mual/kembung.",
-          "clinicalGoal": "Memulihkan luas permukaan absorpsi vili enterosit dan motilitas lambung normal."
+          "title": "Penyerapan Gizi Optimal & Kesehatan Lambung",
+          "titleEn": "Optimal Nutrient Absorption & Stomach Health",
+          "markers": "Tubuh menyerap nutrisi lebih baik, bisa makan padat lunak tanpa rasa mual atau kembung.",
+          "markersEn": "Better nutrient absorption, tolerating soft solid foods without nausea or bloating.",
+          "clinicalGoal": "Mengembalikan fungsi normal usus dan lambung agar bisa mencerna makanan dengan baik.",
+          "clinicalGoalEn": "Restoring normal bowel and stomach functions for proper food digestion."
         },
         "nutritionTarget": {
           "protein": "1.3 – 1.5 g/kg BB/hari",
@@ -324,13 +332,17 @@ const NUTRIVISION_DATA = {
       {
         "monthIndex": 3,
         "monthLabel": "Bulan ke-3 (Hari 61–90)",
-        "phaseName": "Fase Pemulihan Fungsional & Pola Makan Normal",
+        "phaseName": "Fase 3: Pemulihan Penuh & Pola Makan Normal",
+        "phaseNameEn": "Phase 3: Full Recovery & Normal Diet",
         "durationDays": "Hari 61 – 90",
-        "scientificCitation": "ERAS Society Consensus on Long-Term Functional Recovery Post-Surgery",
+        "scientificCitation": "Panduan Medis Pemulihan Jangka Panjang Pasca-Operasi",
         "healingTarget": {
-          "title": "Restorasi Fungsional Total Saluran Cerna",
-          "markers": "Toleransi penuh aneka kelompok makanan padat, berat badan stabil ideal, enzim pencernaan bekerja efisien.",
-          "clinicalGoal": "Pencegahan adhesi pasca-bedah dan adaptasi pola makan bergizi seimbang permanen."
+          "title": "Fungsi Pencernaan Kembali Normal 100%",
+          "titleEn": "100% Normal Digestive Function Restored",
+          "markers": "Bisa makan padat dengan nyaman, berat badan stabil ideal, pencernaan bekerja sempurna.",
+          "markersEn": "Eating solid foods comfortably, ideal stable weight, perfect digestion.",
+          "clinicalGoal": "Mencegah perlengketan usus setelah operasi dan membiasakan pola makan bergizi secara permanen.",
+          "clinicalGoalEn": "Preventing bowel adhesions post-surgery and establishing a permanent nutritious diet."
         },
         "nutritionTarget": {
           "protein": "1.2 – 1.4 g/kg BB/hari (Maintenance Seimbang)",
