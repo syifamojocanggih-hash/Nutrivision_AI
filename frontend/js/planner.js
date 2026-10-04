@@ -1285,7 +1285,7 @@ class NutriVisionPlanner {
 
   logMeal(mealName, macroStr) {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    app.requireAuth(() => {
+    app.requireAuth(async () => {
       let prot = 25;
       let cals = 380;
       const protMatch = macroStr.match(/(\d+)g Protein/i);
@@ -1293,21 +1293,64 @@ class NutriVisionPlanner {
       if (protMatch) prot = parseInt(protMatch[1], 10);
       if (calsMatch) cals = parseInt(calsMatch[1], 10);
 
-      const userKey = app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email || app.userProfile?.name;
+      const carbsG = Math.round(cals * 0.5 / 4);
+      const fatG = Math.round(cals * 0.25 / 9);
+      const mealType = 'lunch'; // Default untuk menu planner
+      const userProfile = app.userProfile || {};
+      const userId = userProfile.id || userProfile.contact || userProfile.email || userProfile.name || '';
+      const userKey = userId;
+
       progressTracker.addLoggedMeal({
         protein: [prot, prot],
-        carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
-        fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
+        carbs: [carbsG, carbsG],
+        fat: [fatG, fatG],
         cals: [cals, cals],
         calories: [cals, cals]
-      }, userKey, { name: mealName, source: isId ? 'Rencana Menu' : 'Meal Planner' });
+      }, userKey, { name: mealName, source: isId ? 'Rencana Menu' : 'Meal Planner', mealType });
 
-      const targets = app.userProfile?.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+      const targets = userProfile.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
       progressTracker.renderMacroDonut(targets);
       progressTracker.renderTodayMealHistory();
       progressTracker.renderHistoryPage();
       progressTracker.renderWeeklyBarChart();
       if (typeof app.updateProfileUI === 'function') app.updateProfileUI();
+
+      // Sync langsung ke TiDB Cloud Serverless via REST API
+      if (window.nutriAPI) {
+        const mealPayload = {
+          title: mealName,
+          mealType,
+          totalCalories: cals,
+          totalProtein: prot,
+          totalCarbs: carbsG,
+          totalFat: fatG,
+          confidence: 92,
+          clinicalAdvice: `Asupan dicatat dari ${isId ? 'Rencana Menu' : 'Meal Planner'}. Protein: ${prot}g | Kalori: ${cals} kkal`,
+          imageUrl: '',
+          segments: [],
+          userId: userId
+        };
+
+        const doSync = async () => {
+          try {
+            const res = await window.nutriAPI.logMeal(mealPayload);
+            if (res?.meal?.id) {
+              console.log(`[NutriVision] ✅ Planner meal synced to TiDB: ${res.meal.id} | User: ${userId}`);
+            }
+          } catch (err) {
+            console.warn('[NutriVision] ⚠️ Gagal sync planner meal ke TiDB:', err.message);
+          }
+        };
+
+        if (window.nutriAPI.isServerOnline) {
+          doSync();
+        } else {
+          window.nutriAPI.checkHealth().then(online => {
+            if (online) doSync();
+          });
+        }
+      }
+
       app.showToast(isId ? `Menu "${mealName}" berhasil dicatat ke asupan gizi hari ini!` : `Meal "${mealName}" logged to today's intake!`, 'success');
     }, isId ? 'catat menu' : 'log meal');
   }

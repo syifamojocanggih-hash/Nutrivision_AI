@@ -5643,6 +5643,33 @@ class NutriVisionApp {
 
       progressTracker.addLoggedMeal(scaledNutrients, userKey, mealMeta);
 
+      // Sync langsung ke TiDB Cloud Serverless via REST API
+      if (window.nutriAPI) {
+        const mealPayload = {
+          title: scanTitle,
+          mealType: state.slot || 'lunch',
+          totalCalories: scaledNutrients.cals[0],
+          totalProtein: scaledNutrients.protein[0],
+          totalCarbs: scaledNutrients.carbs[0],
+          totalFat: scaledNutrients.fat[0],
+          confidence: cvEngine.currentScan.confidenceOverall || 88,
+          clinicalAdvice: `Asupan dicatat dari AI Camera Scan (${slotName}). Protein: ${scaledNutrients.protein[0]}g | Kalori: ${scaledNutrients.cals[0]} kkal`,
+          imageUrl: cvEngine.currentScan.imageUrl || cvEngine.currentScan.imageSrc || '',
+          segments: cvEngine.currentScan.segments || [],
+          userId: userKey
+        };
+        const doSync = async () => {
+          try {
+            const res = await window.nutriAPI.logMeal(mealPayload);
+            if (res?.meal?.id) console.log(`[NutriVision] ✅ AI Scan meal synced to TiDB: ${res.meal.id}`);
+          } catch (err) {
+            console.warn('[NutriVision] ⚠️ Gagal sync AI scan meal ke TiDB:', err.message);
+          }
+        };
+        if (window.nutriAPI.isServerOnline) doSync();
+        else window.nutriAPI.checkHealth().then(online => { if (online) doSync(); });
+      }
+
       // Tandai scan aktif sebagai sudah dicatat hari ini
       cvEngine.currentScan._isLoggedToday = true;
       cvEngine.currentScan._loggedMealType = state.slot;
@@ -6496,6 +6523,33 @@ class NutriVisionApp {
           window.progressTracker.renderMacroDonut(this.userProfile.targets);
         }
         window.progressTracker.renderWeeklyBarChart();
+      }
+
+      // Sync langsung ke TiDB Cloud Serverless via REST API
+      if (window.nutriAPI) {
+        const mealPayload = {
+          title: food.name || 'Menu Pilihan Populer',
+          mealType: slot || 'lunch',
+          totalCalories: totalCalories,
+          totalProtein: totalProtein,
+          totalCarbs: totalCarbs,
+          totalFat: totalFat,
+          confidence: 92,
+          clinicalAdvice: `Asupan dicatat dari Food Catalog. Protein: ${totalProtein}g | Kalori: ${totalCalories} kkal`,
+          imageUrl: food.image || '',
+          segments: [],
+          userId: userKey
+        };
+        const doSync = async () => {
+          try {
+            const res = await window.nutriAPI.logMeal(mealPayload);
+            if (res?.meal?.id) console.log(`[NutriVision] ✅ Catalog meal synced to TiDB: ${res.meal.id}`);
+          } catch (err) {
+            console.warn('[NutriVision] ⚠️ Gagal sync catalog meal ke TiDB:', err.message);
+          }
+        };
+        if (window.nutriAPI.isServerOnline) doSync();
+        else window.nutriAPI.checkHealth().then(online => { if (online) doSync(); });
       }
 
       // 3. Optional sync to plate scanner
@@ -11594,14 +11648,43 @@ class NutriVisionApp {
       }
       if (prot > 0 || cals > 0) {
         const userKey = this.userProfile?.id || this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
+        const carbsG = Math.round(cals * 0.5 / 4);
+        const fatG = Math.round(cals * 0.25 / 9);
         if (window.progressTracker && typeof window.progressTracker.addLoggedMeal === 'function') {
           window.progressTracker.addLoggedMeal({
             protein: [prot, prot],
-            carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
-            fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
+            carbs: [carbsG, carbsG],
+            fat: [fatG, fatG],
             cals: [cals, cals],
             calories: [cals, cals]
           }, userKey, { name: item.title, source: 'Jadwal Kalender' });
+        }
+
+        // Sync langsung ke TiDB Cloud Serverless via REST API
+        if (window.nutriAPI) {
+          const mealPayload = {
+            title: item.title,
+            mealType: 'snack', // Default untuk jadwal kalender
+            totalCalories: cals,
+            totalProtein: prot,
+            totalCarbs: carbsG,
+            totalFat: fatG,
+            confidence: 90,
+            clinicalAdvice: `Asupan dicatat dari Jadwal Kalender. Protein: ${prot}g | Kalori: ${cals} kkal`,
+            imageUrl: '',
+            segments: [],
+            userId: userKey
+          };
+          const doSync = async () => {
+            try {
+              const res = await window.nutriAPI.logMeal(mealPayload);
+              if (res?.meal?.id) console.log(`[NutriVision] ✅ Calendar meal synced to TiDB: ${res.meal.id}`);
+            } catch (err) {
+              console.warn('[NutriVision] ⚠️ Gagal sync calendar meal ke TiDB:', err.message);
+            }
+          };
+          if (window.nutriAPI.isServerOnline) doSync();
+          else window.nutriAPI.checkHealth().then(online => { if (online) doSync(); });
         }
       }
     }
@@ -12326,20 +12409,36 @@ class NutriVisionApp {
     this.renderBudgetAlternativesPage();
   }
 
-  logRecommendedMeal(name, prot, cals, source = 'Rekomendasi Menu') {
+  async logRecommendedMeal(name, prot, cals, source = 'Rekomendasi Menu', extraData = {}) {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    const userKey = this.userProfile?.id || this.userProfile?.contact || this.userProfile?.email || this.userProfile?.name;
 
+    // Ambil userId yang paling reliable: prioritaskan JWT token → id → email → name
+    const userProfile = this.userProfile || {};
+    const userId = userProfile.id || userProfile.contact || userProfile.email || userProfile.name || '';
+    const userKey = userId;
+
+    // Estimasi carbs & fat dari kkal jika tidak ada data aktual
+    const carbsG = extraData.carbs !== undefined ? extraData.carbs : Math.round(cals * 0.5 / 4);
+    const fatG = extraData.fat !== undefined ? extraData.fat : Math.round(cals * 0.25 / 9);
+
+    // Mapping mealType dari source string
+    const src = source.toLowerCase();
+    const mealType = src.includes('malam') || src.includes('dinner') ? 'dinner'
+      : src.includes('siang') || src.includes('lunch') ? 'lunch'
+      : src.includes('sarapan') || src.includes('pagi') || src.includes('breakfast') ? 'breakfast'
+      : 'snack';
+
+    // 1. Update UI lokal dulu (instant feedback) via progressTracker
     if (window.progressTracker && typeof window.progressTracker.addLoggedMeal === 'function') {
       window.progressTracker.addLoggedMeal({
         protein: [prot, prot],
-        carbs: [Math.round(cals * 0.5 / 4), Math.round(cals * 0.5 / 4)],
-        fat: [Math.round(cals * 0.25 / 9), Math.round(cals * 0.25 / 9)],
+        carbs: [carbsG, carbsG],
+        fat: [fatG, fatG],
         cals: [cals, cals],
         calories: [cals, cals]
-      }, userKey, { name, source });
+      }, userKey, { name, source, mealType });
 
-      const targets = this.userProfile?.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
+      const targets = userProfile.targets || { protein: 75, calories: 1850, carbs: 230, fat: 50 };
       if (typeof window.progressTracker.renderMacroDonut === 'function') {
         window.progressTracker.renderMacroDonut(targets);
       }
@@ -12357,7 +12456,48 @@ class NutriVisionApp {
       }
     }
 
-    this.showToast(isId ? `Menu "${name}" berhasil dicatat ke asupan gizi hari ini!` : `"${name}" logged to today's nutrition intake!`, 'success');
+    // 2. Sync langsung ke TiDB Cloud Serverless via REST API
+    if (window.nutriAPI) {
+      const mealPayload = {
+        title: name,
+        mealType,
+        totalCalories: cals,
+        totalProtein: prot,
+        totalCarbs: carbsG,
+        totalFat: fatG,
+        confidence: 92,
+        clinicalAdvice: `Asupan dicatat dari ${source}. Protein: ${prot}g | Kalori: ${cals} kkal`,
+        imageUrl: '',
+        segments: [],
+        userId: userId
+      };
+
+      const doSync = async () => {
+        try {
+          const res = await window.nutriAPI.logMeal(mealPayload);
+          if (res?.meal?.id) {
+            console.log(`[NutriVision] ✅ Recommendation meal synced to TiDB: ${res.meal.id} | User: ${userId}`);
+          }
+        } catch (err) {
+          console.warn('[NutriVision] ⚠️ Gagal sync recommendation meal ke TiDB:', err.message);
+        }
+      };
+
+      if (window.nutriAPI.isServerOnline) {
+        doSync();
+      } else {
+        window.nutriAPI.checkHealth().then(online => {
+          if (online) doSync();
+        });
+      }
+    }
+
+    this.showToast(
+      isId
+        ? `Menu "${name}" berhasil dicatat ke asupan gizi hari ini!`
+        : `"${name}" logged to today's nutrition intake!`,
+      'success'
+    );
   }
 
   showDoctorRecipeDetails(itemId) {
