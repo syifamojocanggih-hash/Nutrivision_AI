@@ -340,12 +340,24 @@ class NutriVisionApp {
       this.renderOverviewPlate();
       progressTracker.renderMacroDonut(this.userProfile.targets);
       progressTracker.renderWeeklyBarChart();
+      if (typeof progressTracker.renderTodayMealHistory === 'function') {
+        progressTracker.renderTodayMealHistory();
+      }
+      if (typeof progressTracker.renderHistoryPage === 'function') {
+        progressTracker.renderHistoryPage();
+      }
     } else {
       cvEngine.currentScan = null;
       this.renderOverviewPlate();
       progressTracker.setEmptyState();
       progressTracker.renderMacroDonut(null);
       progressTracker.renderWeeklyBarChart();
+      if (typeof progressTracker.renderTodayMealHistory === 'function') {
+        progressTracker.renderTodayMealHistory();
+      }
+      if (typeof progressTracker.renderHistoryPage === 'function') {
+        progressTracker.renderHistoryPage();
+      }
     }
     mealPlanner.renderPlanner();
     mealPlanner.renderSymptomFilter();
@@ -355,6 +367,13 @@ class NutriVisionApp {
     caregiverHandler.renderCaregiverList();
     this.renderFoodCatalog();
     this.updateFavoriteBadge();
+
+    // Render riwayat hidangan langsung saat init
+    const initialTracker = window.progressTracker || (typeof progressTracker !== 'undefined' ? progressTracker : null);
+    if (initialTracker) {
+      if (typeof initialTracker.renderTodayMealHistory === 'function') initialTracker.renderTodayMealHistory();
+      if (typeof initialTracker.renderHistoryPage === 'function') initialTracker.renderHistoryPage();
+    }
 
     // Dengarkan perubahan wilayah pasar pangan untuk pembaruan katalog & profil secara real-time
     if (window.BappenasFoodAPI && typeof window.BappenasFoodAPI.onRegionChange === 'function') {
@@ -2100,6 +2119,10 @@ class NutriVisionApp {
       targetSection.classList.add('active-view');
     }
 
+    if (window.history && window.history.pushState && !this.isLanding && sectionId) {
+      window.history.pushState(null, null, `#${sectionId}`);
+    }
+
     if (sectionId === 'caregiver-dashboard') {
       this.renderCaregiverDashboard();
     }
@@ -2114,9 +2137,15 @@ class NutriVisionApp {
       this.renderFoodCatalog();
     }
 
-    if (sectionId === 'history') {
-      if (window.progressTracker && typeof window.progressTracker.renderHistoryPage === 'function') {
-        window.progressTracker.renderHistoryPage();
+    if (sectionId === 'history' || sectionId === 'overview') {
+      const tracker = window.progressTracker || (typeof progressTracker !== 'undefined' ? progressTracker : null);
+      if (tracker) {
+        if (typeof tracker.renderTodayMealHistory === 'function') {
+          tracker.renderTodayMealHistory();
+        }
+        if (typeof tracker.renderHistoryPage === 'function') {
+          tracker.renderHistoryPage();
+        }
       }
     }
 
@@ -7578,6 +7607,8 @@ class NutriVisionApp {
         progressTracker.setEmptyState();
         progressTracker.renderMacroDonut(null);
         progressTracker.renderWeeklyBarChart();
+        progressTracker.renderTodayMealHistory();
+        progressTracker.renderHistoryPage();
         this.showToast(`✅ Login Berhasil! Selamat datang kembali, ${this.userProfile.name}`);
         // PENTING: Wizard onboarding/kuis diagnostik TIDAK dibuka saat login.
         // Wizard hanya dibuka saat registrasi akun baru (handleRegister).
@@ -7591,6 +7622,8 @@ class NutriVisionApp {
         this.renderOverviewPlate();
         progressTracker.renderMacroDonut(this.userProfile.targets);
         progressTracker.renderWeeklyBarChart();
+        progressTracker.renderTodayMealHistory();
+        progressTracker.renderHistoryPage();
         this.showToast(`✅ Login Berhasil! Selamat datang kembali, ${this.userProfile.name}`);
       }
 
@@ -7672,6 +7705,8 @@ class NutriVisionApp {
       progressTracker.setEmptyState();
       progressTracker.renderMacroDonut(null);
       progressTracker.renderWeeklyBarChart();
+      progressTracker.renderTodayMealHistory();
+      progressTracker.renderHistoryPage();
       try {
         localStorage.removeItem('nutrivision_budget_generated');
       } catch (e) {}

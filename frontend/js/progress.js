@@ -69,6 +69,8 @@ class NutriVisionProgress {
     if (userKey) {
       this.saveUserProgress(userKey);
     }
+    this.renderTodayMealHistory();
+    this.renderHistoryPage();
   }
 
   // Simpan progres ke LocalStorage per pengguna
@@ -122,12 +124,16 @@ class NutriVisionProgress {
       const stored = localStorage.getItem('nutrivision_progress_' + userKey);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.weeklyLogs && parsed.weeklyLogs.length === 7) {
+        if (parsed) {
           this.isConfigured = true;
+          if (Array.isArray(parsed.weeklyLogs) && parsed.weeklyLogs.length === 7) {
+            this.weeklyLogs = parsed.weeklyLogs;
+          } else {
+            this.weeklyLogs = this.create7DayLogs(targets.protein, targets.calories);
+          }
           if (parsed.dateKey === todayKey) {
             this.todayIntake = parsed.todayIntake || { protein: 0, carbs: 0, fat: 0, calories: 0 };
-            this.todayMeals = parsed.todayMeals || [];
-            this.weeklyLogs = parsed.weeklyLogs;
+            this.todayMeals = Array.isArray(parsed.todayMeals) ? parsed.todayMeals : [];
 
             // Backwards compatibility cerdas: Jika sudah ada akumulasi protein tapi todayMeals belum ada
             if (this.todayMeals.length === 0 && this.todayIntake.protein > 0) {
@@ -154,6 +160,8 @@ class NutriVisionProgress {
           }
           this.renderWeeklyBarChart();
           this.updateProgressPageSummary();
+          this.renderTodayMealHistory();
+          this.renderHistoryPage();
           // Sinkronisasi async dari backend (tidak blokir UI)
           this.syncFromServer(userKey, targets);
           return;
@@ -167,6 +175,8 @@ class NutriVisionProgress {
     this.initUserProgress(targets, userKey);
     this.renderWeeklyBarChart();
     this.updateProgressPageSummary();
+    this.renderTodayMealHistory();
+    this.renderHistoryPage();
     // Sinkronisasi async dari backend (tidak blokir UI)
     this.syncFromServer(userKey, targets);
   }
@@ -232,6 +242,8 @@ class NutriVisionProgress {
       : 'Patient shows high compliance with post-surgical protein recovery with excellent digestive tolerance.';
     this.renderWeeklyBarChart();
     this.updateProgressPageSummary();
+    this.renderTodayMealHistory();
+    this.renderHistoryPage();
   }
 
   // Perbarui target setelah pengisian kuesioner profil diagnostik
@@ -886,7 +898,22 @@ class NutriVisionProgress {
     const query = (this.historySearchQuery || '').toLowerCase();
     let filtered = meals;
     if (filter !== 'all') {
-      filtered = filtered.filter(m => (m.source || '').toLowerCase().includes(filter.toLowerCase()));
+      const fLower = filter.toLowerCase();
+      filtered = filtered.filter(m => {
+        const s = (m.source || '').toLowerCase();
+        if (fLower === 'rencana menu' || fLower === 'meal planner') {
+          return s.includes('rencana') || s.includes('planner') || s.includes('menu') ||
+                 s.includes('sarapan') || s.includes('siang') || s.includes('malam') ||
+                 s.includes('breakfast') || s.includes('lunch') || s.includes('dinner');
+        }
+        if (fLower === 'pindai' || fLower === 'scan') {
+          return s.includes('pindai') || s.includes('scan') || s.includes('kamera') || s.includes('camera') || s.includes('ai');
+        }
+        if (fLower === 'katalog' || fLower === 'catalog') {
+          return s.includes('katalog') || s.includes('catalog') || s.includes('superfood');
+        }
+        return s.includes(fLower);
+      });
     }
     if (query) {
       filtered = filtered.filter(m =>
@@ -899,26 +926,40 @@ class NutriVisionProgress {
     const listContainer = document.getElementById('history-page-meal-list');
     if (listContainer) {
       if (meals.length === 0) {
-        listContainer.innerHTML = `
-          <div style="text-align:center;padding:44px 20px;background:#FAFBF7;border:1px dashed #D9E2CF;border-radius:12px;">
-            <div style="width:52px;height:52px;border-radius:50%;background:rgba(35,57,23,0.06);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#233917;">
-              <i data-lucide="utensils-crossed" style="width:24px;height:24px;"></i>
+        if (this.isSyncing) {
+          listContainer.innerHTML = `
+            <div style="text-align:center;padding:36px 20px;background:#FAFBF7;border:1px dashed #D9E2CF;border-radius:12px;">
+              <div style="width:28px;height:28px;border:3px solid #E2E8CE;border-top-color:#233917;border-radius:50%;margin:0 auto 12px;animation:spin 0.8s linear infinite;"></div>
+              <h4 style="font-size:14px;font-weight:700;color:#1C200E;margin-bottom:4px;">
+                ${isId ? 'Memuat riwayat asupan gizi hari ini...' : "Loading today's meal intake history..."}
+              </h4>
+              <p style="font-size:12px;color:#687346;margin:0;">
+                ${isId ? 'Menghubungkan ke database server...' : 'Synchronizing with database server...'}
+              </p>
             </div>
-            <h4 style="font-size:15px;font-weight:700;color:#1C200E;margin-bottom:6px;" data-i18n="hist_empty_title">
-              ${isId ? 'Belum Ada Hidangan yang Dicatat Hari Ini' : 'No Meals Logged Today Yet'}
-            </h4>
-            <p style="font-size:12.5px;color:#687346;max-width:440px;margin:0 auto 18px;line-height:1.5;" data-i18n="hist_empty_desc">
-              ${isId ? 'Menu yang Anda catat dari Rencana Menu, Pindai Kamera AI, atau Katalog Pangan akan tersusun rapi di jurnal ini.' : 'Meals you log from the Meal Planner, AI Camera Scan, or Catalog will appear here in your food journal.'}
-            </p>
-            <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
-              <button type="button" class="btn-outline-glass" onclick="app.navigate('overview')"
-                style="font-size:12px;padding:7px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;">
-                <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
-                <span>${isId ? 'Kembali ke Ringkasan' : 'Back to Overview'}</span>
-              </button>
+          `;
+        } else {
+          listContainer.innerHTML = `
+            <div style="text-align:center;padding:44px 20px;background:#FAFBF7;border:1px dashed #D9E2CF;border-radius:12px;">
+              <div style="width:52px;height:52px;border-radius:50%;background:rgba(35,57,23,0.06);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;color:#233917;">
+                <i data-lucide="utensils-crossed" style="width:24px;height:24px;"></i>
+              </div>
+              <h4 style="font-size:15px;font-weight:700;color:#1C200E;margin-bottom:6px;" data-i18n="hist_empty_title">
+                ${isId ? 'Belum Ada Hidangan yang Dicatat Hari Ini' : 'No Meals Logged Today Yet'}
+              </h4>
+              <p style="font-size:12.5px;color:#687346;max-width:440px;margin:0 auto 18px;line-height:1.5;" data-i18n="hist_empty_desc">
+                ${isId ? 'Menu yang Anda catat dari Rencana Menu, Pindai Kamera AI, atau Katalog Pangan akan tersusun rapi di jurnal ini.' : 'Meals you log from the Meal Planner, AI Camera Scan, or Catalog will appear here in your food journal.'}
+              </p>
+              <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
+                <button type="button" class="btn-outline-glass" onclick="app.navigate('overview')"
+                  style="font-size:12px;padding:7px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #CBD5E1;color:#1B3917;font-weight:700;cursor:pointer;">
+                  <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+                  <span>${isId ? 'Kembali ke Ringkasan' : 'Back to Overview'}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       } else if (filtered.length === 0) {
         listContainer.innerHTML = `
           <div style="text-align:center;padding:36px 20px;background:#FAFBF7;border:1px dashed #D9E2CF;border-radius:12px;color:#687346;font-size:13px;">
@@ -937,13 +978,13 @@ class NutriVisionProgress {
       } else {
         const formatSourceBadge = (rawSource, isId) => {
           const s = (rawSource || '').toLowerCase();
+          if (s.includes('rencana') || s.includes('planner')) return isId ? 'Rencana Menu' : 'Meal Planner';
+          if (s.includes('pindai') || s.includes('scan') || s.includes('kamera') || s.includes('camera')) return isId ? 'Pindai Kamera AI' : 'AI Camera Scan';
+          if (s.includes('katalog') || s.includes('catalog')) return isId ? 'Katalog Pangan' : 'Local Superfoods';
           if (s.includes('sarapan') || s.includes('breakfast')) return isId ? 'Sarapan' : 'Breakfast';
           if (s.includes('siang') || s.includes('lunch')) return isId ? 'Makan Siang' : 'Lunch';
           if (s.includes('malam') || s.includes('dinner')) return isId ? 'Makan Malam' : 'Dinner';
           if (s.includes('camilan') || s.includes('snack')) return isId ? 'Camilan' : 'Snack';
-          if (s.includes('pindai') || s.includes('scan') || s.includes('kamera') || s.includes('camera')) return isId ? 'Pindai Kamera AI' : 'AI Camera Scan';
-          if (s.includes('rencana') || s.includes('planner') || s.includes('menu')) return isId ? 'Rencana Menu' : 'Meal Planner';
-          if (s.includes('katalog') || s.includes('catalog')) return isId ? 'Katalog Pangan' : 'Food Catalog';
           return rawSource || (isId ? 'Manual' : 'Manual');
         };
 
@@ -952,7 +993,7 @@ class NutriVisionProgress {
           let sourceBadgeClass = 'badge gray';
           if (src.includes('pindai') || src.includes('scan') || src.includes('kamera') || src.includes('camera') || src.includes('ai')) {
             sourceBadgeClass = 'badge teal';
-          } else if (src.includes('rencana') || src.includes('planner') || src.includes('menu')) {
+          } else if (src.includes('rencana') || src.includes('planner') || src.includes('menu') || src.includes('sarapan') || src.includes('siang') || src.includes('malam') || src.includes('breakfast') || src.includes('lunch') || src.includes('dinner')) {
             sourceBadgeClass = 'badge green';
           } else if (src.includes('katalog') || src.includes('catalog')) {
             sourceBadgeClass = 'badge orange';
@@ -1123,10 +1164,14 @@ class NutriVisionProgress {
   async syncFromServer(userKey, targets) {
     if (typeof window === 'undefined' || !window.nutriAPI) return;
 
+    this.isSyncing = true;
     try {
       // 1. Tunggu health check
       const isOnline = window.nutriAPI.isServerOnline || await window.nutriAPI.checkHealth();
-      if (!isOnline) return;
+      if (!isOnline) {
+        this.isSyncing = false;
+        return;
+      }
 
       // 2. Ambil data hari ini & rekap mingguan dari server secara paralel
       const activeUserId = (typeof app !== 'undefined' && (app.userProfile?.id || app.userProfile?.contact || app.userProfile?.email)) || userKey || '';
@@ -1166,20 +1211,44 @@ class NutriVisionProgress {
 
       // 4. Sinkronkan detail hidangan hari ini
       if (todayData?.success && Array.isArray(todayData.meals)) {
-        const serverMeals = todayData.meals.map(m => ({
-          id: m.id,
-          _serverId: m.id,
-          name: m.title || 'Menu Tercatat',
-          time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--',
-          protein: parseFloat(m.total_protein) || 0,
-          calories: parseInt(m.total_calories) || 0,
-          carbs: parseFloat(m.total_carbs) || 0,
-          fat: parseFloat(m.total_fat) || 0,
-          source: m.meal_type === 'breakfast' ? 'Sarapan' :
-                  m.meal_type === 'lunch' ? 'Makan Siang' :
-                  m.meal_type === 'dinner' ? 'Makan Malam' : 'Camilan',
-          imageUrl: m.image_url || ''
-        }));
+        const serverMeals = todayData.meals.map(m => {
+          let source = 'Manual';
+          const advice = (m.clinical_advice || m.clinicalAdvice || '').toLowerCase();
+          const existingLocal = (this.todayMeals || []).find(l => l.id === m.id || l._serverId === m.id || (l.name && l.name.toLowerCase() === (m.title || '').toLowerCase()));
+
+          if (existingLocal && existingLocal.source) {
+            source = existingLocal.source;
+          } else if (advice.includes('rencana menu') || advice.includes('meal planner')) {
+            source = 'Rencana Menu';
+          } else if (advice.includes('pindai') || advice.includes('kamera') || advice.includes('scan') || advice.includes('ai scan')) {
+            source = 'Pindai Kamera AI';
+          } else if (advice.includes('katalog') || advice.includes('catalog')) {
+            source = 'Katalog Pangan';
+          } else if (advice.includes('jadwal') || advice.includes('kalender') || advice.includes('calendar')) {
+            source = 'Jadwal Kalender';
+          } else if (m.meal_type === 'breakfast') {
+            source = 'Sarapan';
+          } else if (m.meal_type === 'lunch') {
+            source = 'Makan Siang';
+          } else if (m.meal_type === 'dinner') {
+            source = 'Makan Malam';
+          } else {
+            source = 'Camilan';
+          }
+
+          return {
+            id: m.id,
+            _serverId: m.id,
+            name: m.title || 'Menu Tercatat',
+            time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--',
+            protein: parseFloat(m.total_protein) || 0,
+            calories: parseInt(m.total_calories) || 0,
+            carbs: parseFloat(m.total_carbs) || 0,
+            fat: parseFloat(m.total_fat) || 0,
+            source: source,
+            imageUrl: m.image_url || ''
+          };
+        });
 
         if (serverMeals.length > 0 || (todayData.summary && (todayData.summary.totalProtein > 0 || todayData.summary.totalCalories > 0))) {
           this.isConfigured = true;
@@ -1223,21 +1292,24 @@ class NutriVisionProgress {
         this.renderWeeklyBarChart();
         this.updateProgressPageSummary();
 
-        // Update history page jika sedang terbuka
-        const histView = document.getElementById('view-history');
-        if (histView && histView.classList.contains('active-view')) {
-          this.renderHistoryPage();
-        }
+        // Selalu render history page agar langsung tampil saat user masuk ke aplikasi
+        this.renderHistoryPage();
 
         console.log(`[NutriVision] ✅ Sync dari server: ${serverMeals.length} hidangan & 7-hari mingguan termuat.`);
       } else {
         // Jika tidak ada data meals hari ini tapi weekly-stats sudah didapat
         this.renderWeeklyBarChart();
         this.updateProgressPageSummary();
+        this.renderTodayMealHistory();
+        this.renderHistoryPage();
       }
     } catch (err) {
       // Silent fail — mode offline tetap berjalan dari localStorage
       console.warn('[NutriVision] syncFromServer gagal (offline):', err.message);
+      this.renderTodayMealHistory();
+      this.renderHistoryPage();
+    } finally {
+      this.isSyncing = false;
     }
   }
 
@@ -1532,3 +1604,9 @@ Tanggal: ${new Date().toLocaleDateString('id-ID', { dateStyle: 'full' })}
 }
 
 const progressTracker = new NutriVisionProgress();
+if (typeof window !== 'undefined') {
+  window.progressTracker = progressTracker;
+}
+if (typeof global !== 'undefined') {
+  global.progressTracker = progressTracker;
+}

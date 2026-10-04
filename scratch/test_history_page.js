@@ -122,7 +122,7 @@ const btnPindai = {
 chipContainer.children.push(btnAll, btnRencana, btnPindai);
 
 // Load progress.js
-const progressCode = fs.readFileSync(path.join(__dirname, '..', 'js', 'progress.js'), 'utf8');
+const progressCode = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'js', 'progress.js'), 'utf8');
 vm.runInThisContext(progressCode);
 
 const tracker = eval('progressTracker');
