@@ -10573,8 +10573,6 @@ class NutriVisionApp {
         progressColor = '#C2C8AE';
       }
 
-      const superfoodsList = (p.superfoods || []).map(sf => `<span style="display:inline-block;padding:2px 6px;border-radius:4px;background:rgba(35,57,23,0.06);font-size:10px;font-weight:600;color:#233917;">${sf}</span>`).join(' ');
-
       return `
         <div class="journey-step-box ${isActive ? 'selected-phase' : ''}" data-phase="${p.phaseNum}" onclick="app.selectJourneyPhase('${cond}', ${p.phaseNum})"
              style="background:${cardBg};border:${cardBorder};border-radius:12px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease;box-shadow:${isActive ? '0 4px 16px rgba(35,57,23,0.08)' : 'none'};">
@@ -10610,12 +10608,6 @@ class NutriVisionApp {
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <span style="color:var(--ink-soft);font-size:10.5px;">${isEn ? 'Food Texture:' : 'Tekstur Pangan:'}</span>
               <span style="color:var(--ink);font-size:10.5px;font-weight:600;">${p.texture}</span>
-            </div>
-            <div style="margin-top:2px;">
-              <div style="color:var(--ink-soft);font-size:10px;margin-bottom:3px;">${isEn ? 'Recommended Superfoods:' : 'Makanan Super Anjuran:'}</div>
-              <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                ${superfoodsList}
-              </div>
             </div>
           </div>
         </div>
