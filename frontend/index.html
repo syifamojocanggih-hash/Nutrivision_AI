@@ -5621,6 +5621,69 @@ ALTER TABLE public.meals DISABLE ROW LEVEL SECURITY;</code></pre>
     </div>
   </div>
 
+  <!-- Modal Konfirmasi Catat Asupan Harian -->
+  <div class="modal-overlay" id="modal-confirm-log-meal" onclick="app.closeConfirmLogMealModal()"
+    style="display:none;z-index:10010;">
+    <div class="modal-box" onclick="event.stopPropagation()"
+      style="max-width:440px;border-radius:24px;padding:26px 24px;text-align:center;box-shadow:0 25px 60px -15px rgba(15,23,42,0.35);border:1px solid #E2E8F0;background:#FFFFFF;position:relative;">
+      
+      <!-- Close button on top-right -->
+      <button type="button" class="modal-close-btn" onclick="app.closeConfirmLogMealModal()"
+        aria-label="Tutup" title="Tutup"
+        style="position:absolute;top:16px;right:16px;background:none;border:none;color:#94A3B8;cursor:pointer;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+        onmouseover="this.style.background='#F1F5F9';this.style.color='#334155';"
+        onmouseout="this.style.background='none';this.style.color='#94A3B8';">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+
+      <!-- Soft Icon Badge -->
+      <div
+        style="width:58px;height:58px;border-radius:50%;background:#ECFDF5;color:#059669;display:flex;align-items:center;justify-content:center;margin:4px auto 16px;box-shadow:0 0 0 8px #F0FDF4;border:1px solid #A7F3D0;">
+        <i data-lucide="utensils" style="width:26px;height:26px;"></i>
+      </div>
+
+      <!-- Title -->
+      <h3 id="confirm-log-meal-title" data-i18n="confirm_log_meal_title" style="margin:0 0 8px;font-size:18px;font-weight:800;color:#0F172A;letter-spacing:-0.02em;">
+        Catat ke Nutrisi Harian?
+      </h3>
+
+      <!-- Question body as requested by user -->
+      <p id="confirm-log-meal-question" data-i18n="confirm_log_meal_question" style="margin:0 0 16px;font-size:13.5px;color:#475569;line-height:1.55;">
+        Apakah Anda ingin mencatat menu ini ke dalam nutrisi harian Anda hari ini?
+      </p>
+
+      <!-- Meal Preview Card -->
+      <div id="confirm-log-meal-preview"
+        style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px;margin-bottom:20px;text-align:left;">
+        <div id="confirm-log-meal-name" style="font-size:14.5px;font-weight:800;color:#0F172A;margin-bottom:6px;line-height:1.35;">
+          Nama Menu
+        </div>
+        <div id="confirm-log-meal-meta" style="font-size:12px;color:#64748B;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <!-- Macro badges populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+        <button type="button" id="confirm-log-meal-btn-cancel" onclick="app.closeConfirmLogMealModal()"
+          style="flex:1;padding:11px 18px;border-radius:12px;border:1.5px solid #CBD5E1;background:#FFFFFF;font-weight:700;font-size:13px;color:#475569;cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.background='#F1F5F9';this.style.borderColor='#94A3B8';"
+          onmouseout="this.style.background='#FFFFFF';this.style.borderColor='#CBD5E1';"
+          data-i18n="confirm_log_meal_btn_cancel">
+          Batal
+        </button>
+        <button type="button" id="confirm-log-meal-btn-submit" onclick="app.executeConfirmLogMeal()"
+          style="flex:1.2;padding:11px 18px;border-radius:12px;border:none;background:#233917;color:#FFFFFF;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 14px rgba(35,57,23,0.3);transition:all 0.2s;"
+          onmouseover="this.style.background='#1B2D12';this.style.transform='translateY(-1px)';"
+          onmouseout="this.style.background='#233917';this.style.transform='none';">
+          <i data-lucide="check" style="width:15px;height:15px;"></i>
+          <span id="confirm-log-meal-btn-confirm-text" data-i18n="confirm_log_meal_btn_confirm">Ya, Catat Asupan</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Modal Daftar Belanja Bahan Makanan (Smart Food Budgeting) -->
   <div class="modal-overlay" id="modal-budget-grocery" onclick="budgetPlanner.closeGroceryModal()"
     style="display:none;z-index:10006;">

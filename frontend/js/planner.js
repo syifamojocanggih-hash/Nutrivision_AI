@@ -1218,9 +1218,26 @@ class NutriVisionPlanner {
                     </div>
                   </div>
                   <div class="meal-plan-meta" style="display:flex;align-items:center;gap:6px;">
-                    <button type="button" class="btn-sm-teal" style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;" onclick="mealPlanner.logMeal('${cp.name.replace(/'/g, "\\'")}', '${cp.protein}g Protein · ${cp.calories} kkal')">
-                      <i data-lucide="plus-circle" class="btn-icon-sm"></i> ${isId ? 'Catat' : 'Log'}
-                    </button>
+                    ${(() => {
+                      const isCpLogged = (typeof app !== 'undefined' && typeof app.isMealLoggedToday === 'function') ? app.isMealLoggedToday(cp.name) : false;
+                      const safeCpName = cp.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                      const attrCpName = cp.name.replace(/"/g, '&quot;');
+                      if (isCpLogged) {
+                        return `
+                          <button type="button" class="btn-sm-teal btn-logged-gray" data-meal-name="${attrCpName}" disabled
+                            style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;background:#94A3B8;color:#FFFFFF;border:1px solid #94A3B8;cursor:not-allowed;opacity:0.88;box-shadow:none;pointer-events:none;"
+                            title="${isId ? 'Menu ini sudah tercatat ke asupan hari ini' : 'Already logged today'}">
+                            <i data-lucide="check-circle" class="btn-icon-sm"></i> ${isId ? 'Sudah Tercatat' : 'Logged'}
+                          </button>
+                        `;
+                      }
+                      return `
+                        <button type="button" class="btn-sm-teal" data-meal-name="${attrCpName}" style="font-size:11px;padding:5px 10px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;"
+                          onclick="mealPlanner.promptLogMeal(this, '${safeCpName}', '${cp.protein}g Protein · ${cp.calories} kkal')">
+                          <i data-lucide="plus-circle" class="btn-icon-sm"></i> ${isId ? 'Catat' : 'Log'}
+                        </button>
+                      `;
+                    })()}
                     <button type="button" style="all:unset;cursor:pointer;padding:5px;color:#EF4444;" title="${isId ? 'Hapus' : 'Delete'}" onclick="app.deleteUserMealPlan('${cp.id}')">
                       <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
                     </button>
@@ -1253,6 +1270,10 @@ class NutriVisionPlanner {
         const matchedRestr = this._checkMealRestriction(displayName, displaySuitable);
         const warningTag = matchedRestr ? `<span class="restr-warning-badge" style="font-size:10.5px;">⚠️ ${isId ? 'Pantangan: ' : 'Restriction: '}${matchedRestr}</span>` : '';
         const warningCls = matchedRestr ? ' meal-plan-item-warning' : '';
+        const isPlanLogged = (typeof app !== 'undefined' && typeof app.isMealLoggedToday === 'function') ? app.isMealLoggedToday(displayName) : false;
+        const safeDisplayName = displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeDisplayMacro = displayMacro.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const attrDisplayName = displayName.replace(/"/g, '&quot;');
 
         return `
           <div class="meal-plan-item${warningCls}" style="padding:14px;">
@@ -1267,9 +1288,18 @@ class NutriVisionPlanner {
               </div>
             </div>
             <div class="meal-plan-meta">
-              <button class="btn-sm-teal" style="font-size:11.5px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;" onclick="mealPlanner.logMeal('${displayName.replace(/'/g, "\\'")}', '${displayMacro.replace(/'/g, "\\'")}')">
-                <i data-lucide="plus-circle" class="btn-icon-sm"></i> ${logBtnText}
-              </button>
+              ${isPlanLogged ? `
+                <button class="btn-sm-teal btn-logged-gray" data-meal-name="${attrDisplayName}" disabled
+                  style="font-size:11.5px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;background:#94A3B8;color:#FFFFFF;border:1px solid #94A3B8;cursor:not-allowed;opacity:0.88;box-shadow:none;pointer-events:none;"
+                  title="${isId ? 'Menu ini sudah tercatat ke asupan hari ini' : 'Already logged today'}">
+                  <i data-lucide="check-circle" class="btn-icon-sm"></i> ${isId ? 'Sudah Tercatat' : 'Logged'}
+                </button>
+              ` : `
+                <button class="btn-sm-teal" data-meal-name="${attrDisplayName}" style="font-size:11.5px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;"
+                  onclick="mealPlanner.promptLogMeal(this, '${safeDisplayName}', '${safeDisplayMacro}')">
+                  <i data-lucide="plus-circle" class="btn-icon-sm"></i> ${logBtnText}
+                </button>
+              `}
             </div>
           </div>
         `;
@@ -1283,9 +1313,32 @@ class NutriVisionPlanner {
     }
   }
 
-  logMeal(mealName, macroStr) {
+  promptLogMeal(btnEl, mealName, macroStr) {
+    let prot = 25;
+    let cals = 380;
+    const protMatch = (macroStr || '').match(/(\d+)g Protein/i);
+    const calsMatch = (macroStr || '').match(/(\d+)\s*(?:kkal|kcal)/i);
+    if (protMatch) prot = parseInt(protMatch[1], 10);
+    if (calsMatch) cals = parseInt(calsMatch[1], 10);
+
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
-    app.requireAuth(async () => {
+    const appInst = (typeof window !== 'undefined' && window.app) ? window.app : (typeof app !== 'undefined' ? app : null);
+    if (appInst && typeof appInst.promptLogRecommendedMeal === 'function') {
+      appInst.promptLogRecommendedMeal(btnEl, mealName, prot, cals, isId ? 'Rencana Menu' : 'Meal Planner', {
+        macroStr: macroStr,
+        timing: 'Rencana Menu'
+      });
+    } else {
+      this.logMeal(mealName, macroStr, btnEl);
+    }
+  }
+
+  logMeal(mealName, macroStr, btnEl = null) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const appInst = (typeof window !== 'undefined' && window.app) ? window.app : (typeof app !== 'undefined' ? app : null);
+    if (!appInst) return;
+
+    appInst.requireAuth(async () => {
       let prot = 25;
       let cals = 380;
       const protMatch = macroStr.match(/(\d+)g Protein/i);
@@ -1299,6 +1352,17 @@ class NutriVisionPlanner {
       const userProfile = app.userProfile || {};
       const userId = userProfile.id || userProfile.contact || userProfile.email || userProfile.name || '';
       const userKey = userId;
+
+      if (typeof app !== 'undefined') {
+        app._loggedMealNames = app._loggedMealNames || new Set();
+        app._loggedMealNames.add(mealName.toLowerCase().trim());
+        if (btnEl && typeof app.markButtonAsLogged === 'function') {
+          app.markButtonAsLogged(btnEl);
+        }
+        if (typeof app.syncAllLoggedMealButtons === 'function') {
+          app.syncAllLoggedMealButtons(mealName);
+        }
+      }
 
       progressTracker.addLoggedMeal({
         protein: [prot, prot],

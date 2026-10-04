@@ -99,6 +99,34 @@
   transform: scale(0.98);
 }
 
+/* Tombol Asupan Sudah Tercatat (Abu-abu & Nonaktif) */
+.btn-logged-gray,
+button.btn-logged-gray,
+.btn-primary-teal.btn-logged-gray,
+.btn-primary-coral.btn-logged-gray,
+.btn-sm-teal.btn-logged-gray {
+  background: #94A3B8 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #94A3B8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.88 !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+  transform: none !important;
+}
+
+.btn-logged-gray:hover,
+button.btn-logged-gray:hover,
+.btn-primary-teal.btn-logged-gray:hover,
+.btn-primary-coral.btn-logged-gray:hover,
+.btn-sm-teal.btn-logged-gray:hover {
+  background: #94A3B8 !important;
+  color: #FFFFFF !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+
 .btn-outline-glass {
   all: unset;
   cursor: pointer;

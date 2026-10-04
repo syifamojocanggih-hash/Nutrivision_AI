@@ -7416,6 +7416,13 @@ class NutriVisionApp {
       const pdfModal = document.getElementById('modal-pdf-report');
       if (pdfModal) pdfModal.classList.remove('open');
     }
+    if (modalId === 'modal-confirm-log-meal') {
+      this._pendingLogMeal = null;
+    }
+  }
+
+  closeConfirmLogMealModal() {
+    this.closeModal('modal-confirm-log-meal');
   }
 
   // =========================================================================
@@ -12287,10 +12294,7 @@ class NutriVisionApp {
         </div>
 
         <div style="margin-top:auto;padding-top:12px;border-top:1px solid #EFE8CA;">
-          <button type="button" class="btn-primary-teal" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:10px 16px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
-            onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Jurnal Klinis')">
-            <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat ke Asupan
-          </button>
+          ${this.renderRecommendationLogButton(item.name, item.protein, item.cals, 'Jurnal Klinis', 'btn-primary-teal', item.timing)}
         </div>
       </div>
     `).join('');
@@ -12384,10 +12388,7 @@ class NutriVisionApp {
         </div>
 
         <div style="margin-top:auto;padding-top:12px;border-top:1px solid #EFE8CA;">
-          <button type="button" class="btn-primary-coral" style="width:100%;box-sizing:border-box;font-size:12.5px;padding:10px 16px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;"
-            onclick="app.logRecommendedMeal('${item.name.replace(/'/g, "\\'")}', ${item.protein}, ${item.cals}, 'Alternatif Budget Hemat')">
-            <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> Catat ke Asupan
-          </button>
+          ${this.renderRecommendationLogButton(item.name, item.protein, item.cals, 'Alternatif Budget Hemat', 'btn-primary-coral', item.timing)}
         </div>
       </div>
     `).join('');
@@ -12409,8 +12410,173 @@ class NutriVisionApp {
     this.renderBudgetAlternativesPage();
   }
 
-  async logRecommendedMeal(name, prot, cals, source = 'Rekomendasi Menu', extraData = {}) {
+  isMealLoggedToday(name) {
+    if (!name) return false;
+    const lower = name.toLowerCase().trim();
+    if (this._loggedMealNames && this._loggedMealNames.has(lower)) {
+      return true;
+    }
+    if (window.progressTracker && Array.isArray(window.progressTracker.todayMeals)) {
+      return window.progressTracker.todayMeals.some(m => (m.name || '').toLowerCase().trim() === lower);
+    }
+    return false;
+  }
+
+  renderRecommendationLogButton(name, prot, cals, source, baseClass = 'btn-primary-teal', timing = '') {
     const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    const isLogged = this.isMealLoggedToday(name);
+    const escapedName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const escapedTiming = (timing || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const attrName = name.replace(/"/g, '&quot;');
+
+    if (isLogged) {
+      return `
+        <button type="button" class="btn-logged-gray" data-meal-name="${attrName}" disabled
+          style="width:100%;box-sizing:border-box;font-size:12.5px;padding:10px 16px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;background:#94A3B8;color:#FFFFFF;border:1px solid #94A3B8;cursor:not-allowed;opacity:0.88;box-shadow:none;pointer-events:none;"
+          title="${isId ? 'Menu ini sudah tercatat ke asupan hari ini' : 'This meal is already logged today'}">
+          <i data-lucide="check-circle" style="width:15px;height:15px;"></i> ${isId ? 'Sudah Tercatat' : 'Already Logged'}
+        </button>
+      `;
+    }
+
+    return `
+      <button type="button" class="${baseClass}" data-meal-name="${attrName}"
+        style="width:100%;box-sizing:border-box;font-size:12.5px;padding:10px 16px;border-radius:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 0.2s ease;"
+        onclick="app.promptLogRecommendedMeal(this, '${escapedName}', ${prot}, ${cals}, '${source}', { timing: '${escapedTiming}' })">
+        <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> ${isId ? 'Catat ke Asupan' : 'Log to Intake'}
+      </button>
+    `;
+  }
+
+  promptLogRecommendedMeal(btnEl, name, prot, cals, source = 'Rekomendasi Menu', extraData = {}) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
+    if (this.isMealLoggedToday(name)) {
+      this.showToast(
+        isId ? `Menu "${name}" sudah tercatat ke dalam asupan hari ini.` : `"${name}" is already logged today.`,
+        'info'
+      );
+      if (btnEl) this.markButtonAsLogged(btnEl);
+      return;
+    }
+
+    this.requireAuth(() => {
+      this._pendingLogMeal = {
+        btnEl,
+        name,
+        prot,
+        cals,
+        source,
+        extraData
+      };
+
+      const titleEl = document.getElementById('confirm-log-meal-title');
+      const questionEl = document.getElementById('confirm-log-meal-question');
+      const nameEl = document.getElementById('confirm-log-meal-name');
+      const metaEl = document.getElementById('confirm-log-meal-meta');
+      const btnCancel = document.getElementById('confirm-log-meal-btn-cancel');
+      const btnConfirmText = document.getElementById('confirm-log-meal-btn-confirm-text');
+      const modalEl = document.getElementById('modal-confirm-log-meal');
+
+      if (titleEl) {
+        titleEl.textContent = isId ? 'Catat ke Nutrisi Harian?' : 'Log to Daily Nutrition?';
+      }
+      if (questionEl) {
+        questionEl.textContent = isId
+          ? 'Apakah Anda ingin mencatat menu ini ke dalam nutrisi harian Anda hari ini?'
+          : 'Would you like to log this meal into today\'s daily nutrition?';
+      }
+      if (nameEl) {
+        nameEl.textContent = name;
+      }
+      if (metaEl) {
+        const timingTag = (extraData && extraData.timing)
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#F1F5F9;padding:4px 9px;border-radius:8px;font-weight:600;color:#475569;"><i data-lucide="clock" style="width:12px;height:12px;"></i> ${extraData.timing}</span>`
+          : '';
+        const sourceTag = source
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#F8FAFC;border:1px solid #E2E8F0;padding:4px 9px;border-radius:8px;font-weight:600;color:#64748B;"><i data-lucide="tag" style="width:12px;height:12px;"></i> ${source}</span>`
+          : '';
+        metaEl.innerHTML = `
+          <span style="display:inline-flex;align-items:center;gap:4px;background:#ECFDF5;color:#065F46;padding:4px 9px;border-radius:8px;font-weight:700;"><i data-lucide="sparkles" style="width:12px;height:12px;"></i> ${prot}g Protein</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;background:#FFFBEB;color:#92400E;padding:4px 9px;border-radius:8px;font-weight:700;"><i data-lucide="flame" style="width:12px;height:12px;"></i> ${cals} kkal</span>
+          ${timingTag}
+          ${sourceTag}
+        `;
+      }
+      if (btnCancel) {
+        btnCancel.textContent = isId ? 'Batal' : 'Cancel';
+      }
+      if (btnConfirmText) {
+        btnConfirmText.textContent = isId ? 'Ya, Catat Asupan' : 'Yes, Log Meal';
+      }
+
+      if (modalEl) {
+        modalEl.style.display = 'flex';
+        modalEl.classList.add('open');
+      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }, 'mencatat menu ke asupan');
+  }
+
+  async executeConfirmLogMeal() {
+    const pending = this._pendingLogMeal;
+    this.closeConfirmLogMealModal();
+    if (!pending) return;
+
+    const { btnEl, name, prot, cals, source, extraData } = pending;
+
+    this._loggedMealNames = this._loggedMealNames || new Set();
+    this._loggedMealNames.add(name.toLowerCase().trim());
+
+    if (btnEl) {
+      this.markButtonAsLogged(btnEl);
+    }
+    this.syncAllLoggedMealButtons(name);
+
+    await this.logRecommendedMeal(name, prot, cals, source, extraData, btnEl);
+  }
+
+  markButtonAsLogged(btnEl) {
+    if (!btnEl) return;
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+    btnEl.disabled = true;
+    btnEl.classList.add('btn-logged-gray');
+    btnEl.setAttribute('aria-disabled', 'true');
+    btnEl.style.setProperty('background', '#94A3B8', 'important');
+    btnEl.style.setProperty('color', '#FFFFFF', 'important');
+    btnEl.style.setProperty('border', '1px solid #94A3B8', 'important');
+    btnEl.style.setProperty('box-shadow', 'none', 'important');
+    btnEl.style.setProperty('cursor', 'not-allowed', 'important');
+    btnEl.style.setProperty('pointer-events', 'none', 'important');
+    btnEl.style.setProperty('opacity', '0.88', 'important');
+    btnEl.innerHTML = `<i data-lucide="check-circle" style="width:14px;height:14px;"></i> ${isId ? 'Sudah Tercatat' : 'Already Logged'}`;
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  }
+
+  syncAllLoggedMealButtons(mealName) {
+    if (!mealName) return;
+    const lower = mealName.toLowerCase().trim();
+    document.querySelectorAll('[data-meal-name]').forEach(btn => {
+      if ((btn.getAttribute('data-meal-name') || '').toLowerCase().trim() === lower) {
+        this.markButtonAsLogged(btn);
+      }
+    });
+  }
+
+  async logRecommendedMeal(name, prot, cals, source = 'Rekomendasi Menu', extraData = {}, btnEl = null) {
+    const isId = (window.i18n ? window.i18n.getLanguage() : 'en') === 'id';
+
+    // Tandai meal sebagai sudah dicatat
+    this._loggedMealNames = this._loggedMealNames || new Set();
+    this._loggedMealNames.add(name.toLowerCase().trim());
+    if (btnEl) {
+      this.markButtonAsLogged(btnEl);
+    }
+    this.syncAllLoggedMealButtons(name);
 
     // Ambil userId yang paling reliable: prioritaskan JWT token → id → email → name
     const userProfile = this.userProfile || {};

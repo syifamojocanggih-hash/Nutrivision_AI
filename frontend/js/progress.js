@@ -708,6 +708,15 @@ class NutriVisionProgress {
       app.showToast(isId ? `"${meal.name}" berhasil dihapus dari riwayat.` : `"${meal.name}" removed from history.`);
     }
 
+    if (typeof app !== 'undefined') {
+      if (app._loggedMealNames) {
+        app._loggedMealNames.delete((meal.name || '').toLowerCase().trim());
+      }
+      if (typeof app.renderDoctorRecommendationsPage === 'function') app.renderDoctorRecommendationsPage();
+      if (typeof app.renderBudgetAlternativesPage === 'function') app.renderBudgetAlternativesPage();
+      if (typeof mealPlanner !== 'undefined' && typeof mealPlanner.renderMealPlannerPage === 'function') mealPlanner.renderMealPlannerPage();
+    }
+
     // Hapus dari backend secara async — coba dengan _serverId (MySQL ID) atau local id
     if (typeof window !== 'undefined' && window.nutriAPI) {
       const serverMealId = meal._serverId || meal.id;
@@ -806,6 +815,15 @@ class NutriVisionProgress {
 
     if (typeof app !== 'undefined' && typeof app.showToast === 'function') {
       app.showToast(isId ? 'Catatan hidangan hari ini berhasil direset.' : "Today's meal journal has been reset.");
+    }
+
+    if (typeof app !== 'undefined') {
+      if (app._loggedMealNames) {
+        app._loggedMealNames.clear();
+      }
+      if (typeof app.renderDoctorRecommendationsPage === 'function') app.renderDoctorRecommendationsPage();
+      if (typeof app.renderBudgetAlternativesPage === 'function') app.renderBudgetAlternativesPage();
+      if (typeof mealPlanner !== 'undefined' && typeof mealPlanner.renderMealPlannerPage === 'function') mealPlanner.renderMealPlannerPage();
     }
   }
 
